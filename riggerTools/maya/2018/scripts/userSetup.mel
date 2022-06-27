@@ -1,0 +1,6 @@
+/*add comeMenu*/
+
+// userSetup.py is not respond so i add this throught userSetup.mel insted
+source "D:/sysTools/nmTools/riggerTools/mel/cometTools/cometMenu.mel" ;
+
+

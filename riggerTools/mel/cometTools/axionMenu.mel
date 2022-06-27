@@ -1,0 +1,78 @@
+// date : 2 aug 2018
+//----------------------------------------------------------------------------
+// axion Menu.mel - MEL Script
+//----------------------------------------------------------------------------
+//
+// DESCRIPTION:		
+//		
+// REQUIRES:	to install this menu  source  this file from userSetup
+//
+// TEMPLATE FROM: Michael B. Comet - comet@comet-cartoons.com
+//
+//----------------------------------------------------------------------------
+
+/*
+ * Globals 
+ */
+global string $gMainWindow;
+// --------------------------------------------------------------------------
+
+
+// get maya version
+float $mayaVersion = `getApplicationVersionAsFloat`;
+
+// delete the previous menu
+
+if (`menu -q -exists axMenu_menu`)	
+	{
+	menu -e -dai axMenu_menu;
+	}
+
+else	
+	{
+	setParent $gMainWindow ;
+	menu -label "Axion Menu" -p MayaWindow -to true axMenu_menu;
+	}
+
+
+// ------------- Main menu ------------------------------------------
+	//Rigging Tools
+	menuItem -subMenu true -label "Rigging" -tearOff true rigging_menuItm;
+
+		//comet menu Tools
+		menuItem -l ("cometRename...") -c ("source \"cometRename.mel\"; cometRename(); ") -ann ("Rename selected nodes.") -image "cometRename.bmp" ;
+    	setParent -menu ".." ;
+
+    	//comet menu Tools
+    	$snapCmd ="import sys\nsys.path.append('D:/True_Axion/Tools/riggerTools/python')\nfrom nomanTools import aimcon as ac\nac.snapParentCon()";
+		menuItem -label ("snap") -c "python($snapCmd)" -ann ("Rename selected nodes.") -image "cometRename.bmp" snap_menu;
+    	setParent -menu ".." ;
+
+
+
+
+
+
+
+
+/*
+
+// ------------- Main menu ------------------------------------------
+	//Rigging Tools
+	menuItem -subMenu true -label "Rigging" -to true rigging_menuItm;
+
+
+	//setParent -menu ..;
+		
+		// Asset browser menu
+		$assetBrowserCmd = "import sys\nsys.path.append('P:/sysTool/python')\nimport joey.pipeline.assetnaminglocal as assetnaminglocal\nreload(assetnaminglocal)\nassetnaminglocal.runInMaya()";
+		menuItem -label "Snap" -c "python( $assetBrowserCmd )" assetBrowser_menu;
+
+
+
+
+
+menuItem -divider true ;
+menuItem -l "Re-Load Menu" -c ("rehash; source \"axionMenu.mel\" ;") -ann ("Re-Load this menu, for update any new scripts.") ;
+
+*/

@@ -52,7 +52,7 @@ PROJECT_PATH = "D:/sysTools/nmTools/riggerTools"
 
 
 # naming
-PROJECT_NAME = 'nmMenu'
+PROJECT_NAME = 'nmMenu_g'
 
 # append path
 #sys.path.append(r'D:\True_Axion\Tools\riggerTools\python')

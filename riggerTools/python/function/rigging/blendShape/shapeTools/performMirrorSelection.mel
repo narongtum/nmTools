@@ -1,0 +1,191 @@
+// Copyright (C) 2000-2002 Michael Bazhutkin - Copyright (C) 2000 studio Klassika
+// www.geocites.com/bazhutkin
+// bazhutkin@mail.ru
+//
+//  Mirror Selection 2.0
+//  Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:	December 6, 2001
+//  Fix Date:		December 7, 2002
+//
+//  Description:
+//	Mirror Selection Option Box for `mirrorSelection` procedure
+//
+//	Select vertices of object (NURBS surface, NURBS spline, Polygon)
+//	and symmetric object if the object is not symmetric.
+//
+//	Call `performMirrorSelection 1`
+
+proc setOptionVars (int $forceFactorySettings)
+{
+	if ($forceFactorySettings || !`optionVar -exists mirrorSelectionAxis`)
+		{optionVar -stringValue mirrorSelectionAxis "YZ";}
+	if ($forceFactorySettings || !`optionVar -exists mirrorSelectionIdentical`)
+		{optionVar -intValue mirrorSelectionIdentical 1;}
+	if ($forceFactorySettings || !`optionVar -exists mirrorSelectionInverse`)
+		{optionVar -intValue mirrorSelectionInverse 1;}
+	if ($forceFactorySettings || !`optionVar -exists mirrorSelectionTolerance`)
+		{optionVar -floatValue mirrorSelectionTolerance 0.001;}
+}
+
+global proc performMirrorSelectionSetup (string $parent, int $forceFactorySettings)
+{
+	setOptionVars($forceFactorySettings);
+	setParent $parent;
+
+	string $axis = `optionVar -q mirrorSelectionAxis`;
+	switch ($axis)
+	{
+		case "XY":	radioButtonGrp -edit -select 1 axisRadioMirrorSelection;
+				checkBoxGrp -e -label1 "Positive to Negative (+Z to -Z)" inverseMirrorSelection; break;
+		case "YZ":	radioButtonGrp -edit -select 2 axisRadioMirrorSelection;
+				checkBoxGrp -e -label1 "Positive to Negative (+X to -X)" inverseMirrorSelection; break;
+		case "XZ":	radioButtonGrp -edit -select 3 axisRadioMirrorSelection;
+				checkBoxGrp -e -label1 "Positive to Negative (+Y to -Y)" inverseMirrorSelection; break;
+		default:	radioButtonGrp -e -select 2 axisRadioMirrorSelection; break;
+	}
+	
+	int $identical = `optionVar -q mirrorSelectionIdentical`;
+	checkBoxGrp -e -v1  $identical identicalMirrorSelection;
+	checkBoxGrp -e -v1 `optionVar -q mirrorSelectionInverse` inverseMirrorSelection;
+	if (!$identical)
+		checkBoxGrp -e -enable 0 inverseMirrorSelection;
+	floatSliderGrp -e -v `optionVar -q mirrorSelectionTolerance` toleranceMirrorSelection;
+}
+
+global proc performMirrorSelectionCallback (string $parent, int $doIt)
+{
+	setParent $parent;
+
+	int $radio = `radioButtonGrp -q -select axisRadioMirrorSelection`;
+	string $axis;
+	switch ($radio)
+	{
+		case 1: $axis = "XY"; break;
+		case 2: $axis = "YZ"; break;
+		case 3: $axis = "XZ"; break;
+		default: $axis = "YZ"; break;
+	}
+
+	optionVar -stringValue mirrorSelectionAxis $axis;
+	optionVar -intValue mirrorSelectionIdentical `checkBoxGrp -q -v1 identicalMirrorSelection`;
+	optionVar -intValue mirrorSelectionInverse `checkBoxGrp -q -v1 inverseMirrorSelection`;
+	optionVar -floatValue mirrorSelectionTolerance `floatSliderGrp -q -v toleranceMirrorSelection`;
+
+	if ($doIt) {
+		performMirrorSelection 0;
+		addToRecentCommandQueue "performMirrorSelection 0" "MirrorSelection";
+	}
+}
+
+global proc mirrorSelectionOptions ()
+{
+	string $layout = getOptionBox();
+	setParent $layout;
+	
+	setUITemplate -pushTemplate DefaultTemplate;
+	waitCursor -state 1;
+
+	setOptionBoxCommandName("mirrorSelection");
+	setOptionBoxTitle("Mirror Selection Options");
+	
+	tabLayout -scr true -tv false;
+	string $parent = `columnLayout -adj 1`;
+		
+	string $commandName = "performMirrorSelection";
+	string $callback = ($commandName + "Callback " + $parent + " ");
+	string $setup = ($commandName + "Setup "  + $parent + " ");
+
+	radioButtonGrp
+		-label "Mirror Axis"
+		-numberOfRadioButtons 3
+		-label1 "XY"
+		-label2 "YZ"
+		-label3 "XZ"
+		-cc1 "checkBoxGrp -e -label1 \"Positive to Negative (+Z to -Z)\" inverseMirrorSelection"
+		-cc2 "checkBoxGrp -e -label1 \"Positive to Negative (+X to -X)\" inverseMirrorSelection"
+		-cc3 "checkBoxGrp -e -label1 \"Positive to Negative (+Y to -Y)\" inverseMirrorSelection"
+		axisRadioMirrorSelection;
+		
+	separator;
+
+	checkBoxGrp	-label "Mode"
+			-label1 "Identical"
+			-v1 0
+			-on1 ("checkBoxGrp -e -enable 1 inverseMirrorSelection")
+			-of1 ("checkBoxGrp -e -enable 0 inverseMirrorSelection")
+			identicalMirrorSelection;
+
+	checkBoxGrp
+			-label "Direction"
+			-label1 "Positive to Negative"
+			-numberOfCheckBoxes 1
+			inverseMirrorSelection;
+	separator;
+
+	floatSliderGrp	-label "Tolerance"
+			-field true
+			-min 0.000001 -max 0.1
+			-fmx 1 -fmn .000001
+			-v 0.001
+			toleranceMirrorSelection;
+	
+	waitCursor -state 0;
+	setUITemplate -popTemplate;
+
+	//	'Apply' button.
+
+	string $applyBtn = getOptionBoxApplyBtn();
+	button 	-edit
+			-label "Select"
+			-command ($callback + 1)
+			$applyBtn;
+
+	//	'Save' button.
+
+	string $saveBtn = getOptionBoxSaveBtn();
+	button -edit 
+		-command ($callback + 0 + "; hideOptionBox")
+		$saveBtn;
+
+	//	'Reset' button.
+
+	string $resetBtn = getOptionBoxResetBtn();
+	button -edit 
+		-command ($setup + 1)
+		$resetBtn;
+
+	eval (($setup + 0));
+	showOptionBox();
+}
+
+proc string assembleCmd()
+{
+	string $cmd = "mirrorSelection ";
+	$cmd += (`optionVar -q mirrorSelectionAxis` + " ");
+	$cmd += (`optionVar -q mirrorSelectionIdentical` + " ");
+	$cmd += (!`optionVar -q mirrorSelectionInverse` + " ");
+	$cmd += (`optionVar -q mirrorSelectionTolerance` + ";");
+	
+	return $cmd;	
+}
+
+global proc string performMirrorSelection (int $option)
+{
+    string $cmd = "";
+    string $lbl;
+
+	switch ($option)
+	{
+		case 0:		string $cmd = `assembleCmd `;
+				string $res = `evalEcho $cmd`;	break;
+		case 1:		mirrorSelectionOptions;		break;
+		case 2:		$cmd = `assembleCmd`;		break;
+		default:	$cmd = "performMirrorSelection 0";
+    	}
+    	
+    return $cmd;
+}
+
+

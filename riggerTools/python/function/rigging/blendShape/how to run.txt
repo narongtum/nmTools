@@ -1,0 +1,12 @@
+# already move to offical rigTools
+
+open and run the code
+
+1. cut head poly to the grp name it "facialBshBase_grp"
+name polygon "facialBase_ply"
+
+2. run  "blendshapeTools_duplicate_execute_" for duplicate to face 
+
+3. do blendshape
+
+4. connect bsh to controller using  "blendshapeConnectGeo"

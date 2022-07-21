@@ -1,0 +1,25 @@
+//Get some info
+$img = `internalVar -uad`;
+$img += "scripts/na_cbsHelper.png";
+$imgDir = `internalVar -ubd`;
+
+//move the icon to the proper folder
+sysFile -ren ($imgDir+"na_cbsHelper.png") $img;
+
+//find the current shelf
+$shelfName = `tabLayout -q -st $gShelfTopLevel`;
+$shelf = ($gShelfTopLevel+"|"+$shelfName);
+
+//Check with user
+$conf = `confirmDialog -t "Installing Corrective Blendshape Model Helper" -ma "center" -b "Continue" -b "Cancel"
+    -m ("The shelf button to launch the corrective blendshape helper \non the \"" +$shelfName+
+    "\" (currently selected) shelf. Continue?")`;
+
+if ($conf == "Cancel"){
+    error "User Aborted";
+}
+
+//Add shelf button
+shelfButton -p $shelf -i1 ($imgDir+"na_cbsHelper.png") -l "Corrective Blendshape Model Helper" 
+    -c "import na_bsCorrectiveSculptUI\nna_bsCorrectiveSculptUI.win()" -stp "python";
+print "Corrective Blendshape Model Helper successfully installed";

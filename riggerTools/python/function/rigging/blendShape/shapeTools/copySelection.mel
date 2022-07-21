@@ -1,0 +1,74 @@
+// Copyright (C) 2000-2002 Michael Bazhutkin - Copyright (C) 2000 studio Klassika
+// www.geocites.com/bazhutkin
+// bazhutkin@mail.ru
+//
+//  Selection Transfer 2.0
+//  Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//	Creation Date:	September 06, 2001
+//	Fix Date:	December 7, 2002
+//
+//
+//  Description:
+//	Copy Selection procedure
+//	
+//	Copies vertices or CV selection from source object into destination object(s).
+//	Select vertices or CV of the same type object and add to selection any objects.
+//
+//	Call `copySelection`
+
+
+global proc int copySelection ( )
+{
+	string $objects[] = `ls -sl -type transform`;
+	string $shapes[] = `ls -dag -s $objects`;
+	
+	string $cp[] = `filterExpand -sm 31 -sm 28`;
+	int $cpSize = size($cp);
+	
+	if (($cpSize < 1) || (size($objects) == 0))
+		error("Select Control Vertices or Polygon Vertices and destination surface!");
+		
+	if (1 < ((size(`ls -type mesh $shapes`) > 0) +
+		(size(`ls -type nurbsSurface $shapes`) > 0) +
+		(size(`ls -type nurbsCurve $shapes`) > 0)))
+		error("Select the same type objects only!");
+	
+	string $cpShape[] = `listRelatives -p -f $cp`;
+	$cpShape = `stringArrayRemoveDuplicates $cpShape`;
+	
+	if (size($cpShape) > 1)
+		error("Select Vertices of single object!");
+	
+	string $cpType[] = `ls -st $cpShape[0]`;
+	string $objectsType[] = `ls -st $shapes[0]`;
+	
+	if ($objectsType[1] != $cpType[1])
+		error("Select the same type objects only!");
+	
+	string $index[];
+	
+	string $cmd;
+	
+	waitCursor -state 1;
+	
+	if ($objectsType[1] != "nurbsSurface")
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $index);
+			for ($object in $objects)
+				$cmd += " " + ($object + ".cp[" + $index[1] + "]");
+		}
+	else
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $index);
+			for ($object in $objects)
+				$cmd += " " + ($object + ".cv[" + $index[1] + "][" + $index[2] + "]");
+		}
+		
+	eval ("select -r" + $cmd);
+	
+	waitCursor -state 0;
+	
+	return size(`ls -sl`);
+}

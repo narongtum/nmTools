@@ -1,0 +1,325 @@
+// Copyright (C) 2000-2002 Michael Bazhutkin - Copyright (C) 2000 studio Klassika
+// www.geocites.com/bazhutkin
+// bazhutkin@mail.ru
+//
+//  Mirror Shape 2.0
+//  Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:	April 15, 2001
+//  Fix Date:		December 7, 2002
+//
+//  Description:
+//	mirrorShape procedure
+//
+//	mirrorShape [axis] [identical] [invert] [target] [tolerance]
+//
+//	axis = YZ (The default plane) XZ || XY
+//
+//	tolerance =~ 0.001
+//
+//	identical = 0	->	mirror effect
+//	identical = 1	->	symmetric effect
+//
+//	invert = 0	->	mirror from the positive side to the negative
+//	invert = 1	->	mirror from the negative side to the positive
+//
+//	target = 0	->	result into non symmetric object
+//	target = 1	->	result into symmetric object
+//
+//	Select source object (NURBS surface, NURBS spline, Polygon)
+//	or its components (vertices) and symmetric object.
+//
+//	Use MEL command `performMirrorShape 1` for Mirror Shape Option Box
+
+
+global proc mirrorShape (string $axis, int $identical, int $invert, int $target, float $tolerance)
+{
+	string $objects[] = `ls -sl -type transform`;
+	string $shapes[] = `ls -dag -s $objects`;
+
+	string $cp[] = `filterExpand -sm 31 -sm 28`;
+	int $cpSize = size($cp);
+
+	if (!((($cpSize == 0) && (size($objects) == 2)) || (($cpSize > 0) && (size($objects) == 1))))
+		error("Select source object or its components and symmetric object!");
+
+	if (1 < ((size(`ls -type mesh $shapes`) > 0) +
+		(size(`ls -type nurbsSurface $shapes`) > 0) +
+		(size(`ls -type nurbsCurve $shapes`) > 0)))
+		error("Select the same type objects only!");
+
+	string $cpShape[] = `listRelatives -p -f $cp`;
+	$cpShape = `stringArrayRemoveDuplicates $cpShape`;
+
+	if (size($cpShape) > 1)
+		error("Select Vertices of single object!");
+
+	string $cpType[] = `ls -st $cpShape[0]`;
+	string $objectsType[] = `ls -st $shapes[0]`;
+
+	if (($cpSize > 0) && ($objectsType[1] != $cpType[1]))
+		error("Select the same type objects only!");
+
+	waitCursor -state 1;
+
+	string $nameDef, $nameSym, $nameTarget;
+
+	if ($cpSize == 0)
+	{	$nameDef = $shapes[0];
+		$shapes = `ls -dag -s $objects[1]`;
+		$cp = `ls -fl ($nameDef + ".cp[*]")`;
+		$cpSize = size($cp);
+	}
+	else
+		$nameDef = $cpShape[0];
+
+	$nameSym = $shapes[0];
+
+	if ($target == 1)
+		$nameTarget = $nameSym;
+	else	$nameTarget = $nameDef;
+		
+	int $cpLink[];
+	string $cpIndex[];
+
+	if ($objectsType[1] != "nurbsSurface")
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $cpIndex);
+			$cpLink[int($cpIndex[1])] = 1;
+		}
+	else
+	{	$cpInV = `getAttr ($nameDef + ".spansV")` + `getAttr ($nameDef + ".degreeV")`;
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $cpIndex);
+			$cpLink[int($cpInV * int($cpIndex[1]) + int($cpIndex[2]))] = 1;
+		}
+	}
+
+	int $cpCount, $cpCountDef;
+
+	int $cpLinkZeroCount, $cpLinkPosCount, $cpLinkNegCount;
+	int $cpLinksZero[], $cpLinksPositive[], $cpLinksNegative[];
+	int $cpLinksSortPositive[], $cpLinksSortNegative[];
+
+	int $cpIndexLink;
+	int $flag, $flagGlobal;
+
+	float $cpBuf[3];
+
+	vector $cpSymArr[], $cpDefArr[], $cpLocArr[], $cpSortArr[], $cpTarArr[];
+	vector $cpBufVec;
+
+	int $assist = 0;
+	vector $signVec = <<-1, 1, 1>>;
+	vector $zeroVec = <<0, 1, 1>>;
+	
+	$axis = toupper($axis);
+	
+	if ($axis == "XZ")
+	{	$assist = 1;
+		$signVec = <<1, -1, 1>>;
+		$zeroVec = <<1, 0, 1>>;
+	}
+
+	if ($axis == "XY")
+	{	$assist = 2;
+		$signVec = <<1, 1, -1>>;
+		$zeroVec = <<1, 1, 0>>;
+	}
+	
+	$cpCount = `getAttr -size ($nameSym + ".cp")`;
+	$cpCountDef = `getAttr -size ($nameDef + ".cp")`;
+
+	// Sort points
+
+	for ($currentPoint = 0; $currentPoint < $cpCount; $currentPoint++)
+	{
+		$cpBuf = `getAttr ($nameTarget + ".cp[" + $currentPoint + "]")`;
+		$cpLocArr[$currentPoint] = <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+		
+		$cpBuf = `xform -q -t -os ($nameDef + ".cp[" + $currentPoint +"]")`;
+		$cpDefArr[$currentPoint] = <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+		
+		$cpBuf = `xform -q -t -os ($nameSym + ".cp[" + $currentPoint +"]")`;
+		$cpSymArr[$currentPoint] = <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+		
+		if (abs($cpBuf[$assist]) < $tolerance) 
+		{	$cpLinksZero[$cpLinkZeroCount] = $currentPoint;
+			$cpLinkZeroCount++;
+		}
+		else
+		{
+			if ($cpBuf[$assist] > 0)
+			{	$cpLinksPositive[$cpLinkPosCount] = $currentPoint;
+				$cpSortArr[$currentPoint] = <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+				$cpLinkPosCount++;
+			}
+
+			else
+			{	$cpLinksNegative[$cpLinkNegCount] = $currentPoint;
+				$cpSortArr[$currentPoint] = <<$signVec.x * $cpBuf[0], $signVec.y * $cpBuf[1], $signVec.z * $cpBuf[2]>>;
+				$cpLinkNegCount++;
+			} 
+		}
+	}
+
+	// Looking for points
+	
+	int $cpLinkCount;
+		
+	for ($currentPoint = 0; $currentPoint < $cpLinkPosCount; $currentPoint++)
+	{
+		$flag = 0;
+
+		for ($lookPoint = $cpLinkCount; $lookPoint < $cpLinkNegCount; $lookPoint++)
+			if (mag($cpSortArr[$cpLinksPositive[$currentPoint]] - $cpSortArr[$cpLinksNegative[$lookPoint]]) < $tolerance)
+			{
+				$cpLinksSortPositive[$cpLinkCount] = $cpLinksPositive[$currentPoint];
+				$cpLinksSortNegative[$cpLinkCount] = $cpLinksNegative[$lookPoint];
+				$cpLinksNegative[$lookPoint] = $cpLinksNegative[$cpLinkCount];
+				$cpLinksNegative[$cpLinkCount] = $cpLinksSortNegative[$cpLinkCount];
+				$cpLinkCount++;
+				$flag++;
+				break;
+			}
+
+		if ($flag == 0) $flagGlobal = 1;
+	}
+
+	$cpLinksPositive = $cpLinksSortPositive;
+	$cpLinksNegative = $cpLinksSortNegative;
+	
+	if ($target == 1)
+		$cpTarArr = $cpSymArr;
+	else	$cpTarArr = $cpDefArr;
+	
+	// Replace points (new -old + local)
+
+	int $cpCountMirror, $cpCountChange;
+	
+	if ($identical == 0)
+	{
+		for ($currentPoint = 0; $currentPoint < $cpLinkZeroCount; $currentPoint++)
+		{	if ($cpLink[$cpLinksZero[$currentPoint]] > 0) 
+			{	
+				$cpCountMirror++;
+				$cpBufVec = $cpDefArr[$cpLinksZero[$currentPoint]];
+				$cpBufVec = <<($signVec.x * $cpBufVec.x), ($signVec.y * $cpBufVec.y), ($signVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksZero[$currentPoint]];
+				if (mag($cpBufVec) > $tolerance)
+				{	$cpLocArr[$cpLinksZero[$currentPoint]] += $cpBufVec;
+					eval("setAttr " + $nameTarget + ".cp[" + $cpLinksZero[$currentPoint] + "]" + $cpLocArr[$cpLinksZero[$currentPoint]]);
+					$cpCountChange++;
+				}
+			}
+		}
+
+		for ($currentPoint = 0; $currentPoint < $cpLinkCount; $currentPoint++)
+		{	if (($cpLink[$cpLinksNegative[$currentPoint]] + $cpLink[$cpLinksPositive[$currentPoint]]) > 0)
+			{	
+				$cpCountMirror += 2;
+				$cpBufVec = $cpDefArr[$cpLinksPositive[$currentPoint]];
+				$cpBufVec = <<($signVec.x * $cpBufVec.x), ($signVec.y * $cpBufVec.y), ($signVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksNegative[$currentPoint]];
+				if (mag($cpBufVec) > $tolerance)
+				{	$cpLocArr[$cpLinksNegative[$currentPoint]] += $cpBufVec;
+					eval("setAttr " + $nameTarget + ".cp[" + $cpLinksNegative[$currentPoint] + "]" + $cpLocArr[$cpLinksNegative[$currentPoint]]);
+					$cpCountChange++;
+				}
+				$cpBufVec = $cpDefArr[$cpLinksNegative[$currentPoint]];
+				$cpBufVec = <<($signVec.x * $cpBufVec.x), ($signVec.y * $cpBufVec.y), ($signVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksPositive[$currentPoint]];
+				if (mag($cpBufVec) > $tolerance)
+				{	$cpLocArr[$cpLinksPositive[$currentPoint]] += $cpBufVec;
+					eval("setAttr " + $nameTarget + ".cp[" + $cpLinksPositive[$currentPoint] + "]" + $cpLocArr[$cpLinksPositive[$currentPoint]]);
+					$cpCountChange++;
+				}
+			}
+		}
+	}
+	else
+	{
+		for ($currentPoint = 0; $currentPoint < $cpLinkZeroCount; $currentPoint++)
+		{
+			if ($cpLink[$cpLinksZero[$currentPoint]] > 0)
+			{
+				$cpCountMirror++;
+				$cpBufVec = $cpDefArr[$cpLinksZero[$currentPoint]];
+				$cpBufVec = <<($zeroVec.x * $cpBufVec.x), ($zeroVec.y * $cpBufVec.y), ($zeroVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksZero[$currentPoint]];
+				if (mag($cpBufVec) > $tolerance)
+				{	$cpLocArr[$cpLinksZero[$currentPoint]] += $cpBufVec;
+					eval("setAttr " + $nameTarget + ".cp[" + $cpLinksZero[$currentPoint] + "]" + $cpLocArr[$cpLinksZero[$currentPoint]]);
+					$cpCountChange++;
+				}
+				
+			}
+		}
+
+		if (!$invert)
+		{
+			for ($currentPoint = 0; $currentPoint < $cpLinkCount; $currentPoint++)
+			{	if (($cpLink[$cpLinksNegative[$currentPoint]] + $cpLink[$cpLinksPositive[$currentPoint]]) > 0)
+				{
+					$cpCountMirror += 2;
+					$cpBufVec = $cpDefArr[$cpLinksPositive[$currentPoint]];
+					$cpBufVec = <<($signVec.x * $cpBufVec.x), ($signVec.y * $cpBufVec.y), ($signVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksNegative[$currentPoint]];
+					if (mag($cpBufVec) > $tolerance)
+					{	$cpLocArr[$cpLinksNegative[$currentPoint]] += $cpBufVec;
+						eval("setAttr " + $nameTarget + ".cp[" + $cpLinksNegative[$currentPoint] + "]" + $cpLocArr[$cpLinksNegative[$currentPoint]]);
+						$cpCountChange++;
+					}
+					$cpBufVec = $cpDefArr[$cpLinksPositive[$currentPoint]] - $cpTarArr[$cpLinksPositive[$currentPoint]];
+					if (mag($cpBufVec) > $tolerance)
+					{	$cpLocArr[$cpLinksPositive[$currentPoint]] += $cpBufVec;
+						eval("setAttr " + $nameTarget + ".cp[" + $cpLinksPositive[$currentPoint] + "]" + $cpLocArr[$cpLinksPositive[$currentPoint]]);
+						$cpCountChange++;
+					}	
+				}
+			}
+		}
+		else
+		{
+			for ($currentPoint = 0; $currentPoint < $cpLinkPosCount; $currentPoint++)
+			{	if (($cpLink[$cpLinksNegative[$currentPoint]] + $cpLink[$cpLinksPositive[$currentPoint]]) > 0)
+				{
+					$cpCountMirror += 2;
+					$cpBufVec = $cpDefArr[$cpLinksNegative[$currentPoint]];
+					$cpBufVec = <<($signVec.x * $cpBufVec.x), ($signVec.y * $cpBufVec.y), ($signVec.z * $cpBufVec.z)>> - $cpTarArr[$cpLinksPositive[$currentPoint]];
+					if (mag($cpBufVec) > $tolerance)
+					{	$cpLocArr[$cpLinksPositive[$currentPoint]] += $cpBufVec;
+						eval("setAttr " + $nameTarget + ".cp[" + $cpLinksPositive[$currentPoint] + "]" + $cpLocArr[$cpLinksNegative[$currentPoint]]);
+						$cpCountChange++;
+					}
+					$cpBufVec = $cpDefArr[$cpLinksNegative[$currentPoint]] - $cpTarArr[$cpLinksNegative[$currentPoint]];
+					if (mag($cpBufVec) > $tolerance)
+					{	$cpLocArr[$cpLinksNegative[$currentPoint]] += $cpBufVec;
+						eval("setAttr " + $nameTarget + ".cp[" + $cpLinksNegative[$currentPoint] + "]" + $cpLocArr[$cpLinksPositive[$currentPoint]]);
+						$cpCountChange++;
+					}
+				}
+			}
+		}
+	}
+	
+	// Update object state
+
+	move -r 0 0 0 ($nameTarget + ".cp[0]");
+
+	waitCursor -state 0;
+
+	select $nameTarget;
+
+	print ("// ");
+	print ("Result: " + $cpCountChange + " mirrored: " + $cpCountMirror + " symmetric vertices of " + $cpSize + " selected.\n");
+
+	string $warningStr;
+
+	$shapes = `ls $nameSym`; $nameSym = $shapes[0];
+	$shapes = `ls $nameDef`; $nameDef = $shapes[0];
+	
+	if (($cpLinkPosCount != $cpLinkNegCount) || ($flagGlobal == 1))
+		$warningStr = "`" + $nameSym + "` is not symmetrical shape. ";
+
+	if ($cpCountDef != $cpCount)
+		$warningStr += "There are different vertices amount in `" + $nameSym + "` and `" + $nameDef + "` objects.";
+
+	if ($warningStr != "") warning ($warningStr);
+}

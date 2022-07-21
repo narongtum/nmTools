@@ -1,0 +1,11 @@
+# already move to offical rigTools
+
+open and run the code
+
+1. cut head poly to the grp name it "facialBshBase_grp"
+name polygon "facialBase_ply"
+
+2. run this "D:\True_Axion\Tools\riggerTools\python\nomanTools\09_blendShape Tools\000_nmBlendShapeTools_forPly_v004.py"
+
+
+3. and this 025_runDupPoly_for_polygon_v008

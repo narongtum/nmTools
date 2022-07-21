@@ -1,0 +1,115 @@
+// Copyright (C) 2000-2002 Michael Bazhutkin - Copyright (C) 2000 studio Klassika
+// www.geocites.com/bazhutkin
+// bazhutkin@mail.ru
+//
+//  Copy Shape 2.0
+//  Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date:	March 16, 2001
+//  Fix Date:		December 7, 2002
+//
+//
+//  Description:
+//	copyShape procedure
+//	Select NURBS or Polygonal source object or its components and destination object(s).
+//	Copies vertices position of first surface into destination object(s).
+//	Doesn't create additional node such as Transfer command!
+//
+//	Call `copyShape`
+
+global proc int copyShape ( )
+{
+	string $objects[] = `ls -sl -type transform`;
+	string $shapes[] = `ls -dag -s $objects`;
+	
+	string $cp[] = `filterExpand -sm 31 -sm 28`;
+	int $cpSize = size($cp);
+	
+	if (!((($cpSize == 0) && (size($objects) > 1)) || (($cpSize > 0) && (size($objects) > 0))))
+		error("Select source object or its components and destination object(s)!");
+		
+	if (1 < ((size(`ls -type mesh $shapes`) > 0) +
+		(size(`ls -type nurbsSurface $shapes`) > 0) +
+		(size(`ls -type nurbsCurve $shapes`) > 0)))
+		error("Select the same type objects only!");
+	
+	string $cpShape[] = `listRelatives -p -f $cp`;
+	$cpShape = `stringArrayRemoveDuplicates $cpShape`;
+		
+	if (size($cpShape) > 1)
+		error("Select Vertices of single object!");
+
+	string $cpType[] = `ls -st $cpShape[0]`;
+	string $objectsType[] = `ls -st $shapes[0]`;
+
+	if (($cpSize > 0) && ($objectsType[1] != $cpType[1]))
+		error("Select the same type objects only!");
+	
+	waitCursor -state 1;
+	
+	string $nameTarget, $nameSource;
+	
+	if ($cpSize == 0)
+	{	$nameSource = $shapes[0];
+		$cp = `ls -fl ($nameSource + ".cp[*]")`;
+		$cpSize = size($cp);
+		$objects = `ls -tail (size($objects) -1) $objects`;
+	}
+	else
+		$nameSource = $cpShape[0];
+	
+	int $cpLink[];
+	string $index[];
+	
+	if ($objectsType[1] != "nurbsSurface")
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $index);
+			$cpLink[$i] = int($index[1]);
+		}
+	else
+	{	$cpInV = `getAttr ($nameSource + ".spansV")` + `getAttr ($nameSource + ".degreeV")`;
+		for ($i = 0; $i < $cpSize; $i++)
+		{	tokenize ($cp[$i], "[]", $index);
+			$cpLink[$i] = $cpInV * int($index[1]) + int($index[2]);
+		}
+	}
+	
+	float $cpBuf[3];
+	vector $cpTarget;
+	int $cpSizeTarget;
+	int $cpSizeModify;
+	
+	for ($nameTarget in $objects)
+	{
+		$cpSizeTarget = `getAttr -size ($nameTarget + ".cp")`;
+	
+		for ($i = 0; $i < $cpSize; $i++)
+			if ($cpLink[$i] < $cpSizeTarget)
+			{
+				$cpBuf = `xform -q -t -os ($nameSource + ".cp[" + $cpLink[$i] +"]")`;
+				$cpTarget = <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+				
+				$cpBuf = `xform -q -t -os ($nameTarget + ".cp[" + $cpLink[$i] +"]")`;
+				$cpTarget -= <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+				
+				$cpSizeModify++;
+				
+				if (mag($cpTarget) > 0.0001)
+				{	
+					$cpBuf = `getAttr ($nameTarget + ".cp[" + $cpLink[$i] + "]")`;
+					$cpTarget += <<$cpBuf[0], $cpBuf[1], $cpBuf[2]>>;
+					setAttr ($nameTarget + ".cp[" + ($cpLink[$i]) + "]") ($cpTarget.x) ($cpTarget.y) ($cpTarget.z);
+				}
+		}
+		
+		// Update object state
+		move -r 0 0 0 ($nameTarget + ".cp[0]");
+	}
+	
+	select -r $objects;
+	
+	waitCursor -state 0;
+	
+	return $cpSizeModify;
+}

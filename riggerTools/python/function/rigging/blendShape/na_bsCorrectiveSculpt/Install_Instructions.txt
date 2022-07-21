@@ -1,0 +1,12 @@
+To install the Corrective Blendshape Model Helper, there is a 2 part process.
+
+
+Step 1 : Run runMe.bat
+
+Step 2 : drag runMe.mel into your Maya window. That will finish the setup process and add a button to your currently selected shelf.
+
+Be sure to do it in that order. If not, bad things will happen. Not really, but it won't work.
+
+That should be it. If you run in to problems or have any suggestions, email me at nalzay89@gmail.com. Happy Rigging.
+
+-Noah

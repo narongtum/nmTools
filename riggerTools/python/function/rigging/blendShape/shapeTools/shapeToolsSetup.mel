@@ -1,0 +1,49 @@
+// Copyright (C) 2000-2002 Michael Bazhutkin - Copyright (C) 2000 studio Klassika
+// www.geocites.com/bazhutkin
+// bazhutkin@mail.ru
+//
+//  Shape Tools Setup 2.0
+//  Script File
+//  MODIFY THIS AT YOUR OWN RISK
+//
+//  Creation Date: December 7, 2001
+//
+//  Description:
+//	Setup shapeToolSetup procedure
+//	for `performMirrorShape`, `copyShape`,
+//	`performMirrorSelection` and `copySelection` shelf buttons
+//
+//	Call `shapeToolSetup`
+
+
+global proc shapeToolsSetup()
+{  
+	global string $gShelfTopLevel;
+	if (`tabLayout -exists $gShelfTopLevel`)
+	{	shelfButton
+			-parent ($gShelfTopLevel + "|" + `tabLayout -q -st $gShelfTopLevel`)
+			-command "performMirrorShape 1"
+			-image1 "mirrorShape.xpm"
+			-annotation "Mirror Shape Options. Select source object or its components and symmetric object."
+			-label "Mirror Shape Options";
+		shelfButton
+			-parent ($gShelfTopLevel + "|" + `tabLayout -q -st $gShelfTopLevel`)
+			-command "evalEcho copyShape"
+			-image1 "copyShape.xpm"
+			-annotation "Copy Shape. Select source object or its components and destination object(s)."
+			-label "Copy Shape";
+		shelfButton
+			-parent ($gShelfTopLevel + "|" + `tabLayout -q -st $gShelfTopLevel`)
+			-command "performMirrorSelection 1"
+			-image1 "mirrorSelection.xpm"
+			-annotation "Mirror Selection Options. Select vertices and symmetric object if the object is not symmetric."
+			-label "Mirror Selection Options";
+		shelfButton
+			-parent ($gShelfTopLevel + "|" + `tabLayout -q -st $gShelfTopLevel`)
+			-command "evalEcho copySelection"
+			-image1 "copySelection.xpm"
+			-annotation "Copy Selection. Select CV or vertices and the destination object(s)."
+			-label "Copy Selection";
+	} else	
+			error "You need a shelf for `Mirror Shape Options`, `Copy Shape` and `Copy Selection` to work!";
+}

@@ -101,7 +101,7 @@ def createOffsetGrp( side , fingerName , numCtrl  , zroNam , offsetNam ):
 
 
 	
-	print '# Create offset grp...'
+	print ('# Create offset grp...')
 	return offsetLst
 
 
@@ -125,8 +125,8 @@ def creaePostStore(  nameSpace , side , fingerbehavior ):
 		if each != 'relax' and each != 'cup':
 			nameNode = mc.createNode( 'multiplyDivide', name = nameSpace  + each + side + '_mdv')
 			nameNodeGrp.append(nameNode)
-			print nameNode
-			print '\n'
+			print (nameNode)
+			print ('\n')
 
 			# if this side is LFT
 			# this is hardcode but i dunno what to do
@@ -191,7 +191,7 @@ def creRelax( side, finName  ,amp ):
 	mc.setAttr ( nameNode + '.input2X', 1	*-1	*amp	)
 	mc.setAttr ( nameNode + '.input2Y', 1.2	*-1	*amp	)
 	mc.setAttr ( nameNode + '.input2Z', 1.4	*-1	*amp	)
-	print nameNode
+	print (nameNode)
 		
 
 # [3.1] crerate cup node
@@ -202,7 +202,7 @@ def creCup( side, finName  ,amp ):
 	mc.setAttr ( nameNode + '.input2X', -1*amp	)
 	mc.setAttr ( nameNode + '.input2Y', -1*amp	)
 	mc.setAttr ( nameNode + '.input2Z', -1*amp	)
-	print nameNode
+	print (nameNode)
 
 
 
@@ -226,7 +226,7 @@ def _creStoVal( fingerName , numCtrl , side , axis , type ):
 		for num in range( numCtrl ):
 
 			nameDriv = mc.createNode( 'plusMinusAverage', name = finger  + str( num + 1 ).zfill(2) + type + axis + side + 'Offset' + '_pma' )
-			print 'Create Pma Node...' + nameDriv
+			print ('Create Pma Node...' + nameDriv)
 			offsetGrp.append(nameDriv)
 
 			# create amplify for tune rotation value
@@ -259,7 +259,7 @@ def _creStoVal( fingerName , numCtrl , side , axis , type ):
 			ampGrp.append(amplify.name)
 
 
-	print 'Create offset value.'
+	print ('Create offset value.')
 	return offsetGrp,ampGrp
 	
 
@@ -271,7 +271,7 @@ def connectToOffGrp( fingerName , fingerbehavior , numCtrl , side , offsetNam , 
 	# store == pma
 	# amp == double linear
 	store,ampGrp = _creStoVal( fingerName, numCtrl , side , axis , type )		
-	print 'This is for ' + axis + ' axis.'
+	print ('This is for ' + axis + ' axis.')
 
 	if type == 'translate':
 		type = 'translate'
@@ -286,12 +286,12 @@ def connectToOffGrp( fingerName , fingerbehavior , numCtrl , side , offsetNam , 
 	# Connect together
 	for sto , off , amp in zip( store, offsetNam ,ampGrp ):
 
-		print 'Connecting PMA >>> double ....'
+		print ('Connecting PMA >>> double ....')
 		print (	'%s.output1D' %sto , '%s.%s' %(amp, 'input1')  )
 		mc.connectAttr(	'%s.output1D' %sto , '%s.%s' %(amp, 'input1')  )
 
 		# add for keep adjustable fingle control
-		print 'Connecting double >>> offset group ....'
+		print ('Connecting double >>> offset group ....')
 		print (	'%s.%s' %(amp, 'output')  , '%s.%s.%s%s' %( off,type,type,axis ) )
 		mc.connectAttr(	'%s.%s' %(amp, 'output')  , '%s.%s.%s%s' %( off,type,type,axis ) )
 
@@ -308,7 +308,7 @@ def connectToOffGrp( fingerName , fingerbehavior , numCtrl , side , offsetNam , 
 # [6]
 def doCreateAttr( ctrlName , fingerbehavior ):
 	for each in fingerbehavior:
-		print '%s %s' %(ctrlName,each)
+		print ('%s %s' %(ctrlName,each))
 		mc.addAttr(ctrlName , longName = each, attributeType = 'double', defaultValue = 0)
 		mc.setAttr('%s.%s' %(ctrlName, each), keyable = True)
 	# lock and hide the translation,rotation attr
@@ -329,7 +329,7 @@ def doCreateAttr( ctrlName , fingerbehavior ):
 def _normalCon( nameSpace , ctrlName  , name , side):
 	# nameSpace = charName + elem
 	for each in ('X','Y','Z'):	
-		print '%s.%s'%(ctrlName,name )+' >>> '+ '%s%s%s_mdv.input1%s' %(nameSpace,name,side,each)
+		print ('%s.%s'%(ctrlName,name )+' >>> '+ '%s%s%s_mdv.input1%s' %(nameSpace,name,side,each))
 		mc.connectAttr('%s.%s'%(ctrlName, name), '%s%s%s_mdv.input1%s' %(nameSpace,name,side,each), force = True)
 
 
@@ -354,7 +354,7 @@ def normalConnect( nameSpace , ctrlName , fingerbehavior , side ):
 # connection for relax finger
 def conxAdv( ctrlName, side , finger = None, position = None):
 	for axis in ('X','Y','Z'):  
-		print 'conecting: %s.%s'%(ctrlName,finger) ,  '%s%s_mdv.input1%s' %(position,side,axis)
+		print ('conecting: %s.%s'%(ctrlName,finger) ,  '%s%s_mdv.input1%s' %(position,side,axis))
 		mc.connectAttr('%s.%s'%(ctrlName,finger), '%s%s_mdv.input1%s' %(position,side,axis), force = True)
 		
 
@@ -368,9 +368,9 @@ def connectPma( 	nameSpace 							,
 					numVal = None , axis = 'X' 					, 
 					type = 'rotate'  								):
 	# MDV >>> PMA
-	print '''\n
-	# = = = = = = = = = connect Plus minus average  = = = = = = = = = #
-	'''
+	print ('''\n
+		# = = = = = = = = = connect Plus minus average  = = = = = = = = = #
+		''')
 
 
 	numOfctrl = []
@@ -394,21 +394,21 @@ def connectPma( 	nameSpace 							,
 	# [_ctrl] >>> [   [ each finger behav ]_mdv  ] >>>  [   [ each offset grp ]_pma  ]
 	offsetVal = 'Offset'
 	# numOfctrl = ('0','1','2')
-	print '####################'
-	print numOfctrl
-	print '####################'
+	print( '####################')
+	print (numOfctrl)
+	print ('####################')
 	# 5 finger case
 	if len(fingerName) == 5:
-		print 'this is five finger'
+		print ('this is five finger')
 		for np, nc in zip( nameOfPost , numOfctrl):
-			print '####################'
-			print np
-			print nc
-			print '####################'
+			print ('####################')
+			print (np)
+			print (nc)
+			print ('####################')
 			if np != 'relax':
 
 				# design here what amp to pick					index_01_Rx_LFT
-				print  np + ' >>> connect '
+				print  (np + ' >>> connect ')
 				print ('%s%s%s_mdv.output.outputX' %(nameSpace,np,side) ,  '%sindex%s%s%s%s_pma.input1D[%s]' 	%( nameSpace, numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
 				print ('%s%s_mdv.output.outputY' %(np,side) ,  '%smiddle%s%s%s%s_pma.input1D[%s]' %( nameSpace, numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
 				print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%sthumb%s%s%s%s_pma.input1D[%s]' 	%( nameSpace,numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
@@ -429,10 +429,10 @@ def connectPma( 	nameSpace 							,
 	elif len(fingerName) == 3:
 		for np, nc in zip( nameOfPost , numOfctrl):
 			if np != 'relax':
-				print np
-				print fingerName
-				print np
-				print  'Connect %s finger here..' %np
+				print (np)
+				print (fingerName)
+				print (np)
+				print  ('Connect %s finger here..' %np)
 				print ( '%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 		%( fingerName[0],numVal , '%s' %type + axis , side , offsetVal , nc ) 		)
 				print ( '%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 		%( fingerName[1],numVal , '%s' %type + axis , side , offsetVal , nc ) 		)
 				print ( '%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 		%( fingerName[2],numVal , '%s' %type + axis , side , offsetVal , nc ) 		)
@@ -446,8 +446,8 @@ def connectPma( 	nameSpace 							,
 	elif len(fingerName) == 2:
 		for np, nc in zip( nameOfPost , numOfctrl):
 			if np != 'relax':
-				print numOfctrl
-				print 'connect %s%s each finger here' %(np,nc)
+				print (numOfctrl)
+				print ('connect %s%s each finger here' %(np,nc))
 				print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 	%(fingerName[0], numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
 				print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 	%(fingerName[1], numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
 				axis = axis.lower()
@@ -455,7 +455,7 @@ def connectPma( 	nameSpace 							,
 				mc.connectAttr('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' %( fingerName[1],numVal , '%s'%type + axis , side , offsetVal , nc ), force = True)
 
 
-	print '######   connect complete  ######   '
+	print ('######   connect complete  ######   ')
 		
 
 
@@ -480,9 +480,9 @@ def _connectForRelax( side, figName, finPst,  numVal, inputIndex, axis = 'X' ):
 # 'index01LFTOffset_pma'	
 # 10.1
 def doConnectRelax( side, figName, numCtrl, finPst = None , inputIndex = (2,3,4) ):
-	print '''\n
-	# = = = = = = = = = doConnect Relax = = = = = = = = = #
-	'''
+	print ('''\n
+		# = = = = = = = = = doConnect Relax = = = = = = = = = #
+		''')
 
 
 
@@ -499,12 +499,12 @@ def doConnectRelax( side, figName, numCtrl, finPst = None , inputIndex = (2,3,4)
 
 
 
-		print number
+		print (number)
 
 		_connectForRelax( side,figName, finPst, number ,inputIndex)
-		print 'connecting... %s ' %figName
+		print ('connecting... %s ' %figName)
 	
-	print '##### END of script ####'
+	print ('##### END of script ####')
 	
 
 
@@ -529,10 +529,10 @@ def connectSpreadPma( 	nameSpace 		,
 	axis = axis.lower()
 	# 'thumb','index','middle','ring','pinky' 
 	if len(fingerName) == 5:
-		print "	''thumb','index','middle','ring','pinky' ,   finger'	"
+		# print "	''thumb','index','middle','ring','pinky' ,   finger'	"
 		# except middle fingle
 		for np, nc in zip( nameOfPost , numOfctrl):	
-			print  np + 'spreadLFT_mdv >>> connect thumb01RzLFTOffset_pma'
+			print  (np + 'spreadLFT_mdv >>> connect thumb01RzLFTOffset_pma')
 			print ('%s%s%s_mdv.output.outputZ' %(nameSpace ,np,side) , 	'%s%s%s%s%s%s_pma.input1D[%s]' 	%(nameSpace, fingerName[0],numVal , 'R'+ axis , side , offsetVal , nc ) 		)
 			print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s%s_pma.inxxput1D[%s]' 	%(nameSpace, fingerName[1],numVal , 'R'+ axis , side , offsetVal , nc ) 		)
 			print ('%s%s_mdv.output.outputY' %(np,side) ,  '%s%s%s%s%s%s_pma.inxxxput1D[%s]' 	%( nameSpace,fingerName[2],numVal , 'R'+ axis , side , offsetVal , nc ) 		)
@@ -556,7 +556,7 @@ def connectSpreadPma( 	nameSpace 		,
 
 	elif len(fingerName) == 3:
 		# 'thumb','index','middle'
-		print 'This is 3 finger.'
+		print ('This is 3 finger.')
 		for np, nc in zip( nameOfPost , numOfctrl):	
 				
 				print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 	%( fingerName[0],numVal , '%s'%type + axis , side , offsetVal , nc ) 		)
@@ -573,9 +573,9 @@ def connectSpreadPma( 	nameSpace 		,
 		# 'thumb'
 		for np, nc in zip( nameOfPost , numOfctrl):	
 				
-				print  'connect thumb only spread finger here'
+				print  ('connect thumb only spread finger here')
 
-				print '###%s%s###' 	%(fingerName[0],numVal)
+				print ('###%s%s###' 	%(fingerName[0],numVal))
 
 				print ('%s%s_mdv.output.outputZ' %(np,side) ,  '%s%s%s%s%s_pma.input1D[%s]' 	%( fingerName[0], numVal , 'R'+ axis , side , offsetVal , nc ) 		)
 

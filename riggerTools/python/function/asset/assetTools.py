@@ -21,15 +21,20 @@ reload(ast)
 
 def replaceTex():
 # tools for autoplace texture by insert manual texture path
-	
-	texturePath = raw_input('place your new texture path:')
+
+
+	if MAYA_VERSION == '2018':
+		texturePath = raw_input('place your new texture path:')
+	elif MAYA_VERSION == '2023':
+		texturePath = input('place your new texture path:')
+
 	fileNode = mc.ls(type='file') # list type 'file' in scene
 	for f in fileNode: # loop for every fileNode
 		mc.select(f,r=True)
 		fullPaht = mc.getAttr('.fileTextureName')
-		print fullPaht
+		print (fullPaht)
 		textureName = fullPaht.split('/')[-1]
-		print textureName
+		print (textureName)
 		projectNewName = texturePath + '\\' + textureName 
 		mc.setAttr('.fileTextureName' , projectNewName, type='string')
 
@@ -45,7 +50,7 @@ def impRem():
 			allrefs[ref].importContents( removeNamespace = True )
 		except RuntimeError:
 			pass
-	print '\nImport and clear namespace ...'
+	print ('\nImport and clear namespace ...')
 
 
 

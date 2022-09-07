@@ -194,6 +194,15 @@ def findLastName(name):
 		return None
 
 
+def rawName(name):
+	lastname = name.split('_')
+	if len(lastname) == 2:
+		return lastname[0], lastname[1]
+	else:
+		return lastname
+
+
+
 
 def _findExtension(name):
 	''' adding maya lastname string '''
@@ -948,24 +957,36 @@ def getDagPath(node=None):
 	return dagPath
 
 def getLocalOffset(parent, child):
+	
 	parentWorldMatrix = getDagPath(parent).inclusiveMatrix()
 	childWorldMatrix = getDagPath(child).inclusiveMatrix()
-
+	# child World Matrix * invert parent World Matrix = child local matrix
+	# return child local matrix
 	return childWorldMatrix * parentWorldMatrix.inverse()
    
 
-def rotateOffset(tgt, dmpMtx):
+def rotateOffset(tgt, dmpMtx, mulMtx):
+	# TODO: Check euler to quad is enable
+	if not mc.pluginInfo('quatNodes', query=True, loaded=True):
+		mc.loadPlugin("quatNodes", qt=False)
+
+
+
 	# Create name 
 	eulQua = tgt + '_eulQua'
 	quaInv = tgt + '_quaInv'
 	quaPro = tgt + '_quaPro'
 	quaEul = tgt + '_quaEul'
+	# Add compose matrix
+	quaCom = tgt + '_compose'
 
 	# Create More Node
 	mc.createNode( 'eulerToQuat', n = eulQua )
 	mc.createNode( 'quatInvert', n = quaInv )
 	mc.createNode( 'quatProd', n = quaPro )
 	mc.createNode( 'quatToEuler', n = quaEul )
+
+	mc.createNode( 'composeMatrix', n = quaCom )# Add compose matrix for get offset orientation
 
 
 	# Rotate Part
@@ -975,13 +996,19 @@ def rotateOffset(tgt, dmpMtx):
 		logger.MayaLogger.info("This is maybe joint.")
 		mc.connectAttr( tgt + '.jointOrient', eulQua + '.inputRotate' )
 	elif mc.nodeType(tgt) == 'transform':
-		logger.MayaLogger.info("This is maybe mesh.")
+		logger.MayaLogger.info("This is maybe mesh or group.")
+
+		# Update more arttr for case joint(freezed) is parent grp is child
+		mc.connectAttr('{0}.rotate'.format(tgt) ,'{0}.inputRotate'.format(quaCom), f = True) # Add rotation value from driven
+		mc.disconnectAttr('{0}.rotate'.format(tgt) ,'{0}.inputRotate'.format(quaCom)) # No need to keep thr connection the value already add to channel 
+		mc.connectAttr('{0}.outputMatrix'.format(quaCom), '{0}.matrixIn[0]'.format(mulMtx)) # Connect rotation space to the MulMtx
+
 		mc.connectAttr( tgt + '.rotate', eulQua + '.inputRotate' )
+
+
 	else:
 		logger.MayaLogger.info("This is maybe something I don't know.")
 		mc.connectAttr( tgt + '.rotate', eulQua + '.inputRotate' )
-
-
 
 	mc.connectAttr( eulQua + '.outputQuat', quaInv + '.inputQuat' )
 	mc.connectAttr( dmpMtx + '.outputQuat', quaPro + '.input1Quat' )
@@ -1005,8 +1032,14 @@ def rotateOffset(tgt, dmpMtx):
 	# Final Connect
 	mc.connectAttr( quaEul + '.outputRotate', tgt + '.rotate')
 
+	return quaEul
 
-def parentMatrix( src, tgt, mo = True, t = True, r = True, s = True):
+
+def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = True):
+
+	# Add Another version at Core
+	# TODO : connectAttr -force head_gmbCtrl.rotateOrder head_bJnt_quaEul.inputRotateOrder;  connect rotate order
+
 	"""Alternate of constraint using matrix insted
 
 	Args:
@@ -1027,8 +1060,13 @@ def parentMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 	logger.MayaLogger.info('Start of %s module' %__name__)
 
 	# Create Name
-	mulMtx = tgt + '_mulMtx'
-	dmpMtx = tgt + '_dmpMtx'
+	print (tgt)
+	print (type(tgt))
+	print (src)
+	print (type(src))
+
+	mulMtx = tgt + '{0}_mulMtx'.format(tgt)
+	dmpMtx = tgt + '{0}_dmpMtx'.format(tgt)
 
 	# FUNC
 	# got call maya API for get object 
@@ -1042,7 +1080,9 @@ def parentMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 	#  Set and Connect
 	if mo == True:
 		mc.setAttr( mulMtx + '.matrixIn[0]', offMat , type = 'matrix')
-	mc.connectAttr( src + '.worldMatrix[0]', mulMtx + '.matrixIn[1]' )
+
+	print(type(src))
+	mc.connectAttr( '{0}.worldMatrix[0]'.format(src) , '{0}.matrixIn[1]'.format(mulMtx) )
 	
 	#  Find out Origin Parent
 	if mc.pickWalk( tgt , d = 'up')[0] == tgt:
@@ -1055,19 +1095,39 @@ def parentMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 	mc.setAttr( mulMtx + '.matrixIn[0]', offMat , type = 'matrix')
 	
 	mc.connectAttr( mulMtx + '.matrixSum', dmpMtx + '.inputMatrix' )
-	if r == True:
-		rotateOffset(tgt, dmpMtx)
+	if rotate == True:
+		quaEul_name = rotateOffset(tgt, dmpMtx, mulMtx)
+		# Connnect rotate order for prevent cause error
+		mc.connectAttr('{0}.rotateOrder'.format(src), '{0}.inputRotateOrder'.format(quaEul_name))
 	# Final Connect
-	if t == True:
+	if translate == True:
 		mc.connectAttr( dmpMtx + '.outputTranslate', tgt + '.translate')
-	if s == True:
+	if scale == True:
 		mc.connectAttr( dmpMtx + '.outputScale', tgt + '.scale')
 
-	print (' # # # # # # # # #  matrix parent complete # # # # # # # # # # # #  \n')
+
+	mc.select(tgt, r=True)
+
+
+	print (' # # # # # # # # #  Matrix parent complete # # # # # # # # # # # #  \n')
+
+
+
+
+
+def delMatrixConst(selected):
+	name = rawName(selected)
+	mc.delete('{0}_bJnt_mulMtx'.format(name[0]))
+	print (' # # # # # # # # #  Delete matrix parent complete # # # # # # # # # # # #  \n')
+
+
+
+
 
 
 # misc.parentSufficMatrix( child = 'bJnt' , parent = 'pxyJnt' , mo = True, w = 1, t = True, r = True, s = True )
 def parentSufficMatrix( child = '' , parent = '' , mo = True, w = 1, t = True, r = True, s = True):
+	logger.MayaLogger.info('Start of %s module' %__name__)
 	# constraint use prefix suffix only #
 	naming = '*_' + parent
 	proxyList = mc.ls( naming )
@@ -1080,8 +1140,8 @@ def parentSufficMatrix( child = '' , parent = '' , mo = True, w = 1, t = True, r
 
 	print ('\t\t\t### constraint matrix complete ###')
 
-
-def parentMulMatrix( src, tgt, mo = True, w = 1, t = True, r = True, s = True):
+# parent multi martix
+def parentMulMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 	''' parent constraint one source but multiple target matrix'''
 	
 	# Name
@@ -1109,6 +1169,7 @@ def parentMulMatrix( src, tgt, mo = True, w = 1, t = True, r = True, s = True):
 
 		#  Set and Connect
 		if mo == True:
+
 			mc.setAttr( offsetMtx + '.matrixIn[0]', offMat , type = 'matrix')
 
 		mc.connectAttr( parent + '.worldMatrix[0]', offsetMtx + '.matrixIn[1]' )
@@ -1131,7 +1192,7 @@ def parentMulMatrix( src, tgt, mo = True, w = 1, t = True, r = True, s = True):
 	mc.connectAttr( mulMtx + '.matrixSum', dmpMtx + '.inputMatrix' )
 	# 
 	if r == True:
-		rotateOffset(tgt, dmpMtx)
+		rotateOffset(tgt, dmpMtx, mulMtx)
 	if t == True:
 		mc.connectAttr( dmpMtx + '.outputTranslate', tgt + '.translate')
 	if s == True:
@@ -1141,13 +1202,13 @@ def parentMulMatrix( src, tgt, mo = True, w = 1, t = True, r = True, s = True):
 
 
 # ex: parentThis()
-def parentThis( mo = True, w = 1, t = True, r = True, s = True):
+def parentThis( mo = True, t = True, r = True, s = True):
 	''' select source and targer '''
 	sel = mc.ls(sl=1)
 	if len(sel) > 2:
 		child = sel[-1]        
 		del sel[-1]
-		parentMulMatrix( src = sel , tgt = child,  mo = mo, w = w, t = t, r = r, s = s)
+		parentMulMatrix( src = sel , tgt = child,  mo = mo, t = t, r = r, s = s)
 		print (sel)
 	elif len(sel) == 2:
 		print (sel)

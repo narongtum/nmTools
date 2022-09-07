@@ -8,6 +8,9 @@
 
 # male alway on top at line 244
 
+from function.framework.reloadWrapper import reloadWrapper as reload
+
+
 import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
@@ -16,15 +19,15 @@ logger.info('Start of %s module' %__name__)
 
 import maya.cmds as mc
 
-MAYA_VERSION = mc.about(v=True)
+MAYA_VERSION = int(mc.about(v=True))
 
-print (MAYA_VERSION)
+print(MAYA_VERSION)
 type(MAYA_VERSION)
 
 from function.framework.Qtpy.Qt import QtCore, QtGui, QtWidgets
 from function.rigging.util import misc as misc
 
-if MAYA_VERSION == '2022':
+if MAYA_VERSION >= 2022:
 	import importlib
 	importlib.reload( misc )
 else:
@@ -76,7 +79,7 @@ import maya.OpenMayaUI as OpenMayaUI
 
 def getMayaMainWindow():# still fail why ?
 	main_window_ptr = OpenMayaUI.MQtUtil.mainWindow() # find maya pointer
-	if MAYA_VERSION == '2022':
+	if MAYA_VERSION >= 2022:
 		pointer = wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 	else:
 		pointer = wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
@@ -293,7 +296,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			if selection:
 				for each in selection:
 					# convert unicode to ascii
-					each = each.encode('ascii')
+					# each = each.encode('ascii')
+					each = str(each)
 					# disable for now
 					lastname = misc._findExtension(each)
 					# lastname = '_ply'
@@ -313,7 +317,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			self.suffix_txt = self.suffix_txtField.text()
 			for each in selection:
 				# convert unicode to ascii
-				each = each.encode('ascii')
+				# each = each.encode('ascii')
+				each = str(each)
 
 				mc.rename(each ,each + self.suffix_txt )
 
@@ -418,7 +423,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				# # # # # # # # # # # # 
 
 
-				if MAYA_VERSION == '2022':
+				if MAYA_VERSION >= 2022:
 					if type(member) in [bytes, str]:
 						logger.info('This is string of python3.')
 

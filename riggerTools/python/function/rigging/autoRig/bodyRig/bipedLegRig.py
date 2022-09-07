@@ -51,8 +51,10 @@ logger.setLevel(logging.DEBUG)
 
 
 def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
-					ikPosi, jnt_grp, footAttr, productionType,ctrlShape,
-					stickNam, lower_bJnt ,middle_bJnt , upper_bJnt , ikhAll_name , stretchEndName_psCon):
+					ikPosi, # foot, ankle, heel
+					jnt_grp, footAttr, productionType,ctrlShape,
+					stickNam, lower_bJnt ,middle_bJnt , upper_bJnt, 
+					ikhAll_name , stretchEndName_psCon):
 
 	# Then create fool roll behavior
 	core.makeHeader(	'Start of %s%s Rig' %('footRollRig',side)	)
@@ -279,6 +281,7 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 		ankleIk_ctrl.name = nameSpace + region + ctrlType + side + '_ctrl'	
 		ikZro_grp.name = nameSpace + region  + ctrlType + side + 'Zro_grp'
 		ankleIkGmbl_ctrl.name  = nameSpace + region + ctrlType + side + '_gmbCtrl' 
+
 	logger.info(ankleIk_ctrl.name)
 
 
@@ -314,26 +317,33 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	# Attention 3
 	# arm Rig must be same code 
 
+	
+
 	try:
+		# Delete old parent (Delete and re constraint for solve ik stretchy problem)
+		logger.info('Delete and re constraint for solve ik stretchy problem.')
+		mc.delete( stretchEndName_psCon )
+
 		if ikPosi== 'foot' or ikPosi == 'animalFoot':
-
-			# Delete old parent 
-			mc.delete( stretchEndName_psCon )
-
 			# snap zro of ik grp
 			ikZro_grp.maSnap ( ball_ikJnt , pos = True )
-
-			# And reparent locator again
-			logger.info('.a .b .c .d .e .f .g')
-			logger.info(stretchEndName_psCon)
-
-			endLoc = stretchEndName_psCon.replace('_parCons' , '_loc')
-			# endLoc = 'ankle'+ 'EndDist' + side + '_loc'
-			mc.parentConstraint( ankleIk_ctrl.name , endLoc , mo = 1, w = 1 , name = stretchEndName_psCon )
-			# mc.parentConstraint( ankleIk_ctrl.name , endLoc , mo = 1, w = 1 , name = part + 'EndDist' + side + '_parCons')
-
 		elif ikPosi == 'ankle':
 			ikZro_grp.maSnap ( ankle_ikJnt , pos = True)
+		elif ikPosi == 'heel':
+			ikZro_grp.maSnap ( 'heel{0}_tmpJnt'.format(side) , pos = True)
+		elif ikPosi == 'custom':
+			ikZro_grp.maSnap ( 'customFoot{0}_tmpJnt'.format(side), pos = True)
+
+		# And reparent locator again
+		logger.info('Placeing locator for IK handle.')
+		logger.info(stretchEndName_psCon)
+
+		endLoc = stretchEndName_psCon.replace('_parCons' , '_loc')
+		# endLoc = 'ankle'+ 'EndDist' + side + '_loc'
+		mc.parentConstraint( ankleIk_ctrl.name , endLoc , mo = 1, w = 1 , name = stretchEndName_psCon )
+		# mc.parentConstraint( ankleIk_ctrl.name , endLoc , mo = 1, w = 1 , name = part + 'EndDist' + side + '_parCons')
+
+
 	except :
 		mc.error( 'Please Check attribute %s in rig_grp.' %stretchEndName_psCon )
 		return None
@@ -542,6 +552,14 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	elif ikPosi == 'foot' or ikPosi == 'animalFoot':# for animal case
 		offset_null.maSnap( ankle_bJnt , position = True , rotation = False , scale = True )
 		offset_parCons = core.parentConstraint( ankle_bJnt , offset_null , mo = True)
+	elif ikPosi == 'heel':
+		offset_null.maSnap( 'heel{0}_tmpJnt'.format(side) , position = True , rotation = True , scale = True )
+		offset_parCons = core.parentConstraint( 'heel{0}_tmpJnt'.format(side)  , offset_null , mo = True)
+	elif ikPosi == 'custom':
+		offset_null.maSnap( 'customFoot{0}_tmpJnt'.format(side) , position = True , rotation = True , scale = True )
+		offset_parCons = core.parentConstraint( 'customFoot{0}_tmpJnt'.format(side)  , offset_null , mo = True)
+	else:
+		mc.error('There are no Leg part for attatch.')
 	
 
 
@@ -655,7 +673,7 @@ def bipedLegRigExt(
 					ribbonRes = 'high'	,				
 					ribbonName = ('upLeg', 'lwrLeg'),	
 					charScale = 1	,					
-					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle'
+					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle' of 'heel' or 'custom'
 					keepFkIkBoth = True	,# keep fk/ik ctrl visibility both or not
 					povShape = 'pyramid' ,# choice pyramid or sphereAxis
 					productionType = 'game' ,

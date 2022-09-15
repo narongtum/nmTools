@@ -21,26 +21,7 @@ reload(misc)
 
 
 # Reload module
-
-try:
-	reload  # Python 2.7
-	print('This might be python 2.7')
-except NameError:
-	try:
-		from importlib import reload  # Python 3.4+
-		print('Python 3.4+')
-	except ImportError:
-		from imp import reload  # Python 3.0 - 3.3
-		print('Python 3.0 - 3.3')
-
-
-
-
-
-
-
-
-from function.framework.reloadWrapper import reloadWrapper as rlw
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 
 
@@ -61,7 +42,7 @@ import maya.mel as mel
 
 
 from function.pipeline import logger 
-rlw(logger)
+reload(logger)
 
 
 class fileToolsLogger(logger.MayaLogger):
@@ -595,7 +576,7 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 			subName_fixed = mc.getAttr("rig_grp.asset_name")
 			fileToolsLogger.info('This is having a asset name: {0}'.format(subName_fixed))
 		else:
-			fileToolsLogger.warning('There are no asset name.')
+			fileToolsLogger.warning('There are no asset name in rig_grp.')
 			return False
 
 
@@ -806,9 +787,51 @@ def impRem():
 
 
 
+def remove_unused_influences(skinCls, targetInfluences=[]):
+	'''
+	Snippet to removeUnusedInfluences in Autodesk Maya using Python.
+	The MEL version runs slowly, over every influence one at a time.
+	"targetInfluences" allows you to directly specify which influences to remove.
+	This will only remove targets which are not currently being used.
+	'''
+	# mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
+	skinCls = []
+	targetInfluences=[]
+	print(type(skinCls))
+	allInfluences = mc.skinCluster(skinCls, q=True, inf=True)
+	weightedInfluences = mc.skinCluster(skinCls, q=True, wi=True)
+	unusedInfluences = [inf for inf in allInfluences if inf not in weightedInfluences]
+	if targetInfluences:
+	    unusedInfluences = [
+	            inf for inf in allInfluences
+	            if inf in targetInfluences
+	            if inf not in weightedInfluences
+	            ]
+	mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
 
 
 
+def do_remove_unused_influences(suffix = '*_skc'):
+	all_poly_skinCls = mc.ls(suffix)
+
+	# get all poly
+	#skinCls = 'body_new02_ply'
+	
+
+
+	if all_poly_skinCls:
+
+		for skinCls in all_poly_skinCls:
+			allInfluences = mc.skinCluster(skinCls, q=True, inf=True)
+			weightedInfluences = mc.skinCluster(skinCls, q=True, wi=True)
+			unusedInfluences = [inf for inf in allInfluences if inf not in weightedInfluences]
+			mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
+			for each in unusedInfluences:
+				print ('Remove Unused Influences for {0} of {1} skinCluster'.format(each, skinCls))
+
+	else:
+		print ('There are noting to remove.')
+		return False
 
 
 
@@ -847,6 +870,14 @@ def localPublish( mayafileType = 'ma' ):
 	# count joint
 	countJnt()
 
+	from ngSkinTools2.operations import removeLayerData
+	# remove all ngSkinTools custom nodes in a scene
+	removeLayerData.removeCustomNodes()
+	print('Delete ngSkinTools2...\n')
+
+	# Remove unused influences
+	# do_remove_unused_influences(suffix = '*_skc')
+
 	# saving
 	# savingAsset( mode = 'local' )
 	noCareSavAsset( mode = 'local' , mayaFile = mayafileType )
@@ -864,7 +895,7 @@ def globalPublish(fixedName = False):
 	mesh = mc.ls(type = 'mesh')
 	meshName = mc.listRelatives(mesh[0], allParents = True)[0]
 	mc.select(meshName , r = True)
-	
+
 
 	# remove unused ref
 	remUnRef()

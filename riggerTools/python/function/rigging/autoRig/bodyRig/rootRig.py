@@ -23,7 +23,7 @@ def createMasterGrp( nameSpace = '' , charScale = ''):
 
 	
 
-	part = 'master controller'
+	part = 'Master controller'
 
 
 	core.makeHeader('Start of %s rig' %part)
@@ -120,6 +120,11 @@ def createMasterGrp( nameSpace = '' , charScale = ''):
 		# ikJnt_grp.attr(attr).lockHide()
 		noTouch_grp.attr(attr).lockHide()
 
-	
+	# Add asset data attr
+	rig_grp.addAttribute( attributeType = 'enum', en = 'Player:Weapon', longName = 'asset_type', keyable = False   )
+	rig_grp.addAttribute( dataType = 'string' , longName = 'asset_name', keyable = False )
+	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_skin', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
+	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_material', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
+
 	logger.info('#### End of %s Rig ####' %(part))
 	print('\n\n\n\n\n')

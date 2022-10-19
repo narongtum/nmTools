@@ -566,18 +566,18 @@ def savingAsset(mode = 'local'):
 
 
 # Execute saving file
-def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
-	
-	
+def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False):
 
-	# use Fixed name just in case
 	if fixedName:
-		if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name"):
+		# use Fixed name just in case
+		if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != '':
 			subName_fixed = mc.getAttr("rig_grp.asset_name")
+			
 			fileToolsLogger.info('This is having a asset name: {0}'.format(subName_fixed))
 		else:
 			fileToolsLogger.warning('There are no asset name in rig_grp.')
-			return False
+			# return False
+			
 
 
 
@@ -588,7 +588,9 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 
 	if fixedName:
 		subName = subName_fixed
+		
 	else:
+		
 		'''
 		fileName = fullPath.split('/')[-1]
 		# remove [-2] step and [-1] ext entites
@@ -596,14 +598,12 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 		# got file name without ext
 		subName =   fileName.replace(ext,'')
 		'''
-
-
 		sac = Scene()
 		fileName = sac.get_scene_name()
 		subName = fileName.split('.')[0]
 
 
-		fileToolsLogger.debug('Hey!!! this is subName:  [{0}]'.format(subName))
+		fileToolsLogger.debug('This is subName:  [{0}]'.format(subName))
 
 
 
@@ -614,7 +614,7 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 		localPath = 'hero\\'
 		SAVE_PATH = assetPath + localPath + subName
 
-		fileToolsLogger.debug('Hey!!! look at this bro:  [%s]    [%s]' %(assetPath,subName))
+		fileToolsLogger.debug('This is path file:  [%s]    [%s]' %(assetPath,subName))
 
 		# if this folder not exists create folder
 		checkExistFolder( filename = SAVE_PATH )
@@ -630,7 +630,7 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 		mc.file( rename = SAVE_PATH )
 		mc.file( save = True, type = fileType )
 
-		fileToolsLogger.info('file has been saved at: %s.%s' %(SAVE_PATH,mayaFile))
+		fileToolsLogger.info('File has been saved at: %s.%s' %(SAVE_PATH,mayaFile))
 		# print ('file has been saved at: %s.%s' %(SAVE_PATH,mayaFile))
 
 
@@ -657,8 +657,8 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False ):
 		# print ('file has been saved at: %s.%s' %(SAVE_PATH,'mb'))
 		# print ('file has been saved at: %s.%s' %(SAVE_PATH,'mb'))
 
-		fileToolsLogger.info('file has been saved at: %s.%s' %(SAVE_PATH,'ma'))
-		fileToolsLogger.info('file has been saved at: %s.%s' %(SAVE_PATH,'mb'))
+		fileToolsLogger.info('File has been saved at: %s.%s' %(SAVE_PATH,'ma'))
+		fileToolsLogger.info('File has been saved at: %s.%s' %(SAVE_PATH,'mb'))
 
 	else:
 		mc.warning('There are no match condition.')
@@ -786,7 +786,7 @@ def impRem():
 	print ('\nImport and clear namespace ...')
 
 
-
+# the original
 def remove_unused_influences(skinCls, targetInfluences=[]):
 	'''
 	Snippet to removeUnusedInfluences in Autodesk Maya using Python.
@@ -802,43 +802,51 @@ def remove_unused_influences(skinCls, targetInfluences=[]):
 	weightedInfluences = mc.skinCluster(skinCls, q=True, wi=True)
 	unusedInfluences = [inf for inf in allInfluences if inf not in weightedInfluences]
 	if targetInfluences:
-	    unusedInfluences = [
-	            inf for inf in allInfluences
-	            if inf in targetInfluences
-	            if inf not in weightedInfluences
-	            ]
+		unusedInfluences = [
+				inf for inf in allInfluences
+				if inf in targetInfluences
+				if inf not in weightedInfluences
+				]
 	mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
 
 
 
-def do_remove_unused_influences(suffix = '*_skc'):
-	all_poly_skinCls = mc.ls(suffix)
+def delete_unused_skin(suffix = '*_skc'):
+	'''
+	Remove unused influence following suffix 
+	can use with polygon or skinCluster
+	'''
+	if mc.objExists("rig_grp.delete_unused_skin"):
+		all_poly_skinCls = mc.ls(suffix)
 
-	# get all poly
-	#skinCls = 'body_new02_ply'
-	
+
+		if all_poly_skinCls:
+
+			for skinCls in all_poly_skinCls:
+				allInfluences = mc.skinCluster(skinCls, q=True, inf=True)
+				weightedInfluences = mc.skinCluster(skinCls, q=True, wi=True)
+				unusedInfluences = [inf for inf in allInfluences if inf not in weightedInfluences]
+				mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
+				for each in unusedInfluences:
+					fileToolsLogger.info('Remove Unused Influences for {0} >>> {1}'.format(each, skinCls))
+
+		else:
+			print ('There are noting to remove.')
+			return False
 
 
-	if all_poly_skinCls:
 
-		for skinCls in all_poly_skinCls:
-			allInfluences = mc.skinCluster(skinCls, q=True, inf=True)
-			weightedInfluences = mc.skinCluster(skinCls, q=True, wi=True)
-			unusedInfluences = [inf for inf in allInfluences if inf not in weightedInfluences]
-			mc.skinCluster(skinCls, e=True, removeInfluence=unusedInfluences)
-			for each in unusedInfluences:
-				print ('Remove Unused Influences for {0} of {1} skinCluster'.format(each, skinCls))
-
+def delete_unused_material():
+	if mc.objExists("rig_grp.delete_unused_mat"):
+		mel.eval('MLdeleteUnused()')
+		fileToolsLogger.info('/nUnused material deleted.')
 	else:
-		print ('There are noting to remove.')
-		return False
-
-
+		pass
 
 
 
 # local publish
-def localPublish( mayafileType = 'ma' ):
+def localPublish( mayafileType = 'ma'):
 
 
 
@@ -870,17 +878,24 @@ def localPublish( mayafileType = 'ma' ):
 	# count joint
 	countJnt()
 
-	from ngSkinTools2.operations import removeLayerData
-	# remove all ngSkinTools custom nodes in a scene
-	removeLayerData.removeCustomNodes()
-	print('Delete ngSkinTools2...\n')
+	delete_unused_skin()
 
-	# Remove unused influences
-	# do_remove_unused_influences(suffix = '*_skc')
+	delete_unused_material()
 
+	ngSkin = mc.ls('ngSkinToolsData_*')
+	if ngSkin:
+		from ngSkinTools2.operations import removeLayerData
+		# remove all ngSkinTools custom nodes in a scene
+		removeLayerData.removeCustomNodes()
+		fileToolsLogger.info('Delete ngSkinTools2...\n')
+	else:
+		fileToolsLogger.info('There are no ngSkinTools skipped...\n')
+
+
+	
 	# saving
 	# savingAsset( mode = 'local' )
-	noCareSavAsset( mode = 'local' , mayaFile = mayafileType )
+	noCareSavAsset( mode = 'local' , mayaFile = mayafileType ,fixedName = False)
 
 	mc.select(deselect = True)
 	
@@ -890,7 +905,7 @@ def localPublish( mayafileType = 'ma' ):
 
 
 # global publish
-def globalPublish(fixedName = False):
+def globalPublish():
 
 	mesh = mc.ls(type = 'mesh')
 	meshName = mc.listRelatives(mesh[0], allParents = True)[0]
@@ -920,7 +935,7 @@ def globalPublish(fixedName = False):
 	# write rig data
 	#skinUtil.writeRigData()
 	# saving
-	noCareSavAsset(mode = 'global',fixedName=fixedName)
+	noCareSavAsset(mode = 'global' ,fixedName = True)
 
 	# count joint
 	countJnt()

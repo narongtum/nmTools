@@ -224,11 +224,11 @@ def runMenu():
 
 	# mc.menuItem( label = "SNAP IK/FK V3", 			command = "from function.animation import snapFKIKv3\nimportlib.reload(snapFKIKv3)\nsnapFKIKv3.ikfkSnap()" , ann = "Newer SNAP IK/FK for new autoRig" )
 	
-	mc.menuItem( label = "SNAP IK/FK v4", 			command = "from function.animation import snapFKIKv4\nimportlib.reload(snapFKIKv4)\nsnapFKIKv4.ikfkSnap()" , ann = "2020 SNAP IK/FK for 2020+ autoRig" )
+	# mc.menuItem( label = "SNAP IK/FK v4", 			command = "from function.animation import snapFKIKv4\nimportlib.reload(snapFKIKv4)\nsnapFKIKv4.ikfkSnap()" , ann = "2020 SNAP IK/FK for 2020+ autoRig" )
 
 	# mc.menuItem( label = "BakeMocap", 				command = "from function.animation import bakeFromMocap as bfm\nimportlib.reload(bfm)\nrun=bfm.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation"  )
 
-	mc.menuItem( label = "BakeMocap 90", 			command = "from function.animation import bakeFromMocap90 as bfnine\nimportlib.reload(bfnine)\nrun=bfnine.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation footage that flip 90 degree."  )
+	# mc.menuItem( label = "BakeMocap 90", 			command = "from function.animation import bakeFromMocap90 as bfnine\nimportlib.reload(bfnine)\nrun=bfnine.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation footage that flip 90 degree."  )
 
 	# mc.menuItem( label = "[EH] BakeAnim", 			command = "from function.animation import bakeAnimationEH as bae\nimportlib.reload(bae)\nrun=bae.Ui()\nrun.createGUI()" , ann = "Bake Animation"    )
 
@@ -239,9 +239,12 @@ def runMenu():
 	# mc.menuItem( label = "[PH] BakeExport", 		command = "from function.animation import bakeAnimationPH as bai\nimportlib.reload(bai)\nrun=bai.Ui()\nrun.createGUI()" , ann = "Bake Animation for HOPE project"    )
 
 	# mc.menuItem( label = "[PH] Delete Translate",	command = "from function.rigging.legacy import deleteTransKeys as deleteTransKeys\nimportlib.reload(deleteTransKeys)\ndeleteTransKeys.deleteKey()" , ann = "Delete translate key from fbx file"  )
-
+	
+	'''
 	mc.menuItem(divider = True)
 	#------------------------------------------------
+	'''
+
 	mc.menuItem( label = "Reset all controller",	command = "from function.rigging import RESET as re\nimportlib.reload(re)\nre.resetAllController(reference = True)" , ann = "Reset Character Pose ( reference only )"   )
 
 	mc.menuItem( label = "Reset controller (nonRef)",	command = "from function.rigging import RESET as re\nimportlib.reload(re)\nre.resetAllController(reference = False)" , ann = "Reset Character Pose ( for rigger )"   )

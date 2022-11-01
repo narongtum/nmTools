@@ -12,7 +12,7 @@
 version = 1.18
 
 
-
+from function.framework.reloadWrapper import reloadWrapper as reload
 import maya.cmds as mc
 import os
 import subprocess

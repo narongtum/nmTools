@@ -4,7 +4,7 @@ reload( av )
 
 '''
 
-
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
 version = '1.1'

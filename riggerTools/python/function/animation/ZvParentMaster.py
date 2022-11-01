@@ -1,3 +1,6 @@
+from function.framework.reloadWrapper import reloadWrapper as reload
+
+
 '''
 The MIT License (MIT)
 

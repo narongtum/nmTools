@@ -46,7 +46,7 @@ import os.path
 # path = r"D:\sysTools\nmTools\riggerTools\python\nmMenu"
 # abs_path = os.path.normpath(path)
 # PROJECT_PATHaaaaa = abs_path.replace(r'\python\nmMenu','')
-PROJECT_PATH = "D:/sysTools/nmTools/riggerTools"
+PROJECT_PATH = "D:/sysTools/nmTools_github/riggerTools"
 
 
 
@@ -200,7 +200,7 @@ def runMenu():
 	# mc.menuItem( label = " ZvParentMaster", 		command = "from function.animation import ZvParentMaster\nimportlib.reload(ZvParentMaster)\nZvParentMaster.ZvParentMaster()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
 	
 	# ZvParentMaster Mod Ui
-	mc.menuItem( label = " ZvParentMaster Ui", 		command = "from function.animation import zvParentMaster_tools_ui_mod as zv\nreload(zv)\nzv.createGUI()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
+	mc.menuItem( label = " ZvParentMaster Ui", 		command = "from function.animation import zvParentMaster_tools_ui_mod as zv\nimportlib.reload(zv)\nzv.createGUI()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
 
 	# tweener
 	mc.menuItem( label = "Tweener", 	command = "from function.animation import tweenerUI\nimportlib.reload (tweenerUI)\ntweenerUI.TweenWindow().show()" , ann = "adjust the slider and see the results immediately" )

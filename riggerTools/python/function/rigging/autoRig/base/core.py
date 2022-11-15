@@ -14,17 +14,7 @@ reload(core)
 '''
 
 
-try:
-	reload  # Python 2.7
-	print('This might be python 2.7')
-except NameError:
-	try:
-		from importlib import reload  # Python 3.4+
-		print('Python 3.4+')
-	except ImportError:
-		from imp import reload  # Python 3.0 - 3.3
-		print('Python 3.0 - 3.3')
-
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
 import maya.mel as mm
@@ -32,11 +22,10 @@ import os
 import math
 from maya import OpenMaya as om
 
-
-
-
 from function.pipeline import logger 
 reload(logger)
+
+MAYA_VERSION = mc.about(v=True)
 
 class CoreLogger(logger.MayaLogger):
 	LOGGER_NAME = "Core"
@@ -48,12 +37,18 @@ logger.setLevel(logging.DEBUG)
 '''
 
 
-SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
+
+from function.enviroment import enviromentPath as env
+reload(env)
+
+SHAPE_LIBRARY_PATH = env.SHAPE_LIBRARY_PATH
+
+# SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
 
 from function.rigging.readWriteCtrlSizeData import writeCtrlData as wcd
 reload(wcd)
 
-from function.rigging.util import misc as misc
+from function.rigging.util import misc
 reload(misc)
 
 from function.rigging.util import generic_maya_dict as mnd
@@ -61,9 +56,15 @@ reload(mnd)
 
 
 
+'''
+# setup
+obj_target.addAttribute( attributeType = 'message' , longName = 'mulmatrix')
+obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
+# qury
+mc.listConnections( obj_target.name + '.' + 'mulmatrix' )[0]
+mc.listConnections( obj_target.name + '.' + 'm_quatToEuler' )[0]
 
-
-
+'''
 
 
 
@@ -187,12 +188,17 @@ mul = core.MultiDoubleLinear('null1')
 
 # ex 11 :add attr
 # add Enum
-cube.addAttribute( at = 'enum', keyable = True , en = 'Green:Blue:Red', ln = 'rotate_Order'  )
+# Attr separater
+cube.addAttribute( at = 'enum', keyable = True , en = '###:', longName = 'Eye_preset'  )
+
+cube.addAttribute( at = 'enum', keyable = True , en = 'Green:Blue:Red', longName = 'rotate_Order'  )
 stick_ctrl.addAttribute( longName = 'handScale' , defaultValue = 1 , keyable = True )
 dynSwitch_ctrl.addAttribute( at = 'long'  , min = 0  , max = 1, longName = 'dynamic_blend', keyable = True, defaultValue = 1   )
 dynSwitch_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'dynamic_blend', keyable = True, defaultValue = 1   )
 stick_ctrl.addAttribute( longName = 'startFrame', defaultValue = 1 ,at = 'long'  , min = 0  , keyable = True )
 stick_ctrl.addAttribute( longName = 'startFrame', defaultValue = 1 ,at = 'float'  , min = 0  , keyable = True )
+stick_ctrl.addAttribute( dataType = 'string' , longName = 'region')
+stick_ctrl.addAttribute( attributeType = 'bool' , longName = 'fkVis' , minValue = 0 , maxValue = 1 , defaultValue = 1 , keyable = True )
 
 # ex 12 :Set color
 # gmblCtrl.color = 'white'
@@ -728,6 +734,7 @@ class Node( object ) :
 		add attr to Node
 		'''
 		mc.addAttr(self , *args , **kwargs )
+		CoreLogger.info("Attr has been create.")
 
 
 	def setAttribute( self ,attrName, *args , **kwargs ):
@@ -851,16 +858,20 @@ class Node( object ) :
 
 	
 		# print 'This is shortName	:' +  node_exp
+
 		return node_exp
 
 
 	def autoSuffix( self ):
+		CoreLogger.info('Inserting lastname...')
 
-		# convert unicode to ascii
-		each = self.name.encode('ascii')
-		
+		# convert unicode to ascii (forgot why convert it so I turn it back)
+		# each = self.name.encode('ascii')
+		each = self.name
+
 		lastname = self._findExtension()
 		print ('this is suffix name: %s' %lastname)
+		
 
 		# if object already last name
 		if each.endswith( lastname ):
@@ -961,9 +972,7 @@ class MultiplyDivineWithVal ( Node ):
 		print ('set value to %d' %operator)
 
 
-		
-
-
+	
 class AddDoubleLinear( Node ):
 	'''  create AddDoubleLinear object  '''
 	def __init__( self, name ):
@@ -1015,15 +1024,97 @@ class CurveInfo( Node ):
 
 
 
+
+
+
+ #      _                   __  __       _        _      
+ #      | |                 |  \/  |     | |      (_)     
+ #   ___| | __ _ ___ ___    | \  / | __ _| |_ _ __ ___  __
+ #  / __| |/ _` / __/ __|   | |\/| |/ _` | __| '__| \ \/ /
+ # | (__| | (_| \__ \__ \   | |  | | (_| | |_| |  | |>  < 
+ #  \___|_|\__,_|___/___/   |_|  |_|\__,_|\__|_|  |_/_/\_\
+                                                        
+
+
+# Matrix Node
+
 class DecomposeMatrix( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'decomposeMatrix' , name = name) )
 		self.suffix
 
+class MultMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('multMatrix', name = name))
+		self.suffix
+
+class ComposeMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('composeMatrix', name = name))	
+		self.autoSuffix()
 
 class VectorProduct( Node ):
 	def __init__(self,name):
 		Node.__init__(self, mc.createNode('vectorProduct', name = name))
+		self.autoSuffix()
+
+class FourByFourMatrix( Node ):
+	def __init__(self,name):
+		Node.__init__(self, mc.createNode('fourByFourMatrix', name = name))
+		self.autoSuffix()
+
+class AimMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('aimMatrix', name = name))
+		self.autoSuffix()
+
+
+# Add a weighted list of matrices together. 
+# https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-Basics/files/GUID-B290C3E6-95BC-4299-BC0D-169EADDE6319-htm.html
+class WtAddMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
+		self.autoSuffix()
+
+class EulerToQuat( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('eulerToQuat', name = name))
+		self.autoSuffix()
+
+class QuatInvert( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('quatInvert', name = name))
+		self.autoSuffix()
+
+class QuatProd( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('quatProd', name = name))
+		self.autoSuffix()
+	
+class QuatToEuler( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('quatToEuler', name = name))
+		self.autoSuffix()
+
+
+
+'''
+	mc.createNode( 'quatInvert', n = quaInv )
+	mc.createNode( 'quatProd', n = quaPro )
+	mc.createNode( 'quatToEuler', n = quaEul )
+'''
+
+
+
+
+
+
+
+
+
+
+
+
 
 # It will cause maya crash when instanceing i dunno why
 # Because of you insert self as args so it init arg and recusive 
@@ -1097,6 +1188,59 @@ class MotionPath( _motionPath ):
 		motion = self._motionPath(name)
 		tX_adl = self.AddDoubleLinear(name+'tX_adl')
 '''
+
+
+
+
+
+ #   _____ _                      _____                             _____                     
+ #  / ____| |                    |  __ \                           / ____|                    
+ # | |    | | __ _ ___ ___       | |__) |___ _ __ ___   __ _ _ __ | |    _   _ _ ____   _____ 
+ # | |    | |/ _` / __/ __|      |  _  // _ \ '_ ` _ \ / _` | '_ \| |   | | | | '__\ \ / / _ \
+ # | |____| | (_| \__ \__ \      | | \ \  __/ | | | | | (_| | |_) | |___| |_| | |   \ V /  __/
+ #  \_____|_|\__,_|___/___/      |_|  \_\___|_| |_| |_|\__,_| .__/ \_____\__,_|_|    \_/ \___|
+ #                                                          | |                               
+ #                                                          |_|                                                       |_|                               
+
+
+# remap plus multi-double linear new method for drive blendshape
+
+
+
+class RemapCurve(Node):
+	def __init__(self, name, positive, defaultValue = (0,1,0,1)):
+		Node.__init__(self, mc.createNode('remapValue', name = name))
+		self.attr('inputMin').value = defaultValue[0]
+		self.attr('inputMax').value = defaultValue[1]
+		self.attr('outputMin').value = defaultValue[2]
+		self.attr('outputMax').value = defaultValue[3]
+		self.suffix
+
+		if positive:
+			CoreLogger.info('The value is positive it end here')
+
+
+		else:
+			CoreLogger.info('The value is negative create MultiDoubleLinear')
+			mdl_node = MultiDoubleLinear(name)
+			mdl_node.suffix
+			mdl_node.attr('input2').value = -1
+			mdl_node.attr('output') >> self.attr('inputValue')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  #       _                                 _            _____                     
@@ -2517,6 +2661,7 @@ class DoIkSpline( Ik ):
 
 class IkSpring( Ik ):
 	''' Class ik spring solver  '''
+	# Enable ikSpringSolver
 	mm.eval('ikSpringSolver;')
 	def __init__( self , startJoint = '' , endEffector = ''  ):
 		Ik.__init__( self , mc.ikHandle( startJoint = startJoint , endEffector = endEffector ,  solver = 'ikSpringSolver') [0] )

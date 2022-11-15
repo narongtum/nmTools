@@ -1,6 +1,6 @@
 # move to rig tools already
 
-
+# create joint that aim to the desinate point to make fake muscle
 # 1. create delt muscle joint at shoulder position start_jnt and end_jnt
 # 2. name of the upperArm and lowerArm 
 # 3. remember the this function is will made bind join extract from all bind joint chain

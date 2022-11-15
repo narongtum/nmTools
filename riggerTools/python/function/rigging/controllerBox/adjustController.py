@@ -18,9 +18,6 @@ reload(adjust)
 
 
 
-# define ctrl LIBRARY path
-SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
-
 
 try:
 	reload  # Python 2.7
@@ -34,6 +31,16 @@ except NameError:
 		print('Python 3.0 - 3.3')
 
 
+from function.enviroment import enviromentPath as env
+reload(env)
+
+# define ctrl LIBRARY path
+# SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
+
+
+SHAPE_LIBRARY_PATH = env.SHAPE_LIBRARY_PATH
+
+
 import maya.cmds as mc
 # from function.rigging import aimCon as ac
 # reload(ac)
@@ -43,7 +50,6 @@ reload(wcd)
 
 from function.rigging.util import misc as misc
 reload(misc)
-
 
 from function.rigging.autoRig.base import core
 reload(core)
@@ -266,7 +272,9 @@ def assignColor( color = '' , arg = None ) :
 # =================================
 # - Create Controller fix for use both as assign parameter and selected
 # =================================
-def creControllerFunc( selected = [], scale = 1, ctrlShape = 'circle_ctrlShape',color = 'yellow', constraint = True ):
+def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
+							constraint = True, matrixConst = False, mo = False, translate=True, 
+							rotate = True, scaleCon = True):
 	'''
 	Create Controller at selected object.
 	@param scale: A dictionary of template component and items.
@@ -277,7 +285,7 @@ def creControllerFunc( selected = [], scale = 1, ctrlShape = 'circle_ctrlShape',
 	rawNamLst = []
 	storeNamLst = []
 	# list selection
-	selected = mc.ls(sl = True)
+	# selected = mc.ls(sl = True)
 
 	return_list = []
 
@@ -334,12 +342,16 @@ def creControllerFunc( selected = [], scale = 1, ctrlShape = 'circle_ctrlShape',
 				return_list.append(child_ctrl.name)
 				
 				if constraint == True:
-					# Making joint parent of controller
-					joint_parCons = core.parentConstraint( gimbal_ctrl , rawNamLst[i] )
-					joint_parCons.name = storeNamLst[i] + '_parCons'
+					if matrixConst == False:
+						# Making joint parent of controller
+						joint_parCons = core.parentConstraint( gimbal_ctrl , rawNamLst[i] )
+						joint_parCons.name = storeNamLst[i] + '_parCons'
 
-					joint_ScalCons = core.scaleConstraint( gimbal_ctrl , rawNamLst[i] )
-					joint_ScalCons.name = storeNamLst[i] + '_scalCons'
+						joint_ScalCons = core.scaleConstraint( gimbal_ctrl , rawNamLst[i] )
+						joint_ScalCons.name = storeNamLst[i] + '_scalCons'
+					else:
+						print (type(rawNamLst[i]))
+						misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scale)
 
 				else:
 					continue

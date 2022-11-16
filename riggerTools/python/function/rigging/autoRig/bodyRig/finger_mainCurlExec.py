@@ -1,3 +1,5 @@
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 from function.rigging.autoRig.bodyRig import finger_mainCurlRig as finOffRig
 reload(finOffRig)
 
@@ -160,6 +162,7 @@ def mainFingerCurlRig(      nameSpace ,
 		indexAmp = each.index( 'Amp' )
 		# Result : index02TxLFTAmp_mdl >>> [:indexIn] >>> index02TxLFT >>> [-3] >>> index02Tx
 		cleanNam = ( each[:indexAmp-3] )
+		# Add value multiplier here
 		stick_ctrlShape.addAttribute( longName = cleanNam , defaultValue = multiply_Val , keyable = True )
 
 

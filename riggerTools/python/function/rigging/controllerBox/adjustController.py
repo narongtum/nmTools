@@ -15,7 +15,9 @@ reload(adjust)
 
 
 '''
-
+from function.framework.reloadWrapper import reloadWrapper as reload
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 
 
 
@@ -274,13 +276,13 @@ def assignColor( color = '' , arg = None ) :
 # =================================
 def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
 							constraint = True, matrixConst = False, mo = False, translate=True, 
-							rotate = True, scaleCon = True):
+							rotate = True, scaleConstraint = True):
 	'''
 	Create Controller at selected object.
 	@param scale: A dictionary of template component and items.
 	@type template: dict
 	'''
-	
+	print (scaleConstraint)
 	rawName = ''
 	rawNamLst = []
 	storeNamLst = []
@@ -311,6 +313,10 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 				storeNamLst.append( rawName )
 				rawNamLst.append( each )
 
+		elif selected[0].count('_') > 2:
+			for each in selected:
+				storeNamLst.append( each ) # for naming that use underscore more than one
+				rawNamLst.append( each )
 
 
 
@@ -350,8 +356,15 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 						joint_ScalCons = core.scaleConstraint( gimbal_ctrl , rawNamLst[i] )
 						joint_ScalCons.name = storeNamLst[i] + '_scalCons'
 					else:
+						print ('type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])')
 						print (type(rawNamLst[i]))
-						misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scale)
+
+						print(gimbal_ctrl)
+						print(rawNamLst[i])
+
+
+						mtc.parentConMatrix( gimbal_ctrl, rawNamLst[i], mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
+						# misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scaleConstraint)
 
 				else:
 					continue

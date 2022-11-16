@@ -13,7 +13,7 @@ reload(bBox)
 
 import pprint
 
-from function.rigging.util import mayaNodeDict as mnd
+from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 
@@ -29,7 +29,7 @@ for mocap project
 
 '''
 
-# duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 ):
+
 
 def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', multiplier = 2.0 ):
 
@@ -170,4 +170,4 @@ def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', mu
 
 
 # execute
-# duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 )
+duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 )

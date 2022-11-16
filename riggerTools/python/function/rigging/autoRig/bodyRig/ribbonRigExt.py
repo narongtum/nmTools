@@ -1,5 +1,12 @@
 # Ribbon rig another version
 
+'''
+from function.rigging.autoRig.bodyRig import ribbonRigExt as rbnExt
+reload( rbnExt )
+'''
+
+
+
 from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.rigging.autoRig.base import core
@@ -274,12 +281,30 @@ def ribbonRigExt(	nameSpace = ''	,
 		mc.move(  0.5, 0, 0, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 		mc.move( -0.5, 0, 0, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 
+	# TODO: insert log instead
+	# caue problem lambert1 is locked
+	# https://forums.autodesk.com/t5/maya-shading-lighting-and/initialshadinggroup-dagsetmembers-1-destination-is-locked/m-p/11166619#M36987
+
+	RibbonLogger.info('Beware initialShadingGroup lock maybe cause an error.')
+	try:
+
+		mc.loft( crvA.name , crvB.name , ch = False , uniform = False , 
+		close = False , autoReverse = True,degree = 1 ,sectionSpans = 1 ,range = False , 
+		polygon = 0 , reverseSurfaceNormals = True ,name = name + '_nrb')
+
+	except:
+		mc.warning('Broken Lambert shader must fix')
+
+		# unlock initialShadingGroup
+		mc.lockNode('initialShadingGroup', l=0, lockUnpublished=0)
+
+		mc.loft( crvA.name , crvB.name , ch = False , uniform = False , 
+		close = False , autoReverse = True,degree = 1 ,sectionSpans = 1 ,range = False , 
+		polygon = 0 , reverseSurfaceNormals = True ,name = name + '_nrb')
+
+		
 
 
-
-	mc.loft( crvA.name , crvB.name , ch = False , uniform = False , 
-	close = False , autoReverse = True,degree = 1 ,sectionSpans = 1 ,range = False , 
-	polygon = 0 , reverseSurfaceNormals = True ,name = name + '_nrb')
 
 
 

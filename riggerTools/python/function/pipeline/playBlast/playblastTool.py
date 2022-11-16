@@ -42,7 +42,7 @@ artist = data.ARTIST_dict
 
 QT_PATH = r'C:\\Program Files (x86)\\QuickTime\\QuickTimePlayer.exe'
 # FFMPEG = r'D:\\True_Axion\\Tools\\riggerTools\\python\\axionTools\\pipeline\\playBlast\\framework\\ffmpeg-20181016-b2adc31-win64-static\\bin\\ffmpeg.exe'
-FFMPEG = r'D:\\sysTools\\nmTools_github\\riggerTools\\python\\function\\pipeline\\playBlast\\framework\\ffmpeg-20181016-b2adc31-win64-static\\bin\\ffmpeg.exe'
+FFMPEG = r'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\pipeline\\playBlast\\framework\\ffmpeg-20181016-b2adc31-win64-static\\bin\\ffmpeg.exe'
 INPUT_PATH = r'D:\\FFOutput\\playBlastTemp.avi'
 WATERMARK_PATH = r'D:\\sysTools\\nmTools\\riggerTools\\image\\cam_watermark.png'
 
@@ -166,8 +166,8 @@ class function:
 	# SNAP FRAME TO CAM    
 	def setCamera(self , *args):
 		selCam = mc.listCameras( p = True )
-		sel = mc.ls(sl=1)
-		imagePath = 'D:/sysTools/nmTools_github/riggerTools/image/border.png'
+		sel = mc.ls(sl=1) # incase lot of camera
+		imagePath = 'D:/sysTools/nmTools/riggerTools/image/border.png'
 
 		if 'camera1' in selCam:
 			cam = 'camera1'
@@ -180,7 +180,7 @@ class function:
 			camShape = cam + 'Shape'
 			mc.imagePlane(n = 'frameOutline', c = cam, fn = imagePath ,showInAllViews=0)
 			mc.setAttr ( "frameOutlineShape2.depth" ,.5)
-		elif sel == 0:
+		elif not sel:
 			PlayblastLogger.error('There is no Camera in scene.')
 
 	

@@ -1,4 +1,6 @@
-# move to rig tools already
+#... move to rig tools already
+#... using only Y alone
+#... D:\narongtum\research_and_developement\22.10.Oct.21.Fri.10_Helper Joint
 
 # create joint that aim to the desinate point to make fake muscle
 # 1. create delt muscle joint at shoulder position start_jnt and end_jnt
@@ -8,33 +10,23 @@
 
 
 """
-# corrective joint for shoulder
+#... corrective joint for shoulder
 
 # direct run
 from function.rigging.corrective import correctShoulderJoint as chd
 reload(chd)
 
-
-
-all_grp.name = chd.correctShoulderJoint(	tmpJnt = 	(	'L_deltMidAimJointStartJt_jnt' 	, 
-															'L_deltMidAimJointEndJt_jnt') 	, 
-										side = 'LFT'										,
-										priorJnt = 'clavLFT_bJnt')
+chd.correctShoulderJoint(	tmpJnt = 	('L_deltMidAimStart_jnt' , 
+										                   'L_deltMidAimEnd_jnt') 	, 
+							side = 'LFT',
+							priorJnt = 'clavLFT_tmpJnt',
+							belowJnt = 'upperArmLFT_tmpJnt',
+							part = 'deltMid',
+							showInfo = True
+							
+							)
 
 """
-
-
-#input
-# startJnt = 'L_deltMidAimJointStartJt_jnt'
-# endJnt = 'L_deltMidAimJointEndJt_jnt'
-# side = 'LFT'
-
-
-# childJnt = 'upperArm%s_bJnt' %side
-# NextPriorJnt = 'lowerArm%s_bJnt' %side
-
-# # prior parent joint 
-# clav_jnt = 'clav%s_bJnt' %side
 
 
 
@@ -57,10 +49,11 @@ reload(misc)
 
 
 
-def correctShoulderJoint(	tmpJnt = 	('L_deltMidAimJointStartJt_jnt' , 
-										'L_deltMidAimJointEndJt_jnt') 	, 
+def correctShoulderJoint(	tmpJnt = 	('L_deltMidAimStart_jnt' , 
+										'L_deltMidAimEnd_jnt') 	, 
 							side = 'LFT',
 							priorJnt = 'clavLFT_bJnt',
+							belowJnt = 'upperArmLFT_tmpJnt',
 							part = 'deltMid',
 							showInfo = True
 							
@@ -82,14 +75,11 @@ def correctShoulderJoint(	tmpJnt = 	('L_deltMidAimJointStartJt_jnt' ,
 
 
 
-
-
-
 	# create locator at each position
 	types = ''
-	start_loc = core.Locator(  part + types + 'Start' + side + '_loc' )
-	end_loc = core.Locator(  part + types + 'End' + side + '_loc' )
-	up_loc = core.Locator(  part + types + 'Up' + side + '_loc' )
+	start_loc = core.Locator( part + types + '_Start' + side + '_loc' )
+	end_loc = core.Locator( part + types + '_End' + side + '_loc' )
+	up_loc = core.Locator( part + types + '_Up' + side + '_loc' )
 	up_loc.setColor('white')
 
 	# Snap position
@@ -187,9 +177,9 @@ def correctShoulderJoint(	tmpJnt = 	('L_deltMidAimJointStartJt_jnt' ,
 	# up_loc.parent(all_grp)
 	upZro_grp.parent(all_grp)
 
-	 
+	#... this will cause error for sure 	 
 	# not elbow use upperArm siwa
-	endLoc_psCons = core.parentConstraint( 'upperArm%s_bJnt' %side , all_grp , mo = True )
+	endLoc_psCons = core.parentConstraint( belowJnt , all_grp , mo = True )
 	endLoc_psCons.name = part + 'End' + side
 	endLoc_psCons.suffix
 

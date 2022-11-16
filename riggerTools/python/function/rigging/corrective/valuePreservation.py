@@ -1,10 +1,9 @@
 #... Finger value preservation use name as Auxiliary joint
 #... Source 22.10.Oct.03.Mon.11_Finger Rig Value Preservation\version
-#... Reference https://www.youtube.com/watch?v=kX87iTaRyhs
-
-#... how to use #
-#... 1. adjust orientation y along 
-#... 2. spectify the joint that
+#... Change name aux to corr
+# how to use #
+# 1. adjust orientation y along 
+# 2. spectify the joint that
 
 '''
 # Direct run
@@ -82,19 +81,19 @@ def valuePreservation(		middleJnt = 'lwrArmLFT_bJnt',
 	translate_blend_mat.attr('outputMatrix') >> collect_mat.attr('matrixIn[1]')
 
 	#...create aux joint
-	middle_auxJnt = core.Joint('{0}_auxJnt'.format(baseName))
-	middle_auxJnt.setJointOutlineColor('white')
+	middle_corrJnt = core.Joint('{0}_corrJnt'.format(baseName))
+	middle_corrJnt.setJointOutlineColor('white')
 	#...parent under father joint
-	middle_auxJnt.parent(prior_jnt)
-	middle_auxJnt.setJointColor('white')
-	middle_auxJnt.attr('radius').value = 2
+	middle_corrJnt.parent(prior_jnt)
+	middle_corrJnt.setJointColor('white')
+	middle_corrJnt.attr('radius').value = 2
 
 	#... reset position
-	middle_auxJnt.attr('translateX').value = 0
-	middle_auxJnt.attr('translateY').value = 0
-	middle_auxJnt.attr('translateZ').value = 0
-	middle_auxJnt.attr('jointOrientZ').value = 0
-	collect_mat.attr('matrixSum') >> middle_auxJnt.attr('offsetParentMatrix')
+	middle_corrJnt.attr('translateX').value = 0
+	middle_corrJnt.attr('translateY').value = 0
+	middle_corrJnt.attr('translateZ').value = 0
+	middle_corrJnt.attr('jointOrientZ').value = 0
+	collect_mat.attr('matrixSum') >> middle_corrJnt.attr('offsetParentMatrix')
 
 
 	#... create Inner Outer aux joint
@@ -125,41 +124,41 @@ def valuePreservation(		middleJnt = 'lwrArmLFT_bJnt',
 	mulPosiInn_mdl.attr('output') >> intial_pos_Inn_adl.attr('input1')
 	mulPosiOut_mdl.attr('output') >> intial_pos_Out_adl.attr('input1')
 
-	inner_auxJnt = core.Joint('{0}Inn{1}_auxJnt'.format(baseName,side))
-	inner_auxJnt.setJointOutlineColor('white')
-	outer_auxJnt = core.Joint('{0}Outer{1}_auxJnt'.format(baseName,side))
-	outer_auxJnt.setJointOutlineColor('white')
+	inner_corrJnt = core.Joint('{0}Inn{1}_corrJnt'.format(baseName,side))
+	inner_corrJnt.setJointOutlineColor('white')
+	outer_corrJnt = core.Joint('{0}Outer{1}_corrJnt'.format(baseName,side))
+	outer_corrJnt.setJointOutlineColor('white')
 
-	inner_auxJnt.parent(middle_auxJnt)
-	inner_auxJnt.attr('translateX').value = 0
-	inner_auxJnt.attr('translateY').value = 0
-	inner_auxJnt.attr('translateZ').value = 0
+	inner_corrJnt.parent(middle_corrJnt)
+	inner_corrJnt.attr('translateX').value = 0
+	inner_corrJnt.attr('translateY').value = 0
+	inner_corrJnt.attr('translateZ').value = 0
 
-	outer_auxJnt.parent(middle_auxJnt)
-	outer_auxJnt.attr('translateX').value = 0
-	outer_auxJnt.attr('translateY').value = 0
-	outer_auxJnt.attr('translateZ').value = 0
+	outer_corrJnt.parent(middle_corrJnt)
+	outer_corrJnt.attr('translateX').value = 0
+	outer_corrJnt.attr('translateY').value = 0
+	outer_corrJnt.attr('translateZ').value = 0
 
 	#... create invert value for outer
 	reverseVal_mdl = core.MDLWithMul('{0}ReverseVal{1}'.format(baseName,side), -1)
 	intial_pos_Out_adl.attr('output') >> reverseVal_mdl.attr('input1')
-	reverseVal_mdl.attr('output') >> outer_auxJnt.attr('translate{0}'.format(moveAxis.capitalize()		))
-	intial_pos_Inn_adl.attr('output')>> inner_auxJnt.attr('translate{0}'.format(moveAxis.capitalize()	))
+	reverseVal_mdl.attr('output') >> outer_corrJnt.attr('translate{0}'.format(moveAxis.capitalize()		))
+	intial_pos_Inn_adl.attr('output')>> inner_corrJnt.attr('translate{0}'.format(moveAxis.capitalize()	))
 
-	#... create attr at middle aux joint
-	middle_auxJnt.addAttribute(at = 'enum', keyable = True , en = '###:', longName = 'Setting'  )
-	middle_auxJnt.addAttribute(at = 'float', longName = 'auxPosiWeight', keyable = True, defaultValue = auxPosiWeight )
-	middle_auxJnt.addAttribute(at = 'float', longName = 'sensitive_out', keyable = True, defaultValue = sensitiveOut )
-	middle_auxJnt.addAttribute(at = 'float', longName = 'sensitive_in', keyable = True, defaultValue = sensitiveInn )
-	middle_auxJnt.addAttribute(at = 'float', longName = 'intial_pos_in', keyable = True, defaultValue = intial_posIn )
-	middle_auxJnt.addAttribute(at = 'float', longName = 'intial_pos_out', keyable = True, defaultValue = intial_posOut )
+	#... create attr at middle corrective joint
+	middle_corrJnt.addAttribute(at = 'enum', keyable = True , en = '###:', longName = 'Setting'  )
+	middle_corrJnt.addAttribute(at = 'float', longName = 'auxPosiWeight', keyable = True, defaultValue = auxPosiWeight )
+	middle_corrJnt.addAttribute(at = 'float', longName = 'sensitive_out', keyable = True, defaultValue = sensitiveOut )
+	middle_corrJnt.addAttribute(at = 'float', longName = 'sensitive_in', keyable = True, defaultValue = sensitiveInn )
+	middle_corrJnt.addAttribute(at = 'float', longName = 'intial_pos_in', keyable = True, defaultValue = intial_posIn )
+	middle_corrJnt.addAttribute(at = 'float', longName = 'intial_pos_out', keyable = True, defaultValue = intial_posOut )
 
 	#... connect value
 
-	middle_auxJnt.attr('auxPosiWeight') >> translate_blend_mat.attr('target[0].weight')
-	middle_auxJnt.attr('sensitive_out') >> mulPosiOut_mdl.attr('multiply')
-	middle_auxJnt.attr('sensitive_in') >>  mulPosiInn_mdl.attr('multiply')
-	middle_auxJnt.attr('intial_pos_in') >> intial_pos_Inn_adl.attr('input2')
-	middle_auxJnt.attr('intial_pos_out') >> intial_pos_Out_adl.attr('input2')
+	middle_corrJnt.attr('auxPosiWeight') >> translate_blend_mat.attr('target[0].weight')
+	middle_corrJnt.attr('sensitive_out') >> mulPosiOut_mdl.attr('multiply')
+	middle_corrJnt.attr('sensitive_in') >>  mulPosiInn_mdl.attr('multiply')
+	middle_corrJnt.attr('intial_pos_in') >> intial_pos_Inn_adl.attr('input2')
+	middle_corrJnt.attr('intial_pos_out') >> intial_pos_Out_adl.attr('input2')
 
 	core.makeHeader('END')

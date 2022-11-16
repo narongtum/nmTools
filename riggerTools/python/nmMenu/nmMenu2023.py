@@ -131,9 +131,13 @@ def runMenu():
 
 	mc.menuItem( label = "Remove selected reference",	command = "from function.rigging.util import misc as misc\nimportlib.reload(misc)\nmisc.removeSelectedReference()", ann = "Remove Selected Reference")
 
-	mc.menuItem( label = "Import And Remove Namespace",	command = "from function.asset import assetTools as ast\nimportlib.reload(ast)\nast.impRem()", ann = "Import and remove namespace")
+	mc.menuItem( label = "Import And Remove Namespace",	command = "from function.pipeline import fileTools\nreload(fileTools)\nfileTools.impRem()", ann = "Import and remove namespace")
 
-	mc.menuItem( label = "Replace Texture",	command = "from function.asset import assetTools as ast\nimportlib.reload(ast)\nast.replaceTex()", ann = "Replace All Texture in scene.")
+	mc.menuItem( label = "Sort Selected Outliner",	command = "from function.asset import misc\nreload(misc)\nmisc.sortOutliner()", ann = "Sort Selected Outliner")
+
+	mc.menuItem( label = "Replace Texture",	command = "from function.pipeline import fileTools\nreload(fileTools)\nfileTools.replaceTex()", ann = "Replace All Texture in scene.")
+
+	mc.menuItem( label = "Print Texture Path",	command = "from function.pipeline import fileTools\nreload(fileTools)\nfileTools.printTexturePath()", ann = "Print All Texture in scene.")
 	
 	mc.menuItem( label = "Open Containing Folder",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfolder = fileTools.currentBackFolder()\nfileTools.openContainerFile(path = folder)", ann = "Open Containing Folder.")
 
@@ -155,7 +159,7 @@ def runMenu():
 
 	mc.menuItem( label = "Auto add suffix",	command = "from function.rigging.util import misc as msc\nimportlib.reload(msc)\nmsc.selAutoSuffix()", ann = "Select and click.")
 
-	mc.menuItem( label = "Transfer Selected Shading.",	command = "from function.asset import assetTools as ast\nimportlib.reload(ast)\nast.transferShade()", ann = "Select Parent then Child.")
+	mc.menuItem( label = "Transfer Selected Shading.",	command = "from function.pipeline import fileTools as ast\nimportlib.reload(ast)\nast.transferShade()", ann = "Select Parent then Child.")
 	mc.setParent( '..', menu = True )
 	#----------------------------------------------------------------------------------------------------------------------
 
@@ -203,7 +207,7 @@ def runMenu():
 	mc.menuItem( label = "OnionSkinRenderer", 		command = "from function.animation.onionSkinRenderer import onionSkinRendererWindow as onionWindow\nimportlib.reload(onionWindow)\nonionWindow.openOnionSkinRenderer()" , ann = "onionSkinRenderer" )
 
 	# ZvParentMaster
-	# mc.menuItem( label = " ZvParentMaster", 		command = "from function.animation import ZvParentMaster\nimportlib.reload(ZvParentMaster)\nZvParentMaster.ZvParentMaster()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
+	mc.menuItem( label = " ZvParentMaster", 		command = "from function.animation import ZvParentMaster\nimportlib.reload(ZvParentMaster)\nZvParentMaster.ZvParentMaster()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
 	
 	# ZvParentMaster Mod Ui
 	mc.menuItem( label = " ZvParentMaster Ui", 		command = "from function.animation import zvParentMaster_tools_ui_mod as zv\nreload(zv)\nzv.createGUI()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
@@ -224,6 +228,13 @@ def runMenu():
 	mc.menuItem( label = "Playblast Tool", 			command = "from function.pipeline.playBlast import playblastTool\nimportlib.reload(playblastTool)\nrun=playblastTool.Ui()\nrun.createGUI()" , ann = "Playblast tools" )
 
 	mc.menuItem(divider = True)
+	
+	#------------------------------------------------------------------------------------------------
+
+	mc.menuItem( label = "Export Animation", 		command = "from function.asset import genericAnimExporter as gae\nimportlib.reload(gae)\nrun = gae.Ui()\nrun.createGUI()" , ann = "Bake Animation Export"  )
+
+	mc.menuItem(divider = True)
+
 	#------------------------------------------------------------------------------------------------
 	
 	mc.menuItem( label = "SNAP IK/FK v4", 			command = "from function.animation import snapFKIKv4\nimportlib.reload(snapFKIKv4)\nsnapFKIKv4.ikfkSnap()" , ann = "2020 SNAP IK/FK for 2020+ autoRig" )
@@ -318,7 +329,7 @@ def runMenu():
 	mc.menuItem( label = "Export mesh general data", command = "from function.rigging.skin import exportImportMeshGeneralData as IMG\nimportlib.reload(IMG)\nIMG.run()" , ann = "Browse source and import skin general data." )
 	
 	# Chad vernon skin weight import / export
-	mc.menuItem( label = "Skin Import / Export", command = "from function.rigging.skin import skinio\nimportlib.reload(skinio)\nskinio.show()" , ann = "Just another skinweight Import/Export thank to chad vernon." )
+	mc.menuItem( label = "Skin Import / Export", command = "from function.rigging.skin import skinio2023\nimportlib.reload(skinio2023)\nskinio2023.show()" , ann = "Just another skinweight Import/Export thank to chad vernon." )
 
 	mc.menuItem(divider = True)
 	#------------------------------------------------

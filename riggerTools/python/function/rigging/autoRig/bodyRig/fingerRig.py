@@ -1,5 +1,8 @@
 # FK Finger Rig
 import maya.cmds as mc
+
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 from function.rigging.autoRig.base import core
 reload(core)
 
@@ -471,3 +474,29 @@ def baseFingerRig(
 
 
 	return fGrp
+
+
+
+
+
+# run after finish finger rig
+def connect_finger_value(stickNam = '',fingerName = ('thumb', 'index', 'middle', 'ring', 'pinky'), side = 'LFT', defaultValue = 0.25):
+	
+	stick_ctrl = core.Dag( stickNam )
+	stick_ctrlShape = core.Dag( stick_ctrl.shape )
+
+
+
+	for each in fingerName:
+		# Create attr in stick controller
+		stick_ctrlShape.addAttribute( longName = each + 'Base' , defaultValue = defaultValue , keyable = True )
+
+		offset_one = core.Dag('%s01%sOffset_grp' %(each , side) )
+		offset_base = core.Dag('%sBase%sOffset_grp' %(each , side) )
+		resistance = core.MDLWithMul('%sBaseResistance%s' %(each,side) , dv = 0.25)
+
+		offset_one.attr('rotateX') >> resistance.attr( 'input1' )
+		resistance.attr( 'output' ) >> offset_base.attr('rotateX')
+		# Conect value from stick to MDL
+		stick_ctrlShape.attr( 'middleBase' ) >> resistance.attr('multiply')
+	print ('End of Connect five finger %s rig' %(side ))

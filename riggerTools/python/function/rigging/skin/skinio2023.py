@@ -192,7 +192,9 @@ class SkinCluster(object):
 
 		if not filePath:
 			return
-		if not isinstance(filePath, basestring):
+
+		# if not isinstance(filePath, basestring):
+		if not isinstance(filePath, str):
 			filePath = filePath[0]
 
 		# Read in the file
@@ -209,9 +211,12 @@ class SkinCluster(object):
 
 		# Check if the shape has a skinCluster
 		if SkinCluster.getSkinCluster(shape):
+			logger.debug('# Check if the shape has a skinCluster')
 			skinCluster = SkinCluster(shape)
 		else:
+			logger.debug('Due to Python3 This Maybe is Cause RuntimeError.')
 			# Create a new skinCluster
+			logger.debug('# Create a new skinCluster')
 			joints = data['weights'].keys()
 
 			# Make sure all the joints exist
@@ -225,6 +230,7 @@ class SkinCluster(object):
 					unusedImports.append(j)
 			# If there were unmapped influences ask the user to map them
 			if unusedImports and noMatch:
+				logger.debug('# If there were unmapped influences ask the user to map them')
 				mappingDialog = WeightRemapDialog(getMayaWindow())
 				mappingDialog.setInfluences(unusedImports, noMatch)
 				mappingDialog.exec_()
@@ -240,7 +246,13 @@ class SkinCluster(object):
 
 			# Create the skinCluster with post normalization so setting the weights does not
 			# normalize all the weights
-			joints = data['weights'].keys()
+			joints = data['weights'].keys() # This maybe cause error
+			logger.debug('Create the skinCluster with post normalization so setting the weights does not')
+			logger.debug('\nThis is joint Dict')
+			# joints = list(joints)
+			logger.debug('\nThis is skinCluster name.')
+			logger.debug(data['name'])
+			logger.debug('\nChange to list.')
 			skinCluster = mc.skinCluster(joints, shape, tsb=True, nw=2, n=data['name'])
 			skinCluster = SkinCluster(shape)
 
@@ -361,7 +373,7 @@ class SkinCluster(object):
 		influencePaths = OpenMaya.MDagPathArray()
 		numInfluences = self.fn.influenceObjects(influencePaths)
 
-		numComponentsPerInfluence = weights.length() / numInfluences
+		numComponentsPerInfluence = weights.length() // numInfluences
 
 		for ii in range(influencePaths.length()):
 			influenceName = influencePaths[ii].partialPathName()
@@ -459,7 +471,7 @@ class SkinCluster(object):
 		weights = self.__getCurrentWeights(dagPath,components)
 		influencePaths = OpenMaya.MDagPathArray()
 		numInfluences = self.fn.influenceObjects(influencePaths)
-		numComponentsPerInfluence = weights.length() / numInfluences
+		numComponentsPerInfluence = weights.length() // numInfluences
 
 		# keep track of whicg imported influences aren't unused
 		unusedImports = []

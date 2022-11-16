@@ -324,7 +324,6 @@ def bipedLegRigTws(
 
 	# Change the name of ik ctrl following place ankle or foot
 	if ikPosi == 'foot':
-
 		ankleIk_ctrl.name = nameSpace + ikPosi + ctrlType + side + '_ctrl'	# footIKLFT_ctrl
 		ikZro_grp.name = nameSpace + ikPosi + ctrlType + side + 'Zro_grp'
 		ankleIkGmbl_ctrl.name  = nameSpace + ikPosi + ctrlType + side + '_gmbCtrl' 

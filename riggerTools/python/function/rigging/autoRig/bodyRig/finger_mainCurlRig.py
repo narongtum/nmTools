@@ -17,6 +17,8 @@ fingerCurl
 
 import maya.cmds as mc
 
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 from function.rigging.util import misc as misc
 reload(misc)
 

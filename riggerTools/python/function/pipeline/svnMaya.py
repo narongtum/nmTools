@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 import os
 import re
 import logging 

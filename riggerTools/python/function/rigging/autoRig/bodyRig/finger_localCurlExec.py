@@ -1,6 +1,8 @@
 
 import maya.cmds as mc
 
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 from function.rigging.autoRig.bodyRig import finger_localCurlRig as finLocRig
 reload(finLocRig)
 
@@ -38,9 +40,9 @@ def creHandStick( nameSpace='' , fingerName = '' , side = '' , charScale = 1 , p
 	localFinger_ctrl.nmCreateController('stick_ctrlShape')
 	localFingerZro_grp = rigTools.zeroGroup( localFinger_ctrl )
 	localFingerZro_grp.name = name + 'Zro_grp'
-	print '''\n
-	creHandStick
-	'''
+	print ('''\n
+		creHandStick
+		''')
 
 
 	localFinger_ctrl.editCtrlShape( axis = charScale * 1.2 )
@@ -73,7 +75,7 @@ def creHandStick( nameSpace='' , fingerName = '' , side = '' , charScale = 1 , p
 	localFinger_ctrl.addAttribute( longName = 'roll' , defaultValue = 0 , keyable = True )
 	localFinger_ctrl.addAttribute( longName = 'stretch' , defaultValue = 0 , keyable = True )
 
-	print localFinger_ctrl.name
+	print (localFinger_ctrl.name)
 	return str(localFinger_ctrl.name)
 
 
@@ -151,6 +153,6 @@ def localFingerAllRig( nameSpace, parentTo, side, fingerName, charScale, numCtrl
 								charScale = charScale 	, 
 								numCtrl = numCtrl 	,
 								parentTo = localStick_grp )
-	print '''\n
-	# = = = = = = = = = Local Finger Rig Complete = = = = = = = = = #
-	'''
+	print ('''\n
+		# = = = = = = = = = Local Finger Rig Complete = = = = = = = = = #
+		''')

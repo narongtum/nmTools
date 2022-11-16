@@ -48,6 +48,70 @@ reload(logger)
 class fileToolsLogger(logger.MayaLogger):
 	LOGGER_NAME = "FileToolsLogger"
 
+MAYA_VERSION = mc.about(v=True)	
+
+
+
+
+
+
+
+
+
+# ========== # 
+# shading
+# ========== # 
+
+
+def transferShade():
+	sel = mc.ls( sl = True )
+	mc.hyperShade( smn = True )
+	refMat = mc.ls(sl=True)[0]
+
+	for each in sel:
+		if not each == sel[0]:
+
+			mc.select( sel , r = True )
+			mc.hyperShade( assign = refMat )
+
+
+def printTexturePath():
+	
+	fileNodes = mc.ls(type="file")
+	# print texture path
+	for each in fileNodes:
+		mc.select(each, r = True)
+		fullName = mc.getAttr(".fileTextureName")
+		print (fullName)
+	mc.select(deselect = True)
+
+
+def replaceTex():
+# tools for autoplace texture by insert manual texture path
+
+
+	if MAYA_VERSION == '2018':
+		texturePath = raw_input('place your new texture path:')
+	elif MAYA_VERSION == '2023':
+		texturePath = input('place your new texture path:')
+
+	fileNode = mc.ls(type='file') # list type 'file' in scene
+	for f in fileNode: # loop for every fileNode
+		mc.select(f,r=True)
+		fullPaht = mc.getAttr('.fileTextureName')
+		print (fullPaht)
+		textureName = fullPaht.split('/')[-1]
+		print (textureName)
+		projectNewName = texturePath + '\\' + textureName 
+		mc.setAttr('.fileTextureName' , projectNewName, type='string')
+
+
+
+
+
+
+
+
 
 # pass the text to copy to clipboard 
 # Ref: https://stackoverflow.com/questions/579687/how-do-i-copy-a-string-to-the-clipboard 
@@ -142,17 +206,21 @@ def openContainerFile( path = None ):
 
 def countJnt():
 	num = 0
-	bindJnt = mc.ls('*_bind_jnt')
+	bindJnt = mc.ls('*_bJnt')
+
 	if bindJnt:
 		for each in bindJnt:
 			num = num + 1
-		print ('The number of bind joint is %i' %num)
+		fileToolsLogger.info('The number of bind joint is %i' %num)
 
 		# remain joint
 		rJnt = 45 - num
 		
-		print ('%i joint remaining' %rJnt)
+		fileToolsLogger.info('%i joint remaining\n' %rJnt)
 		mc.inViewMessage(amg = "<hl>The number of bind joint is %s</hl>" %num, pos = "midCenterTop", fade = True)
+	else:
+		fileToolsLogger.info('There are no joint to count.')
+
 
 
 
@@ -324,7 +392,8 @@ def currentFilePath(filename = None):
 def deleteDisplayLayer():
 	displayLayer = mc.ls(type = 'displayLayer')
 	for each in displayLayer:
-		if each != 'defaultLayer' and each != 'joint' and each != 'controller':
+		# if each != 'defaultLayer' and each != 'joint' and each != 'controller':
+		if each != 'defaultLayer' and each.endswith("_lyr") == False:
 			print ('%s Deleteing %s layer...' %(hashSign,each))
 			mc.delete(each)
 		else:
@@ -340,11 +409,11 @@ def doDeleteGrpTmp():
 		print("No delete_grp found")
 		pass
 
-def doDeleteSuffix(suffix = '_bak'):
+def doDeleteSuffix(suffix = '_bak'): #... delete by suffix name 
 	try:
 		mc.ls('*' + suffix)[0]
 		mc.delete('*' + suffix)
-		fileToolsLogger.info('suffix name "{0}" has been delete.'.format(suffix))
+		fileToolsLogger.info('suffix name "{0}" has been deleted...'.format(suffix))
 	except:
 		fileToolsLogger.info('There is no something to delete.')
 
@@ -586,7 +655,7 @@ def noCareSavAsset( mode = 'local', mayaFile = 'ma', fixedName = False):
 	fullPath = whereAreMe()
 	fileName = ''
 
-	if fixedName:
+	if fixedName and mc.objExists("rig_grp.asset_name"):
 		subName = subName_fixed
 		
 	else:
@@ -775,7 +844,9 @@ def remUnRef():
 
 
 
-
+#####################################################
+#       import and remove namespace              
+#####################################################
 def impRem():
 	allrefs = pm.getReferences(recursive = True )
 	for ref in allrefs:
@@ -811,7 +882,7 @@ def remove_unused_influences(skinCls, targetInfluences=[]):
 
 
 
-def delete_unused_skin(suffix = '*_skc'):
+def delete_unused_skin_suffix(suffix = '*_skc'):
 	'''
 	Remove unused influence following suffix 
 	can use with polygon or skinCluster
@@ -839,7 +910,7 @@ def delete_unused_skin(suffix = '*_skc'):
 def delete_unused_material():
 	if mc.objExists("rig_grp.delete_unused_mat"):
 		mel.eval('MLdeleteUnused()')
-		fileToolsLogger.info('/nUnused material deleted.')
+		fileToolsLogger.info('\nUnused material deleted.')
 	else:
 		pass
 
@@ -848,7 +919,14 @@ def delete_unused_material():
 # local publish
 def localPublish( mayafileType = 'ma'):
 
-
+	ngSkin = mc.ls('ngSkinToolsData_*')
+	if ngSkin:
+		from ngSkinTools2.operations import removeLayerData
+		# remove all ngSkinTools custom nodes in a scene
+		removeLayerData.removeCustomNodes()
+		fileToolsLogger.info('Delete ngSkinTools2...\n')
+	else:
+		fileToolsLogger.info('There are no ngSkinTools skipped...\n')
 
 	# remove unused ref
 	remUnRef() 
@@ -857,7 +935,7 @@ def localPublish( mayafileType = 'ma'):
 	impRem()
 
 	# delete layer
-	# deleteDisplayLayer()
+	deleteDisplayLayer()
 
 	# add new method for re-organize group struture when publish
 	doMoveGrp()
@@ -878,18 +956,12 @@ def localPublish( mayafileType = 'ma'):
 	# count joint
 	countJnt()
 
-	delete_unused_skin()
+	# Hold for now cause invalid
+	delete_unused_skin_suffix()
 
 	delete_unused_material()
 
-	ngSkin = mc.ls('ngSkinToolsData_*')
-	if ngSkin:
-		from ngSkinTools2.operations import removeLayerData
-		# remove all ngSkinTools custom nodes in a scene
-		removeLayerData.removeCustomNodes()
-		fileToolsLogger.info('Delete ngSkinTools2...\n')
-	else:
-		fileToolsLogger.info('There are no ngSkinTools skipped...\n')
+
 
 
 	

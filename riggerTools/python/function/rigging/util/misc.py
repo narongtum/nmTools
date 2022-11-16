@@ -38,7 +38,12 @@ import maya.OpenMaya as om
 
 
 MAYA_VERSION = mc.about(v=True)	
-from function.rigging.util import mayaNodeDict as ext
+from function.rigging.util import generic_maya_dict as ext
+reload(ext)
+
+
+# from function.rigging.util import generic_maya_dict as mnd
+# reload(mnd)
 
 if MAYA_VERSION == '2022':
 	import importlib
@@ -162,7 +167,9 @@ def getShape(node,intermediate=False):
 
 
 
+	
 
+	
 
 
 
@@ -201,6 +208,32 @@ def rawName(name):
 	else:
 		return lastname
 
+def findSide( selection ):
+	side = ''
+	if '_' in selection:
+		spText = selection.split('_')[0]
+		if spText.endswith('LFT'):
+			side = 'LFT'
+		elif spText.endswith('RGT'):
+			side = 'RGT'
+		else:
+			side = ''
+
+		print ('This is %s' %side)
+		return side
+	else:
+		mc.warning('There are no underscore.')
+		return False
+
+# not work I dunno why
+def removeSide(name):
+	if findSide(name):
+		side = findSide(name)
+		index = name.index(side)
+		return (name[:index])
+	else:
+		print('There is no side to splite.')
+		return False
 
 
 
@@ -1035,6 +1068,11 @@ def rotateOffset(tgt, dmpMtx, mulMtx):
 	return quaEul
 
 
+
+
+				
+
+
 def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = True):
 
 	# Add Another version at Core
@@ -1065,8 +1103,8 @@ def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = 
 	print (src)
 	print (type(src))
 
-	mulMtx = tgt + '{0}_mulMtx'.format(tgt)
-	dmpMtx = tgt + '{0}_dmpMtx'.format(tgt)
+	mulMtx = '{0}_mulMtx'.format(tgt)
+	dmpMtx = '{0}_dmpMtx'.format(tgt)
 
 	# FUNC
 	# got call maya API for get object 
@@ -1112,7 +1150,26 @@ def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = 
 	print (' # # # # # # # # #  Matrix parent complete # # # # # # # # # # # #  \n')
 
 
+def del_sel_matrix():
+	selected = mc.ls(sl=True)
+	for each in selected:
+		list_sel = mc.listConnections(each, destination=True)
 
+		for each in list_sel:
+			try:
+				# .. because after delete it will can't find the rest
+				# if each.endswith('_dmpMtx'):
+					# logger.MayaLogger.info('Delete %s' %each)
+					# mc.delete(each)
+				if each.endswith('_quaEul'):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+				if each.endswith('_mulMtx'):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+			except:
+				print('There are no matrix node to delete.')
+	print('Delete Done...')
 
 
 def delMatrixConst(selected):
@@ -1216,20 +1273,5 @@ def parentThis( mo = True, t = True, r = True, s = True):
 
 
 
-def findSide( selection ):
-	side = ''
-	if '_' in selection:
-		spText = selection.split('_')[0]
-		if spText.endswith('LFT'):
-			side = 'LFT'
-		elif spText.endswith('RGT'):
-			side = 'RGT'
-		else:
-			side = ''
-
-		print ('This is %s' %side)
-		return side
-	else:
-		mc.warning('There are no underscore.')
 
 

@@ -965,7 +965,7 @@ class BlendColors ( Node ):
 
 class MultiplyDivineWithVal ( Node ):
 	'''  create MultiplyDivine object  with regsinate operator '''
-	def __init__( self , name , operator):
+	def __init__( self, name, operator):
 		Node.__init__( self , mc.createNode('multiplyDivide', name = name) )
 		self.suffix
 		self.attr('operation').value = operator
@@ -975,8 +975,9 @@ class MultiplyDivineWithVal ( Node ):
 	
 class AddDoubleLinear( Node ):
 	'''  create AddDoubleLinear object  '''
-	def __init__( self, name ):
+	def __init__( self, name, input2=0):
 		Node.__init__( self , mc.createNode( 'addDoubleLinear' , name = name) )
+		self.attr('input2').value = input2
 		# self.suffix
 
 
@@ -1096,6 +1097,10 @@ class QuatToEuler( Node ):
 		Node.__init__(self, mc.createNode('quatToEuler', name = name))
 		self.autoSuffix()
 
+class BlendMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('blendMatrix', name = name))
+		self.autoSuffix()
 
 
 '''
@@ -2413,7 +2418,8 @@ class Joint( Dag ):
 			colorId = 0
 			mc.error("Insert string keyword such as yellow")
 
-	'''
+	
+	# why disable
 	def setJointOutlineColor( self,color ):
 		RGB_dict = mnd.rgbCode
 
@@ -2422,7 +2428,7 @@ class Joint( Dag ):
 			mc.setAttr(   	 '%s.useOutlinerColor' %self.name ,True   )
 			mc.setAttr (	 '%s.outlinerColor' %self.name , colorId[0],colorId[1],colorId[2]	)
 			mm.eval('AEdagNodeCommonRefreshOutliners();')
-	'''
+	
 
 
 	def createJntShape( self , localScale = 1 ):

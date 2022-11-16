@@ -6,22 +6,22 @@ reload( rigTools )
 
 maya generic rig tools
 '''
-from function.framework.reloadWrapper import reloadWrapper as reloader
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
 
 import maya.api.OpenMaya as om
 
 from function.rigging.autoRig.base import core
-reloader(core)
+reload(core)
 
 from function.rigging.tools import dTool as dc 
-reloader(dc)
+reload(dc)
 
 import pymel.core as pm
 
 from function.pipeline import logger 
-reloader(logger)
+reload(logger)
 
 class RigToolsLogger(logger.MayaLogger):
 	LOGGER_NAME = "RigTools"

@@ -46,13 +46,13 @@ import os.path
 # path = r"D:\sysTools\nmTools\riggerTools\python\nmMenu"
 # abs_path = os.path.normpath(path)
 # PROJECT_PATHaaaaa = abs_path.replace(r'\python\nmMenu','')
-PROJECT_PATH = "D:/sysTools/nmTools_github/riggerTools"
+PROJECT_PATH = "D:/sysTools/nmTools/riggerTools"
 
 
 
 
 # naming
-PROJECT_NAME = 'nmMenu_g'
+PROJECT_NAME = 'nmMenu'
 
 # append path
 #sys.path.append(r'D:\True_Axion\Tools\riggerTools\python')
@@ -200,7 +200,7 @@ def runMenu():
 	# mc.menuItem( label = " ZvParentMaster", 		command = "from function.animation import ZvParentMaster\nimportlib.reload(ZvParentMaster)\nZvParentMaster.ZvParentMaster()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
 	
 	# ZvParentMaster Mod Ui
-	mc.menuItem( label = " ZvParentMaster Ui", 		command = "from function.animation import zvParentMaster_tools_ui_mod as zv\nimportlib.reload(zv)\nzv.createGUI()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
+	mc.menuItem( label = " ZvParentMaster Ui", 		command = "from function.animation import zvParentMaster_tools_ui_mod as zv\nreload(zv)\nzv.createGUI()" , ann = "animation tool that helps you to animate objects in mutual contact or interaction with ease." )
 
 	# tweener
 	mc.menuItem( label = "Tweener", 	command = "from function.animation import tweenerUI\nimportlib.reload (tweenerUI)\ntweenerUI.TweenWindow().show()" , ann = "adjust the slider and see the results immediately" )
@@ -224,11 +224,11 @@ def runMenu():
 
 	# mc.menuItem( label = "SNAP IK/FK V3", 			command = "from function.animation import snapFKIKv3\nimportlib.reload(snapFKIKv3)\nsnapFKIKv3.ikfkSnap()" , ann = "Newer SNAP IK/FK for new autoRig" )
 	
-	# mc.menuItem( label = "SNAP IK/FK v4", 			command = "from function.animation import snapFKIKv4\nimportlib.reload(snapFKIKv4)\nsnapFKIKv4.ikfkSnap()" , ann = "2020 SNAP IK/FK for 2020+ autoRig" )
+	mc.menuItem( label = "SNAP IK/FK v4", 			command = "from function.animation import snapFKIKv4\nimportlib.reload(snapFKIKv4)\nsnapFKIKv4.ikfkSnap()" , ann = "2020 SNAP IK/FK for 2020+ autoRig" )
 
 	# mc.menuItem( label = "BakeMocap", 				command = "from function.animation import bakeFromMocap as bfm\nimportlib.reload(bfm)\nrun=bfm.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation"  )
 
-	# mc.menuItem( label = "BakeMocap 90", 			command = "from function.animation import bakeFromMocap90 as bfnine\nimportlib.reload(bfnine)\nrun=bfnine.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation footage that flip 90 degree."  )
+	mc.menuItem( label = "BakeMocap 90", 			command = "from function.animation import bakeFromMocap90 as bfnine\nimportlib.reload(bfnine)\nrun=bfnine.Main()\nrun.bakeGUI()" , ann = "Bake Mocap Animation footage that flip 90 degree."  )
 
 	# mc.menuItem( label = "[EH] BakeAnim", 			command = "from function.animation import bakeAnimationEH as bae\nimportlib.reload(bae)\nrun=bae.Ui()\nrun.createGUI()" , ann = "Bake Animation"    )
 
@@ -239,12 +239,9 @@ def runMenu():
 	# mc.menuItem( label = "[PH] BakeExport", 		command = "from function.animation import bakeAnimationPH as bai\nimportlib.reload(bai)\nrun=bai.Ui()\nrun.createGUI()" , ann = "Bake Animation for HOPE project"    )
 
 	# mc.menuItem( label = "[PH] Delete Translate",	command = "from function.rigging.legacy import deleteTransKeys as deleteTransKeys\nimportlib.reload(deleteTransKeys)\ndeleteTransKeys.deleteKey()" , ann = "Delete translate key from fbx file"  )
-	
-	'''
+
 	mc.menuItem(divider = True)
 	#------------------------------------------------
-	'''
-
 	mc.menuItem( label = "Reset all controller",	command = "from function.rigging import RESET as re\nimportlib.reload(re)\nre.resetAllController(reference = True)" , ann = "Reset Character Pose ( reference only )"   )
 
 	mc.menuItem( label = "Reset controller (nonRef)",	command = "from function.rigging import RESET as re\nimportlib.reload(re)\nre.resetAllController(reference = False)" , ann = "Reset Character Pose ( for rigger )"   )

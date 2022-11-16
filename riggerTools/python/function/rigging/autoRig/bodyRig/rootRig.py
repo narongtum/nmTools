@@ -120,7 +120,7 @@ def createMasterGrp( nameSpace = '' , charScale = ''):
 		# ikJnt_grp.attr(attr).lockHide()
 		noTouch_grp.attr(attr).lockHide()
 
-	# Add asset data attr
+	# Add asset data attribute
 	rig_grp.addAttribute( attributeType = 'enum', en = 'Player:Weapon', longName = 'asset_type', keyable = False   )
 	rig_grp.addAttribute( dataType = 'string' , longName = 'asset_name', keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_skin', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )

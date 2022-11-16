@@ -423,3 +423,22 @@ def _create_ctrl_bJnt_for_glue(
 
 		if parentTo:
 			bindCtrlZro_grp.parent(parentTo)
+
+
+
+
+
+
+"""
+from function.rigging.autoRig.addRig import pinLocatorToSurfac as pls
+reload(pls)
+
+ pls.pin_locator_surface(	# need pxy nrb to drive locator
+							nurbs = 'glue_nrb',
+							region = 'ribCage',
+							side = '',
+							source_loc = ('strapALFT_loc','strapARGT_loc'),
+							locator_scale = 1
+						)
+
+"""

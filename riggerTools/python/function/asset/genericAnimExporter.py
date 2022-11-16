@@ -1,3 +1,8 @@
+#     __________________
+# - -/__ Update __/- - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 
+# Add bake specific ply for switch visibility
+
 # import sys
 # sys.path.append(r'D:\True_Axion\Tools\mayaTools\python')
 
@@ -6,23 +11,27 @@ import maya.mel as mel
 import maya.cmds as mc
 import os
 
-from function.framework.reloadWrapper import reloadWrapper as reloader
-
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.pipeline import fileTools as fileTools 
-reloader(fileTools)
+reload(fileTools)
 
-from function.pipeline import data
-reloader(data)
+from function.pipeline import data_dict as data
+reload(data)
 
 # import socket
 # localMachine = socket.gethostname()
 
 from function.pipeline import logger 
-reloader(logger)
+reload(logger)
 
 PROJECT_NAME = 'Generic'
-version = 1.0
+version = 1.1
+
+# 1. group 'geo_grp' collect all of the skin
+# 2. except than that if have '*_ply' bake the key
+
+
 
 class ExportLogger(logger.MayaLogger):
 	LOGGER_NAME = PROJECT_NAME
@@ -80,6 +89,7 @@ class function:
 			try:
 				allrefs[ref].importContents( removeNamespace = True )
 			except RuntimeError:
+				print ("\nCan't Import ...")
 				pass
 		print ('\nImport and clear namespace ...')
 
@@ -89,24 +99,83 @@ class function:
 		startText =  mc.textField('startTexFld', tx = True, q = True)
 		endText = mc.textField('endTexFld', tx = True, q = True)
 
-		#bake visible mesh
+		
+
+		'''
+		# delete base skin group
+		if mc.objExists('geo_grp'):
+			geometry = 'geo_grp'
+		elif mc.objExists('model_grp'):
+			geometry = 'model_grp'
+
+		mc.delete(geometry)
+		'''
+
+
+		# bake visible mesh
 		bakeAttrs = ['visibility']
 		# check if having ply suffix
+
+		
+		time = ( startText , endText )
+
+		# Check the bake condition
+		# If not DELETE mesh
+
+
+		# lists all the transform nodes in the scene
+		transforms = mc.ls(type='transform') 
+		# filters out all the non-polymesh nodes
+		polyMeshes = mc.filterExpand(transforms, sm = 12 )
+		# remove duplicate name
+		polyMeshes = list(set(polyMeshes)) 
+		bake_mesh = []
+		del_mesh = []
+
+		for each in polyMeshes:
+			if mc.objExists('{0}.bake_mesh'.format(each)):
+				bake_mesh.append(each)
+			else:
+				del_mesh.append(each)
+
+
+
+		# bake_mesh = [each for each in polyMeshes if mc.objExists('{0}.bake_mesh'.format(each)) else ]
+
+		if bake_mesh:
+			mc.select(bake_mesh, add=True)
+			bake_obj = mc.ls(sl=True)
+			mc.playbackOptions(min = startText)
+			mc.playbackOptions(max = endText)
+
+			# bake key
+			mc.bakeResults(bake_obj, simulation = True, t= time, disableImplicitControl = True, preserveOutsideKeys = True, at=bakeAttrs)
+		else:
+			ExportLogger.debug('There are no poly bake for visibility.')
+
+
+
+
+
+		'''
+		# old condition
 		try:
 			mc.select("*_ply", add=True)
+			# mc.select("*_ply", add=True) # why select alot of ply
+			bake_obj = mc.ls(sl=True)
+			
+			mc.playbackOptions(min = startText)
+			mc.playbackOptions(max = endText)
+			
+			# bake key
+			mc.bakeResults(bake_obj, simulation = True, t= time, disableImplicitControl = True, preserveOutsideKeys = True, at=bakeAttrs)
 		except:
-			mc.error('There are no suffix {0}'.format("*_ply"))
+			ExportLogger.debug('There are no poly bake for visibility.')
+		'''
 
-		# mc.select("*_ply", add=True) # why select alot of ply
-		bake_obj = mc.ls(sl=True)
+
 		
-		mc.playbackOptions(min = startText)
-		mc.playbackOptions(max = endText)
-		time = ( startText , endText )
-		
-		mc.bakeResults(bake_obj, simulation = True, t= time, disableImplicitControl = True, preserveOutsideKeys = True, at=bakeAttrs)
-
-
+		# Qury bake joint
 		if mc.objExists( 'Root' ):
 			mc.setAttr( 'Root.v', 1)
 			bakeJnt = mc.ls('*_bind_jnt','Root','*_prop_jnt') # call _jnt
@@ -115,14 +184,16 @@ class function:
 			mc.setAttr( 'root.v', 1)
 			bakeJnt = mc.ls('*_bJnt','root','*_propJnt') # call _jnt
 			rootJnt = 'root'
-		elif mc.objExists( 'rootExtra' ):
-			mc.setAttr( 'rootExtra.v', 1)
-			bakeJnt = mc.ls('*_bJnt','root','*_propJnt') # call _jnt
-			rootJnt = 'rootExtra'
-
 		else:
 			mc.error("There are 'Root' or 'root' in the scene, Please consult Rigger.")
 
+			
+		if mc.objExists("rig_grp.Engine"):
+			ExportLogger.debug('There are having Ik joint.')
+			if mc.getAttr("rig_grp.Engine") == 1:
+				add_unreal_ik_jnt = ('ik_hand_gun', 'ik_hand_l', 'ik_hand_r', 'ik_foot_l', 'ik_foot_r')
+				for each in add_unreal_ik_jnt:
+					bakeJnt.append(each)
 
 		
 		# bakeAttrs = ["tx","ty","tz","rx","ry","rz"]
@@ -132,12 +203,38 @@ class function:
 
 		mc.bakeResults(bakeJnt, simulation = True, t= time, at=bakeAttrs)
 
-		# Delete Rig GRP
-		mc.delete('rig_grp')
+		ExportLogger.debug('BakeResults of Crash sa her.')
 
-		# Delete geo GRP
-		if mc.objExists('geo_grp'):
-			mc.delete('geo_grp')		
+
+		# Just in case unparent 'root' to world
+
+		if mc.pickWalk( rootJnt , d = 'up')[0] == rootJnt:
+			logger.MayaLogger.info("I'm World Already")
+		else:
+			mc.parent(rootJnt, w=True)
+
+		ExportLogger.debug('Deleteing skin and bake key to mesh visibility.')
+		if del_mesh:
+			mc.delete(del_mesh)	
+
+
+		try:
+			# Delete Rig GRP
+			mc.delete('rig_grp')
+
+			# Delete geo GRP
+			if mc.objExists('geo_grp'):
+				mc.delete('geo_grp')
+			else:
+				ExportLogger.debug('There are no geo_grp to delete.')
+
+			
+		except RuntimeError:
+			ExportLogger.debug("Can not find 'rig_grp'/n")
+
+
+
+
 
 
 	def getPath(self,*args):
@@ -153,8 +250,6 @@ class function:
 			rootJnt = 'Root'
 		elif mc.objExists( 'root' ):
 			rootJnt = 'root'
-		elif mc.objExists( 'rootExtra' ):
-			rootJnt = 'rootExtra'		
 			
 		# get path from field
 		path = mc.textField( 'pathField', tx = True, q = True)
@@ -320,7 +415,7 @@ class Ui:
 # run.createGUI()
 
 # from function.asset import genericAnimExporter as gae
-# reloader(gae)
+# reload(gae)
 
 # run = gae.Ui()
 # run.createGUI()

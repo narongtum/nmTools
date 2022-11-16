@@ -44,8 +44,52 @@ import maya.cmds as mc
 from function.rigging.autoRig.base import rigTools
 reload( rigTools )
 
+from function.rigging.autoRig.bodyRig import rootRig
+reload( rootRig )
+
+from function.rigging.autoRig.bodyRig import hipRig
+reload( hipRig )
+
+from function.rigging.autoRig.bodyRig import spineFkRig
+reload( spineFkRig )
+
+# # Option of spine Rig
+from function.rigging.autoRig.bodyRig import spineRig
+reload( spineRig )
+
+from function.rigging.autoRig.bodyRig import neckRig
+reload( neckRig )
+
+from function.rigging.autoRig.bodyRig import headRig
+reload( headRig )
+
+from function.rigging.autoRig.bodyRig import clavicleRig
+reload( clavicleRig )
+
+from function.rigging.autoRig.bodyRig import armRig
+reload( armRig )
+
+from function.rigging.autoRig.bodyRig import fingerRig
+reload( fingerRig )
+
+# change module name please update
+from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
+reload( fingerCurl )
+# change module name please update
+from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
+reload( finloCurl )
+
+from function.rigging.autoRig.bodyRig import bipedLegRig
+reload( bipedLegRig )
+
 from function.rigging.autoRig.bodyRig import ribbonRig
 reload( ribbonRig )
+
+from function.rigging.autoRig.bodyRig import propRig
+reload( propRig )
+
+from function.rigging.feature import baseFingerSpread as baseFinger
+reload(baseFinger)
 
 from function.rigging.autoRig.bodyRig import torsoRig
 reload(torsoRig)
@@ -56,44 +100,34 @@ reload(pc)
 from function.rigging.autoRig import util 
 reload(util)
 
-from function.rigging.autoRig.bodyRig import fkIkGenRig
-reload( fkIkGenRig )
-
 nameSpace = '' 
 
-
+from function.rigging.autoRig.bodyRig import fkIkGenRig
+reload( fkIkGenRig )
 
 
 ribbon = False
 showInfo = False
 
-# = = = = = CHECK CHARACTER HIGHT
+# = = = = = Check charactor hight  = = = = = #
 charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
 
 
 
-# = = = = = CREATE MAIN CONTROLLER 
-from function.rigging.autoRig.bodyRig import rootRig
-reload( rootRig )
-
+# = = = = = 01 Create main Controller = = = = = #
 rootRig.createMasterGrp(	charScale = charScale 	)
 
 
-# = = = = = 02 Create hipRig = = = = = #
-from function.rigging.autoRig.bodyRig import hipRig
-reload( hipRig )
 
+
+# = = = = = 02 Create hipRig = = = = = #
 hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace , 
 				ctrl_grp = 'ctrl_grp'  , tmpJnt = ( 'cog_tmpJnt','hip_tmpJnt' ) , 
 				charScale = charScale, cogPivot = True   )
 
 
-from function.rigging.autoRig.bodyRig import spineFkRig
-reload( spineFkRig )
 
-# # Option of spine Rig
-from function.rigging.autoRig.bodyRig import spineRig
-reload( spineRig )
+
 '''
 # Optional for make spine IK rig
 # = = = = = 03 Create spine IK Rig  = = = = = #
@@ -114,8 +148,6 @@ topSpine_bJnt = spineFkRig.spineRig( 		parentTo = 'ctrl_grp' 								,
 										ctrShape = 'circleCurlUp_ctrlShape'						)
 
 
-from function.rigging.autoRig.bodyRig import neckRig
-reload( neckRig )
 
 # = = = = = 04 Neck Rig = = = = = #
 neck_bJnt = neckRig.neckRig(	
@@ -124,11 +156,6 @@ neck_bJnt = neckRig.neckRig(
 							tmpJnt = (		'neck_tmpJnt' ,'head01_tmpJnt' 	) ,  
 							priorJnt = topSpine_bJnt ,
 							charScale = charScale	)
-
-
-
-from function.rigging.autoRig.bodyRig import headRig
-reload( headRig )
 
 
 
@@ -151,8 +178,7 @@ headRig.headRig(
 
 
 
-from function.rigging.autoRig.bodyRig import clavicleRig
-reload( clavicleRig )
+
 
 # = = = = = 06 clavicleRig LFT = = = = = #
 clavLFT_bJnt = clavicleRig.clavicleRig(		nameSpace = nameSpace 						, 
@@ -179,8 +205,6 @@ clavRGT_bJnt = clavicleRig.clavicleRig(		nameSpace = nameSpace 					,
 
 
 
-from function.rigging.autoRig.bodyRig import armRig
-reload( armRig )
 
 # arm LFT Side
 stickNamLFT, handLFT_bJnt= armRig.armRigExt(
@@ -207,11 +231,6 @@ stickNamLFT, handLFT_bJnt= armRig.armRigExt(
 				showInfo = showInfo ,
 				linkRotOrder = False )
 
-
-
-
-from function.rigging.autoRig.bodyRig import fingerRig
-reload( fingerRig )
 
 # = = = = = 08 Create finger LFT = = = = = #	 		
 fingerLFT = fingerRig.fingerRigExt( 	
@@ -257,15 +276,6 @@ fingerRGT = fingerRig.fingerRigExt(
 
 
 # = = = = = 09 Main finger curl = = = = = #
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
-reload( fingerCurl )
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
-reload( finloCurl )
-
-
-
 fingerCurl.mainFingerCurlRig( 	nameSpace = nameSpace 	 ,
 								fingerName = ('thumb','index','middle','ring','pinky') , 
 								side = 'LFT'  , numCtrl = 3 , zroNam = 'Zro_grp' , 
@@ -290,24 +300,7 @@ finloCurl.localFingerAllRig( 		nameSpace = nameSpace, parentTo='ctrl_grp' , side
 											fingerName = ('thumb','index','middle','ring','pinky') ,
 											charScale= charScale, numCtrl = 3, stickNam = stickNamRGT)
 
-
-
-# FINGER SPREAD
-from function.rigging.feature import baseFingerSpread as baseFinger
-reload(baseFinger)
-
-baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadLFT_tmpJnt' , stick = stickNamLFT , fingerGrpNam = fingerLFT )
-baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadRGT_tmpJnt' , stick = stickNamRGT , fingerGrpNam = fingerRGT )
-
-
-
-
-
-
-# PROP RIG
-from function.rigging.autoRig.bodyRig import propRig
-reload( propRig )
-
+# prop Rig LFT
 propRig.propRig(	nameSpace = nameSpace		,
 					ctrl_grp =  'ctrl_grp' 		,
 					tmpJnt = 'propLFT_tmpJnt' 	,
@@ -324,16 +317,18 @@ propRig.propRig(	nameSpace = nameSpace		,
 					priorJnt ='handRGT_bJnt'		)
 
 
+# add base finger spread 
+baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadLFT_tmpJnt' , stick = stickNamLFT , fingerGrpNam = fingerLFT )
+baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadRGT_tmpJnt' , stick = stickNamRGT , fingerGrpNam = fingerRGT )
 
 
 
 
 
-# LEG RIG
-from function.rigging.autoRig.bodyRig import bipedLegRig
-reload( bipedLegRig )
 
 
+
+# 11 Leg LFT
 bipedLegRig.bipedLegRigExt(
 					nameSpace = '' 	,	
 					parentTo = 'ctrl_grp' ,			
@@ -358,6 +353,7 @@ bipedLegRig.bipedLegRigExt(
 					linkRotOrder = False		)
 
 
+# 11 Leg RGT
 
 bipedLegRig.bipedLegRigExt(
 					nameSpace = '' 	,	

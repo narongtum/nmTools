@@ -1,7 +1,10 @@
 # corrective joint chain
-# by Single cubfrom #rigTip   Corrective Joint Chain-Lds8u3aedkQ
+# by Mateusz Matejczyk
+# https://vimeo.com/295232753
 # destination rigging.corrective
 
+# Source file
+# D:\narongtum\research_and_developement\21.06.Jun.11.Fri_corrective joint chain
 
 '''
 # direct run
@@ -9,10 +12,14 @@ from function.rigging.corrective import correctiveJointChain as cjc
 reload(cjc)
 '''
 
+# Logs
+# 1. Create 3 corrective joint and parent it
+# 2. Change outliner color can't use afer Maya 2023
 
 # TODO
 # try to use MTcon instead _psCons
 
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.rigging.util import misc as misc
 reload(misc)
@@ -155,7 +162,7 @@ def correctiveJointChain(	skinJntA = 'A_jnt'	,
 	# create value slide attr at grp for easy to adjust
 	correctiveJnt_grp.addAttribute( at = 'float', longName = 'vector_offset', keyable = True )
 	correctiveJnt_grp.addAttribute( at = 'float', longName = 'value_slide', keyable = True )
-	correctiveJnt_grp.setOutlineColor('white')
+	# correctiveJnt_grp.setOutlineColor('white')
 
 	# assign value
 	correctiveJnt_grp.attr( 'vector_offset' ).value = offsetValue

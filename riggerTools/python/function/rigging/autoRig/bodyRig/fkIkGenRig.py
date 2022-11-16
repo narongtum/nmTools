@@ -25,7 +25,7 @@ reload( create )
 from function.rigging.tools import proc as pc
 reload(pc)
 
-from function.rigging.util import mayaNodeDict as mnd
+from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 from function.rigging.autoRig.bodyRig import twistRig as tr

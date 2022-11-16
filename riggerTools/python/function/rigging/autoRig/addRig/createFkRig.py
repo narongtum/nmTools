@@ -3,6 +3,7 @@ from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)
 '''
 
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
 
@@ -15,13 +16,6 @@ reload(rigTools)
 from function.rigging.util import misc as misc
 reload( misc )
 
-
-
-
-
-
-
-
 from function.rigging.util import mayaNodeDict as mnd
 reload(mnd)
 
@@ -30,9 +24,10 @@ reload(mnd)
 # Do not use with tempJnt
 def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'ear01LFT_bJnt','ear02LFT_bJnt'  ,'ear03LFT_bJnt')	,
-					charScale = ''	, priorJnt = 'head01_bJnt' 			,
+					charScale = 1	, priorJnt = 'head01_bJnt' 			,
 					side = 'LFT' ,ctrlShape = 'circle_ctrlShape'  , localWorld = False , 
-					color = 'red' , curlCtrl = False ,suffix = '_bJnt',parentToPriorJnt = False	):
+					color = 'red' , curlCtrl = False ,suffix = '_bJnt',parentToPriorJnt = False,
+					parentMatrix = False):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -51,7 +46,7 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 
 	# For loop in tmpJnt 
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
-		# print  num 
+		# print  (num) 
 		ctrl = core.Dag(     '%s%s%02d%s_ctrl'  %(nameSpace , name,( num +1),side)     )
 		ctrl.nmCreateController( ctrlShape )
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
@@ -115,7 +110,7 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 		print('There are having prior joint')
 		# bJnts[0].parent( priorJnt )
 	else:
-		print 'There are no joint arg return blind joint name: %s' %rigGrp.name
+		print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
 		# print 'There are no joint arg return blind joint name: %s' %bJnts[0]
 		
 
@@ -135,45 +130,95 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
 		curl_ctrl.color = 'white'
 		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
+
+		if parentMatrix:
+			# create offset for parent matrix choice 
+			offsetCurl = core.Null('%s%s%sOffset%s_grp'  %(nameSpace, name,'Curl',side))
+			offsetCurl.maSnap(zroGrpCurl)
+			offsetCurl.parent(zroGrpCurl)
+			curl_ctrl.parent(offsetCurl)
+
 		curl_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )
-		curl_parCons = core.parentConstraint( tmpJnt[0],zroGrpCurl , mo = False )
-		# zroGrpCurl.maSnap(tmpJnt[0])
+
+
+		
+		if parentMatrix:
+			
+			# curl_parCons = core.parentConstraint( tmpJnt[0], zroGrpCurl , mo = False )
+			zroGrpCurl.snap(tmpJnt[0])
+			#mc.error('Wrong here...')
+			# misc.parentMatrix( tmpJnt[0], zroGrpCurl.name, mo = True, translate = True, rotate = True, scale = True)
+			misc.parentMatrix( tmpJnt[0], offsetCurl.name, mo = True, translate = True, rotate = True, scale = True)
+			
+
+		else:
+			curl_parCons = core.parentConstraint( tmpJnt[0], zroGrpCurl , mo = False )
+			# zroGrpCurl.maSnap(tmpJnt[0])
+			curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
+		
+
+		'''
+		curl_parCons = core.parentConstraint( tmpJnt[0], zroGrpCurl , mo = False )
 		curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
+		'''
 
 		for eachObj in ofGrps:
-			print type( eachObj )
+			print (type( eachObj ))
 			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
 
 		zroGrpCurl.parent( rigGrp )
-		if priorJnt :
-			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
-			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+
+		# cause proble ignore for now
+
+		
+		if priorJnt:
+				mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+				mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+				
+				'''
+				# cause proble ignore for now
+				if parentMatrix:
+					misc.parentMatrix( priorJnt, rigGrp.name, mo = True, translate = True, rotate = True, scale = True) # problem here if joint orient is zero the grp will be zero no matter is correct axis or not
+				else:
+					mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+					mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+				'''
+				
 
 
-	# If having priorJnt but disable curl then just pa
-	if priorJnt :
+	# If having priorJnt but disable curl then just parentCon
+
+	if priorJnt:
 		if curlCtrl == False:
-			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )   ,mo = True)
-			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side )   ,mo = True)
+			if parentMatrix:
+
+				misc.parentMatrix( priorJnt, rigGrp.name, mo = True, translate = True, rotate = True, scale = True)
+			else:
+				mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )   ,mo = True)
+				mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side )   ,mo = True)
+			
 
 	# create another loop here because of bJnt will wrong orient when constraint and then parent
 	# parent joint to controller
 	# quarantine zone			
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
-		parCons = core.parentConstraint( gmbls[num] , tmpJnt[num]  )
-		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num+1), side	)
+		if parentMatrix:
+			misc.parentMatrix( gmbls[num], tmpJnt[num], mo = True, translate = True, rotate = True, scale = True)
+		else:
+			parCons = core.parentConstraint( gmbls[num] , tmpJnt[num]  )
+			parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num+1), side	)
 		
-		scaleCons = core.scaleConstraint( gmbls[num] , tmpJnt[num]  )
-		scaleCons.name = '%s%s%02d%s_scaleCons'  %(nameSpace, name, ( num+1), side	)
+			scaleCons = core.scaleConstraint( gmbls[num] , tmpJnt[num]  )
+			scaleCons.name = '%s%s%02d%s_scaleCons'  %(nameSpace, name, ( num+1), side	)
 
-		print '\nPARENT IT ...'
+		print ('\nPARENT IT ...')
 
 	# End
 	if parentToPriorJnt:
 		print('mc.parent(jnts[0], priorJnt)')
 		mc.parent(jnts[0], priorJnt)
 
-	print '\nPARENT IT Complete' 
+	print ('\nPARENT IT Complete' )
 	if curlCtrl:
 		# Add return all ctrl name at index 4
 		return gmbls[0] ,rigGrp.name , tmpJnt , zroGrpCurl.name , ctrls
@@ -267,8 +312,8 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 		rigGrp.parent( parentTo )
 		bJnts[0].parent( priorJnt )
 	else:
-		print 'There are no joint arg return blind joint name: %s' %rigGrp.name
-		print 'There are no joint arg return blind joint name: %s' %bJnts[0]
+		print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
+		print ('There are no joint arg return blind joint name: %s' %bJnts[0])
 		
 
 	# create local / world follwer arg #
@@ -293,7 +338,7 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 		curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
 
 		for eachObj in ofGrps:
-			print type( eachObj )
+			print (type( eachObj ))
 			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
 
 		zroGrpCurl.parent( rigGrp )
@@ -314,7 +359,7 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
 		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
 		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num +1), side	)
-		print '\nPARENT IT ...'
+		print ('\nPARENT IT ...')
 
 
 	if curlCtrl:
@@ -350,7 +395,7 @@ def createFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 
 	# For loop in tmpJnt 
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
-		# print  num 
+		# print  (num) 
 		ctrl = core.Dag(     '%s%s%02d%s_ctrl'  %(nameSpace , name,( num +1),side)     )
 		ctrl.nmCreateController( ctrlShape )
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
@@ -432,7 +477,7 @@ def createFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 		curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
 
 		for eachObj in ofGrps:
-			print type( eachObj )
+			print (type( eachObj ))
 			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
 
 		zroGrpCurl.parent( rigGrp )
@@ -453,7 +498,7 @@ def createFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
 		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
 		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num +1), side	)
-		print '\nPARENT IT ...'
+		print ('\nPARENT IT ...')
 
 	return bJnt.name , gmbls[0]
 	# end
@@ -522,9 +567,9 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 	for num in range( 0 , len(tmpJnt)):
 		if num == 0 :
 			# Loop of root controller
-			print '---------------------------'
-			print '%s is root for sure' %tmpJnt[num]
-			print '---------------------------'
+			print ('---------------------------')
+			print ('%s is root for sure' %tmpJnt[num])
+			print ('---------------------------')
 			# tmpName  = tmpJnt[num].split('_')[0]
 			tmpName = checkUnerScore(tmpJnt[num])
 			ctrl = core.Dag(  '%s%s_ctrl'%(nameSpace,tmpName )    )
@@ -557,14 +602,14 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 			# Parent to joint
 			parCons = core.parentConstraint( gimbal , bJnt  )
 			parCons.name = '%s%s_psCons'  %(nameSpace, tmpName	)
-			print '\nParentConstraint ...'			
+			print ('\nParentConstraint ...'			)
 
 
 
 		else:
-			print '---------------------------'
-			print '%s is child for sure' %tmpJnt[num]
-			print '---------------------------'
+			print ('---------------------------')
+			print ('%s is child for sure' %tmpJnt[num])
+			print ('---------------------------')
 			jnts , zros , gmbls =  _createFkChild( tmpJnt=tmpJnt[num] , nameSpace=nameSpace, ctrlShape=ctrlShape, charScale=charScale, color=color,curlCtrl=curlCtrl ,parentTo = parentTo)
 			child_bJnt = jnts[0]
 			zro_grp = zros[0]
@@ -578,9 +623,9 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 
 	if priorJnt :
 		# Parent root grp of this child
-		print '---------------------------'
-		print zroGrp.name
-		print '---------------------------'
+		print ('---------------------------')
+		print (zroGrp.name)
+		print ('---------------------------')
 
 		
 		zroGrp.parent( parentTo )
@@ -612,9 +657,9 @@ def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, pa
 		# tmpName  = tmpJnt[num].split('_')[0]
 		tmpName = checkUnerScore(tmpJnt[num])
 		ctrl = core.Dag(  '%s%s_ctrl'%(nameSpace,tmpName )    )
-		print '****'
-		print '%s%s_ctrl'%(nameSpace,tmpName )
-		print '****'
+		print ('****')
+		print ('%s%s_ctrl'%(nameSpace,tmpName ))
+		print ('****')
 		
 		ctrl.nmCreateController( ctrlShape )
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
@@ -675,7 +720,7 @@ def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, pa
 		curl_parCons.name = '%s%s_psCons'  %(tmpGrps[0],'Curl')
 
 		for eachObj in ofGrps:
-			print type( eachObj )
+			print (type( eachObj ))
 			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
 
 		# Parent curl to ctrlGrp for good alinement
@@ -690,7 +735,7 @@ def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, pa
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
 		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
 		parCons.name = '%s%s_psCons'  %(nameSpace, tmpName	)
-		print '\nParentConstraint ...'
+		print ('\nParentConstraint ...')
 
 	return bJnts , zGrps ,gmbls
 

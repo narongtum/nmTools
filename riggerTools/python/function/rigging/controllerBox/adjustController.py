@@ -333,7 +333,8 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 				child_ctrl.rotateOrder = 'xzy'
 				child_ctrl.hideArnoldNode()
 
-				print ('create gimbal controller')
+				print ('create gimbal controller/n')
+				print (child_ctrl.name)
 				gimbal_ctrl = core.createGimbal( child_ctrl )
 				gimbal_ctrl.hideArnoldNode()
 

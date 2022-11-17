@@ -294,7 +294,7 @@ colorDict = {   'yellow'    : 17 ,          'red'           : 13 ,
 #   |_||_|   |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|
 
 
-
+#... This is duplicate function with adjustController not sure which one is latest
 def createGimbal( obj = '' ):
 
 	ctrl = Dag( obj )
@@ -317,18 +317,23 @@ def createGimbal( obj = '' ):
 
 	# reduce size to 75 percent
 	gmblCtrl.editCtrlShape(axis =   0.75 )
+	#... split name with underscore
 	spName = ctrl.splitName()
 
 
 	# Check naming condition
-	if len(spName)== 2:
+	if len(spName) == 2:
 		gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
 	elif len(spName) == 3:
 		gmblCtrl.rename( spName[0] + '_' + spName[1] +'_gmb' + 'Ctrl' )
 	elif len(spName) == 4:
 		gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] +'_gmb' + 'Ctrl' )
+	elif len(spName) == 5:
+		gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] + spName[3] +'_gmb' + 'Ctrl' )
 	else:
-		mc.warning('element is too much')
+		mc.warning('\nelement is too much')
+		gmblCtrl.rename( ctrl.name +'_gmbCtrl' )
+
 
 
 
@@ -778,11 +783,15 @@ class Node( object ) :
 	def matchAll( self , destination ):
 		mc.matchTransform( self.name  , destination , pivots = True , position = True , rotation = True , scale = True   )
 	
-	def splitName( self ):
+	def splitName( self ): # split name with under score
 		name = self.name
-		newName = []
-		newName = name.split('_')
-		return newName
+
+		if '_' in name:
+			newName = []
+			newName = name.split('_')
+			return newName
+		else:
+			name
 
 	def makeRawName( self ):
 		''' for Test to make return raw name and extract side Example. spine01  '''

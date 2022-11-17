@@ -1,0 +1,16 @@
+/*add comeMenu*/
+
+// userSetup.py is not respond so i add this throught userSetup.mel insted
+source "D:/sysTools/nmTools_github/riggerTools/mel/cometTools/cometMenu.mel" ;
+
+// fail to use userSetup.py use Mel method instead
+python("import importlib");
+
+python("import sys");
+python("import maya.utils");
+python("import importlib");
+python("import maya.cmds as mc");
+python("sys.path.append('D:/sysTools/nmTools_github/riggerTools/python')");
+python("from nmMenu import nmMenu2020 as axm");
+//python("importlib.reload(axm)");
+python("maya.utils.executeDeferred('axm.runMenu()')");

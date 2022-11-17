@@ -42,25 +42,24 @@ import os.path
 
 
 
-PROJECT_PATH = "D:/sysTools/nmTools/riggerTools"
-
-
-
+PROJECT_PATH = "D:/sysTools/nmTools_github/riggerTools"
+abs_path = os.path.normpath(PROJECT_PATH)
 
 # naming
-PROJECT_NAME = 'nmMenu'
+PROJECT_NAME = 'nmMenu_g'
 
 # append path
 
-ICON_PATH = PROJECT_PATH + r'\\image'
+ICON_PATH = os.path.normpath(PROJECT_PATH + r'\\image')
+
 
 # add path
-PLUGINS_PATH = PROJECT_PATH + r"\\python\\function\\plugin\\2023\\"
+PLUGINS_PATH = os.path.normpath(PROJECT_PATH + r"\\python\\function\\plugin\\2023")
 
 
 # animlibrary
 
-ANIMLIB_PATH = PROJECT_PATH + r'\\python\\function\\animation\\studiolibrary2023\\src'
+ANIMLIB_PATH = os.path.normpath(PROJECT_PATH + r'\\python\\function\\animation\\studiolibrary2023\\src')
 if not os.path.exists(ANIMLIB_PATH):
 	raise IOError(r'The source path {0} does not exist!'.format(ANIMLIB_PATH))
 if ANIMLIB_PATH not in sys.path:
@@ -69,7 +68,7 @@ if ANIMLIB_PATH not in sys.path:
 
 
 # load plugins
-# mc.loadPlugin( PLUGINS_PATH + "AnimSchoolPicker.mll", quiet = True)
+mc.loadPlugin( PLUGINS_PATH + "\\AnimSchoolPicker.mll", quiet = True)
 
 def reloadMenu():
 	if pm.menu( 'MayaWindow|%s' %PROJECT_NAME , exists = True):

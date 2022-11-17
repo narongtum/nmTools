@@ -1,8 +1,8 @@
 # D:\narongtum\research_and_developement\22.08.Aug.19.Fri.14_Imprement Parent Matrix
 
 '''
-from function.rigging.constraint import matrixConstraint
-reload(matrixConstraint)
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 '''
 
 
@@ -44,12 +44,16 @@ def _getLocalOffset(parent, child):
 
 
 
+def createMatrixAttr(selected, attrNam = 'destination'):
+	mc.addAttr(selected, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
 
-def aimConstraint():
-	pass
+
 	
-def matrixConstraint(source, target,mo=True, translate=True, rotate=True, scale=True):
+def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
+	if not source:
+		print('source is not selected.')
+		return 0
 
 
 	# mo = True
@@ -137,7 +141,9 @@ def matrixConstraint(source, target,mo=True, translate=True, rotate=True, scale=
 
 	#... Force the rotateOrder of target to the same as source
 	# rotOrder = mc.getAttr( target + '.rotateOrder' )
-	source_rotOrder = mc.getAttr( source + '.rotateOrder' )
+
+	Constraint.info(type(source))
+	source_rotOrder = mc.getAttr( str(source) + '.rotateOrder' )
 	obj_target.attr('rotateOrder').value = source_rotOrder
 
 	#target_quatToEuler.attr('inputRotateOrder').value = source_rotOrder
@@ -177,8 +183,11 @@ def matrixConstraint(source, target,mo=True, translate=True, rotate=True, scale=
 		logger.MayaLogger.info("I'm World Already")
 	elif mc.pickWalk( target, d = 'up')[0] != target:
 		world = mc.pickWalk( target, d = 'up')[0]
-
-		mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[2]' )
+		Constraint.warning('Warning .matrixIn[2] may occupire. consider to fix it.')
+		if mc.listConnections(multMatrix.name + '.matrixIn[2]')[0]:
+			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[3]' )
+		else:
+			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[2]' )
 
 
 	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
@@ -210,7 +219,7 @@ def matrixConstraint(source, target,mo=True, translate=True, rotate=True, scale=
 	# mc.listConnections( obj_target.name + '.' + 'm_quatToEuler')[0]
 	 
 	mc.select(target, r=True)
-	print (' # # # # # # # # #  Matrix parent complete # # # # # # # # # # # #  \n')
+	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
 	return obj_target, obj_source
 
 
@@ -257,15 +266,17 @@ def aimConMatrix(	baseName = 'aimMax',
 	mult_mat = core.MultMatrix(baseName+'Mult')
 	mult_mat.attr('matrixSum') >> aim_mat.attr('inputMatrix')
 
-	decompose_mat = core.DecomposeMatrix(baseName+'Decom')
+	decompose_mat = core.DecomposeMatrix(baseName)
 	aim_mat.attr('outputMatrix') >> decompose_mat.attr('inputMatrix')
 
 	decompose_mat.attr('outputRotate') >> obj_target.attr('rotate')
 
-	composeOffset_mat = core.ComposeMatrix(baseName+'Offset_Decom')
+	composeOffset_mat = core.ComposeMatrix(baseName+'Offset')
 	obj_target.attr('translate') >> composeOffset_mat.attr('inputTranslate')
 
 	composeOffset_mat.attr('outputMatrix') >> mult_mat.attr('matrixIn[0]')
 	obj_target.attr('parentMatrix') >> mult_mat.attr('matrixIn[1]')
+
+	Constraint.info(' # # # # # # # # # Aim matrix Complete# # # # # # # # # # # #  \n')
 
 	return obj_target

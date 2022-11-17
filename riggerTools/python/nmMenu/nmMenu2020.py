@@ -26,24 +26,27 @@ import os.path
 
 
 # find variable enviroment
-path = os.path.dirname(os.path.abspath(__file__))
+# path = os.path.dirname(os.path.abspath(__file__))
+path = r'D:\sysTools\nmTools_github\riggerTools\python\nmMenu'
+
+
 abs_path = os.path.normpath(path)
 PROJECT_PATH = abs_path.replace(r'\python\nmMenu','')
 
 
 # add path
-PLUGINS_PATH = PROJECT_PATH + "\\python\\function\\plugin\\2018\\"
+PLUGINS_PATH = PROJECT_PATH + "\\python\\function\\plugin\\2020\\"
 
 # load plugins
-mc.loadPlugin( PLUGINS_PATH + "AnimSchoolPicker.mll", quiet = True)
+#mc.loadPlugin( PLUGINS_PATH + "AnimSchoolPicker.mll", quiet = True)
 
 # naming
-PROJECT_NAME = 'nmMenu'
+PROJECT_NAME = 'nmMenu_g'
 
 # append path
 #sys.path.append(r'D:\sysTools\nmTools\riggerTools\python')
 iconPath = PROJECT_PATH + r'\\image'
-
+iconPath = os.path.normpath(iconPath)
 
 
 

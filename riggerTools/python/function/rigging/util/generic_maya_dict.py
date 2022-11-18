@@ -82,7 +82,8 @@ NODE_dict = [
 	{	'longName': 'quatInvert'							,	'shortName': 'quatInvert'					},
 	{	'longName': 'quatProd'								,	'shortName': 'quatProd'						},
 	{	'longName': 'quatToEuler'							,	'shortName': 'quatToEuler'					},
-	{	'longName': 'blendMatrix'							,	'shortName': 'blendMat'					}
+	{	'longName': 'blendMatrix'							,	'shortName': 'blendMat'					},
+	{	'longName': 'blendShape'							,	'shortName': 'bsh'					}
 	
 
 ]

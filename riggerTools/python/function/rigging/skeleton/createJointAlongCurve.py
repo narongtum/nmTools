@@ -1,5 +1,5 @@
 import maya.cmds as mc
-
+from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.util import misc
 reload(misc)
 
@@ -26,7 +26,7 @@ class buildUI(object):
 	def __init__(self):
 		self.winName = 'jntAlong_CurveUI'
 		self.winTitle = 'Set up a joint along selected curve'
-		print 'Initiation building %s UI' %self.winTitle
+		print ('Initiation building %s UI' %self.winTitle)
 
 		 
 
@@ -77,7 +77,7 @@ class buildUI(object):
 		previousJnt = ''
 
 		if not mc.checkBox( 'fiboBox' ,value = True ,q=True ):
-			print 'You choose to devide same length'
+			print ('You choose to devide same length')
 
 
 
@@ -86,7 +86,7 @@ class buildUI(object):
 			for i in range( 0, jointAmount ):
 				mc.select( cl=True )
 				newJnt = mc.joint(  name = '{0}{1}{2:02d}{3}'.format( prefix , name ,i+1, suffix )  )
-				print 'This is joint name >>> {0}{1}{2:02d}{3}'.format( prefix , name ,i+1, suffix )
+				print ('This is joint name >>> {0}{1}{2:02d}{3}'.format( prefix , name ,i+1, suffix ))
 				motionPath = mc.pathAnimation(newJnt, c = curveSelected, fractionMode = True )
 				# delete key
 				mc.cutKey( motionPath + ".u", time = () )
@@ -134,7 +134,7 @@ class buildUI(object):
 
 			# sum number in list method 1
 			spNum = fibo[:jointAmount]
-			print sum(spNum)
+			print (sum(spNum))
 			total = 0
 			sumVal = []
 
@@ -158,17 +158,17 @@ class buildUI(object):
 			else:
 				direct = True
 
-			print 'direct is %s' %direct
+			print ('direct is %s' %direct)
 			sumVal = sorted( sumVal, reverse = direct )
-			print 'sum of value is ' + str(sum(sumVal))
+			print ('sum of value is ' + str(sum(sumVal)))
 
 			# insert 0 for make it match with input
 			sumVal.insert(0,0)
 
 
-			print '********'																	
-			print sumVal
-			print '*********\n'	
+			print ('********')												
+			print (sumVal)
+			print ('*********\n')	
 
 			previousVal = 0
 
@@ -186,7 +186,7 @@ class buildUI(object):
 
 				motionPath = mc.pathAnimation( newJnt, c = curveSelected, fractionMode = True )
 				mc.cutKey( motionPath + ".u", time = () )
-				print sumVal[i]
+				print (sumVal[i])
 
 				previousVal += sumVal[i]
 
@@ -263,7 +263,7 @@ class buildUI(object):
 	
 		# if textField is empty us name of curve instead
 		if name == '':
-			print 'textField is empty us name of curve instead.'
+			print ('textField is empty us name of curve instead.')
 			name = mc.ls(sl=True)[0]
 
 		if isNode == 'nurbsCurve':

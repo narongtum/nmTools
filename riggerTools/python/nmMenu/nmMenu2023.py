@@ -373,7 +373,7 @@ def runMenu():
 
 	mc.menuItem( label = "Create ZroGrp", 	command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nccr.createZroGrp()" )
 
-	mc.menuItem( label = "Create Controller at Selected" , command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nccr.creControllerFunc()", ann = "create Controller selected.")
+	mc.menuItem( label = "Create Controller at Selected" , command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nselected = mc.ls(sl=True)\nccr.creControllerFunc(selected)", ann = "create Controller selected.")
 
 	mc.menuItem( label = "rrRigBox CreateController" , command = "from function.rigging.Rigbox_Reborn_Curves_Tool import rr_main_curves as rrCurves\nimportlib.reload(rrCurves)\nrrCurves.window_creation()", ann = "A Maya tool to help with control icon creation and other basic rig construction tasks from Jennifer Conley.")
 

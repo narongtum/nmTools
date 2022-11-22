@@ -3,6 +3,12 @@ from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)
 '''
 
+
+'''
+ Collection of FK additional controller
+'''
+
+
 from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
@@ -20,8 +26,8 @@ from function.rigging.util import mayaNodeDict as mnd
 reload(mnd)
 
 
-# fk the attatch with arg directly
-# Do not use with tempJnt
+#... FK the attatch with joint in Arg directly
+#... Do not use with tempJnt
 def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'ear01LFT_bJnt','ear02LFT_bJnt'  ,'ear03LFT_bJnt')	,
 					charScale = 1	, priorJnt = 'head01_bJnt' 			,

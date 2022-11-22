@@ -1,4 +1,4 @@
-# FK Finger Rig
+# FK Five Finger Rig
 import maya.cmds as mc
 
 from function.framework.reloadWrapper import reloadWrapper as reload
@@ -497,6 +497,7 @@ def connect_finger_value(stickNam = '',fingerName = ('thumb', 'index', 'middle',
 
 		offset_one.attr('rotateX') >> resistance.attr( 'input1' )
 		resistance.attr( 'output' ) >> offset_base.attr('rotateX')
-		# Conect value from stick to MDL
-		stick_ctrlShape.attr( 'middleBase' ) >> resistance.attr('multiply')
-	print ('End of Connect five finger %s rig' %(side ))
+		#... Conect value from stick to MDL
+		#... Fixed specname cause error to use variable instead
+		stick_ctrlShape.attr( each + 'Base' ) >> resistance.attr('multiply')
+	print ('\nEnd of Connect five finger %s rig' %(side ))

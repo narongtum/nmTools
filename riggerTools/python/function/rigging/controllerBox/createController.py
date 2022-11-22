@@ -51,7 +51,7 @@ class ControlMaker( object ) :
 					'cube' , 'double' , 'orient' , 
 					'quad' , 'ring' , 'sphere' , 
 					'square' , 'stick' ,'placement' , 
-					'hat' , 'plus'
+					'hat' , 'plus','gear'
 					)
 
 		for label in labels :
@@ -159,6 +159,9 @@ class ControlMaker( object ) :
 
 		elif label == 'plus':
 			self.createController(shapeName = 'plus_ctrlShape')
+
+		elif label == 'gear':
+			self.createController(shapeName = 'gear_ctrlShape')
 
 
 

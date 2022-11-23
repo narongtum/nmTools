@@ -556,7 +556,7 @@ def checkUnerScore(name):
 
 
 
-# new function for create fk chaing rig with multiple child 
+# new function for create fk chain rig with multiple child 
 # use with temp joint
 def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 						tmpJnt = (  'hairRoot_tmpJnt' , ['hairA1_tmpJnt','hairA2_tmpJnt','hairA3_tmpJnt'] , ['hairB1_tmpJnt','hairB2_tmpJnt','hairB3_tmpJnt'] 	)		,

@@ -1064,9 +1064,10 @@ class ComposeMatrix( Node ):
 		self.autoSuffix()
 
 class VectorProduct( Node ):
-	def __init__(self,name):
+	def __init__(self,name,operator = 0):
 		Node.__init__(self, mc.createNode('vectorProduct', name = name))
 		self.autoSuffix()
+		self.attr('operation').value = operator
 
 class FourByFourMatrix( Node ):
 	def __init__(self,name):
@@ -1110,6 +1111,15 @@ class BlendMatrix( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('blendMatrix', name = name))
 		self.autoSuffix()
+
+class PointMatrixMult(Node):
+	def __init__(self, name, enable = True, inPoint = (0,0,0)):
+		Node.__init__(self, mc.createNode('pointMatrixMult', name = name))
+		self.attr('vectorMultiply').value = enable
+		self.attr('inPointX').value = inPoint[0]
+		self.attr('inPointY').value = inPoint[1]
+		self.attr('inPointZ').value = inPoint[2]
+
 
 
 '''

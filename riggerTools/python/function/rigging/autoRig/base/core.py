@@ -1232,12 +1232,19 @@ class MotionPath( _motionPath ):
 
 
 class RemapCurve(Node):
-	def __init__(self, name, positive, defaultValue = (0,1,0,1)):
+	def __init__(self, name, positive = True, defaultValue = (0,1,0,1),value_Position = 1,value_FloatValue = 1):
 		Node.__init__(self, mc.createNode('remapValue', name = name))
 		self.attr('inputMin').value = defaultValue[0]
 		self.attr('inputMax').value = defaultValue[1]
 		self.attr('outputMin').value = defaultValue[2]
 		self.attr('outputMax').value = defaultValue[3]
+
+		self.attr('value[1].value_Position').value = value_Position
+		self.attr('value[1].value_FloatValue').value = value_FloatValue
+
+		self.attr('value[2].value_FloatValue').value = 1
+		self.attr('value[2].value_Position').value = 1
+
 		self.suffix
 
 		if positive:

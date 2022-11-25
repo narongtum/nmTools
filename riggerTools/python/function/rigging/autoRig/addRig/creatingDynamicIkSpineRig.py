@@ -75,8 +75,8 @@ def createDynamicTail(
 		baseName = 'breast',
 		firstJnt = 'breast01LFT_bJnt' ,
 		lastJnt = 'breast02LFT_bJnt'  ,		
-		selectedHairSystem = ''			, # if the HairSystem is already exists name here?
-		stick = ''						,
+		selectedHairSystem = ''			, #... if the HairSystem is already exists name here?
+		stick = ''						, #... can blank if no HairSystem
 		charScale = 1					,
 		nameSpace = ''					,
 		curlCtrl = False				,
@@ -164,7 +164,9 @@ def createDynamicTail(
 	## After executing this command,
 	## it created hairSystemShape itself
 	## is selected by default.
+	#... beware listHistory it will qury the old hairSystem by not intended
 	dynItemsRaw = mc.listHistory()
+	print(dynItemsRaw)
 
 
 	# function organizeDynItems
@@ -354,7 +356,7 @@ def createDynamicTail(
 	# dup fk joint chain to ik joint
 	ikSpGen_jnt_grp = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = baseName + 'Ik' , parentTo = ''  ,
 						tmpJnt = 	fkJntChain	,
-						charScale = 1	, priorJnt = '' 			,
+						charScale = charScale	, priorJnt = '' 			,
 						side = side ,ctrlShape = ctrlShape  , localWorld = False , 
 						color = 'white' , curlCtrl = curlCtrl ,suffix = '_ikJnt'	)
 										
@@ -652,6 +654,7 @@ def createDynamicTail(
 jnt_grp = mc.group(em=True, name = 'skirtDynJnt_grp')
 rig_grp = mc.group(em=True, name = 'skirtDynRig_grp')
 #rig_grp = mc.group(em=True, name = 'skirtDynRig_grp')
+dyn_grp = mc.group(em=True, name = 'skirtDyn_grp')
 mc.parent( rig_grp ,'hip_gmbCtrl' )
 
 

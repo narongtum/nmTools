@@ -187,14 +187,14 @@ def writeJsonFile( dataWrite , filePath , step ):
 	print ('\n')
 	print (hashSign + ' witre data complete ' + hashSign)
 
-# solution
-# https://github.com/agiliq/django-graphos/issues/36 
+#... solution
+#... https://github.com/agiliq/django-graphos/issues/36 
 
-# get skin joint list
-# input full path
-# must put r for raw string
-# Input: write skinCluster
-# Result: skinname and skinjointlist
+#... get skin joint list
+#... input full path
+#... must put r for raw string
+#... Input: write skinCluster
+#... Result: skinname and skinjointlist
 def getSkinJntLst():
 	filePath = raw_input( "\nInput Data Path:	" )
 	
@@ -216,7 +216,7 @@ def getSkinJntLst():
 
 
 '''
-######################## run command function
+#... Run command manual 
 '''
 
 
@@ -245,7 +245,7 @@ def _processPath():
 	return filePath
 
 
-# include joint skin list
+#... include joint skin list
 def exportWeightData():
 
 
@@ -386,7 +386,10 @@ def importWeightData():
 	# filePath  	= 	dirPath + '%sData.json' %skinClusterNam
 	# vertexData 	= 	wcd.loadData(filePath)
 
-	# Import skinWeight data 
+	# .......................#
+	# Import skinWeight data #
+	# .......................#
+
 	if len(vertexData) > 0:
 		
 		for key in vertexData.keys():

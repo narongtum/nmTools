@@ -7,11 +7,11 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
-from function.rigging.util import misc as misc
+from function.rigging.util import misc 
 reload( misc )
 
-from function.rigging.autoRig.bodyRig import ribbonRig
-reload( ribbonRig )
+# from function.rigging.autoRig.bodyRig import ribbonRig
+# reload( ribbonRig )
 
 from function.rigging.autoRig.bodyRig import midLockModule
 reload( midLockModule )
@@ -35,8 +35,7 @@ from function.rigging.autoRig.bodyRig import fkIkTwistGenRig as fitr
 reload( fitr )
 
 
-from function.rigging.util import misc as misc
-reload(misc)
+
 
 import logging
 logger = logging.getLogger('debug_text')

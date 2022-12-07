@@ -1,4 +1,5 @@
-# Ribbon rig another version
+#... Ribbon rig latest version
+#... uncheck scale segment compensage
 
 '''
 from function.rigging.autoRig.bodyRig import ribbonRigExt as rbnExt
@@ -951,8 +952,7 @@ def ribbonRigExt(	nameSpace = ''	,
 		subBind_jnt.attr('overrideColor').value = 3
 		subBind_jnt.rotateOrder = armRotOrder
 
-		# Turn off segmentScaleCompensate for make it scalable
-		subBind_jnt.attr('segmentScaleCompensate').value = 0
+
 
 		subBind_jnt.maSnap(each)
 
@@ -966,6 +966,9 @@ def ribbonRigExt(	nameSpace = ''	,
 		# edit add freeze
 		subBind_jnt.freeze()
 
+		#...Turn off segmentScaleCompensate for make it scalable(shif to here I dunno why not work if place above)\
+		print('\nTurn off segmentScaleCompensate')
+		subBind_jnt.attr('segmentScaleCompensate').value = 0
 
 		# misc.snapParentConstr( each ,  subBind_jnt.name , mo = False , name = rawNam + '_parCons')
 		# edit change to 'True' instead

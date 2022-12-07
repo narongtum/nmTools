@@ -1,11 +1,24 @@
+#... All about matrix constraint
+
+
 # D:\narongtum\research_and_developement\22.08.Aug.19.Fri.14_Imprement Parent Matrix
 
 '''
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
+sel = mc.ls(sl=True)
+mtc.parentConMatrix( sel[0], sel[1], mo = True, translate = True, rotate = True, scale = True)
+
 '''
 
 
+'''
+from function.rigging.util import misc as misc
+from function.framework.reloadWrapper import reloadWrapper as reload
+reload(misc)
+sel = mc.ls(sl=True)
+misc.parentMatrix( sel[0], sel[1], mo = True, translate = True, rotate = True, scale = True)
+'''
 
 
 

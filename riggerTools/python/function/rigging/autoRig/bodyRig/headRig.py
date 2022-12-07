@@ -291,6 +291,35 @@ def headRig(	nameSpace = '' ,
 		jaw01Lwr_parCons.name = part + 'Jnt_parCons'
 		jaw01LwrZro_grp.parent( headGmbl_ctrl )
 
+		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+		# (UPDATE)Lower Gum setup 
+		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+
+		part = nameSpace + 'jaw02Lwr'
+		jaw02Lwr = core.Dag( part + '_ctrl' )
+		jaw02Lwr.nmCreateController('squareExpand_ctrlShape')
+		jaw02Lwr.editCtrlShape( axis = charScale * 2.8)
+		jaw02Lwr.scaleShape(  scale = (  1, 1 , 1 )  )
+		jaw02Lwr.moveShape(  move = (  0  ,0 , charScale * 1.12  )  )
+		jaw02LwrZro_grp = rigTools.zeroGroup( jaw02Lwr )
+		jaw02LwrZro_grp.name = part + 'Zro_grp'
+		jaw02GmblLwr_ctrl = core.createGimbal( jaw02Lwr )
+		jaw02Lwr.color = 'red'
+		jaw02Lwr.rotateOrder = headRotOrder
+		jaw02GmblLwr_ctrl.rotateOrder = headRotOrder
+		jaw02LwrZro_grp.snap( jaw2Lwr_bJnt )
+		jaw2Lwr_bJnt.attr('segmentScaleCompensate').value = 0
+		# Constraint joint parent of controller
+		jaw02Lwr_parCons = core.parentConstraint( jaw02GmblLwr_ctrl , jaw2Lwr_bJnt )
+		jaw02Lwr_parCons.name = part + 'Jnt_parCons'
+		jaw02LwrZro_grp.parent( jaw01GmblLwr_ctrl )
+
+
+
+
+
+
+
 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 		# Eye center rig 

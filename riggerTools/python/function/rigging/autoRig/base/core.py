@@ -2350,6 +2350,7 @@ class Joint( Dag ):
 
 	def __init__( self , name = 'joint_1'):
 		Dag.__init__( self , mc.createNode('joint' , name = name )  )
+		#... Disable seqment scale compensage as a default (Disable here if anythin wrong.)
 
 
 

@@ -559,8 +559,10 @@ def createDynamicTail(
 		enable_cnd = core.Condition(baseName + side)
 		enable_cnd.suffix
 
-		# set inital value
-		enable_cnd.attr('colorIfTrueR').value = 1
+		#... set inital value
+		#... change from 1 to 0 for use simulation method to 'Off' instead 'Static' (static make join alway jiggle whan translate controller)
+		# enable_cnd.attr('colorIfTrueR').value = 1
+		enable_cnd.attr('colorIfTrueR').value = 0
 		enable_cnd.attr('colorIfFalseR').value = 3	
 
 		# ctrl >> condition

@@ -6,3 +6,5 @@ riggerTools/python/nmMenu/__pycache__/nmMenu2022.cpython-37.pyc
 riggerTools/python/function/rigging/constraint/__pycache__/matrixConstraint.cpython-39.pyc
 *.pyc
 *.pyc
+riggerTools/python/nmMenu/__pycache__/nmMenu2022.cpython-37.pyc
+*.pyc

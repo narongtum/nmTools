@@ -1,11 +1,24 @@
-#... source ...\research_and_developement\22.11.Nov.16.Wed.15_Round value
+#... source ...research_and_developement\22.11.Nov.16.Wed.15_Round value
+#... destination ...function.rigging.skin
+
+
+
+'''
+from function.rigging.skin import roundSkinWeight as rsw
+reload(rsw)
+rsw.roundSkinWeight(digit=3, selection='')
+
+'''
+
 
 from function.rigging.skin import autoReadWriteSkin as skin
 reload (skin)
 
-def roundSkinWeight(digit=3,selection=''):
+def roundSkinWeight(digit=3, selection=''):
 
 	selection = mc.ls(sl = True, fl = True)
+	if selection == None:
+		return False
 	each = selection[0]
 	mc.select( each , r = True)
 	# get vertex data
@@ -37,53 +50,74 @@ def roundSkinWeight(digit=3,selection=''):
 
 
 		else:
-			extractNum = []
+			VtxWeight = []
 			for i in range (len(eachVtx)):
-				extractNum.append(eachVtx[i][1])
+				#... get only number
+				VtxWeight.append(eachVtx[i][1])
 				
 
 			#... go to round number
-			VtxWeight=extractNum
+			# VtxWeight=extractNum
 			
 			
 			total = 0
 			diff = 0
 			VtxWeightNum=len(VtxWeight)
-			VtxWeightValue=[]
-
+			vtxWeightValueList=[]
+			#... round value here
 			if len(VtxWeight) > 0:
 				for each in range(len(VtxWeight)):
 					float_num = round(VtxWeight[each], digit)
-					VtxWeightValue.append(float_num)
-					print(VtxWeightValue)
+					vtxWeightValueList.append(float_num)
+					print(vtxWeightValueList)
 
-			for each in range(len(VtxWeightValue)):
-				total = total + VtxWeightValue[each]
+			#... sum value
+			
+			for each in range(len(vtxWeightValueList)):
+				total = total + vtxWeightValueList[each]
 					
 			if total > 1:
-				biggest = 0
-				for each in range(len(VtxWeightValue)):
-					if VtxWeightValue[each] > VtxWeightValue[biggest]:
-						biggest = each
+				#... change the condition
+				#... find index of max value
+				max_index = vtxWeightValueList.index(max(vtxWeightValueList))
+
+				diff = max(vtxWeightValueList) - (total - 1.00)
+				diff = format(diff,".3f")
+				
+				vtxWeightValueList[max_index] = float(diff)
+				
+
+				# biggest = 0
+				# for each in range(len(vtxWeightValueList)):
+				# 	if vtxWeightValueList[each] > vtxWeightValueList[biggest]:
+				# 		biggest = each
 						
-					diff = round(1 - total)
-					VtxWeightValue[biggest] = round((VtxWeightValue[biggest] + diff), digit)
+				# 	diff = round(1 - total)
+				# 	vtxWeightValueList[biggest] = round((vtxWeightValueList[biggest] + diff), digit)
 					
 			elif total < 1:
-				biggest = 0
-				for each in range(len(VtxWeightValue)):
-					if VtxWeightValue[each] > VtxWeightValue[biggest]:
-						biggest = each
+				#... change the condition
+				#... find index of max value
+				max_index = vtxWeightValueList.index(max(vtxWeightValueList))
+				diff = max(vtxWeightValueList) + (1.00 - total)
+				diff = format(diff,".3f")
+				vtxWeightValueList[max_index] = float(diff)
+
+				# biggest = 0
+				# for each in range(len(vtxWeightValueList)):
+				# 	if vtxWeightValueList[each] > vtxWeightValueList[biggest]:
+				# 		biggest = each
 						
-					diff = round(1-total,digit)
-					VtxWeightValue[biggest] = round((VtxWeightValue[biggest] + diff), digit)		
+				# 	diff = round(1-total,digit)
+				# 	vtxWeightValueList[biggest] = round((vtxWeightValueList[biggest] + diff), digit)		
 				
 			total=0
-			for each in range(len(VtxWeightValue)):
-				total = total + VtxWeightValue[each]
+			for each in range(len(vtxWeightValueList)):
+				total = total + vtxWeightValueList[each]
 				
 			if total != 1:
-			    print(mc.warning('The value is more than 1 why.'))
+				print(mc.warning('THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, total)))
+				#return False
 
 
 
@@ -91,7 +125,7 @@ def roundSkinWeight(digit=3,selection=''):
 			for i in range (len(eachVtx)):
 				
 				eachVtx[i]=list(eachVtx[i])
-				eachVtx[i][1] = VtxWeightValue[i]
+				eachVtx[i][1] = vtxWeightValueList[i]
 				eachVtx[i]=tuple(eachVtx[i])
 
 

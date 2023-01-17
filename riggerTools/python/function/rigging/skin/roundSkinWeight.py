@@ -4,13 +4,19 @@
 
 
 '''
+from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.skin import roundSkinWeight as rsw
 reload(rsw)
-rsw.roundSkinWeight(digit=3, selection='')
+selected = mc.ls(sl=True)[0]
+rsw.roundSkinWeight(digit=3, selection=selected)
 
 '''
 
 
+import maya.cmds as mc
+
+
+from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.skin import autoReadWriteSkin as skin
 reload (skin)
 

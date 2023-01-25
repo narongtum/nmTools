@@ -19,7 +19,7 @@ logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 # logging.disable(logging.CRITICAL)
 
-def createMasterGrp( nameSpace = '' , charScale = ''):
+def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 
 	
 
@@ -121,10 +121,34 @@ def createMasterGrp( nameSpace = '' , charScale = ''):
 		noTouch_grp.attr(attr).lockHide()
 
 	# Add asset data attribute
+	#... Add extre matedada
+	# rig_grp.addAttribute( dataType = 'string' , longName = 'Project')
+	# rig_grp.addAttribute( longName = 'Version', at = 'float'  , min = 0  , keyable = False )
+	# rig_grp.addAttribute( dataType = 'string' , longName = 'Base_Dir')
 	rig_grp.addAttribute( attributeType = 'enum', en = 'Player:Weapon', longName = 'asset_type', keyable = False   )
 	rig_grp.addAttribute( dataType = 'string' , longName = 'asset_name', keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_skin', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_material', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
+	# rig_grp.addAttribute( attributeType = 'message' , longName = 'Meta_child')
+
+
+	# Add metaRoot
+	metaNode = core.MetaRoot('root_meta')
+
+	if PROJECT_DICT:
+		#... set metadata for rig grp
+		rig_grp.setAttribute('asset_name', PROJECT_DICT['asset_name'], type = 'string' )
+
+		#... set metadata for meta rig
+		metaNode.setAttribute('Project'  , PROJECT_DICT['project'] , type = 'string')
+		metaNode.setAttribute('Version'  , PROJECT_DICT['version'])
+		metaNode.setAttribute('Base_Dir'  , PROJECT_DICT['Base_Dir'] , type = 'string')
+		#... connect message
+		rig_grp.attr('message') >> metaNode.attr('rig_grp')
+
+
 
 	logger.info('#### End of %s Rig ####' %(part))
 	print('\n\n\n\n\n')
+
+	return rig_grp

@@ -11,7 +11,8 @@ import maya.utils
 # append path
 # sys.path.append(r'D:\True_Axion\Tools\riggerTools\python')
 # sys.path.append(r'D:\True_Axion\Tools\riggerTools\python\axionTools\rigging\autoRig\bodyRig')
-sys.path.append(r'D:\sysTools\nmTools\riggerTools\python')
+# sys.path.append(r'D:\sysTools\nmTools\riggerTools\python')
+sys.path.append(r'D:\sysTools\nmTools_github\riggerTools\python')
 
 
 # reload wrapper

@@ -183,14 +183,12 @@ child.suffix
 # ex 9 : parent
 upperLeg_bJnt.parent( priorJnt )
 
-# ex 10 : create node
+# ex 10: Create node
 mul = core.MultiDoubleLinear('null1')
 
-# ex 11 :add attr
-# add Enum
-# Attr separater
-cube.addAttribute( at = 'enum', keyable = True , en = '###:', longName = 'Eye_preset'  )
+# ex 11: Add attribute collection
 
+cube.addAttribute( at = 'enum', keyable = True , en = '###:', longName = 'Eye_preset'  )
 cube.addAttribute( at = 'enum', keyable = True , en = 'Green:Blue:Red', longName = 'rotate_Order'  )
 stick_ctrl.addAttribute( longName = 'handScale' , defaultValue = 1 , keyable = True )
 dynSwitch_ctrl.addAttribute( at = 'long'  , min = 0  , max = 1, longName = 'dynamic_blend', keyable = True, defaultValue = 1   )
@@ -248,6 +246,45 @@ some2.createJntShape(localScale = 4)
 
 # ex 21 :  ParentConstraint
 neckJnt_parCons = core.ParentConstraint( neckGmbl_ctrl , neck_bJnt ,mo=False, )
+
+
+
+
+
+
+# ex 22 :  Using Store data to node
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+node = core.MetaClass(name='fread')
+node.addAttribute( at = 'enum', keyable = True , en = "++++:", longName = 'Eye_preset'  )
+node.addAttribute( at = 'long'  , min = 0  , max = 1, longName = 'dynamic_blend', keyable = True, defaultValue = 1   )
+node.addAttribute( at = 'float'  , min = 0  , max = 10, longName = 'dynamic_float', keyable = True, defaultValue = 1   )
+node.addAttribute( dataType = 'string' , longName = 'This_si_string_test')
+node.addAttribute( attributeType = 'message' , longName = 'mulmatrix')
+node.attr('This_si_string_test').value = 'noman'
+node.addAttribute( dataType = 'string' , longName = 'Dict_test')
+
+import json
+noman = {'jsonFloat':1.05, 'Int':3, 'JsonString':'string says hello'}
+# dump from dict to json
+json_noman = json.dumps(noman)
+# store value
+node.attr('Dict_test').value = json_noman 
+type(json_noman)
+
+
+
+# Add a double3 attribute named Eye_preset with children x, y and z
+node = core.MetaClass(name='fread')
+node.addAttribute( at = 'double3', keyable = True, longName = 'Eye_preset'  )
+node.addAttribute( longName='x',at = 'double', parent = 'Eye_preset'  )
+node.addAttribute( longName='y',at = 'double', parent = 'Eye_preset'  )
+node.addAttribute( longName='z',at = 'double', parent = 'Eye_preset'  )
+
+
+
 
 
 '''
@@ -739,7 +776,7 @@ class Node( object ) :
 		add attr to Node
 		'''
 		mc.addAttr(self , *args , **kwargs )
-		CoreLogger.info("Attr has been create.")
+		CoreLogger.info("Attribute has been create.")
 
 
 	def setAttribute( self ,attrName, *args , **kwargs ):
@@ -895,6 +932,51 @@ class Node( object ) :
 	suffix = property( autoSuffix , None , None , None )
 
 	# END of class Node
+
+
+
+
+
+
+
+
+
+
+
+
+#       _                   __  __      _          _   _           _      
+#      | |                 |  \/  |    | |        | \ | |         | |     
+#   ___| | __ _ ___ ___    | \  / | ___| |_ __ _  |  \| | ___   __| | ___ 
+#  / __| |/ _` / __/ __|   | |\/| |/ _ \ __/ _` | | . ` |/ _ \ / _` |/ _ \
+# | (__| | (_| \__ \__ \   | |  | |  __/ || (_| | | |\  | (_) | (_| |  __/
+#  \___|_|\__,_|___/___/   |_|  |_|\___|\__\__,_| |_| \_|\___/ \__,_|\___|
+# 
+#                                                                                                                                      # 
+
+
+
+class MetaRoot ( Node ):
+	'''  create clamp object  '''
+	def __init__( self, name ):
+		Node.__init__( self , mc.createNode('network' , name = name) )
+		self.addAttribute( longName = 'Version', at = 'float'  , min = 0  , keyable = True )
+		self.addAttribute( dataType = 'string' , longName = 'Project')
+		self.addAttribute( dataType = 'string' , longName = 'Meta_Type') #... Root
+		self.addAttribute( dataType = 'string' , longName = 'Asset_Type') #... Character or Prop
+		self.addAttribute( dataType = 'string' , longName = 'Base_Dir') #... Folder path
+		self.addAttribute( dataType = 'string' , longName = 'Source_File_Path') #... Folder path to file specific
+		self.addAttribute( dataType = 'string' , longName = 'Meta_Children')
+		self.addAttribute( dataType = 'string' , longName = 'Root_Joint')
+		self.addAttribute( attributeType = 'message' , longName = 'rig_grp')
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1408,7 +1490,7 @@ class Attribute( object ) :
 
 
 
-	# Set attr value property
+	#... Set attr value property
 	def getVal( self ):
 		val = mc.getAttr(self)
 		# filter the condition
@@ -1418,17 +1500,36 @@ class Attribute( object ) :
 			return val
 
 	def setVal( self , val ):
+
 		# filter the condition
+		# if this value is tuple or list
 		if type(val) == type(()) or type(val) == type([]):
 			node , attr = self.name.split('.')
 			child = mc.attributeQuery( attr , node = node , listChildren = True)
 
 			for ix in range( 0 , len(child)):
 				mc.setAttr('%s.%s' %( node , child[ix] ) , val[ix])
-
 		else:
-			mc.setAttr( self , val )
-			print ('set value of %s to %f' %(self.name , val))
+			# Use another method for ask what type
+			if MAYA_VERSION >= '2023':
+				if isinstance(val, str):
+					CoreLogger.info('This is string.')
+					mc.setAttr(self, val, type='string')
+				else:
+					CoreLogger.info('This is number.')
+					mc.setAttr( self , val )
+					CoreLogger.info('set value of %s to %f' %(self.name , val))
+			else:
+				if type(val) == 'str':
+					CoreLogger.info('This is string.')
+					mc.setAttr(self, val, type='string')
+				else:
+					print ('This is number.')
+					mc.setAttr( self , val )
+					CoreLogger.info('set value of %s to %f' %(self.name , val))
+
+
+
 
 	value = property( getVal , setVal , None , None)
 

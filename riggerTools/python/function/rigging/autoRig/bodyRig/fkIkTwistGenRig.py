@@ -958,7 +958,7 @@ def fkIkTwistGenRig(
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Create ribbon rig
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
-
+  
 	if ribbon == True:
 		if ribbonRes == 'high':
 			numJoints = 5

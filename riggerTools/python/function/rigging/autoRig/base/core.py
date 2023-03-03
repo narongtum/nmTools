@@ -285,7 +285,16 @@ node.addAttribute( longName='z',at = 'double', parent = 'Eye_preset'  )
 
 
 
+# Example 23 :  Using lock attr
+parentConMatrix_meta = core.MetaGeneric('matCon')
+parentConMatrix_meta.attr('Base_Name').value = 'wp_ssr_miko'
+parentConMatrix_meta.setLocked('Base_Name')
 
+# Example 24: Link message
+
+
+# Example 25: SetAttribute
+stick_ctrl.setAttribute('location'  , region , type = 'string')
 
 '''
 
@@ -931,6 +940,19 @@ class Node( object ) :
 
 	suffix = property( autoSuffix , None , None , None )
 
+
+
+
+	#... Set attr Lock 
+	#... Redundance with lockHideAttrLst in Dag class
+	def setLocked(self,attr):
+		mc.setAttr(self.name + '.' + attr, lock = True ,keyable = True)
+
+
+
+
+	# lock = property( setLocked , None , None , None)
+
 	# END of class Node
 
 
@@ -965,9 +987,9 @@ class MetaRoot ( Node ):
 		self.addAttribute( dataType = 'string' , longName = 'Asset_Type') #... Character or Prop
 		self.addAttribute( dataType = 'string' , longName = 'Base_Dir') #... Folder path
 		self.addAttribute( dataType = 'string' , longName = 'Source_File_Path') #... Folder path to file specific
-		self.addAttribute( dataType = 'string' , longName = 'Meta_Children')
 		self.addAttribute( dataType = 'string' , longName = 'Root_Joint')
 		self.addAttribute( attributeType = 'message' , longName = 'rig_grp')
+		self.addAttribute( attributeType = 'message' , longName = 'Meta_Children')
 
 
 
@@ -975,6 +997,17 @@ class MetaRoot ( Node ):
 
 
 
+class MetaGeneric( Node ):
+	def __init__( self, name ):
+		Node.__init__(self, mc.createNode('network', name = name))
+		self.suffix
+		#... Header
+		self.addAttribute( attributeType = 'message' , longName = 'Rig_Prior')
+		self.addAttribute( dataType = 'string' , longName = 'Base_Name')
+		self.addAttribute( dataType = 'string' , longName = 'Side')
+
+
+		
 
 
 
@@ -1125,7 +1158,7 @@ class CurveInfo( Node ):
  #  / __| |/ _` / __/ __|   | |\/| |/ _` | __| '__| \ \/ /
  # | (__| | (_| \__ \__ \   | |  | | (_| | |_| |  | |>  < 
  #  \___|_|\__,_|___/___/   |_|  |_|\__,_|\__|_|  |_/_/\_\
-                                                        
+														
 
 
 # Matrix Node
@@ -1536,6 +1569,10 @@ class Attribute( object ) :
 	# get value
 	# ikCtrlDist = stick_ctrl.attr('regionnair').value
 	# set value
+
+
+
+
 
 
 

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Date: 21.05.May.13.Thu
+Date: 23.01.Jan.31.Tue.08_
 
+#... change from 1 to 0 for use simulation method to 'Off' instead 'Static' (static make join alway jiggle whan translate controller)
 
 This function is Mod from 
 
@@ -83,7 +84,8 @@ def createDynamicTail(
 		nbrOfCtrl = None				,
 		parentTo = 'ctrl_grp'  			,
 		priorJnt = 'hip_bJnt'			,
-		ctrlShape ='cube_ctrlShape'):
+		ctrlShape ='cube_ctrlShape'		,
+		meta = ''):
 
 	# # # # # # # # # # # # # # # #
 	# in case using exists hair system
@@ -444,7 +446,7 @@ def createDynamicTail(
 		stickZro_grp.name = nameSpace + stickName + side + 'Zro_grp'
 		stickZro_grp.snapPoint( ikSpGen_jnt_grp[2][0] )
 
-		print'Set rotation to %s controller...' %stick_ctrl.name
+		print('Set rotation to %s controller...' %stick_ctrl.name)
 		stickZro_grp.attr('rotateX').value += 90
 		# Make stick control follow bJnt
 		fkIkCtrlGrp_parCons = core.pointConstraint( firstJnt , stickZro_grp , mo = True)
@@ -518,7 +520,7 @@ def createDynamicTail(
 		mc.warning ("No attributes will be created since the hairSystem is already connected to another control.")
 
 
-	# making pair psCon between ik << bJnt >> ik
+	#... Making pair psCon between ik << bJnt >> ik
 	# list name
 	# fkChain = spFk_jnt_grp[2]
 	fkChain = spFk_jnt_grp
@@ -533,15 +535,18 @@ def createDynamicTail(
 	num = 0
 	for i in range(len(bJntChain)):
 		# psCon = mc.parentConstraint( each + side +'_fkJnt', each + side +'_ikJnt' , each + side +'_buffJnt'  , name = each + 'Switch' + side + '_parCons' )
-		print '# # # pair constraint # # #'
-		print baseName + '%02d%s_psCon' %(( num +1),side)
-		print fkChain[i]
-		print ikChain[i]
-		print bJntChain[i]
+		print ('# # # pair constraint # # #')
+		DynLogger.info(baseName + '%02d%s_psCon' %(( num +1),side))
+		print (fkChain[i])
+		print (ikChain[i])
+		print (bJntChain[i])
 		
 
+		# psCon = mc.parentConstraint( fkChain[i] , ikChain[i] , bJntChain[i] , name = baseName + '%02d%s_psCon' %(( num +1),side) )
 		psCon = mc.parentConstraint( fkChain[i] , ikChain[i] , bJntChain[i] , name = baseName + '%02d%s_psCon' %(( num +1),side) )
 
+		#... CASE Create New One
+		#... If new one create switch connection between dynamic and IK
 		if selectedHairSystem == "":
 			revNode = mc.createNode( 'reverse' , name = baseName + '%02d%s' %(( num +1),side) + '_rev')
 			mc.connectAttr( '%s.%s' %( stick_ctrl.name, 'dynamic' ) , revNode + '.inputX'  )
@@ -549,7 +554,21 @@ def createDynamicTail(
 			mc.connectAttr( revNode + '.outputX'  , psCon[0] + '.w0' )
 			num = num+1
 
-			print '\n'
+			print ('\n')
+
+
+
+		#... CASE Already Exists
+		#... If  dynamic system already exists create connection only
+		if selectedHairSystem:
+			if meta:
+				revNode = meta.attr('reverseNode').value
+				DynLogger.info('YESH')
+				mc.connectAttr( '%s.%s' %( stick_ctrl.name, 'dynamic' ) ,  psCon[0] + '.w1' )
+				mc.connectAttr( revNode + '.outputX'  , psCon[0] + '.w0' )
+				num = num+1
+
+
 
 
 	if selectedHairSystem == "":
@@ -609,7 +628,7 @@ def createDynamicTail(
 	pm.select( clear=True )
 
 	# return
-	print '\n'
+	print ('\n')
 	# print "------------ return all of this string --------------------"
 	misc.makeHeader('Dynamics FK Chains Ending')
 	# print firstJnt ,spIkJnt[0] ,ikSpGen_jnt_grp[1] ,ikSpGen_jnt_grp[2][0] ,spFk_jnt_grp[0] ,ikSpGen_jnt_grp[3] ,allGrp, dynItems[0]
@@ -640,12 +659,30 @@ def createDynamicTail(
 	# set default value to zero
 	stick_ctrl.attr('dynamic').value = 0
 
+	#... Create network node for store data
+	dynIkSpline_meta = core.MetaGeneric(baseName + side)
+
+	mc.connectAttr(priorJnt + '.message', dynIkSpline_meta.name + '.Rig_Prior')
+
+	dynIkSpline_meta.setAttribute('Base_Name', all_dyn_grp , type = 'string')
+	dynIkSpline_meta.addAttribute( dataType = 'string' , longName = 'Input')
+	dynIkSpline_meta.setAttribute('Input', [firstJnt,lastJnt] , type = 'string')
+
+	dynIkSpline_meta.addAttribute( dataType = 'string' , longName = 'hairSystem')
+	dynIkSpline_meta.setAttribute('hairSystem', dynItems[0] , type = 'string')
+
+	dynIkSpline_meta.addAttribute( dataType = 'string' , longName = 'reverseNode')
+	dynIkSpline_meta.setAttribute('reverseNode', revNode , type = 'string')
+
+	# dynIkSpline_meta.setAttribute('Side', side , type = 'string')
+
+
 	if selectedHairSystem == "":
 		# return = [firstJnt#, ik joint#, nucleus#, follicleShape#, [baseCrv]rebuiltCurveShape#, rebuildCurve#, [baseCrv]Shape#', [baseCrv]]
 		# Index =  [        0       ,   1   ,   2    ,        3      ,              4             ,        5     ,         6       ,      7   ]
 		# print  all_jnt_grp ,ikSpGen_jnt_grp[1] ,all_dyn_grp, dynItems[0] ,stickZro_grp.name
 
-		return firstJnt ,spIkJnt[0] ,ikSpGen_jnt_grp[1] ,ikSpGen_jnt_grp[2][0] ,spFk_jnt_grp[0] ,ikSpGen_jnt_grp[3] ,all_dyn_grp, dynItems[0],stickZro_grp.name,all_jnt_grp
+		return firstJnt, spIkJnt[0], ikSpGen_jnt_grp[1], ikSpGen_jnt_grp[2][0], spFk_jnt_grp[0], ikSpGen_jnt_grp[3], all_dyn_grp, dynItems[0], stickZro_grp.name, all_jnt_grp, revNode, dynIkSpline_meta
 	else:
 		# print  all_jnt_grp ,ikSpGen_jnt_grp[1] ,all_dyn_grp, dynItems[0] 
 		return firstJnt ,spIkJnt[0] ,ikSpGen_jnt_grp[1] ,ikSpGen_jnt_grp[2][0] ,spFk_jnt_grp[0] ,ikSpGen_jnt_grp[3] ,all_dyn_grp, dynItems[0],all_jnt_grp

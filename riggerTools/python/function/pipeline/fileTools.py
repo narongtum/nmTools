@@ -409,6 +409,23 @@ def doDeleteGrpTmp():
 		print("No delete_grp found")
 		pass
 
+
+
+
+
+
+
+def doDeletePrefix(prefix = 'bak_'): #... delete by prefix name 
+	try:
+		list_del = mc.ls(prefix + '*')
+		mc.delete(list_del)
+		fileToolsLogger.info('prefix name "{0}" has been deleted...'.format(prefix))
+	except:
+		fileToolsLogger.info('There is no something to delete.')
+
+
+
+
 def doDeleteSuffix(suffix = '_bak'): #... delete by suffix name 
 	try:
 		mc.ls('*' + suffix)[0]
@@ -944,7 +961,11 @@ def localPublish( mayafileType = 'ma'):
 	doDeleteGrp()	
 
 	# delete '*_bak'
+	fileToolsLogger.debug('Do Delete prefix.')
 	doDeleteSuffix()
+	doDeletePrefix(prefix = 'bak_')
+	doDeletePrefix(prefix = 'BAK_')
+
 
 	# obselet
 	# doDeleteGrpTmp()

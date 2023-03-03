@@ -1074,8 +1074,8 @@ def rotateOffset(tgt, dmpMtx, mulMtx):
 
 
 def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = True):
-
-	# Add Another version at Core
+	# This is Outdate
+	# Add Another version at rigging.constraint
 	# TODO : connectAttr -force head_gmbCtrl.rotateOrder head_bJnt_quaEul.inputRotateOrder;  connect rotate order
 
 	"""Alternate of constraint using matrix insted

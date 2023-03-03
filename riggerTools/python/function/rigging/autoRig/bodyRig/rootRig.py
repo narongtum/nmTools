@@ -136,7 +136,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	metaNode = core.MetaRoot('root_meta')
 
 	if PROJECT_DICT:
-		#... set metadata for rig grp
+		#... set Metadata for rig grp
 		rig_grp.setAttribute('asset_name', PROJECT_DICT['asset_name'], type = 'string' )
 
 		#... set metadata for meta rig

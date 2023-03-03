@@ -115,8 +115,25 @@ def hipRig( 	nameSpace = '' ,
 		pc.cogPivot( cog = cog_ctrl.name , cogZro = cogZro_grp.name , piorGrp = hipRig_grp.name , charScale = charScale )
 
 
+	meta_node = core.MetaGeneric(part)
+
+	# meta_node.attr('Base_Name').value = part
+	meta_node.setAttribute('Base_Name',part, type = 'string')
+
+	# meta_node.attr('Side').value = 'Cen'
+	meta_node.setAttribute('Side','Cen', type = 'string')
+
+	meta_node.addAttribute( dataType = 'string' , longName = 'Prior_joint')
+	meta_node.setAttribute('Prior_joint',hip_bJnt.name, type = 'string')
+	# meta_node.attr('Prior_joint').value = hip_bJnt.name
+
+	if mc.objExists('root_meta'):
+		#... hook with message
+		mc.connectAttr('root_meta'+ '.message', meta_node.name + '.Rig_Prior')
+		# joint.attr('message') >> hook_node.attr('upJnt')
+
+
 	HipRigLogger.info('\n#### End of %s Rig ####' %(part))
-	# print '\n#### End of %s Rig ####' %(part)
 	print('\n\n\n\n\n')
 	return hip_bJnt.name
 

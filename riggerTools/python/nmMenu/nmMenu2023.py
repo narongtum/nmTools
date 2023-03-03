@@ -440,9 +440,11 @@ def runMenu():
 	#------------------------------------------------
 	mc.menuItem( label = 'AutoRig' ,subMenu = True, tearOff = True)
 
-	mc.menuItem(label = "Import Biped Joint",		command = "from function.rigging.autoRig.reference import templateJoint as tpJnt\nimportlib.reload(tpJnt)\ntpJnt.importTemplate('{0}/python/function/rigging/autoRig/reference/templateJoint_biped.ma')\nmc.delete('EH_tmpRig_defaultRenderLayer')".format(PROJECT_PATH) , ann = "Import Template joint project." )
+	# mc.menuItem(label = "Import Biped Joint",		command = "from function.rigging.autoRig.reference import templateJoint as tpJnt\nimportlib.reload(tpJnt)\ntpJnt.importTemplate('{0}/python/function/rigging/autoRig/reference/templateJoint_biped.ma')\nmc.delete('EH_tmpRig_defaultRenderLayer')".format(PROJECT_PATH) , ann = "Import Template joint project." )
 
-	mc.menuItem(label = "Import Quaruped Joint",	command = "from function.rigging.autoRig.reference import templateJoint as tpJnt\nimportlib.reload(tpJnt)\ntpJnt.importTemplate('{0}/python/function/rigging/autoRig/reference/templateJoint_quaruped.ma')".format(PROJECT_PATH) , ann = "Import Template quaruped joint project." )
+	mc.menuItem(label = "RefDup Biped Joint",		command = "from function.rigging.autoRig.reference import templateJoint as tpJnt\nimportlib.reload(tpJnt)\ntpJnt.refTempRemove('{0}/python/function/rigging/autoRig/reference/templateJoint_biped.ma')".format(PROJECT_PATH) , ann = "Import Template joint project." )
+
+	mc.menuItem(label = "RefDup Quaruped Joint",	command = "from function.rigging.autoRig.reference import templateJoint as tpJnt\nimportlib.reload(tpJnt)\ntpJnt.refTempRemove('{0}/python/function/rigging/autoRig/reference/templateJoint_quaruped.ma')".format(PROJECT_PATH) , ann = "Import Template quaruped joint project." )
 
 	mc.setParent( '..', menu=True )
 	mc.menuItem(divider = True)

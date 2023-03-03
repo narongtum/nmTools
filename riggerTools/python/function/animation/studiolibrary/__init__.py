@@ -20,6 +20,12 @@ __version__ = "2.3.4"
 _resource = None
 
 
+
+
+# D:\sysTools\nmTools_github\riggerTools\python\function\animation\studiolibrary
+
+
+
 # PATH = r"D:\True_Axion\Tools\riggerTools\python\axionTools\animation\studiolibrary"
 
 
@@ -33,9 +39,9 @@ _resource = None
 # PACKAGES_PATH = os.path.join(DIRNAME, "packages")
 # RESOURCE_PATH = os.path.join(DIRNAME, "resource")
 
-STUDIO_PATH = r"D:\True_Axion\Tools\riggerTools\python\axionTools\animation"
-PACKAGES_PATH = r"D:\True_Axion\Tools\riggerTools\python\axionTools\animation\studiolibrary\packages"
-RESOURCE_PATH = r"D:\True_Axion\Tools\riggerTools\python\axionTools\animation\studiolibrary\resource"
+STUDIO_PATH = r"D:\sysTools\nmTools_github\riggerTools\python\function\animation"
+PACKAGES_PATH = r"D:\sysTools\nmTools_github\riggerTools\python\function\animation\studiolibrary\packages"
+RESOURCE_PATH = r"D:\sysTools\nmTools_github\riggerTools\python\function\animation\studiolibrary\resource"
 HELP_URL = "http://www.studiolibrary.com"
 
 

@@ -2,7 +2,7 @@
 
 
 '''
-THIS IS OLD DO NOT USE
+
 node short name dictionary
 
 
@@ -83,7 +83,8 @@ NODE_dict = [
 	{	'longName': 'quatProd'								,	'shortName': 'quatProd'						},
 	{	'longName': 'quatToEuler'							,	'shortName': 'quatToEuler'					},
 	{	'longName': 'blendMatrix'							,	'shortName': 'blendMat'					},
-	{	'longName': 'blendShape'							,	'shortName': 'bsh'					}
+	{	'longName': 'blendShape'							,	'shortName': 'bsh'					},
+	{	'longName': 'network'							,	'shortName': 'meta'					}
 	
 
 ]

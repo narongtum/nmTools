@@ -50,6 +50,11 @@ iconPath = os.path.normpath(iconPath)
 
 
 
+STUDIO_LIB_PATH = r'D:\sysTools\nmTools_github\riggerTools\python\function\animation\studiolibrary2020\src'
+sys.path.append(STUDIO_LIB_PATH)
+
+
+
 def reloadMenu():
 	if pm.menu( 'MayaWindow|%s' %PROJECT_NAME, exists = True):
 		mc.deleteUI('MayaWindow|%s' %PROJECT_NAME)
@@ -175,7 +180,7 @@ def runMenu():
 	# Animation sub menu
 
 	# Studio Library
-	mc.menuItem( label = "Studio Library", 			command = "from function.animation import studiolibrary\nreload(studiolibrary)\nstudiolibrary.main()" , ann = "Run animation Library" )
+	mc.menuItem( label = "Studio Library", 			command = "import studiolibrary\nstudiolibrary.main()" , ann = "Run animation Library" )
 
 	# AnimSchoolPicker
 	mc.menuItem( label = "AnimSchool Picker", 		command = "mel.eval('AnimSchoolPicker()')" , ann = "Run AnimSchool Picker" )

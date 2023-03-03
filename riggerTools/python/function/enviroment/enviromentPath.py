@@ -20,12 +20,13 @@ PLUGINS_PATH = '{0}/python/function/plugin/2018'.format(REPO_PATH)
 
 ICON_PATH = '{0}/image'.format(REPO_PATH)
 
-
+REFERENCE_PATH = '{0}/python/function/rigging/autoRig/reference/'.format(REPO_PATH)
 
 
 ENVIROMENT_PATH = [
 						{	'repoPath': 			r'D:/sysTools/nmTools/riggerTools'		},
 						{	'pluginsPath': 			r'D:/sysTools/nmTools/riggerTools/python/function/plugin/2018'		},
 						{	'iconPath': 			r'D:/sysTools/nmTools/riggerTools/image'		},
-						{	'shapeLibraryPath': 	r'D:/sysTools/nmTools/riggerTools/python/function/rigging/ctrlSizeLibrary/'		}
+						{	'shapeLibraryPath': 	r'D:/sysTools/nmTools/riggerTools/python/function/rigging/ctrlSizeLibrary/'		},
+
 				]

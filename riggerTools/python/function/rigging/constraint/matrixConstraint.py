@@ -230,8 +230,29 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
 	# mc.listConnections( obj_target.name + '.' + 'm_deComp')[0]
 	# mc.listConnections( obj_target.name + '.' + 'm_quatToEuler')[0]
+
+
+
+
+
+	# link variable to Network node
+	parentConMatrix_meta = core.MetaGeneric('matCon')
 	 
 	mc.select(target, r=True)
+	
+	meta_node = core.MetaGeneric(obj_source.name)
+
+
+	#... connect message
+	obj_target.attr('message') >> meta_node.attr('Rig_Prior')
+	meta_node.attr('Base_Name').value = obj_target.name
+	meta_node.attr('Side').value = 'None'
+	Constraint.debug('why not work')
+	meta_node.addAttribute( dataType = 'string' , longName = 'Target')
+	meta_node.addAttribute( dataType = 'string' , longName = 'Source')
+	meta_node.attr('Target').value = obj_target.name
+	meta_node.attr('Source').value = obj_source.name
+
 	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
 	return obj_target, obj_source
 

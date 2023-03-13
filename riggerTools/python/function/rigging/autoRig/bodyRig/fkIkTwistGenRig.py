@@ -33,7 +33,7 @@ from function.rigging.autoRig.bodyRig import twistRig as tr
 reload(tr)
 
 import logging
-logger = logging.getLogger('debug_text')
+logger = logging.getLogger('fkIkTwistRig')
 logger.setLevel(logging.DEBUG)
 
 hastag = '# '*20
@@ -68,10 +68,10 @@ def fkIkTwistGenRig(
 				povShape = 'sphereAxis',
 				ikPosi = None ,
 				linkRotOrder = False ,
-				# creTwistJnt is obsolete it cause fk <> ik pair not work
-				ctrlShape = 'fk_ctrlShape', # ctrl shape for fk ctrl only
+				#... creTwistJnt is obsolete it cause fk <> ik pair not work
+				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
 				creTwistJnt = True ,
-				stickShape = 'stick_ctrlShape' ):	#	stick_ctrlShape , 	gear_ctrlShape	
+				stickShape = 'stick_ctrlShape' ):	#... stick_ctrlShape , 	gear_ctrlShape	
 				
 				
 	core.makeHeader(	'Start of %s%s Rig' %(region,side)	)		
@@ -86,6 +86,12 @@ def fkIkTwistGenRig(
 	#				 [3]
 	#				 pov
 
+
+
+	#... Create metaNode
+	fkIkTwistRig_meta = core.MetaGeneric('fkIkTwistRig' + side + '_meta')
+	
+	mc.connectAttr(priorJnt + '.message', fkIkTwistRig_meta.name + '.Rig_Prior')
 
 
 	if side == 'LFT':

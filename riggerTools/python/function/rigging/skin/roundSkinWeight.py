@@ -14,19 +14,25 @@ rsw.roundSkinWeight(digit=3, selection=selected)
 
 
 import maya.cmds as mc
-
+import time
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.skin import autoReadWriteSkin as skin
 reload (skin)
 
+class roundSkinLogger(logger.MayaLogger):
+	LOGGER_NAME = "roundSkin"
+
 def roundSkinWeight(digit=3, selection=''):
+
+	#...timeStart
+	timeStart = time.time()
 
 	selection = mc.ls(sl = True, fl = True)
 	if selection == None:
 		return False
 	each = selection[0]
-	mc.select( each , r = True)
+	mc.select( each, r = True)
 	# get vertex data
 	geoData = skin.geoInfo( vtx = True, geo = True, skinC = True )
 	vertexDict	=	{}
@@ -117,12 +123,12 @@ def roundSkinWeight(digit=3, selection=''):
 				# 	diff = round(1-total,digit)
 				# 	vtxWeightValueList[biggest] = round((vtxWeightValueList[biggest] + diff), digit)		
 				
-			total=0
+			total = 0
 			for each in range(len(vtxWeightValueList)):
 				total = total + vtxWeightValueList[each]
 				
 			if total != 1:
-				print(mc.warning('THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, total)))
+				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, total) )
 				#return False
 
 
@@ -137,6 +143,16 @@ def roundSkinWeight(digit=3, selection=''):
 
 			#... next assign that new each vtx to dicionary value
 			vertexDict[eachVtxNum] = eachVtx
+
+	#...timeEnd
+	timeEnd = time.time()
+	timeElapsed = timeEnd-timeStart
+
+	roundSkinLogger.info('Round value has complete.\n')
+	roundSkinLogger.info('SetData Elapsed: %s'%timeElapsed)
+
+
+
 
 
 

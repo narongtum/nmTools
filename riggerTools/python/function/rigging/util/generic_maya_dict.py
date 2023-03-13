@@ -305,3 +305,41 @@ facial_dict_ARKit_full =   {   'facialRegion'  :   'facial'    	,
 
 
 						}
+
+
+
+
+
+ribbon_joint =   {   'arm_rbn'  :	[	u'lwrArmRbn01RGT_rbnBJnt',
+										 u'lwrArmRbn02RGT_rbnBJnt',
+										 u'lwrArmRbn03RGT_rbnBJnt',
+										 u'armHingesRbnRGT_rbnBJnt',
+										 u'upArmRbn01RGT_rbnBJnt',
+										 u'upArmRbn02RGT_rbnBJnt',
+										 u'upArmRbn03RGT_rbnBJnt',
+										 u'lwrArmRbn01LFT_rbnBJnt',
+										 u'lwrArmRbn02LFT_rbnBJnt',
+										 u'lwrArmRbn03LFT_rbnBJnt',
+										 u'armHingesRbnLFT_rbnBJnt',
+										 u'upArmRbn01LFT_rbnBJnt',
+										 u'upArmRbn02LFT_rbnBJnt',
+										 u'upArmRbn03LFT_rbnBJnt'],
+
+
+
+
+					'leg_rbn'  :   					[		u'legHingesRbnLFT_rbnBJnt',
+															u'legHingesRbnRGT_rbnBJnt',
+															u'lwrLegRbn01LFT_rbnBJnt',
+															u'lwrLegRbn01RGT_rbnBJnt',
+															u'lwrLegRbn02LFT_rbnBJnt',
+															u'lwrLegRbn02RGT_rbnBJnt',
+															u'lwrLegRbn03LFT_rbnBJnt',
+															u'lwrLegRbn03RGT_rbnBJnt',
+															u'upLegRbn01LFT_rbnBJnt',
+															u'upLegRbn01RGT_rbnBJnt',
+															u'upLegRbn02LFT_rbnBJnt',
+															u'upLegRbn02RGT_rbnBJnt',
+															u'upLegRbn03LFT_rbnBJnt',
+															u'upLegRbn03RGT_rbnBJnt']    	}
+					

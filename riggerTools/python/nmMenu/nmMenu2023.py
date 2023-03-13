@@ -315,26 +315,31 @@ def runMenu():
 	mc.menuItem( label = "Skin", 				ann = "Snap selected.",subMenu = True , tearOff = True)
 
 
-	# Import weight
-	mc.menuItem( label = "Load weight", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.importWeightData()" , ann = "Select source and import." )
+	#... Import weight(use Noah instead)
+	# mc.menuItem( label = "Load weight Default", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.importWeightData()" , ann = "Select source and import." )
+	mc.menuItem( label = "Load weight", command = "from function.framework.reloadWrapper import reloadWrapper as reload\nfrom function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO\nreload(skinIO)\nskinIO.loadSkin()" , ann = "Select source and import By Noah Schnapp." )
 
 	# Export weight
-	mc.menuItem( label = "Save weight", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.exportWeightData()" , ann = "Select source and export.", image = ICON_PATH + '\\bullet_interactivePlayback.png' )
-	
+	mc.menuItem( label = "Save weight Default", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.exportWeightData()" , ann = "Select source and export.", image = ICON_PATH + '\\bullet_interactivePlayback.png' )
+	mc.menuItem( label = "Save weight", command = "from function.framework.reloadWrapper import reloadWrapper as reload\nfrom function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO\nreload(skinIO)\nskinIO.saveSkin()" , ann = "Select source and export By Noah Schnapp.", image = ICON_PATH + '\\bullet_interactivePlayback.png' )
+		
 	# Browse weight
 	mc.menuItem( label = "Browse weight", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.browseWeight()" , ann = "Browse source and import skin." )
 
 	# Browse weight
 	mc.menuItem( label = "Export mesh general data", command = "from function.rigging.skin import exportImportMeshGeneralData as IMG\nimportlib.reload(IMG)\nIMG.run()" , ann = "Browse source and import skin general data." )
-	
+
+	#... not work in 2023
 	# Chad vernon skin weight import / export
-	mc.menuItem( label = "Skin Import / Export", command = "from function.rigging.skin import skinio2023\nimportlib.reload(skinio2023)\nskinio2023.show()" , ann = "Just another skinweight Import/Export thank to chad vernon." )
+	# mc.menuItem( label = "Skin Import / Export", command = "from function.rigging.skin import skinio2023\nimportlib.reload(skinio2023)\nskinio2023.show()" , ann = "Just another skinweight Import/Export thank to chad vernon." )
 
 	mc.menuItem(divider = True)
 	#------------------------------------------------
 
 	# skinWrangler
 	mc.menuItem( label = "SkinWrangler", command = "from function.rigging.skin.skinWrangler import skinWrangler as sw\nimportlib.reload(sw)\nskinWranglerWindow = sw.show()" , ann = "By Christopher Evans, https://github.com/chrisevans3d/skinWrangler" )
+	#... Round skin weight
+	mc.menuItem( label = "Round Skin Weight", command = "from function.framework.reloadWrapper import reloadWrapper as reload\nfrom function.rigging.skin import roundSkinWeight as rsw\nreload(rsw)\nselected = mc.ls(sl=True)[0]\nrsw.roundSkinWeight(digit=3, selection=selected)" , ann = "Convert from MEL" )
 
 	mc.menuItem(divider = True)
 	#------------------------------------------------

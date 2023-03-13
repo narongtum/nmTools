@@ -1,4 +1,4 @@
-# WORK WITH NUMPY
+# Warning... INSTALL NUMPY FIRST
 
 ###########################
 '''
@@ -49,11 +49,17 @@ import time
 
 
 
+
+
+
 ####################################################################
 #...CODE START
 
+from function.pipeline import logger 
+reload(logger)
 
-
+class SkinIOLogger(logger.MayaLogger):
+	LOGGER_NAME = "SkinIO"
 
 
 class SkinClusterIO(object):
@@ -148,7 +154,9 @@ class SkinClusterIO(object):
 
 		#...get weights/infs
 		dWeights, infCount = fnSkinCluster.getWeights(meshPath, vtxComponents)
-		weights_Array = np.array(list(dWeights), dtype='float64')
+		# weights_Array = np.array(list(dWeights), dtype='float64')
+		#... change this due to warning 
+		weights_Array = np.array(list(dWeights), dtype='object')
 		inf_Array = [dp.partialPathName() for dp in fnSkinCluster.influenceObjects()]
 		
 		#...convert to weightsNonZero_Array
@@ -617,13 +625,13 @@ def saveSkin():
 	timeStart = time.time()
 
 	np.save(filepath, data)
-
+	cmds.select(deselect=True)
 	timeEnd = time.time()
 	timeElapsed = timeEnd-timeStart
 	print('Saved data Elapsed: %s'%timeElapsed)
 
 	print('File save at: ---> %s' %filepath)
-	cmds.select(deselect=True)
+	
 	return True
 
 
@@ -676,6 +684,8 @@ def loadSkin():
 
 	#...timeStart
 	timeStart = time.time()
+
+	SkinIOLogger.info('This is filepath: {0}'.format(filepath))
 
 	#...read data
 	data = np.load(filepath, allow_pickle=True)

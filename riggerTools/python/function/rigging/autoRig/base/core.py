@@ -1007,6 +1007,17 @@ class MetaGeneric( Node ):
 		self.addAttribute( dataType = 'string' , longName = 'Side')
 
 
+	
+	def lockAllAttr(self):
+		# Get a list of all the attributes for the specified node
+		attr_list = mc.listAttr(self.name)
+
+		# Loop through each attribute and set the lock flag to True
+		for attr in attr_list:
+			mc.setAttr(self.name + '.' + attr, lock=True)
+
+
+
 		
 
 
@@ -1124,7 +1135,7 @@ class MDLWithMul( Node ):
 
 
 class Condition( Node ):
-	'''  create DisctanceBetween object  '''
+	'''  create Condition object  '''
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'condition' , name = name) ) 
 		# self.suffix

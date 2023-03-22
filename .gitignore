@@ -8,3 +8,4 @@ riggerTools/python/function/rigging/constraint/__pycache__/matrixConstraint.cpyt
 *.pyc
 riggerTools/python/nmMenu/__pycache__/nmMenu2022.cpython-37.pyc
 *.pyc
+*.pyc

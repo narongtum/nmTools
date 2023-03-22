@@ -147,6 +147,12 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 		rig_grp.attr('message') >> metaNode.attr('rig_grp')
 
 
+	#... Connect to root_meta
+	if mc.objExists('rig_grp'):
+		mc.connectAttr('rig_grp.asset_name',  'root_meta.rig_grp' , f=True)
+
+
+
 
 	logger.info('#### End of %s Rig ####' %(part))
 	print('\n\n\n\n\n')

@@ -10,7 +10,7 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
-from function.rigging.util import misc as misc
+from function.rigging.util import misc 
 reload( misc )
 
 # from function.rigging.autoRig.bodyRig import ribbonRig
@@ -37,8 +37,8 @@ reload( fitr )
 # from function.rigging.autoRig.bodyRig import fkIkTwistGenRigExt as fitr
 # reload( fitr )
 
-from function.rigging.util import misc as misc
-reload(misc)
+# from function.rigging.util import misc as misc
+# reload(misc)
 
 import logging
 logger = logging.getLogger('debug_text')
@@ -288,6 +288,8 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	# get ikh gimbal name
 	# ankleIkGmbl_ctrl = rawName[2] + ctrlType + side + '_gmbCtrl'
 	ankle_ikh = ikhAll_name[0]
+	#... get ikh zro grp
+	ankle_ikhZro_grp = ikhAll_name[4]
 
 	# Adjust controller
 	fSA = heel.getWorldSpace()
@@ -489,6 +491,12 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	footOutZro_grp.parent( ankleIkGmbl_ctrl )
 	#ankle_ikh.parent( ballRoll_ctrl )
 	mc.parent(ankle_ikh , ballRoll_ctrl.name)
+
+	# ------------------ FEATURE SoftIk START ------------------------------------------------------------------- #
+	misc.snapParentConst( ankle_ikhZro_grp, ankle_ikh )
+	mc.parent(ankle_ikh , ankle_ikhZro_grp)
+	mc.rotate( 0, 0, 0, ankle_ikh, os=True, fo=True )
+	# ------------------ FEATURE SoftIk END ------------------------------------------------------------------- #
 
 	# variable for create pair of ball joint
 	# contraint ball joint

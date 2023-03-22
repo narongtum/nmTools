@@ -43,6 +43,7 @@ hastag = '# '*20
 
 
 
+
 def fkIkTwistGenRig(
 
 				nameSpace = '' 	,				
@@ -88,11 +89,9 @@ def fkIkTwistGenRig(
 
 
 
-	#... Create metaNode
-	fkIkTwistRig_meta = core.MetaGeneric('fkIkTwistRig' + side + '_meta')
-	
-	mc.connectAttr(priorJnt + '.message', fkIkTwistRig_meta.name + '.Rig_Prior')
 
+	#... Define prior meta node
+	root_meta = 'root_meta'
 
 	if side == 'LFT':
 		colorSide = 'red'
@@ -157,7 +156,7 @@ def fkIkTwistGenRig(
 
 
 	else:
-		mc.error('Not enought arg to process.')
+		mc.error('Not Enought Arg to Process...')
 		# return None
 
 
@@ -609,6 +608,29 @@ def fkIkTwistGenRig(
 
 	# Parent ik lowerle under ik ctrl
 	mc.parent( ikhNam ,  ikGmbl_ctrl.name )
+
+	
+
+
+
+	logger.info('\n# ------------------ Feature SoftIk Start ------------------------------------------------------------------- #')
+	
+	#... Add zero grp to ikhNam
+
+	ikhZro_grp = mc.group(em = True , name = name + 'Ikh' + side + 'Zro_grp' )
+	misc.snapParentConst( lower_bJnt.name  , ikhZro_grp )
+	mc.parent( ikhZro_grp ,  ikGmbl_ctrl.name )
+	logger.info('parent {0} to {1}'.format(ikhNam,ikhZro_grp))
+	mc.parent( ikhNam ,  ikhZro_grp)
+
+	#... Reset ikh orientation
+	# mc.rotate(ikhNam, r=True, os=True, fo=True, value=(0, 0, 0))
+	mc.rotate( 0, 0, 0, ikhNam, os=True, fo=True )
+
+	logger.info('\n# ------------------ Feature SoftIk End ------------------------------------------------------------------- #')
+
+
+
 
 
 
@@ -1111,5 +1133,37 @@ def fkIkTwistGenRig(
 	print('#### End of %s %s Rig ####' %( __name__ , side ))
 
 
-	ikhAll_name = ikhNam , povZro_grp , Loc_grp.name , World_grp.name 
+	#... Create metaNode ...#
+	fkIkTwistRig_meta = core.MetaGeneric( region + 'fkIkTwistRig' + side + '_meta')
+	
+	mc.connectAttr(priorJnt + '.message', fkIkTwistRig_meta.name + '.Rig_Prior')
+	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'ikh_Name')
+	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'ikh_Zro_Name')
+	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'stick_ctrl_name')
+	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'ikh_ctrl_name')
+
+	fkIkTwistRig_meta.setAttribute('Base_Name' 		,	__name__, type = 'string')
+	fkIkTwistRig_meta.setAttribute('Side' 			,	side, type = 'string')
+	fkIkTwistRig_meta.setAttribute('ikh_Name' 		,	ikhNam, type = 'string')
+	fkIkTwistRig_meta.setAttribute('ikh_Zro_Name' 	,	ikhZro_grp, type = 'string')
+	fkIkTwistRig_meta.setAttribute('stick_ctrl_name',	stick_ctrl.name, type = 'string')
+	fkIkTwistRig_meta.setAttribute('ikh_ctrl_name'	,	lowerIk_ctrl, type = 'string')
+
+	# ------------------ Meta Node Start ------------------------------------------------------------------- #
+	#... Connect to root_meta 
+	if mc.objExists(root_meta):
+		mc.connectAttr('{0}.message'.format(root_meta), '{0}.Rig_Prior'.format(fkIkTwistRig_meta.name), f=True)
+		mc.addAttr(root_meta, longName='{0}_{1}'.format(region,side), dataType='string', keyable=True)
+		mc.connectAttr( '{0}.{1}'.format(fkIkTwistRig_meta.name, 'Base_Name'), '{0}.{1}_{2}'.format(root_meta, region, side), f=True)
+
+
+	#... Lock All Attr
+	fkIkTwistRig_meta.lockAllAttr()
+	# ------------------ Meta Node End ------------------------------------------------------------------- #
+
+
+
+
+	#... Add ikhZro_grp for SoftIK
+	ikhAll_name = ikhNam , povZro_grp , Loc_grp.name , World_grp.name, ikhZro_grp
 	return stick_ctrl.name , lower_bJnt.name , middle_bJnt.name , upper_bJnt.name , ikhAll_name ,psStreEndName

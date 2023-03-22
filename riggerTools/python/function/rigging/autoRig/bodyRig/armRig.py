@@ -36,7 +36,8 @@ reload( fitr )
 
 
 
-
+#... diagram
+# [armRigExt] >>> [fkIkTwistGenRig] >>> [iKStretch]
 import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)

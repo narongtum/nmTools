@@ -62,6 +62,12 @@ class SkinIOLogger(logger.MayaLogger):
 	LOGGER_NAME = "SkinIO"
 
 
+
+
+
+SkinIOLogger.info('Run function at:{0}'.format(__name__))
+
+
 class SkinClusterIO(object):
 
 	def __init__(self):

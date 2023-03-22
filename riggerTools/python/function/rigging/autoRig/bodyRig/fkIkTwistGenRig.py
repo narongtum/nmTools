@@ -23,6 +23,11 @@ reload( midLockModule )
 from function.rigging.autoRig.bodyRig import createIKStretch as create
 reload( create )
 
+
+from function.rigging.autoRig.bodyRig import createSoftIk as softIk
+reload( softIk )
+
+
 from function.rigging.tools import proc as pc
 reload(pc)
 
@@ -703,7 +708,7 @@ def fkIkTwistGenRig(
 
 
 
-	# Create ik stretchy
+	#------------------------------ Create ik Stretchy -----------------------------#
 	stretchNode = create.iKStretch(	ikJnt = (    upper_IkJnt.name , middle_IkJnt.name , lower_IkJnt.name )  , 
 								ikCtrl = ( ikRoot_ctrl.name , lowerIk_ctrl.name ) , 
 								side = side , scaleCtrl = 'placement_ctrl'	, 
@@ -711,6 +716,15 @@ def fkIkTwistGenRig(
 								)
 	pmaNode = stretchNode[0]
 	psStreEndName = stretchNode[1]
+
+
+	'''
+	#------------------------------ Create SoftIk -----------------------------#
+
+	softIk.softIK(	region = region, side = side, ctrlName = lowerIk_ctrl.name,
+				upAxis = 2, primaryAxis = 2, ikhName = ikhNam, 
+				inputMax = 40, outputMax = 4  )
+	'''
 
 
 

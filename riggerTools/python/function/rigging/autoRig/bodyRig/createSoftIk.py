@@ -393,17 +393,29 @@ def softIK(		priorMeta, region, side, ctrlName,
 	negative_val = core.MDLWithMul(name = '{0}_neg_mdl'.format(name), dv = multiplier)
 
 
-	#... Create switch
+	
 
 	#... Create condition
 	result_cnd = core.Condition(name = '{0}_result_cnd'.format(name))
 
 	result_cnd.attr('colorIfFalseR').value = 0
 
+	#... Create switch condition for prevent unexpected shift ikh
+	softSwitch_cnd = core.Condition(name = '{0}_switch_cnd'.format(name))
+	softSwitch_cnd.attr('colorIfFalseR').value = 0
+	softSwitch_cnd.attr('operation').value = 2
+
+	#... Connect
+	# mc.connectAttr('%s.output ' %negative_val.name, '%s.colorIfTrueR' %result_cnd.name, f = True)
+	mc.connectAttr('%s.output ' %negative_val.name, '%s.colorIfTrueR' %softSwitch_cnd.name, f = True)
+	mc.connectAttr('%s.outColorR' %softSwitch_cnd.name, '%s.colorIfTrueR' %result_cnd.name, f = True)
+	mc.connectAttr('%s.softIK ' %ctrlName, '%s.firstTerm' %softSwitch_cnd.name, f = True)
+
+
 
 
 	mc.connectAttr('%s_defaultPos_pma.output1D' % name, '%s.input1' %negative_val.name )
-	mc.connectAttr('%s.output ' %negative_val.name, '%s.colorIfTrueR' %result_cnd.name, f = True)
+	
 
 	mc.connectAttr('%s.autoStretch ' %ctrlName, '%s.firstTerm' %result_cnd.name, f = True)
 

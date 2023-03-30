@@ -23,7 +23,7 @@ Features
 
 	Eye setup (World/Local Inheritance)
 
-	IK/FK Auto Snap (via Tai menu)
+	SoftIk limb
 
 
 
@@ -39,6 +39,7 @@ Todo:
 
 import maya.cmds as mc
 
+import time
 # sys.path.append(r'D:\True_Axion\Tools\riggerTools\python\axionTools\rigging\autoRig\bodyRig')
 
 from function.rigging.autoRig.base import rigTools
@@ -106,8 +107,13 @@ from function.rigging.autoRig.bodyRig import fkIkGenRig
 reload( fkIkGenRig )
 
 
+
+
+#...timeStart
+timeStart = time.time()
+		
 ribbon = False
-showInfo = False
+showInfo = True
 
 # = = = = = Check charactor hight  = = = = = #
 charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
@@ -224,7 +230,7 @@ stickNamLFT, handLFT_bJnt= armRig.armRigExt(
 				nullGrp = 'snapNull_grp',			
 				jnt_grp =  'jnt_grp'	,			
 				povShape = 'sphereAxis',
-				keepFkIkBoth = True,
+				keepFkIkBoth = False,
 				ribbon = ribbon,
 				ribbonRes = 'low', 
 				ribbonName = ('upArm', 'lwrArm'),
@@ -384,6 +390,17 @@ rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamLFT  , spaces = ['world
 rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamRGT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', neck_bJnt, topSpine_bJnt, hip_bJnt ] )
 
 
+#...timeEnd
+timeEnd = time.time()
+timeElapsed = timeEnd-timeStart
+
+roundedTimeElapsed = round(timeElapsed, 1)
+
+#...print time
+print('SaveData Elapsed: %s'%roundedTimeElapsed)
+		
+		
+		
 
 # Lock attr
 util.cleanup()

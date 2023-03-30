@@ -34,7 +34,8 @@ reload( fkIkGenRig )
 from function.rigging.autoRig.bodyRig import fkIkTwistGenRig as fitr
 reload( fitr )
 
-
+from function.rigging.autoRig.bodyRig import createSoftIk as softIkfunc
+reload( softIkfunc )
 
 #... diagram
 # [armRigExt] >>> [fkIkTwistGenRig] >>> [iKStretch]
@@ -67,9 +68,10 @@ def armRigExt(
 			propCtrl = False 					,
 			keepFkIkBoth = True	,# keep fk/ik ctrl visibility both or not
 			povShape = 'pyramid', # choice pyramid or sphereAxis
-			linkRotOrder = False,
-			ctrlShape = 'fk_ctrlShape',
-			creTwistJnt = True ,
+			linkRotOrder = False			,
+			ctrlShape = 'fk_ctrlShape'		,
+			creTwistJnt = True 				,
+			softIk = True					,				
 			stickShape = 'stick_ctrlShape'):
 
 	core.makeHeader(	'Start of %s%s Rig' %(region,side)	)
@@ -82,7 +84,7 @@ def armRigExt(
 	if creTwistJnt == True:
 		# using non twisting upper joint
 		# passing arg to fkIkGenRig
-		stickNam, hand_bJnt , middle_bJnt , upper_bJnt , ikhAll_name , psStreEndName   = fitr.fkIkTwistGenRig(
+		stickNam, hand_bJnt , middle_bJnt , upper_bJnt , ikhAll_name , psStreEndName, softIk_name,priorMeta   = fitr.fkIkTwistGenRig(
 					nameSpace = nameSpace 	,				
 					charScale = charScale	,			
 					parentTo = parentTo 	,			
@@ -103,6 +105,7 @@ def armRigExt(
 					linkRotOrder = linkRotOrder 	,
 					ctrlShape = ctrlShape			,
 					creTwistJnt = creTwistJnt		,
+
 					stickShape = stickShape				)
 
 		
@@ -126,6 +129,20 @@ def armRigExt(
 		
 		stick_ctrl.lockHideAttrLst('location')
 		print ('Lock Message attr')
+
+
+
+		if softIk == True:
+
+			softIkfunc.softIK(	priorMeta = priorMeta ,region = region, side = side, ctrlName = softIk_name[0],
+						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
+						inputMax = 40, outputMax = 4  )
+
+			print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
+			print ('\n\n\n\n\n')
+
+
+
 
 		print('#### End of %s%s Rig ####' %( region , side ))
 		print ('\n\n\n\n\n')

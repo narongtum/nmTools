@@ -1,3 +1,17 @@
+#... Core function from nick miller
+
+#...Formula
+#
+#y = {                                              
+#                     -(x-da)/
+#        dsoft(1 - e^  dsoft  ) + da   (da <= x)
+#                                                   }
+#
+# da = length_AB - dsoft
+# length_AB = sum of bone lengths
+# dsoft = user set soft distance (how far the effector should fall behind)
+# x = distance between root and ik
+
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload
 
@@ -8,6 +22,18 @@ import math
 #... find magnitude
 def mag( v ):
 	return( math.sqrt( pow( v[0], 2) + pow( v[1], 2) + pow( v[2], 2)))
+
+from function.pipeline import logger 
+reload(logger)
+
+class SoftIkLogger(logger.MayaLogger):
+	LOGGER_NAME = "SoftIk"
+
+from function.rigging.autoRig.base import core
+reload(core)
+
+from function.rigging.util import misc
+reload( misc )
 
 # upAxis = 2
 # primaryAxis = 2 
@@ -22,10 +48,12 @@ def mag( v ):
 
 
 
-def softIK(		region, side, ctrlName,
+def softIK(		priorMeta, region, side, ctrlName,
 				upAxis = 2, primaryAxis = 2, ikhName= 'ankleIkRGT_ikh', 
-				inputMax = 40, outputMax = 4  ):
+				inputMax = 40, outputMax = 4, debug = False  ):
 
+	SoftIkLogger.debug('ikhName is:{0}'.format(ikhName))
+	SoftIkLogger.debug('ctrlName is:{0}'.format(ctrlName))
 
 	name = 'softIk{0}_{1}'.format(side, region)
 
@@ -86,10 +114,15 @@ def softIK(		region, side, ctrlName,
 		upAxis = 'Z'
 		gPoint = ( lPoints[0], lPoints[1], 0)
 
+
+
+
+	
+
 	#-----------------------------------------------------------------------------------------------------------------------------#
-	#find the dchain = sum of bone lengths
+	#find the length_AB = sum of bone lengths
 	i = 0
-	dChain = 0
+	length_AB = 0
 	while ( i < n - 1 ):
 		a = mc.xform( joints[i], q = True, piv = True, ws = True )
 		b = mc.xform( joints[ i + 1 ], q = True, piv = True, ws = True )
@@ -97,11 +130,11 @@ def softIK(		region, side, ctrlName,
 		y = b[1] - a[1]
 		z = b[2] - a[2]
 		v = [x,y,z]
-		dChain += mag(v)
+		length_AB += mag(v)
 		i += 1
 
 
-	print('\ndChain is: {0}'.format(dChain))
+	print('\nlength_AB is: {0}'.format(length_AB))
 
 	#... compair length A and B
 	vec_a = mc.xform( joints[0], q = True, piv = True, ws = True )
@@ -130,6 +163,8 @@ def softIK(		region, side, ctrlName,
 	if mag(vec_BC) > mag(vec_AB):
 	    print('\nThere is length of upper is LESS than lower')
 	    #mc.error('There is length of upper is less than lower')
+	elif mag(vec_BC) == mag(vec_AB):
+		mc.error('There is length of upper is EQUAL')
 	else:
 	    print('\nThere is length of upper is MORE than lower, You shall Pass...')
 
@@ -148,17 +183,50 @@ def softIK(		region, side, ctrlName,
 		defPos = defPos * -1
 		
 	print('\nDefault position is: {0}'.format(defPos))
-	#-----------------------------------------------------------------------------------------------------------------------------#
-	#create the distance node, otherwise know as x(distance between root and ik)
-	mc.spaceLocator( n = '%s_start_dist_loc' % name )
+	#---------------- Create Locator -----------------------------------------------------------------------------------------------#
+	#... Create the distance node, otherwise know as x(distance between root and ik)
+
+	loc_check_grp = core.Null('%s_loc_grp'%name)
+
+	if debug == False:
+
+		test_loc = mc.spaceLocator( n = '%s_test_last_point_BAK' % name )
+		mc.xform(test_loc, translation=lPoints)
+		mc.parent(test_loc, loc_check_grp.name)
+
+	
+
+
+	#... Create loc and Null Grp
+	start_loc = mc.spaceLocator( n = '%s_start_dist_loc' % name )
 	mc.xform( '%s_start_dist_loc' % name, t = fPoints, ws = True )
-	mc.spaceLocator( n = '%s_end_dist_loc' % name )
+
+	end_loc = mc.spaceLocator( n = '%s_end_dist_loc' % name )
 	mc.xform( '%s_end_dist_loc' % name, t = lPoints, ws = True )
 
-	mc.select( ctrlName, '%s_end_dist_loc' % name, r = True )
-	mc.parentConstraint( w = 1, mo = True)
-	# mc.select( joints[0], '%s_start_dist_loc' % name, r = True )
+	mc.parent(start_loc, loc_check_grp.name)
+	mc.parent(end_loc, loc_check_grp.name)
+
+	if mc.objExists('loc_grp'):
+		mc.parent(loc_check_grp.name, 'loc_grp')
+
+
+	else:
+		mc.parent(loc_check_grp.name, 'placement_ctrl')
+
+
+
+
+	#... Parent later
+	# mc.select( ctrlName, '%s_end_dist_loc' % name, r = True )
 	# mc.parentConstraint( w = 1, mo = True)
+
+	
+
+	
+
+	mc.select( joints[0], '%s_start_dist_loc' % name, r = True )
+	mc.parentConstraint( w = 1, mo = True)
 
 	mc.createNode( 'distanceBetween', n = '%s_x_distance' % name )
 	mc.connectAttr( '%s_start_dist_loc.translate' % name, '%s_x_distance.point1' % name )
@@ -170,30 +238,36 @@ def softIK(		region, side, ctrlName,
 	print('\nxLength is: {0}'.format(xLength))
 
 	#---------------------------------------- Create meta node -----------------------------------------------------------#
-	from function.rigging.autoRig.base import core
-	reload(core)
+	
 	meta_node = core.MetaGeneric('%s_distance' %name)
-	meta_node.attr('Base_Name').value = 'L_softIK'
-	meta_node.addAttribute( ln = 'dChain', at = "double", k = True)
-	meta_node.addAttribute( ln = 'aChain', at = "double", k = True)
-	meta_node.addAttribute( ln = 'bChain', at = "double", k = True)
-	meta_node.addAttribute( ln = 'xChain', at = "double", k = True)
-	mc.setAttr('{0}.dChain'.format(meta_node.name), dChain)
-	mc.setAttr('{0}.xChain'.format(meta_node.name), xLength)
-	mc.setAttr('{0}.bChain'.format(meta_node.name), mag(vec_BC))
-	mc.setAttr('{0}.aChain'.format(meta_node.name), mag(vec_AB))
+	meta_node.attr('Base_Name').value = '%s' %(__name__)
+	meta_node.addAttribute( ln = 'length_AB', at = "double", k = True)
+	meta_node.addAttribute( ln = 'length_A', at = "double", k = True)
+	meta_node.addAttribute( ln = 'length_B', at = "double", k = True)
+	meta_node.addAttribute( ln = 'length_C', at = "double", k = True)
+	meta_node.addAttribute( dataType = 'string' , longName = 'loc_grp')
+
+	mc.setAttr('{0}.length_AB'.format(meta_node.name), length_AB)
+	mc.setAttr('{0}.length_C'.format(meta_node.name), xLength)
+	mc.setAttr('{0}.length_B'.format(meta_node.name), mag(vec_BC))
+	mc.setAttr('{0}.length_A'.format(meta_node.name), mag(vec_AB))
+
+
+	meta_node.setAttribute('loc_grp', loc_check_grp.name, type = 'string')
+	meta_node.setAttribute('Side', side, type = 'string')
+
 	#... connect value by manual
 	mc.connectAttr( ikhName + '.message', meta_node.name + '.Rig_Prior' )
 
 
 	'''
 	meta_node = mc.createNode ('network', n = '%s_distance_meta' % name )
-	mc.addAttr( meta_node, ln = 'dChain', at = "double", k = True )
-	mc.addAttr( meta_node, ln = 'bChain', at = "double", k = True )
-	mc.addAttr( meta_node, ln = 'xChain', at = "double", k = True )
+	mc.addAttr( meta_node, ln = 'length_AB', at = "double", k = True )
+	mc.addAttr( meta_node, ln = 'length_B', at = "double", k = True )
+	mc.addAttr( meta_node, ln = 'length_C', at = "double", k = True )
 
-	mc.setAttr('{0}.dChain'.format(meta_node), dChain)
-	mc.setAttr('{0}.xChain'.format(meta_node), xLength)
+	mc.setAttr('{0}.length_AB'.format(meta_node), length_AB)
+	mc.setAttr('{0}.length_C'.format(meta_node), xLength)
 	'''
 
 
@@ -262,11 +336,11 @@ def softIK(		region, side, ctrlName,
 
 	#-----------------------------------------------------------------------------------------------------------------------------#   	
 	#make connections
-	mc.setAttr( '%s_da_pma.input1D[0]' % name, dChain )#... assign dChain
+	mc.setAttr( '%s_da_pma.input1D[0]' % name, length_AB )#... assign length_AB
 	mc.connectAttr( '%s.dSoft' % ctrlName, '%s_da_pma.input1D[1]' % name )
 
 
-	mc.connectAttr('{0}.dChain'.format(meta_node), '{0}_da_pma.input1D[0]'.format(name))
+	mc.connectAttr('{0}.length_AB'.format(meta_node), '{0}_da_pma.input1D[0]'.format(name))
 
 	mc.connectAttr( '%s_x_distance.distance' % name, '%s_x_minus_da_pma.input1D[0]' % name )
 	mc.connectAttr( '%s_da_pma.output1D' % name, '%s_x_minus_da_pma.input1D[1]' % name )
@@ -318,7 +392,10 @@ def softIK(		region, side, ctrlName,
 
 	negative_val = core.MDLWithMul(name = '{0}_neg_mdl'.format(name), dv = multiplier)
 
-	# create condition
+
+	#... Create switch
+
+	#... Create condition
 	result_cnd = core.Condition(name = '{0}_result_cnd'.format(name))
 
 	result_cnd.attr('colorIfFalseR').value = 0
@@ -332,5 +409,20 @@ def softIK(		region, side, ctrlName,
 
 	mc.connectAttr('%s.outColorR' %result_cnd.name, '%s.translate%s' % (ikhName, upAxis), f = True)
 
-	return meta_node.name
+	# parent later
+	misc.snapPointConst(joints[2], '%s_end_dist_loc'%name)
+	offset_parCons = core.pointConstraint( ctrlName , '%s_end_dist_loc' % name , mo = True)
+
+
+
+	if priorMeta:
+
+		priorMeta.attr('message') >> meta_node.attr('Rig_Prior')
+
+		# connectAttr -f LegfkIkTwistRigLFT_meta.message softIkLFT_leg_distance_meta.Rig_Prior;
+
+
+	meta_node.lockAllAttr()
 	print('\n#------------------------------ End of softIK Function ---------------------------------------------------#')
+	return meta_node.name
+	

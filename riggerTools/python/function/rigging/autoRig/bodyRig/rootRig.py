@@ -49,6 +49,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	jnt_grp = core.Null('jnt_grp' )
 	ikh_grp = core.Null('ikh_grp'  )
 	ctrl_grp = core.Null('ctrl_grp' )
+	loc_grp = core.Null('loc_grp' )
 	# fkJnt_grp = core.Null('fkJnt_grp')
 	# ikJnt_grp = core.Null('ikJnt_grp')
 	
@@ -100,6 +101,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	ctrl_grp.parent( placement_ctrl )
 	jnt_grp.parent( placement_ctrl )
 	ikh_grp.parent( placement_ctrl )
+	loc_grp.parent( placement_ctrl )
 	# still_grp.parent( rig_grp )
 	# fkJnt_grp.parent( jnt_grp )
 	# ikJnt_grp.parent( jnt_grp )
@@ -119,6 +121,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 		# fkJnt_grp.attr(attr).lockHide()
 		# ikJnt_grp.attr(attr).lockHide()
 		noTouch_grp.attr(attr).lockHide()
+		loc_grp.attr(attr).lockHide()
 
 	# Add asset data attribute
 	#... Add extre matedada

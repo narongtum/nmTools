@@ -40,12 +40,21 @@ reload( fitr )
 # from function.rigging.util import misc as misc
 # reload(misc)
 
+from function.rigging.autoRig.bodyRig import createSoftIk as softIkfunc
+reload( softIkfunc )
+
 import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
 
 
+
+
+'''
+bipedLegRigExt >>> fkIkTwistGenRig >>> footRollRig 
+
+'''
 
 
 
@@ -326,7 +335,7 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 		logger.info('Delete and re constraint for solve ik stretchy problem.')
 		mc.delete( stretchEndName_psCon )
 
-		if ikPosi== 'foot' or ikPosi == 'animalFoot':
+		if ikPosi == 'foot' or ikPosi == 'animalFoot':
 			# snap zro of ik grp
 			ikZro_grp.maSnap ( ball_ikJnt , pos = True )
 		elif ikPosi == 'ankle':
@@ -644,6 +653,8 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	else:
 		print ('Skip add attribute.')
 
+	return ankleIk_ctrl
+
 
 
 
@@ -690,6 +701,7 @@ def bipedLegRigExt(
 					linkRotOrder = False ,
 					ctrlShape = 'fk_ctrlShape',
 					creTwistJnt = True,
+					softIk = True ,
 					stickShape = 'stick_ctrlShape'	):
 	
 
@@ -700,7 +712,7 @@ def bipedLegRigExt(
 	if creTwistJnt == True:
 
 		# Passing arg to fkIkGenRig
-		stickNam, lower_bJnt ,middle_bJnt , upper_bJnt , ikhAll_name , stretchEndName_psCon = fitr.fkIkTwistGenRig(
+		stickNam, lower_bJnt ,middle_bJnt, upper_bJnt, ikhAll_name, stretchEndName_psCon, softIk_name, priorMeta = fitr.fkIkTwistGenRig(
 					nameSpace = nameSpace 	,				
 					charScale = charScale	,			
 					parentTo = parentTo 	,			
@@ -721,19 +733,28 @@ def bipedLegRigExt(
 					ikPosi = ikPosi	,
 					linkRotOrder = linkRotOrder,
 					ctrlShape = ctrlShape ,
-					creTwistJnt = creTwistJnt,
+					creTwistJnt = creTwistJnt		,
+
 					stickShape = stickShape		)
 
 
 
 
 		# create foot roll rig
-		footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
+		ankleIk_ctrl = footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 						ikPosi, jnt_grp, footAttr, productionType,ctrlShape,
 						stickNam, lower_bJnt ,middle_bJnt , upper_bJnt , ikhAll_name , stretchEndName_psCon)
 
-		print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
-		print ('\n\n\n\n\n')
+
+
+		if softIk == True:
+
+			softIkfunc.softIK( priorMeta = priorMeta, region = region, side = side, ctrlName = ankleIk_ctrl,
+						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
+						inputMax = 40, outputMax = 4  )
+
+			print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
+			print ('\n\n\n\n\n')
 
 
 	elif creTwistJnt == False:

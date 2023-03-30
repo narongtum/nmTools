@@ -23,10 +23,8 @@ reload( midLockModule )
 from function.rigging.autoRig.bodyRig import createIKStretch as create
 reload( create )
 
-
-from function.rigging.autoRig.bodyRig import createSoftIk as softIk
-reload( softIk )
-
+from function.rigging.autoRig.bodyRig import createSoftIk as softIkfunc
+reload( softIkfunc )
 
 from function.rigging.tools import proc as pc
 reload(pc)
@@ -77,7 +75,9 @@ def fkIkTwistGenRig(
 				#... creTwistJnt is obsolete it cause fk <> ik pair not work
 				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
 				creTwistJnt = True ,
-				stickShape = 'stick_ctrlShape' ):	#... stick_ctrlShape , 	gear_ctrlShape	
+				# softIk = False ,
+				stickShape = 'stick_ctrlShape'
+				):	#... stick_ctrlShape , 	gear_ctrlShape	
 				
 				
 	core.makeHeader(	'Start of %s%s Rig' %(region,side)	)		
@@ -618,7 +618,7 @@ def fkIkTwistGenRig(
 
 
 
-	logger.info('\n# ------------------ Feature SoftIk Start ------------------------------------------------------------------- #')
+	logger.info('\n# ------------------ Prepare Feature SoftIk Start ------------------------------------------------------------------- #')
 	
 	#... Add zero grp to ikhNam
 
@@ -632,7 +632,7 @@ def fkIkTwistGenRig(
 	# mc.rotate(ikhNam, r=True, os=True, fo=True, value=(0, 0, 0))
 	mc.rotate( 0, 0, 0, ikhNam, os=True, fo=True )
 
-	logger.info('\n# ------------------ Feature SoftIk End ------------------------------------------------------------------- #')
+	logger.info('\n# ------------------ Prepare Feature SoftIk End ------------------------------------------------------------------- #')
 
 
 
@@ -718,13 +718,9 @@ def fkIkTwistGenRig(
 	psStreEndName = stretchNode[1]
 
 
-	'''
-	#------------------------------ Create SoftIk -----------------------------#
+	
 
-	softIk.softIK(	region = region, side = side, ctrlName = lowerIk_ctrl.name,
-				upAxis = 2, primaryAxis = 2, ikhName = ikhNam, 
-				inputMax = 40, outputMax = 4  )
-	'''
+	
 
 
 
@@ -1176,8 +1172,16 @@ def fkIkTwistGenRig(
 	# ------------------ Meta Node End ------------------------------------------------------------------- #
 
 
+	#------------------------------ Create SoftIk -----------------------------#
+	'''
+	if softIk == True:
 
+		softIkfunc.softIK(	region = region, side = side, ctrlName = lowerIk_ctrl.name,
+					upAxis = 2, primaryAxis = 2, ikhName = ikhNam, 
+					inputMax = 40, outputMax = 4  )
+	'''
 
 	#... Add ikhZro_grp for SoftIK
-	ikhAll_name = ikhNam , povZro_grp , Loc_grp.name , World_grp.name, ikhZro_grp
-	return stick_ctrl.name , lower_bJnt.name , middle_bJnt.name , upper_bJnt.name , ikhAll_name ,psStreEndName
+	ikhAll_name = ikhNam, povZro_grp, Loc_grp.name, World_grp.name, ikhZro_grp
+	softIk_name = [lowerIk_ctrl.name]
+	return stick_ctrl.name , lower_bJnt.name , middle_bJnt.name , upper_bJnt.name , ikhAll_name ,psStreEndName, softIk_name, fkIkTwistRig_meta

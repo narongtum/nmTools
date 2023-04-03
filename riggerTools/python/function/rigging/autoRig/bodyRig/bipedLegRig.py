@@ -57,16 +57,16 @@ bipedLegRigExt >>> fkIkTwistGenRig >>> footRollRig
 '''
 
 
+#... Function that create foot behavior
 
-
-def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
+def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 					ikPosi, # foot, ankle, heel
-					jnt_grp, footAttr, productionType,ctrlShape,
-					stickNam, lower_bJnt ,middle_bJnt , upper_bJnt, 
-					ikhAll_name , stretchEndName_psCon):
+					jnt_grp, footAttr, productionType, ctrlShape,
+					stickNam, lower_bJnt, middle_bJnt, upper_bJnt, 
+					ikhAll_name, stretchEndName_psCon):
 
 	# Then create fool roll behavior
-	core.makeHeader(	'Start of %s%s Rig' %('footRollRig',side)	)
+	core.makeHeader('Start of %s%s Rig' %('footRollRig',side))
 
 	if side == 'LFT':
 	    colorSide = 'red'
@@ -384,7 +384,7 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	# Create ball roll controller
 	# nameSpace = nameSpace + legType
 
-	ctrlName = nameSpace + footBehav[4] + legType+ 'Ik'  + side
+	ctrlName = nameSpace + footBehav[4] + legType + 'Ik' + side
 	ballRoll_ctrl = core.Dag(ctrlName  + '_ctrl')
 	ballRoll_ctrl.nmCreateController( 'ballRoll%s_IK_ctrlShape' %side )
 	ballRoll_ctrl.editCtrlShape( axis = charScale * 1.25 )
@@ -505,6 +505,12 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 	misc.snapParentConst( ankle_ikhZro_grp, ankle_ikh )
 	mc.parent(ankle_ikh , ankle_ikhZro_grp)
 	mc.rotate( 0, 0, 0, ankle_ikh, os=True, fo=True )
+
+	#... Parent to the ball roll controller
+
+	mc.parent(ankle_ikhZro_grp, ballRoll_ctrl.name)
+
+
 	# ------------------ FEATURE SoftIk END ------------------------------------------------------------------- #
 
 	# variable for create pair of ball joint
@@ -594,28 +600,49 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 
 
 
-
-
-
-
-
-
 	if footAttr:
 		logger.info('# Create foot roll attr')
 		ankleIk_ctrl.addAttribute( longName = 'footBar', niceName = '_' , at ='enum' , en = 'Foot'  , keyable = True)
-		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'heelRoll' 	, k = True  ,dv = 0 )
-		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'ballRoll' 	, k = True  ,dv = 0 )
-		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'toeRoll' 	, k = True  ,dv = 0 )
+		#... not use
+		# ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'heelRoll' 	, k = True  ,dv = 0 )
+		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'ballRoll', minValue = 0.0, k = True, dv = 0 ) 
+		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'toeRoll', minValue = 0.0, k = True, dv = 0 ) #... start at zero
 		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'heelTwist' 	, k = True  ,dv = 0 )
 		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'toeTwist' 	, k = True  ,dv = 0 )
 		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'footRock' 	, k = True  ,dv = 0 )
+		#... Add wiggle toe
+		ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'ballRise' 	, k = True  ,dv = 0 )
 
 		logger.info('# Connect foot attr')
 
-		ankleIk_ctrl.attr( 'heelRoll' ) >> footHeel_ctrl.attr( 'rx' )
-		ankleIk_ctrl.attr( 'heelTwist' ) >> footHeel_ctrl.attr( 'rz' )
-		ankleIk_ctrl.attr( 'ballRoll' ) >> ballRoll_ctrl.attr( 'rx' )
-		ankleIk_ctrl.attr( 'toeRoll' ) >> footToe_ctrl.attr( 'rx' )
+		# ankleIk_ctrl.attr( 'heelRoll' ) >> footHeel_ctrl.attr( 'rx' )
+		ankleIk_ctrl.attr( 'heelTwist' ) >> footHeel_ctrl.attr( 'ry' ) #... fix to ry intead rz
+
+
+		sideVal = -1
+
+		# - - - - - - - - - - - - - - - - - - Adjust value for make animation work proper
+		#... Link to multiply value first
+		#...[ToeRoll]
+		multiplySid_toeRolle_mdl = core.MDLWithMul(part + 'toeRoll' + side + '_mdl', sideVal)
+		ankleIk_ctrl.attr( 'toeRoll' ) >> multiplySid_toeRolle_mdl.attr('input1')
+		multiplySid_toeRolle_mdl.attr('output') >> footToe_ctrl.attr( 'rx' )
+
+
+		#...[ballRoll]
+		multiplySide_ballRoll_mdl = core.MDLWithMul(part + 'ballRoll' + side + '_mdl', sideVal)
+		ankleIk_ctrl.attr( 'ballRoll' ) >> multiplySide_ballRoll_mdl.attr( 'input1' )
+		multiplySide_ballRoll_mdl.attr( 'output' ) >> ballRoll_ctrl.attr( 'rx' )
+
+
+
+		#... Then link to ctrl
+		# ankleIk_ctrl.attr( 'toeRoll' ) >> footToe_ctrl.attr( 'rx' )BACKUP
+
+
+
+
+
 		ankleIk_ctrl.attr( 'toeTwist' ) >> footToe_ctrl.attr( 'rz' )
 		logger.info('# Connect')
 
@@ -652,6 +679,66 @@ def footRollRig(	nameSpace,side, region,tmpJnt,priorJnt,nullGrp,charScale,
 
 	else:
 		print ('Skip add attribute.')
+
+
+
+	
+	#... Start Create wiggling toes  # # # # # # # # # # # # # # # # # # # # # # # # # 
+	ctrlName = nameSpace + 'ToeRise' + legType + 'Ik'  + side
+
+	if footAttr:
+		toeRiseZro_grp = core.Null( ctrlName + 'Zro_grp' )
+		toeRiseOffset_grp = core.Null( ctrlName + 'Offset_grp' )
+		toeRiseOffset_grp.parent(toeRiseZro_grp)
+		toeRiseZro_grp.snap(ball_bJnt)
+
+		#... Parent to foot heel
+		toeRiseZro_grp.parent(footHeel_ctrl)
+
+		toesTip_ikh.parent(toeRiseOffset_grp)
+		toeRiseOffset_grp.lockHideAttrLst( 'tx', 'ty', 'tz', 'ry', 'rz', 'sx', 'sy', 'sz', 'v' )
+
+		ankleIk_ctrl.attr( 'ballRise' ) >> toeRiseOffset_grp.attr('rx')
+		# mc.error('Stop here.')
+
+
+
+	else:
+		toeRiseZro_grp = core.Null( ctrlName + 'Zro_grp' )
+
+		toeRise_ctrl = core.Dag(ctrlName + '_ctrl' )
+		toeRise_ctrl.nmCreateController('circle_ctrlShape')
+
+		toeRise_ctrl.color = colorSide
+		
+		toeRise_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )
+		toeRise_ctrl.editCtrlShape( axis = charScale * 1.5 )
+		toeRise_ctrl.setColor(colorSide)
+		# toeRise_ctrl.snap(ball_bJnt)
+
+		toeRise_ctrl.parent(toeRiseZro_grp)
+		toeRiseZro_grp.snap(ball_bJnt)
+
+		#... Parent to foot heel
+		toeRiseZro_grp.parent(footHeel_ctrl)
+
+		#... Make toe roll under toeRise_ctrl
+		toesTip_ikh.parent(toeRise_ctrl)
+	
+
+
+	
+
+
+	#... End Create wiggling toes  # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+
+
+
+
+
+
 
 	return ankleIk_ctrl
 

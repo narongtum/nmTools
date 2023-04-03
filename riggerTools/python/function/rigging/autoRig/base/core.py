@@ -787,7 +787,7 @@ class Node( object ) :
 		mc.addAttr(self , *args , **kwargs )
 		CoreLogger.info("Attribute has been create.")
 
-
+	# in Maya 2018 use this
 	def setAttribute( self ,attrName, *args , **kwargs ):
 		'''
 		i dunno how to add string to attr so i just create this

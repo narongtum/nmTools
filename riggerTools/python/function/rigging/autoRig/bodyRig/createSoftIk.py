@@ -35,6 +35,7 @@ reload(core)
 from function.rigging.util import misc
 reload( misc )
 
+MAYA_VERSION = mc.about(v=True)
 # upAxis = 2
 # primaryAxis = 2 
 # ikhName= 'ankleIkRGT_ikh'# ikhNam
@@ -240,7 +241,13 @@ def softIK(		priorMeta, region, side, ctrlName,
 	#---------------------------------------- Create meta node -----------------------------------------------------------#
 	
 	meta_node = core.MetaGeneric('%s_distance' %name)
-	meta_node.attr('Base_Name').value = '%s' %(__name__)
+
+	if MAYA_VERSION == '2018':
+		meta_node.setAttribute('Base_Name'  , __name__ , type = 'string')
+	else:
+		meta_node.attr('Base_Name').value = '%s' %(__name__)
+
+
 	meta_node.addAttribute( ln = 'length_AB', at = "double", k = True)
 	meta_node.addAttribute( ln = 'length_A', at = "double", k = True)
 	meta_node.addAttribute( ln = 'length_B', at = "double", k = True)
@@ -257,6 +264,7 @@ def softIK(		priorMeta, region, side, ctrlName,
 	meta_node.setAttribute('Side', side, type = 'string')
 
 	#... connect value by manual
+
 	mc.connectAttr( ikhName + '.message', meta_node.name + '.Rig_Prior' )
 
 
@@ -275,6 +283,9 @@ def softIK(		priorMeta, region, side, ctrlName,
 	#create the dSoft and softIK attributes on the controller
 	#mc.addAttr( ctrlName, ln = 'dSoft', at = "double", min = 0.001, max = 2, dv = 0.001, k = True )
 	#mc.addAttr( ctrlName, ln = 'softIK', at = "double", min = 0, max = 20, dv = 0, k = True )
+	soft_ctrl = core.Dag(ctrlName)
+	soft_ctrl.addAttribute( longName = 'SoftIk', niceName = 'SoftIk' , at ='enum' , en = '###'  , keyable = True)
+
 	mc.addAttr( ctrlName, ln = 'dSoft', at = "double", min = 0.001, max = 4, dv = 0.001, k = True )
 	mc.addAttr( ctrlName, ln = 'softIK', at = "double", min = 0, max = 40, dv = 0, k = True )
 	# try
@@ -378,9 +389,31 @@ def softIK(		priorMeta, region, side, ctrlName,
 	#... wee will offset later
 	# mc.setAttr( '%s_defaultPos_pma.input1D[0]' % name, defPos )
 
+
+
+
+
+
+	# -------------------------------------- Test Circle Start
 	mc.connectAttr( '%s_dist_diff_pma.output1D' % name, '%s_defaultPos_pma.input1D[1]' % name )
 
-	mc.connectAttr('%s_defaultPos_pma.output1D' % name, '%s.translate%s' % (ikhName, upAxis) )
+	# mc.connectAttr('%s_defaultPos_pma.output1D' % name, '%s.translate%s' % (ikhName, upAxis) ) # < < < this line cause an cycle
+
+	
+
+
+	# -------------------------------------- 
+	# mc.connectAttr( '%s_dist_diff_pma.output1D' % name, '%s.translate%s' % (ikhName, upAxis) )
+
+	# -------------------------------------- Test Circle End
+
+
+
+
+
+
+
+
 	#--------------------------------------- Noman edit for compath with stretchy ----------------------------------------------------------#
 
 	#... Create multi double linear
@@ -405,6 +438,9 @@ def softIK(		priorMeta, region, side, ctrlName,
 	softSwitch_cnd.attr('colorIfFalseR').value = 0
 	softSwitch_cnd.attr('operation').value = 2
 
+
+	
+	#... Circle warning here
 	#... Connect
 	# mc.connectAttr('%s.output ' %negative_val.name, '%s.colorIfTrueR' %result_cnd.name, f = True)
 	mc.connectAttr('%s.output ' %negative_val.name, '%s.colorIfTrueR' %softSwitch_cnd.name, f = True)
@@ -414,10 +450,15 @@ def softIK(		priorMeta, region, side, ctrlName,
 
 
 
+
+
 	mc.connectAttr('%s_defaultPos_pma.output1D' % name, '%s.input1' %negative_val.name )
 	
 
 	mc.connectAttr('%s.autoStretch ' %ctrlName, '%s.firstTerm' %result_cnd.name, f = True)
+
+
+
 
 	mc.connectAttr('%s.outColorR' %result_cnd.name, '%s.translate%s' % (ikhName, upAxis), f = True)
 

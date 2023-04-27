@@ -8,9 +8,6 @@ DRIVES = [		"D:\\",
 				"E:\\"		]
 
 PROJECT_NAME = ['P_sample','P_sample02']
-DEFAULT_DRIVES = DRIVES[0]
-DEFAULT_PROJECT = PROJECT_NAME[0]
-
 
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -18,8 +15,8 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.setupUi(self)
 		self.path = None
 		
-		self.drive_comboBox.setCurrentText(DEFAULT_DRIVES)
-		self.project_comboBox.setCurrentText(DEFAULT_PROJECT)
+		self.drive_comboBox.setCurrentText(DRIVES[0])
+		self.project_comboBox.setCurrentText(PROJECT_NAME[0])
 
 		# Populate Drive and Project combo boxes
 		self.populate_drives()
@@ -28,58 +25,23 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect signals
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
-		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)
-		
-
+		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)		
 		self.populate_treeView()
-		self.treeView.setSortingEnabled(True)
+
+		#... try to disable line
+		# self.treeView.setSortingEnabled(True)
 		self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.treeView.customContextMenuRequested.connect(self.show_context_menu)
-
-
-
-		# Connect the ComboBoxes to the update_treeview function
-		# self.drive_comboBox.currentTextChanged.connect(self.update_treeview)
-		# self.project_comboBox.currentTextChanged.connect(self.update_treeview)
-
-
-
-
-
-
-	def update_treeview(self, text):
-
-		# Set up file system model
-		model = QtWidgets.QFileSystemModel()
-
-
-		# Get the selected drive and project from the ComboBoxes
-		drive = self.drive_comboBox.currentText()
-		project = self.project_comboBox.currentText()
-
-		# Create the new directory path
-		directory_path = drive + ":/" + project
-
-		
-		# Set the new root path for the file system model
-		model.setRootPath(directory_path)
-
-		# Set the new root index for the tree view
-		self.treeView.setRootIndex(model.index(directory_path))
-
 
 	def populate_drives(self):
 		self.drive_comboBox.clear()
 		self.drive_comboBox.addItems(DRIVES)
-		# for index, drive in enumerate(DRIVES):
-		# 	self.drive_comboBox.addItem(drive, index)
 
 
 	def populate_project(self):
 		self.project_comboBox.clear()
 		self.project_comboBox.addItems(PROJECT_NAME)
-		# for index, project in enumerate(PROJECT_NAME):
-		# 	self.project_comboBox.addItem(project, index)
+
 
 
 	def update_project_comboBox(self):
@@ -102,8 +64,6 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		print("Show project name _123_:...\t\t\t", selected_project)
 
 
-		print("Test Drive Path")
-		print("Show selected_Drive:...\t\t\t", selected_drive)
 		if selected_project == None:
 			print('There are no Project name')
 		print("Show selected_Project:...\t\t\t", selected_project)	
@@ -117,45 +77,52 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Update tree view with new root path
 		
-
 			
-
-
 	def populate_treeView(self):
+		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
+		# Update the `self.path` variable whenever the user selects a new project
+		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
 
 		# Set up file system model
 		model = QtWidgets.QFileSystemModel()
-		# model.setRootPath(QtCore.QDir.rootPath())
 		model.setRootPath(self.path)
 		self.treeView.setModel(model)
 		self.treeView.setRootIndex(model.index(self.path))
 		self.treeView.setSortingEnabled(True)
 
+		# Hide the second, third and fourth columns
+		self.treeView.setColumnHidden(1, True) # size
+		self.treeView.setColumnHidden(2, True) # type
+		self.treeView.setColumnHidden(3, True) # date modified
+
+
 		# Set up context menu
-		self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.treeView.customContextMenuRequested.connect(self.show_context_menu)
-
-		# Update the `self.path` variable whenever the user selects a new project
-		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
-
-		# Update the `model.setRootPath()` method whenever the user selects a new project
-		model.setRootPath(self.path)
+		# self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
+		# self.treeView.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
 		# Print some information for debugging purposes
 		print("\nPopulating tree view with file system model...")
 		print("populate_treeView project path:... _456_\t\t\t", self.path)
-		print("Model root path:...\t\t\t\n", model.rootPath())
+		print("Model root path:...\t\t\t", model.rootPath())
+
+		#... try to disable line
+		# Update the `model.setRootPath()` method whenever the user selects a new project
+		# model.setRootPath(self.path)
+
 		
-
-
-
-
 	def show_context_menu(self, point):
+
+
+
+
+
 		# Get the index of the item that was clicked
 		index = self.treeView.indexAt(point)
 
 		# Create a context menu
 		menu = QtWidgets.QMenu(self)
+
+
 
 		# Add a "New entite" action to the menu
 		new_entitie_action = menu.addAction("New Entite...")
@@ -163,8 +130,16 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		 # Add a "New asset" action to the menu
 		new_asset_action = menu.addAction("Create Asset...")
 
+		# Check if the context menu is already open
+		if menu.isVisible():
+			# Close the context menu
+			menu.close()
+
+
 		# Show the context menu and get the chosen action
-		chosen_action = menu.exec_(self.treeView.mapToGlobal(point))
+		chosen_action = menu.exec_(self.treeView.mapToGlobal(point)) 
+
+		
 
 		# If "New entite" was chosen, create a new entite
 		if chosen_action == new_entitie_action:
@@ -175,10 +150,12 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			self.create_asset(index)
 
 
+
+
 	def create_entite(self, index):
 		# Get the filepath of the selected item
 		parent_dir = self.treeView.model().filePath(index)
-		print("parent_dir:", parent_dir)
+		print("Parent_dir:", parent_dir)
 
 		# Get the parent directory of the new entite
 		# parent_dir = self.treeView.model().filepath(index)
@@ -217,7 +194,6 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			# Refresh the view to show the new asset folders
 			self.treeView.update()
-
 
 
 

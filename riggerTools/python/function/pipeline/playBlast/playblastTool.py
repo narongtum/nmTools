@@ -12,6 +12,15 @@
 version = 1.18
 
 
+'''
+from function.pipeline.playBlast import playblastTool
+importlib.reload(playblastTool)
+run=playblastTool.Ui()
+run.createGUI()
+'''
+
+
+
 from function.framework.reloadWrapper import reloadWrapper as reload
 import maya.cmds as mc
 import os

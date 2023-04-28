@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1282, 616)
+        MainWindow.resize(1304, 691)
         MainWindow.setMinimumSize(QSize(1282, 616))
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -92,16 +92,16 @@ class Ui_MainWindow(object):
 
         self.saveBar_horizontal.addItem(self.horizontalSpacer_2)
 
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
+        self.save_BTN = QPushButton(self.centralwidget)
+        self.save_BTN.setObjectName(u"save_BTN")
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.pushButton.sizePolicy().hasHeightForWidth())
-        self.pushButton.setSizePolicy(sizePolicy3)
-        self.pushButton.setMinimumSize(QSize(100, 50))
+        sizePolicy3.setHeightForWidth(self.save_BTN.sizePolicy().hasHeightForWidth())
+        self.save_BTN.setSizePolicy(sizePolicy3)
+        self.save_BTN.setMinimumSize(QSize(100, 50))
 
-        self.saveBar_horizontal.addWidget(self.pushButton)
+        self.saveBar_horizontal.addWidget(self.save_BTN)
 
 
         self.gridLayout_2.addLayout(self.saveBar_horizontal, 3, 0, 1, 1)
@@ -203,10 +203,10 @@ class Ui_MainWindow(object):
 
         self.departmentLib_verticalLayout.addWidget(self.global_listWidget)
 
-        self.pushButton_4 = QPushButton(self.Asset_tab)
-        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.commit_BTN = QPushButton(self.Asset_tab)
+        self.commit_BTN.setObjectName(u"commit_BTN")
 
-        self.departmentLib_verticalLayout.addWidget(self.pushButton_4)
+        self.departmentLib_verticalLayout.addWidget(self.commit_BTN)
 
         self.department_label = QLabel(self.Asset_tab)
         self.department_label.setObjectName(u"department_label")
@@ -239,10 +239,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.local_view_listWidget)
 
-        self.pushButton_3 = QPushButton(self.Asset_tab)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.localCommit_BTN = QPushButton(self.Asset_tab)
+        self.localCommit_BTN.setObjectName(u"localCommit_BTN")
 
-        self.verticalLayout.addWidget(self.pushButton_3)
+        self.verticalLayout.addWidget(self.localCommit_BTN)
 
         self.version_label = QLabel(self.Asset_tab)
         self.version_label.setObjectName(u"version_label")
@@ -260,6 +260,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addLayout(self.verticalLayout)
 
+        self.horizontalLayout_2.setStretch(0, 3)
+        self.horizontalLayout_2.setStretch(1, 1)
+        self.horizontalLayout_2.setStretch(2, 1)
+        self.horizontalLayout_2.setStretch(3, 2)
         self.tabWidget.addTab(self.Asset_tab, "")
         self.scene_tab = QWidget()
         self.scene_tab.setObjectName(u"scene_tab")
@@ -273,7 +277,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1282, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1304, 21))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuTools = QMenu(self.menubar)
@@ -298,15 +302,15 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"FileManager", None))
         self.drive_label.setText(QCoreApplication.translate("MainWindow", u"Drive", None))
         self.project_label.setText(QCoreApplication.translate("MainWindow", u"Project", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Save", None))
+        self.save_BTN.setText(QCoreApplication.translate("MainWindow", u"Save", None))
         self.asset_filter_text_label.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
         self.AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"AssetInfo", None))
         self.global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
+        self.commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
         self.department_label.setText(QCoreApplication.translate("MainWindow", u"Department", None))
         self.local_label.setText(QCoreApplication.translate("MainWindow", u"Local", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Local Publish", None))
+        self.localCommit_BTN.setText(QCoreApplication.translate("MainWindow", u"Local Publish", None))
         self.version_label.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Asset_tab), QCoreApplication.translate("MainWindow", u"Asset", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.scene_tab), QCoreApplication.translate("MainWindow", u"Scene", None))

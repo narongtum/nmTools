@@ -96,9 +96,16 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Update the `self.path` variable whenever the user selects a new project
 		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
 
+
 		# Set up file system model
 		model = QtWidgets.QFileSystemModel()
 		model.setRootPath(self.path)
+
+		# Hide some file formats, such as ".pyc" and ".o" files
+		model.setNameFilters(['*.pyc', '*.o'])
+		model.setNameFilterDisables(False)
+
+		# Set the model on the tree view
 		self.asset_dir_TREEVIEW.setModel(model)
 		self.asset_dir_TREEVIEW.setRootIndex(model.index(self.path))
 		self.asset_dir_TREEVIEW.setSortingEnabled(True)
@@ -200,7 +207,7 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		content_index = directories.index("Content")
 
 		for i in range (0,content_index+1):
-		    del directories[0]
+			del directories[0]
 		 
 		directories.pop()
 

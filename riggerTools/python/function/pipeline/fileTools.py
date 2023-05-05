@@ -1015,7 +1015,10 @@ def localPublish( mayafileType = 'ma'):
 	doDeleteGrp()	
 
 
-
+	#... delete '*_bak'
+	fileToolsLogger.debug('Do Delete prefix.')
+	doDeleteSuffixExt(suffix ='_bak')
+	doDeletePrefixExt(prefix = 'bak_')
 
 	# obselet
 	# doDeleteGrpTmp()

@@ -2,13 +2,27 @@
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
+import json
 import os
 from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
+
 
 DRIVES = [		"D:\\",
 				"E:\\"		]
 
 PROJECT_NAME = ['P_sample','P_sample02']
+
+DICTIONARY_TEMPLATE = {		
+
+							"base_path":""				,
+							"entitie_type":""			,
+							"entitie_name":""			,
+							"full_entity_name":""		,
+							"comment":""				,
+
+							}
+
+
 
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -29,10 +43,10 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)		
 		self.populate_treeView()
 
-		#... try to disable line
+		#... Shift to populate_treeView
 		# self.asset_dir_TREEVIEW.setSortingEnabled(True)
-		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu)
+		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)#... repetitive code with __init__
+		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu)#... repetitive code with __init__
 
 	def populate_drives(self):
 		self.drive_comboBox.clear()
@@ -96,8 +110,8 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 		# Set up context menu
-		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
-		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
+		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
 		# Print some information for debugging purposes
 		print("\nPopulating tree view with file system model...")
@@ -123,6 +137,9 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		 # Add a "New asset" action to the menu
 		new_asset_action = menu.addAction("Create Asset...")
 
+		# Add a "Show in explorer" action to the menu
+		show_in_explorer_action = menu.addAction("Show in Explorer")
+
 		# Check if the context menu is already open
 		if menu.isVisible():
 			# Close the context menu
@@ -139,6 +156,15 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# If "New asset" was chosen, create a new asset
 		if chosen_action == new_asset_action:
 			self.create_asset(index)
+
+		# If "Show in explorer" was chosen, open the folder in the file explorer
+		if chosen_action == show_in_explorer_action:
+			# Get the filepath of the selected item
+			filepath = self.asset_dir_TREEVIEW.model().filePath(index)
+
+			# Open the folder in the file explorer
+			if os.path.isdir(filepath):
+				os.startfile(filepath)
 
 
 	def create_entite(self, index):
@@ -164,6 +190,58 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			self.asset_dir_TREEVIEW.update()
 
 
+	def get_full_entity_name(self, base_path):
+
+		# base_path = os.path.normpath(base_path)
+
+		directories = base_path.split("/")
+
+		# find suffix
+		content_index = directories.index("Content")
+
+		for i in range (0,content_index+1):
+		    del directories[0]
+		 
+		directories.pop()
+
+		# Join the directories back together to form a path.
+		edited_path = "/".join(directories)
+
+		edited_path = os.path.join("/", edited_path)
+		print(edited_path)
+		return edited_path
+
+
+	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, comment):
+
+		# Write to dictionary
+		entitie_dict = DICTIONARY_TEMPLATE
+
+		entitie_dict["base_path"] = base_path
+
+		entitie_dict["entitie_type"] = entitie_type
+
+		entitie_dict["entitie_name"] = entitie_name
+
+		entitie_dict["full_entity_name"] = full_entity_name
+
+		entitie_dict["comment"] = comment
+
+		return entitie_dict
+
+
+	def write_entite_folder(self, dictionary):
+
+		with open("{0}/data.json".format(dictionary["base_path"]), "w") as f:
+			json.dump(dictionary, f, indent=2)
+
+		print('\n### Write file complete ###')
+		return True
+
+
+
+
+
 	def create_asset(self, index):
 		# Get the parent directory of the new asset
 		parent_dir = self.asset_dir_TREEVIEW.model().filePath(index)
@@ -176,13 +254,42 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# Create full path to new asset folder
 			new_asset_path = os.path.join(parent_dir, asset_name)
 
+			# Normalize path
+			new_asset_path = os.path.normpath(new_asset_path)
+			new_asset_path = new_asset_path.replace('\\', '/')
+
 			# Create asset folders
 			os.makedirs(os.path.join(new_asset_path, "Model"))
 			os.makedirs(os.path.join(new_asset_path, "Rig"))
 			os.makedirs(os.path.join(new_asset_path, "Texture"))
 
+			# Store entity data to json file here
+			# new_asset_path 
+			print("\tThis is asset path:\t{0}".format(new_asset_path))
+
+			# 'Asset' or 'Scene'
+			print("\tType:\t{0}".format('Asset'))
+
+			# Asset_name 
+			print("\tAsset name:\t{0}".format(asset_name))
+			
+			# "fullEntityName"
+			fullEntityName = self.get_full_entity_name(new_asset_path)
+			# comment (not require)
+
+			# extension(not use)
+		
+			entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, "")
+			print (entite_dict)
+
+			self.write_entite_folder(entite_dict)
+
 			# Refresh the view to show the new asset folders
 			self.asset_dir_TREEVIEW.update()
+
+
+
+
 
 
 if __name__ == "__main__":

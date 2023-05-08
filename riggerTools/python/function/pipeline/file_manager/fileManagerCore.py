@@ -22,11 +22,15 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
+JOB_NAME = 		['Model', 'Rig', 'Anim']
+JOB_EMPTY = 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX']
+JOB_TEMPLATE = 	['Commit', 'Version', 'Data', 'Output', 'FBX']
 
 
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
 		super(MyFileBrowser, self).__init__()
+		# Check if UI already open
 		self.setupUi(self)
 		self.path = None
 		
@@ -256,43 +260,70 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Prompt the user to enter an asset name
 		asset_name, ok = QtWidgets.QInputDialog.getText(self, "Create Asset", "Enter asset name:")
 
+
+
 		# If the user entered a name, create the asset folders
 		if ok and asset_name:
+
 			# Create full path to new asset folder
 			new_asset_path = os.path.join(parent_dir, asset_name)
 
-			# Normalize path
-			new_asset_path = os.path.normpath(new_asset_path)
-			new_asset_path = new_asset_path.replace('\\', '/')
+			# If asset exists
+			if not os.path.exists(new_asset_path):
+				print("\tThere are no folder in here Continue.")
 
-			# Create asset folders
-			os.makedirs(os.path.join(new_asset_path, "Model"))
-			os.makedirs(os.path.join(new_asset_path, "Rig"))
-			os.makedirs(os.path.join(new_asset_path, "Texture"))
+				# Normalize path
+				new_asset_path = os.path.normpath(new_asset_path)
+				new_asset_path = new_asset_path.replace('\\', '/')
 
-			# Store entity data to json file here
-			# new_asset_path 
-			print("\tThis is asset path:\t{0}".format(new_asset_path))
+				# Create asset folders
+				# Iterate over jobs and create the directories
+				for job_name in JOB_NAME:
+					job_path = os.path.join(new_asset_path, job_name)
+					os.makedirs(job_path, exist_ok = True)
+					for JOB_TEMPLATE in JOB_TEMPLATE:
+						JOB_TEMPLATE_path = os.path.join(job_path, JOB_TEMPLATE)
+						os.makedirs(JOB_TEMPLATE_path, exist_ok=True)
 
-			# 'Asset' or 'Scene'
-			print("\tType:\t{0}".format('Asset'))
+				if JOB_EMPTY:
+					for job_name in JOB_EMPTY:
+						job_path = os.path.join(new_asset_path, job_name)
+						os.makedirs(job_path, exist_ok = True)
 
-			# Asset_name 
-			print("\tAsset name:\t{0}".format(asset_name))
+
+
+
+				# os.makedirs(os.path.join(new_asset_path, "Model"))
+				# os.makedirs(os.path.join(new_asset_path, "Rig"))
+				# os.makedirs(os.path.join(new_asset_path, "Texture"))
+
+				# Store entity data to json file here
+				# new_asset_path 
+				print("\tThis is asset path:\t{0}".format(new_asset_path))
+
+				# 'Asset' or 'Scene'
+				print("\tType:\t{0}".format('Asset'))
+
+				# Asset_name 
+				print("\tAsset name:\t{0}".format(asset_name))
+				
+				# "fullEntityName"
+				fullEntityName = self.get_full_entity_name(new_asset_path)
+				# comment (not require)
+
+				# extension(not use)
 			
-			# "fullEntityName"
-			fullEntityName = self.get_full_entity_name(new_asset_path)
-			# comment (not require)
+				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, "")
+				print (entite_dict)
 
-			# extension(not use)
-		
-			entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, "")
-			print (entite_dict)
+				self.write_entite_folder(entite_dict)
 
-			self.write_entite_folder(entite_dict)
+			else:
+				print("\tThere are already folder skipped.")
+				pass
 
-			# Refresh the view to show the new asset folders
-			self.asset_dir_TREEVIEW.update()
+				# Refresh the view to show the new asset folders
+				self.asset_dir_TREEVIEW.update()
 
 
 

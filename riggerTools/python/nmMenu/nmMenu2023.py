@@ -316,7 +316,7 @@ def runMenu():
 
 
 	#... Import weight(use Noah instead)
-	# mc.menuItem( label = "Load weight Default", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.importWeightData()" , ann = "Select source and import." )
+	mc.menuItem( label = "Load weight Default", command = "from function.rigging.skin import autoReadWriteSkin\nimportlib.reload(autoReadWriteSkin)\nautoReadWriteSkin.importWeightData()" , ann = "Select source and import." )
 	mc.menuItem( label = "Load weight", command = "from function.framework.reloadWrapper import reloadWrapper as reload\nfrom function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO\nreload(skinIO)\nskinIO.loadSkin()" , ann = "Select source and import By Noah Schnapp." )
 
 	# Export weight

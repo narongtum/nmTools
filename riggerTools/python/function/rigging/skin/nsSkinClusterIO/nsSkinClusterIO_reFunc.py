@@ -248,9 +248,9 @@ class SkinClusterIO(object):
 		###################################################
 		#...set data
 		# skinPy.setWeights(dagPath, components, influenceIndices, weights_mArray, False)
-		print('ERROR HERE WHY')
+		SkinIOLogger.info('ERROR HERE WHY')
 		skinPy.__apimfn__().setWeights(dagPath, components, influenceIndices, weights_mArray, False)
-		print('ERROR HERE WHY')
+		SkinIOLogger.info('ERROR HERE WHY')
 		#skinPy.setBlendWeights(dagPath, components, blendWeights_mArray)
 		skinPy.__apimfn__().setBlendWeights(dagPath, components, blendWeights_mArray)
 		###################################################
@@ -813,6 +813,8 @@ def loadSkin():
 	#...name
 	cmds.rename(skinCluster_name, name)
 	print('File load at: ---> %s' %filepath)
+
+	cmds.select(deselect=True)
 	return True
 	
 '''	

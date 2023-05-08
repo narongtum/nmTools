@@ -276,7 +276,22 @@ def openCurrentMayaDir():
 			fileType = 'mayaBinary'
 			
 		# Must convert slashes before calling to the mel:
-		mel.eval('addRecentFile("%s", "%s")'%(myPath.replace('\\', '/'), fileType))
+		# mel.eval('addRecentFile("%s", "%s")'%(myPath.replace('\\', '/'), fileType)) # not work
+
+		
+		recent_files = mc.optionVar(q='RecentFilesList')
+		if not recent_files:
+			recent_files = []
+		myPathList = [myPath.replace('\\', '/')]  
+		recent_files.insert(0, myPathList)
+		mc.optionVar(sv=('RecentFilesList', ';'.join(recent_files)))
+		mc.optionVar(sv=('defaultRecentFileType', fileType))
+		fileToolsLogger.info('\nsaving recent file...')
+		
+
+
+
+
 
 		# option for python version
 		# mc.optionVar(stringValueAppend=('RecentFilesList', '{0}'.format(myPath.replace('\\', '/'), myPath)	)	)
@@ -433,6 +448,45 @@ def doDeleteSuffix(suffix = '_bak'): #... delete by suffix name
 		fileToolsLogger.info('suffix name "{0}" has been deleted...'.format(suffix))
 	except:
 		fileToolsLogger.info('There is no something to delete.')
+
+
+
+
+#... delete every give name upper or lower case
+def doDeletePrefixExt(prefix='bak_'):
+	# Get a list of all objects in the scene
+	all_objs = mc.ls()
+
+	# Filter the list to include only objects with the given prefix
+	matching_objs = [obj for obj in all_objs if obj.lower().startswith(prefix.lower())]
+
+	# Delete the matching objects
+	if matching_objs:
+		mc.delete(matching_objs)
+		print('Objects with prefix "{}" deleted.'.format(prefix))
+	else:
+		print('No objects with prefix "{}" found.'.format(prefix))
+
+
+#... delete every give name upper or lower case
+def doDeleteSuffixExt(suffix='_bak'):
+	# Get a list of all objects in the scene
+	all_objs = mc.ls()
+
+	# Filter the list to include only objects with the given suffix
+	matching_objs = [obj for obj in all_objs if obj.lower().endswith(suffix.lower())]
+
+	# Delete the matching objects
+	if matching_objs:
+		mc.delete(matching_objs)
+		print('Objects with suffix "{}" deleted.'.format(suffix))
+	else:
+		print('No objects with suffix "{}" found.'.format(suffix))
+
+
+
+
+
 
 
 def doHideGrp(jntName,num):
@@ -960,12 +1014,11 @@ def localPublish( mayafileType = 'ma'):
 	# move node to target
 	doDeleteGrp()	
 
-	# delete '*_bak'
-	fileToolsLogger.debug('Do Delete prefix.')
-	doDeleteSuffix()
-	doDeletePrefix(prefix = 'bak_')
-	doDeletePrefix(prefix = 'BAK_')
 
+	#... delete '*_bak'
+	fileToolsLogger.debug('Do Delete prefix.')
+	doDeleteSuffixExt(suffix ='_bak')
+	doDeletePrefixExt(prefix = 'bak_')
 
 	# obselet
 	# doDeleteGrpTmp()
@@ -997,7 +1050,7 @@ def localPublish( mayafileType = 'ma'):
 
 
 
-# global publish
+#... Global publish
 def globalPublish():
 
 	mesh = mc.ls(type = 'mesh')
@@ -1005,20 +1058,26 @@ def globalPublish():
 	mc.select(meshName , r = True)
 
 
-	# remove unused ref
+	#... Remove unused ref
 	remUnRef()
 
 	# import ref
 	impRem()
 
-	# hide Root
+	#... delete '*_bak'
+	fileToolsLogger.debug('Do Delete prefix.')
+	doDeleteSuffixExt(suffix ='_bak')
+	doDeletePrefixExt(prefix = 'bak_')
+
+
+	#... hide Root
 	doHideGrp( 'Root',0 )
 	doHideGrp( 'root',0 )
 
-	# delete layer
+	#... delete layer
 	#deleteDisplayLayer()
 
-	# move node to target
+	#... move node to target
 	doDeleteGrp()
 
 	# print 'Move group to parent.'

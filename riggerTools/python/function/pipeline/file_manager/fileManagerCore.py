@@ -22,9 +22,9 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
-JOB_NAME = 		[ 'Model', 'Rig']
-JOB_EMPTY = 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
-JOB_TEMPLATE = 	[ 'Commit', 'Version', 'Data', 'Output', 'FBX']
+DEPT_NAME 		= 	[ 'Model', 'Rig']
+DEPT_EMPTY 		= 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
+JOB_TEMPLATE 	= 	[ 'Commit', 'Version', 'Data', 'Output', 'FBX']
 
 
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -43,14 +43,18 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.update_project_comboBox()
 
 		# Connect signals
+
+		# Connect drive
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
+		# Connect project
 		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)		
+
 		self.populate_treeView()
 
-		#... Shift to populate_treeView
-		# self.asset_dir_TREEVIEW.setSortingEnabled(True)
-		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)#... repetitive code with __init__
-		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu)#... repetitive code with __init__
+		# self.populate_department()
+
+	# def populate_department(self):
+		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
 
 	def populate_drives(self):
 		self.drive_comboBox.clear()
@@ -129,9 +133,9 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		print("populate_treeView project path:... _456_\t\t\t", self.path)
 		print("Model root path:...\t\t\t", model.rootPath())
 
-		#... try to disable line
-		# Update the `model.setRootPath()` method whenever the user selects a new project
-		# model.setRootPath(self.path)
+		# Show department listWidget when selected asset
+		self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
+
 	
 
 	def show_context_menu(self, point):
@@ -250,17 +254,12 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return True
 
 
-
-
-
 	def create_asset(self, index):
 		# Get the parent directory of the new asset
 		parent_dir = self.asset_dir_TREEVIEW.model().filePath(index)
 
 		# Prompt the user to enter an asset name
 		asset_name, ok = QtWidgets.QInputDialog.getText(self, "Create Asset", "Enter asset name:")
-
-
 
 		# If the user entered a name, create the asset folders
 		if ok and asset_name:
@@ -278,24 +277,17 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Create asset folders
 				# Iterate over jobs and create the directories
-				for job_name in JOB_NAME:
-					job_path = os.path.join(new_asset_path, job_name)
+				for job in DEPT_NAME:
+					job_path = os.path.join(new_asset_path, job)
 					os.makedirs(job_path, exist_ok = True)
 					for job_type in JOB_TEMPLATE:
 						job_each_path = os.path.join(job_path, job_type)
 						os.makedirs(job_each_path, exist_ok=True)
 
-				if JOB_EMPTY:
-					for job_name in JOB_EMPTY:
-						job_path = os.path.join(new_asset_path, job_name)
+				if DEPT_EMPTY:
+					for job in DEPT_EMPTY:
+						job_path = os.path.join(new_asset_path, job)
 						os.makedirs(job_path, exist_ok = True)
-
-
-
-
-				# os.makedirs(os.path.join(new_asset_path, "Model"))
-				# os.makedirs(os.path.join(new_asset_path, "Rig"))
-				# os.makedirs(os.path.join(new_asset_path, "Texture"))
 
 				# Store entity data to json file here
 				# new_asset_path 
@@ -324,10 +316,6 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Refresh the view to show the new asset folders
 				self.asset_dir_TREEVIEW.update()
-
-
-
-
 
 
 if __name__ == "__main__":

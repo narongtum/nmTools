@@ -22,9 +22,9 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
-JOB_NAME = 		['Model', 'Rig', 'Anim']
-JOB_EMPTY = 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX']
-JOB_TEMPLATE = 	['Commit', 'Version', 'Data', 'Output', 'FBX']
+JOB_NAME = 		[ 'Model', 'Rig']
+JOB_EMPTY = 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
+JOB_TEMPLATE = 	[ 'Commit', 'Version', 'Data', 'Output', 'FBX']
 
 
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -281,9 +281,9 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				for job_name in JOB_NAME:
 					job_path = os.path.join(new_asset_path, job_name)
 					os.makedirs(job_path, exist_ok = True)
-					for JOB_TEMPLATE in JOB_TEMPLATE:
-						JOB_TEMPLATE_path = os.path.join(job_path, JOB_TEMPLATE)
-						os.makedirs(JOB_TEMPLATE_path, exist_ok=True)
+					for job_type in JOB_TEMPLATE:
+						job_each_path = os.path.join(job_path, job_type)
+						os.makedirs(job_each_path, exist_ok=True)
 
 				if JOB_EMPTY:
 					for job_name in JOB_EMPTY:

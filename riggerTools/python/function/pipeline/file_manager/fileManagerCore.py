@@ -6,6 +6,15 @@ import json
 import os
 from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
 
+from function.pipeline import logger 
+reload(logger)
+
+class FileBrowserLog(logger.MayaLogger):
+	LOGGER_NAME = "fileBrowser"
+
+
+
+
 
 DRIVES = [		"D:\\",
 				"E:\\"		]
@@ -19,6 +28,7 @@ DICTIONARY_TEMPLATE = {
 							"entitie_name":""			,
 							"full_entity_name":""		,
 							"comment":""				,
+							"department_name":""
 
 							}
 
@@ -30,9 +40,11 @@ JOB_TEMPLATE 	= 	[ 'Commit', 'Version', 'Data', 'Output', 'FBX']
 class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
 		super(MyFileBrowser, self).__init__()
-		# Check if UI already open
 		self.setupUi(self)
 		self.path = None
+
+		# Define model as an instance variable
+		self.model = None
 		
 		self.drive_comboBox.setCurrentText(DRIVES[0])
 		self.project_comboBox.setCurrentText(PROJECT_NAME[0])
@@ -43,18 +55,20 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.update_project_comboBox()
 
 		# Connect signals
-
-		# Connect drive
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
 		# Connect project
-		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)		
+		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)	
 
+		# Called whenever a new item is clicked
 		self.populate_treeView()
 
-		# self.populate_department()
+		# Connect the on_treeview_clicked method to the clicked signal
+		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
 
-	# def populate_department(self):
-		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
+		# Connect the on_department_clicked method to the clicked signal
+		self.asset_department_listWidget.itemClicked.connect(self.on_department_clicked)
+
+
 
 	def populate_drives(self):
 		self.drive_comboBox.clear()
@@ -96,26 +110,97 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Set the selected project in the Project comboBox
 		self.project_comboBox.setCurrentText(selected_project)
 
-		# Update tree view with new root path
+
+	
+	# Try to make return directory when clicked in treeview
+	def on_treeview_clicked(self, index):
+
+		# Get the file name and path from the model
+		file_path = self.model.filePath(index)
+		print(file_path)
+
+		#  Checks if the item is a file or not.
+		if os.path.isfile(file_path):
+			print('\nyeah line 113_is file')
+			return
+		else:
+			print('\nyeah line 113_is folder')
+			data_file = os.path.join(file_path, 'data.json')
+			if os.path.exists(data_file):
+				FileBrowserLog.info('\nThis maybe asset folder we looking for.')
+				self.load_asset_departments(file_path)
+
+
+
+	def on_department_clicked(self, item):
+
+
+		selected_text = item.text()
+		FileBrowserLog.info(f"Selected Department: {selected_text}")
+
+
+
+		# current_item = self.asset_department_listWidget.currentItem()
+		# selected_text = current_item.text()
+		# FileBrowserLog.info("Selected Department: {0}".format(selected_text))
+
+
+
+
+
+	def load_asset_departments(self, folder_path):
+		# Clear the list widget
+		self.asset_department_listWidget.clear()
+
+		# Look for the data.json file in the folder
+		data_file = os.path.join(folder_path, 'data.json')
+
 	
 
+		'''
+		# Choice 1: read department name from dict
+		if os.path.isfile(data_file):
+			with open(data_file, 'r') as f:
+				data = json.load(f)
+				if 'department_name' in data:
+					# Add the departments to the list widget
+					departments = data['department_name']
+					FileBrowserLog.info('\n146')
+					self.asset_department_listWidget.addItems(departments)
+		'''
+
+		# Choice 2: read folder list in dir
+		if os.path.isfile(data_file):
+			departments = []
+			items = os.listdir(folder_path)
+			for each in items:
+				if each != 'data.json': # exclude file 'data.json'
+					departments.append(each)
+			self.asset_department_listWidget.addItems(departments)
+
+
 	def populate_treeView(self):
+
 		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
 		# Update the `self.path` variable whenever the user selects a new project
 		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
 
-
 		# Set up file system model
-		model = QtWidgets.QFileSystemModel()
-		model.setRootPath(self.path)
+		# model = QtWidgets.QFileSystemModel()
+		# model.setRootPath(self.path)
+
+		# Store model as an instance variable
+		self.model = QtWidgets.QFileSystemModel()  
+		self.model.setRootPath(self.path)
 
 		# Hide some file formats, such as ".pyc" and ".o" files
-		model.setNameFilters(['*.pyc', '*.o'])
-		model.setNameFilterDisables(False)
+		self.model.setNameFilters(['*.pyc', '*.o'])
+		self.model.setNameFilterDisables(False)
 
 		# Set the model on the tree view
-		self.asset_dir_TREEVIEW.setModel(model)
-		self.asset_dir_TREEVIEW.setRootIndex(model.index(self.path))
+		self.asset_dir_TREEVIEW.setModel(self.model)
+		self.asset_dir_TREEVIEW.setRootIndex(self.model.index(self.path))
+		print("Model root path:...\t\t\t", self.model.rootPath())
 		self.asset_dir_TREEVIEW.setSortingEnabled(True)
 
 		# Hide the second, third and fourth columns
@@ -131,11 +216,11 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Print some information for debugging purposes
 		print("\nPopulating tree view with file system model...")
 		print("populate_treeView project path:... _456_\t\t\t", self.path)
-		print("Model root path:...\t\t\t", model.rootPath())
+		print("Model root path:...\t\t\t", self.model.rootPath())
 
 		# Show department listWidget when selected asset
-		self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
-
+		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
+		# print("\nShow department...")
 	
 
 	def show_context_menu(self, point):
@@ -226,8 +311,18 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		print(edited_path)
 		return edited_path
 
+	def get_department_name(self, new_asset_path):
+		folders_list = os.listdir(new_asset_path)
+		for folder in folders_list:
+			if folder == 'data.json':
+				folder.remove(folders_list)
 
-	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, comment):
+		return folders_list
+
+
+
+
+	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, department_name, comment ):
 
 		# Write to dictionary
 		entitie_dict = DICTIONARY_TEMPLATE
@@ -239,6 +334,8 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		entitie_dict["entitie_name"] = entitie_name
 
 		entitie_dict["full_entity_name"] = full_entity_name
+
+		entitie_dict["department_name"] = department_name
 
 		entitie_dict["comment"] = comment
 
@@ -304,10 +401,14 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# comment (not require)
 
 				# extension(not use)
-			
-				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, "")
-				print (entite_dict)
 
+				# Get department name
+				department_name = self.get_department_name(new_asset_path)
+				FileBrowserLog.info('This is department_name:\t\t{0}')
+			
+				# Write to json file
+				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, department_name, "")
+				print (entite_dict)
 				self.write_entite_folder(entite_dict)
 
 			else:

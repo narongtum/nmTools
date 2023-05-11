@@ -1,4 +1,3 @@
-# This version is add 2nd Tab name "Scene"
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -9,8 +8,8 @@ from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
 from function.pipeline import logger 
 reload(logger)
 
-class FileBrowserLog(logger.MayaLogger):
-	LOGGER_NAME = "fileBrowser"
+class FileManagerLog(logger.MayaLogger):
+	LOGGER_NAME = "FileManagerLog"
 
 
 
@@ -32,14 +31,16 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
-DEPT_NAME 		= 	[ 'Model', 'Rig']
-DEPT_EMPTY 		= 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
-JOB_TEMPLATE 	= 	[ 'Commit', 'Version', 'Data', 'Output', 'FBX']
+# DEPT_NAME 		= 	[ 'Model', 'Rig']
+DEPT_NAME 		= 	[ 'Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
+# DEPT_EMPTY 		= 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
+DEPT_EMPTY 		= 	['Commit']
+JOB_TEMPLATE 	= 	[ 'Version', 'Data', 'Output', 'Commit']
 
 
-class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
+class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
-		super(MyFileBrowser, self).__init__()
+		super(FileManager, self).__init__()
 		self.setupUi(self)
 		self.path = None
 
@@ -53,6 +54,9 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.populate_drives()
 		self.populate_project()
 		self.update_project_comboBox()
+
+		# Set "Asset" tab as default
+		self.entite_TAB.setCurrentIndex(0)  
 
 		# Connect signals
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
@@ -115,38 +119,97 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	# Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
 
+		# For department QListWidget
 		# Get the file name and path from the model
 		file_path = self.model.filePath(index)
 		print(file_path)
 
 		#  Checks if the item is a file or not.
 		if os.path.isfile(file_path):
-			print('\nyeah line 113_is file')
+			FileManagerLog.debug('This is file for sure')
 			return
 		else:
-			print('\nyeah line 113_is folder')
+			FileManagerLog.debug('This is folder for sure')
 			data_file = os.path.join(file_path, 'data.json')
 			if os.path.exists(data_file):
-				FileBrowserLog.info('\nThis maybe asset folder we looking for.')
+				FileManagerLog.info('\nThis maybe asset folder we looking for.')
 				self.load_asset_departments(file_path)
 
+				# For local commit QListWidget
+				self.load_local_commit(file_path)
 
+	def load_local_commit(self, folder_path):
+		# Clear the list widget
+		self.asset_department_listWidget.clear()
+
+
+
+	# def on_department_clicked(self, item):
+	# 	current_item = self.asset_department_listWidget.currentItem()
+	# 	selected_text = current_item.text()
+
+	# 	current_index = self.asset_dir_TREEVIEW.currentIndex()
+	# 	full_path = self.model.filePath(current_index)
+
+	# 	FileManagerLog.info("Selected Department: {0}".format(selected_text))
+	# 	FileManagerLog.info("Full Path: {0}".format(full_path))
+	# 	return full_path
 
 	def on_department_clicked(self, item):
+		selected_item = self.asset_department_listWidget.currentItem()
+
+		# Return departments name
+		department_text = selected_item.text()
+		FileManagerLog.debug("Return departments name: {0}".format(department_text) )
+		asset_path = self.get_full_path()
+		self.handle_selected_path(asset_path)
+		version_folder = os.path.join(asset_path, department_text, 'Version')
+
+		# Check if exists
+		if os.path.exists(version_folder):
+			# Corrective back and forward slash together
+			version_folder = os.path.normpath(version_folder)
+			FileManagerLog.debug("Version_folder path: {0}".format(version_folder) )
+
+			# Clear the QListWidget
+			self.asset_version_view_listWidget.clear()
+
+			# If the selection has 'Version' folder
+			if not os.path.isfile(version_folder):
+
+				version_file_list = os.listdir(version_folder)
+				
+				self.asset_version_view_listWidget.addItems(version_file_list)
+		else:
+			FileManagerLog.info('The folder Version does not exists.')
+			# self.asset_version_view_listWidget.clear()
+			# department_select = os.path.join(asset_path, department_text)
+			# department_file_list = os.listdir(department_select)
+			# self.asset_version_view_listWidget.addItems(department_file_list)
+
+		
 
 
-		selected_text = item.text()
-		FileBrowserLog.info(f"Selected Department: {selected_text}")
+	# # Share a method that returns the path of the selected
+	# def get_full_path(self, selected_text):
+	# 	# Construct the full path based on the selected text
+	# 	full_path = os.path.join(self.path, selected_text)
+	# 	self.handle_selected_path(full_path)
+	# 	return full_path
+
+	def get_full_path(self):
+		current_index = self.asset_dir_TREEVIEW.currentIndex()
+		full_path = self.model.filePath(current_index)
+		FileManagerLog.debug("Return full path: {0}".format(full_path) )
+		return full_path
 
 
 
-		# current_item = self.asset_department_listWidget.currentItem()
-		# selected_text = current_item.text()
-		# FileBrowserLog.info("Selected Department: {0}".format(selected_text))
 
-
-
-
+	def handle_selected_path(self, path):
+		# Do something with the selected path
+		FileManagerLog.info("handle_selected_path: {0}".format(path) )
+		
 
 	def load_asset_departments(self, folder_path):
 		# Clear the list widget
@@ -165,7 +228,7 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				if 'department_name' in data:
 					# Add the departments to the list widget
 					departments = data['department_name']
-					FileBrowserLog.info('\n146')
+					FileManagerLog.info('\n146')
 					self.asset_department_listWidget.addItems(departments)
 		'''
 
@@ -201,7 +264,14 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_dir_TREEVIEW.setModel(self.model)
 		self.asset_dir_TREEVIEW.setRootIndex(self.model.index(self.path))
 		print("Model root path:...\t\t\t", self.model.rootPath())
+
+		# Sort the items alphabetically from A to Z and allow sorting in both directions
 		self.asset_dir_TREEVIEW.setSortingEnabled(True)
+		self.asset_dir_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
+		self.asset_dir_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+		self.asset_dir_TREEVIEW.header().setSortIndicatorShown(True)
+
+
 
 		# Hide the second, third and fourth columns
 		self.asset_dir_TREEVIEW.setColumnHidden(1, True) # size
@@ -312,9 +382,13 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return edited_path
 
 	def get_department_name(self, new_asset_path):
+
 		folders_list = os.listdir(new_asset_path)
+
 		for folder in folders_list:
+
 			if folder == 'data.json':
+
 				folder.remove(folders_list)
 
 		return folders_list
@@ -404,7 +478,7 @@ class MyFileBrowser(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Get department name
 				department_name = self.get_department_name(new_asset_path)
-				FileBrowserLog.info('This is department_name:\t\t{0}')
+				FileManagerLog.info('This is department_name:\t\t{0}')
 			
 				# Write to json file
 				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, department_name, "")
@@ -424,7 +498,7 @@ if __name__ == "__main__":
 		app = QtWidgets.QApplication.instance()
 		if not app:
 			app = QtWidgets.QApplication([])
-		fileBrowser = MyFileBrowser()
+		fileBrowser = FileManager()
 		fileBrowser.show()
 		print("Starting event loop...")
 		app.exec_()

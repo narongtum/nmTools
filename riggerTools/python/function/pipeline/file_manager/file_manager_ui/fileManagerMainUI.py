@@ -17,8 +17,16 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1304, 691)
+        MainWindow.resize(1282, 616)
         MainWindow.setMinimumSize(QSize(1282, 616))
+        self.actionfunction_a = QAction(MainWindow)
+        self.actionfunction_a.setObjectName(u"actionfunction_a")
+        self.actionfunction_b = QAction(MainWindow)
+        self.actionfunction_b.setObjectName(u"actionfunction_b")
+        self.actionfunction_c = QAction(MainWindow)
+        self.actionfunction_c.setObjectName(u"actionfunction_c")
+        self.actionfunction_d = QAction(MainWindow)
+        self.actionfunction_d.setObjectName(u"actionfunction_d")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -152,21 +160,26 @@ class Ui_MainWindow(object):
 
         self.asset_thumbnail_VTL = QVBoxLayout()
         self.asset_thumbnail_VTL.setObjectName(u"asset_thumbnail_VTL")
-        self.thumbnail_label = QLabel(self.asset_TAB)
-        self.thumbnail_label.setObjectName(u"thumbnail_label")
-        self.thumbnail_label.setAlignment(Qt.AlignCenter)
+        self.asset_thumbnail_label = QLabel(self.asset_TAB)
+        self.asset_thumbnail_label.setObjectName(u"asset_thumbnail_label")
+        self.asset_thumbnail_label.setAlignment(Qt.AlignCenter)
 
-        self.asset_thumbnail_VTL.addWidget(self.thumbnail_label)
+        self.asset_thumbnail_VTL.addWidget(self.asset_thumbnail_label)
 
-        self.thumbnail_list_listWidget = QListWidget(self.asset_TAB)
-        self.thumbnail_list_listWidget.setObjectName(u"thumbnail_list_listWidget")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.asset_thumbnail_IMAGE_LABEL = QLabel(self.asset_TAB)
+        self.asset_thumbnail_IMAGE_LABEL.setObjectName(u"asset_thumbnail_IMAGE_LABEL")
+        sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.thumbnail_list_listWidget.sizePolicy().hasHeightForWidth())
-        self.thumbnail_list_listWidget.setSizePolicy(sizePolicy5)
+        sizePolicy5.setHeightForWidth(self.asset_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
+        self.asset_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy5)
+        self.asset_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 168))
+        self.asset_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 168))
+        self.asset_thumbnail_IMAGE_LABEL.setFrameShape(QFrame.WinPanel)
+        self.asset_thumbnail_IMAGE_LABEL.setFrameShadow(QFrame.Sunken)
+        self.asset_thumbnail_IMAGE_LABEL.setAlignment(Qt.AlignCenter)
 
-        self.asset_thumbnail_VTL.addWidget(self.thumbnail_list_listWidget)
+        self.asset_thumbnail_VTL.addWidget(self.asset_thumbnail_IMAGE_LABEL)
 
         self.verticalSpacer_SPACE = QSpacerItem(20, 23, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
@@ -198,8 +211,11 @@ class Ui_MainWindow(object):
 
         self.asset_global_listWidget = QListWidget(self.asset_TAB)
         self.asset_global_listWidget.setObjectName(u"asset_global_listWidget")
-        sizePolicy5.setHeightForWidth(self.asset_global_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_global_listWidget.setSizePolicy(sizePolicy5)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.asset_global_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_global_listWidget.setSizePolicy(sizePolicy6)
 
         self.asset_level_global_VTL.addWidget(self.asset_global_listWidget)
 
@@ -234,8 +250,8 @@ class Ui_MainWindow(object):
 
         self.asset_local_view_listWidget = QListWidget(self.asset_TAB)
         self.asset_local_view_listWidget.setObjectName(u"asset_local_view_listWidget")
-        sizePolicy5.setHeightForWidth(self.asset_local_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_local_view_listWidget.setSizePolicy(sizePolicy5)
+        sizePolicy6.setHeightForWidth(self.asset_local_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_local_view_listWidget.setSizePolicy(sizePolicy6)
 
         self.asset_level_local_VTL.addWidget(self.asset_local_view_listWidget)
 
@@ -275,23 +291,23 @@ class Ui_MainWindow(object):
         self.scene_verticalLayout.setObjectName(u"scene_verticalLayout")
         self.scene_filter_HTL = QHBoxLayout()
         self.scene_filter_HTL.setObjectName(u"scene_filter_HTL")
-        self.scene_horizontalSpacer_3 = QSpacerItem(180, 20, QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.scene_horizontal_SPACE = QSpacerItem(180, 20, QSizePolicy.Preferred, QSizePolicy.Minimum)
 
-        self.scene_filter_HTL.addItem(self.scene_horizontalSpacer_3)
+        self.scene_filter_HTL.addItem(self.scene_horizontal_SPACE)
 
-        self.scene_filter_text_label_3 = QLabel(self.scene_TAB)
-        self.scene_filter_text_label_3.setObjectName(u"scene_filter_text_label_3")
-        self.scene_filter_text_label_3.setEnabled(True)
-        sizePolicy1.setHeightForWidth(self.scene_filter_text_label_3.sizePolicy().hasHeightForWidth())
-        self.scene_filter_text_label_3.setSizePolicy(sizePolicy1)
-        self.scene_filter_text_label_3.setAlignment(Qt.AlignCenter)
+        self.scene_filter_text_LABEL = QLabel(self.scene_TAB)
+        self.scene_filter_text_LABEL.setObjectName(u"scene_filter_text_LABEL")
+        self.scene_filter_text_LABEL.setEnabled(True)
+        sizePolicy1.setHeightForWidth(self.scene_filter_text_LABEL.sizePolicy().hasHeightForWidth())
+        self.scene_filter_text_LABEL.setSizePolicy(sizePolicy1)
+        self.scene_filter_text_LABEL.setAlignment(Qt.AlignCenter)
 
-        self.scene_filter_HTL.addWidget(self.scene_filter_text_label_3)
+        self.scene_filter_HTL.addWidget(self.scene_filter_text_LABEL)
 
-        self.scene_filter_lineEdit_3 = QLineEdit(self.scene_TAB)
-        self.scene_filter_lineEdit_3.setObjectName(u"scene_filter_lineEdit_3")
+        self.scene_filter_LINEEDIT = QLineEdit(self.scene_TAB)
+        self.scene_filter_LINEEDIT.setObjectName(u"scene_filter_LINEEDIT")
 
-        self.scene_filter_HTL.addWidget(self.scene_filter_lineEdit_3)
+        self.scene_filter_HTL.addWidget(self.scene_filter_LINEEDIT)
 
 
         self.scene_verticalLayout.addLayout(self.scene_filter_HTL)
@@ -304,40 +320,46 @@ class Ui_MainWindow(object):
 
         self.scene_VTL.addLayout(self.scene_verticalLayout)
 
-        self.scene_thmbnail_verticalLayout_3 = QVBoxLayout()
-        self.scene_thmbnail_verticalLayout_3.setObjectName(u"scene_thmbnail_verticalLayout_3")
+        self.scene_thmbnail_VTL = QVBoxLayout()
+        self.scene_thmbnail_VTL.setObjectName(u"scene_thmbnail_VTL")
         self.scene_thumbnail_label = QLabel(self.scene_TAB)
         self.scene_thumbnail_label.setObjectName(u"scene_thumbnail_label")
         self.scene_thumbnail_label.setAlignment(Qt.AlignCenter)
 
-        self.scene_thmbnail_verticalLayout_3.addWidget(self.scene_thumbnail_label)
+        self.scene_thmbnail_VTL.addWidget(self.scene_thumbnail_label)
 
-        self.scene_thumbnail_list_listWidget = QListWidget(self.scene_TAB)
-        self.scene_thumbnail_list_listWidget.setObjectName(u"scene_thumbnail_list_listWidget")
-        sizePolicy5.setHeightForWidth(self.scene_thumbnail_list_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_thumbnail_list_listWidget.setSizePolicy(sizePolicy5)
+        self.scene_thumbnail_IMAGE_LABEL = QLabel(self.scene_TAB)
+        self.scene_thumbnail_IMAGE_LABEL.setObjectName(u"scene_thumbnail_IMAGE_LABEL")
+        sizePolicy5.setHeightForWidth(self.scene_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
+        self.scene_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy5)
+        self.scene_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 128))
+        self.scene_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 128))
+        self.scene_thumbnail_IMAGE_LABEL.setLayoutDirection(Qt.LeftToRight)
+        self.scene_thumbnail_IMAGE_LABEL.setFrameShape(QFrame.WinPanel)
+        self.scene_thumbnail_IMAGE_LABEL.setFrameShadow(QFrame.Sunken)
+        self.scene_thumbnail_IMAGE_LABEL.setAlignment(Qt.AlignCenter)
 
-        self.scene_thmbnail_verticalLayout_3.addWidget(self.scene_thumbnail_list_listWidget)
+        self.scene_thmbnail_VTL.addWidget(self.scene_thumbnail_IMAGE_LABEL)
 
         self.scene_verticalSpacer_SPACE = QSpacerItem(20, 23, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
-        self.scene_thmbnail_verticalLayout_3.addItem(self.scene_verticalSpacer_SPACE)
+        self.scene_thmbnail_VTL.addItem(self.scene_verticalSpacer_SPACE)
 
         self.scene_AssetInfo_label = QLabel(self.scene_TAB)
         self.scene_AssetInfo_label.setObjectName(u"scene_AssetInfo_label")
         self.scene_AssetInfo_label.setAlignment(Qt.AlignCenter)
 
-        self.scene_thmbnail_verticalLayout_3.addWidget(self.scene_AssetInfo_label)
+        self.scene_thmbnail_VTL.addWidget(self.scene_AssetInfo_label)
 
-        self.assetInfo_list_listWidget_3 = QListWidget(self.scene_TAB)
-        self.assetInfo_list_listWidget_3.setObjectName(u"assetInfo_list_listWidget_3")
-        sizePolicy4.setHeightForWidth(self.assetInfo_list_listWidget_3.sizePolicy().hasHeightForWidth())
-        self.assetInfo_list_listWidget_3.setSizePolicy(sizePolicy4)
+        self.scene_Info_list_LISTWIDGET = QListWidget(self.scene_TAB)
+        self.scene_Info_list_LISTWIDGET.setObjectName(u"scene_Info_list_LISTWIDGET")
+        sizePolicy4.setHeightForWidth(self.scene_Info_list_LISTWIDGET.sizePolicy().hasHeightForWidth())
+        self.scene_Info_list_LISTWIDGET.setSizePolicy(sizePolicy4)
 
-        self.scene_thmbnail_verticalLayout_3.addWidget(self.assetInfo_list_listWidget_3)
+        self.scene_thmbnail_VTL.addWidget(self.scene_Info_list_LISTWIDGET)
 
 
-        self.scene_VTL.addLayout(self.scene_thmbnail_verticalLayout_3)
+        self.scene_VTL.addLayout(self.scene_thmbnail_VTL)
 
         self.scene_departmentLib_VTL = QVBoxLayout()
         self.scene_departmentLib_VTL.setObjectName(u"scene_departmentLib_VTL")
@@ -349,8 +371,8 @@ class Ui_MainWindow(object):
 
         self.scene_global_listWidget = QListWidget(self.scene_TAB)
         self.scene_global_listWidget.setObjectName(u"scene_global_listWidget")
-        sizePolicy5.setHeightForWidth(self.scene_global_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_global_listWidget.setSizePolicy(sizePolicy5)
+        sizePolicy6.setHeightForWidth(self.scene_global_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_global_listWidget.setSizePolicy(sizePolicy6)
 
         self.scene_departmentLib_VTL.addWidget(self.scene_global_listWidget)
 
@@ -385,8 +407,8 @@ class Ui_MainWindow(object):
 
         self.scene_local_view_listWidget = QListWidget(self.scene_TAB)
         self.scene_local_view_listWidget.setObjectName(u"scene_local_view_listWidget")
-        sizePolicy5.setHeightForWidth(self.scene_local_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_local_view_listWidget.setSizePolicy(sizePolicy5)
+        sizePolicy6.setHeightForWidth(self.scene_local_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_local_view_listWidget.setSizePolicy(sizePolicy6)
 
         self.scene_locallib_VTL.addWidget(self.scene_local_view_listWidget)
 
@@ -425,22 +447,26 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1304, 21))
-        self.menuFile = QMenu(self.menubar)
-        self.menuFile.setObjectName(u"menuFile")
-        self.menuTools = QMenu(self.menubar)
-        self.menuTools.setObjectName(u"menuTools")
+        self.menubar.setGeometry(QRect(0, 0, 1282, 21))
+        self.menu_FILE = QMenu(self.menubar)
+        self.menu_FILE.setObjectName(u"menu_FILE")
+        self.menu_TOOLS = QMenu(self.menubar)
+        self.menu_TOOLS.setObjectName(u"menu_TOOLS")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.menubar.addAction(self.menuFile.menuAction())
-        self.menubar.addAction(self.menuTools.menuAction())
+        self.menubar.addAction(self.menu_FILE.menuAction())
+        self.menubar.addAction(self.menu_TOOLS.menuAction())
+        self.menu_FILE.addAction(self.actionfunction_a)
+        self.menu_FILE.addAction(self.actionfunction_b)
+        self.menu_TOOLS.addAction(self.actionfunction_c)
+        self.menu_TOOLS.addAction(self.actionfunction_d)
 
         self.retranslateUi(MainWindow)
 
-        self.entite_TAB.setCurrentIndex(1)
+        self.entite_TAB.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -448,11 +474,16 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"FileManager", None))
+        self.actionfunction_a.setText(QCoreApplication.translate("MainWindow", u"function_a", None))
+        self.actionfunction_b.setText(QCoreApplication.translate("MainWindow", u"function_b", None))
+        self.actionfunction_c.setText(QCoreApplication.translate("MainWindow", u"function_c", None))
+        self.actionfunction_d.setText(QCoreApplication.translate("MainWindow", u"function_d", None))
         self.drive_label.setText(QCoreApplication.translate("MainWindow", u"Drive", None))
         self.project_label.setText(QCoreApplication.translate("MainWindow", u"Project", None))
         self.save_BTN.setText(QCoreApplication.translate("MainWindow", u"Save", None))
         self.asset_filter_text_label.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
-        self.thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
+        self.asset_thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
+        self.asset_thumbnail_IMAGE_LABEL.setText("")
         self.AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"AssetInfo", None))
         self.asset_global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
         self.asset_commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
@@ -461,8 +492,9 @@ class Ui_MainWindow(object):
         self.asset_localCommit_BTN.setText(QCoreApplication.translate("MainWindow", u"Local Publish", None))
         self.asset_version_label.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.entite_TAB.setTabText(self.entite_TAB.indexOf(self.asset_TAB), QCoreApplication.translate("MainWindow", u"Asset", None))
-        self.scene_filter_text_label_3.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.scene_filter_text_LABEL.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.scene_thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
+        self.scene_thumbnail_IMAGE_LABEL.setText(QCoreApplication.translate("MainWindow", u"no image show", None))
         self.scene_AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"AssetInfo", None))
         self.scene_global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
         self.scene_commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
@@ -471,7 +503,7 @@ class Ui_MainWindow(object):
         self.scene_localCommit_BTN.setText(QCoreApplication.translate("MainWindow", u"Local Publish", None))
         self.scene_version_label_TXT.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.entite_TAB.setTabText(self.entite_TAB.indexOf(self.scene_TAB), QCoreApplication.translate("MainWindow", u"Scene", None))
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
-        self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
+        self.menu_FILE.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menu_TOOLS.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
     # retranslateUi
 

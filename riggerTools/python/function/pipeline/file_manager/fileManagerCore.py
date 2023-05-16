@@ -4,6 +4,10 @@ from PySide2 import QtCore
 import json
 import os
 from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
+# Thumbnail
+from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem
+from PySide2.QtCore import Qt, QSize
+from PySide2.QtGui import QIcon, QPixmap
 
 from function.pipeline import logger 
 reload(logger)
@@ -36,13 +40,14 @@ DEPT_NAME 		= 	[ 'Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
 # DEPT_EMPTY 		= 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
 DEPT_EMPTY 		= 	['Commit']
 JOB_TEMPLATE 	= 	[ 'Version', 'Data', 'Output', 'Commit']
-
+EXCLUDE_VIEW_ITEM = ('data.json', 'thumb.png', 'Commit')
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
 		super(FileManager, self).__init__()
 		self.setupUi(self)
 		self.path = None
+
 
 		# Define model as an instance variable
 		self.model = None
@@ -71,6 +76,58 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the on_department_clicked method to the clicked signal
 		self.asset_department_listWidget.itemClicked.connect(self.on_department_clicked)
+
+		# Connect the on_version_clicked method to the clicked signal
+		self.asset_version_view_listWidget.itemClicked.connect(self.on_version_clicked)
+
+		# self.display_images(r'D:\\')
+
+
+	
+	def display_images(self,image_paths):
+
+		if image_paths is not None:
+			FileManagerLog.debug(image_paths)
+			self.asset_thumbnail_IMAGE_LABEL.setScaledContents(True)
+			pixmap = QPixmap(image_paths)
+			# self.asset_thumbnail_IMAGE_LABEL.setPixmap(pixmap)
+			self.asset_thumbnail_IMAGE_LABEL.setPixmap(pixmap.scaled(self.asset_thumbnail_IMAGE_LABEL.size(), aspectRatioMode=Qt.KeepAspectRatio))
+			self.asset_thumbnail_IMAGE_LABEL.repaint()
+			QApplication.processEvents()
+		else:
+			FileManagerLog.debug('There are nothing to show.')
+			# self.asset_thumbnail_IMAGE_LABEL.clear()
+
+
+	# this function not work
+	# def display_images(self, image_paths):
+	# 	FileManagerLog.debug('Clear the list widget before adding new items')
+
+	# 	# Clear the list widget before adding new items
+	# 	self.scene_thumbnail_list_listWidget.clear()
+
+	# 	for path in image_paths:
+	# 		# Create a QListWidgetItem
+	# 		item = QListWidgetItem()
+			
+	# 		pixmap = QPixmap(path)
+	# 		FileManagerLog.debug('This is pixmap: {0}'.format(pixmap))
+	# 		# Create a QPixmap from the image file path
+	# 		item.setIcon(QIcon(pixmap))
+
+	# 		# pixmap = icon.pixmap(self.iconSize, self.iconSize)
+
+	# 		# Set the icon of the QListWidgetItem using the QPixmap
+	# 		item.setIcon(QIcon(pixmap))
+	# 		# icon = QtGui.QIcon(pixmap)
+
+	# 		# Set a custom size for the QListWidgetItem
+	# 		item.setSizeHint(QSize(294, 296)) # Adjust the width and height as needed
+
+	# 		# Add the QListWidgetItem to the QListWidget
+	# 		# self.scene_thumbnail_list_listWidget.setIcon(item)
+	# 		self.scene_thumbnail_list_listWidget.addItem(item)
+	# 	FileManagerLog.debug('Items added to the list widget: {0}'.format(item))
 
 
 
@@ -115,33 +172,81 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.project_comboBox.setCurrentText(selected_project)
 
 
+
+	def show_version_entite(self, version_folder):
+
+		### will shift to method #####
+		# Check if exists
+		if os.path.exists(version_folder):
+			# Corrective back and forward slash together
+			version_folder = os.path.normpath(version_folder)
+			FileManagerLog.debug("Version_folder path: {0}".format(version_folder) )
+
+			# Clear the QListWidget
+			self.asset_version_view_listWidget.clear()
+
+			# If the selection has 'Version' folder
+			if not os.path.isfile(version_folder):
+
+				version_file_list = os.listdir(version_folder)			
+				self.asset_version_view_listWidget.addItems(version_file_list)
+				# local_commit_folder = os.path.join(asset_path, department_text, 'Commit')
+				# self.load_local_commit(local_commit_folder)
+		else:
+			FileManagerLog.info('The folder Version does not exists.')
+			pass
+
 	
 	# Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
 
-		# For department QListWidget
+		self.asset_local_view_listWidget.clear()
+		self.asset_global_listWidget.clear()
+		self.asset_department_listWidget.clear()
+
 		# Get the file name and path from the model
 		file_path = self.model.filePath(index)
-		print(file_path)
+		FileManagerLog.debug('This is file path {0}'.format(file_path))
 
 		#  Checks if the item is a file or not.
 		if os.path.isfile(file_path):
 			FileManagerLog.debug('This is file for sure')
+
 			return
 		else:
 			FileManagerLog.debug('This is folder for sure')
 			data_file = os.path.join(file_path, 'data.json')
+			self.display_images(None)
+
+			# Check if having 'data.json' mean is asset folder for sure
 			if os.path.exists(data_file):
-				FileManagerLog.info('\nThis maybe asset folder we looking for.')
+				FileManagerLog.info('That is "ASSET" we looking for.')
 				self.load_asset_departments(file_path)
 
-				# For local commit QListWidget
-				self.load_local_commit(file_path)
+				global_commit_folder = os.path.join(file_path, 'Commit')
+				self.load_global_commit(global_commit_folder)
 
-	def load_local_commit(self, folder_path):
-		# Clear the list widget
-		self.asset_department_listWidget.clear()
+				# Show thumbnail
+				thumbnail_path = os.path.join(file_path, 'thumb.png')
+				self.display_images(thumbnail_path)
+			else:
+				# Check if that maybe department folder
+				parent_path = os.path.dirname(file_path)
+				if os.path.join(parent_path, 'data.json'):
+					FileManagerLog.debug('There must be department folder for sure')
 
+					# Then show list in version widget
+					version_folder_path = os.path.join(file_path, 'Version')
+					FileManagerLog.debug(version_folder_path)
+					self.show_version_entite(version_folder_path)
+
+
+
+
+
+				# Do not expand the asset folder if already expanded(still not work)
+				# if self.asset_dir_TREEVIEW.isExpanded(index):
+				# 	self.asset_dir_TREEVIEW.setExpanded(index, False)
 
 
 	# def on_department_clicked(self, item):
@@ -156,38 +261,101 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	# 	return full_path
 
 	def on_department_clicked(self, item):
-		selected_item = self.asset_department_listWidget.currentItem()
 
+		# Get selected department
+		selected_item = self.asset_department_listWidget.currentItem()
 		# Return departments name
 		department_text = selected_item.text()
 		FileManagerLog.debug("Return departments name: {0}".format(department_text) )
+
+		# Get root path
 		asset_path = self.get_full_path()
 		self.handle_selected_path(asset_path)
-		version_folder = os.path.join(asset_path, department_text, 'Version')
-
-		# Check if exists
-		if os.path.exists(version_folder):
-			# Corrective back and forward slash together
-			version_folder = os.path.normpath(version_folder)
-			FileManagerLog.debug("Version_folder path: {0}".format(version_folder) )
-
-			# Clear the QListWidget
-			self.asset_version_view_listWidget.clear()
-
-			# If the selection has 'Version' folder
-			if not os.path.isfile(version_folder):
-
-				version_file_list = os.listdir(version_folder)
-				
-				self.asset_version_view_listWidget.addItems(version_file_list)
-		else:
-			FileManagerLog.info('The folder Version does not exists.')
-			# self.asset_version_view_listWidget.clear()
-			# department_select = os.path.join(asset_path, department_text)
-			# department_file_list = os.listdir(department_select)
-			# self.asset_version_view_listWidget.addItems(department_file_list)
 
 		
+		version_folder = os.path.join(asset_path, department_text, 'Version')
+
+		### will shift to method #####
+		self.show_version_entite(version_folder)
+		local_commit_folder = os.path.join(asset_path, department_text, 'Commit')
+		self.load_local_commit(local_commit_folder)
+
+
+
+
+
+
+
+
+
+
+
+	def on_version_clicked(self):
+		# Get root path
+		asset_path = self.get_full_path()
+		self.handle_selected_path(asset_path)
+
+		
+		# Get selected department
+		selected_item = self.asset_department_listWidget.currentItem()
+
+		if selected_item:# If select via department widget
+			# Return departments name
+			department_text = selected_item.text()
+			FileManagerLog.debug("Return asset_department_listWidget name: {0}".format(department_text) )
+
+			# Get current selected in Version listWidget
+			selected_task = self.asset_version_view_listWidget.currentItem()
+			selected_task_text = selected_task.text()
+			FileManagerLog.debug("Return asset_version_view_listWidget name: {0}".format(selected_task_text) )
+
+			current_version_clicked = os.path.join(asset_path, department_text, 'Version', selected_task_text)
+			current_version_clicked = self.handle_selected_path(current_version_clicked)
+
+			# Do something with the selected path
+			FileManagerLog.debug("Do something with the selected path: {0}".format(current_version_clicked) )
+		else:# If select via treeview 
+			FileManagerLog.debug(": {0}".format('That maybe selected via treeView') )
+			FileManagerLog.debug('This is file path {0}'.format(asset_path))
+
+			selected_task = self.asset_version_view_listWidget.currentItem()
+			selected_task_text = selected_task.text()
+
+			current_version_clicked = os.path.join(asset_path, 'Version', selected_task_text)
+			current_version_clicked = self.handle_selected_path(current_version_clicked)
+
+
+
+	def load_local_commit(self, folder_path):
+		local_commit_list = []
+
+		# Clear the list widget
+		self.asset_local_view_listWidget.clear()	
+
+		# Get the list of files and directories in the specified path
+		items = os.listdir(folder_path)
+		for each in items:
+			local_commit_list.append(each)
+			self.asset_local_view_listWidget.addItems(local_commit_list)
+			FileManagerLog.debug("\nFound Local Commit: {0}".format(local_commit_list[0]) )
+
+
+
+	def load_global_commit(self, folder_path):
+		global_commit_list = []
+
+		# Clear the list widget
+		self.asset_global_listWidget.clear()
+
+		# Get the list of files and directories in the specified path
+		items = os.listdir(folder_path)
+
+		for each in items:
+			global_commit_list.append(each)
+			self.asset_global_listWidget.addItems(global_commit_list)
+			FileManagerLog.debug("Found Global Commit: {0}".format(global_commit_list[0]) )
+
+
 
 
 	# # Share a method that returns the path of the selected
@@ -208,7 +376,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def handle_selected_path(self, path):
 		# Do something with the selected path
-		FileManagerLog.info("handle_selected_path: {0}".format(path) )
+		norm_path = os.path.normpath(path)
+		FileManagerLog.info("\nHandle_selected_path: {0}".format(norm_path) )
+		return norm_path
 		
 
 	def load_asset_departments(self, folder_path):
@@ -236,10 +406,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if os.path.isfile(data_file):
 			departments = []
 			items = os.listdir(folder_path)
-			for each in items:
-				if each != 'data.json': # exclude file 'data.json'
-					departments.append(each)
-			self.asset_department_listWidget.addItems(departments)
+			FileManagerLog.debug('this is item {0}'.format(items))
+			# Exclude unwanted item
+			items_excluded = [dept for dept in items if dept not in EXCLUDE_VIEW_ITEM ]
+			self.asset_department_listWidget.addItems(items_excluded)
+
+
+
 
 
 	def populate_treeView(self):
@@ -301,10 +474,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Create a context menu
 		menu = QtWidgets.QMenu(self)
 
-		# Add a "New entite" action to the menu
-		new_entitie_action = menu.addAction("New Entite...")
+		# Add a "Create entite" action to the menu
+		new_entitie_action = menu.addAction("Create Entite...")
 
-		 # Add a "New asset" action to the menu
+		 # Add a "Create asset" action to the menu
 		new_asset_action = menu.addAction("Create Asset...")
 
 		# Add a "Show in explorer" action to the menu
@@ -397,22 +570,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, department_name, comment ):
-
 		# Write to dictionary
 		entitie_dict = DICTIONARY_TEMPLATE
-
 		entitie_dict["base_path"] = base_path
-
 		entitie_dict["entitie_type"] = entitie_type
-
 		entitie_dict["entitie_name"] = entitie_name
-
 		entitie_dict["full_entity_name"] = full_entity_name
-
 		entitie_dict["department_name"] = department_name
-
 		entitie_dict["comment"] = comment
-
 		return entitie_dict
 
 

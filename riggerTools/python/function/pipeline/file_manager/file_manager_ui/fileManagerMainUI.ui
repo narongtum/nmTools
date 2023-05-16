@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1304</width>
-    <height>691</height>
+    <width>1282</width>
+    <height>616</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -229,7 +229,7 @@
         <item>
          <layout class="QVBoxLayout" name="asset_thumbnail_VTL" stretch="0,0,0,0,0">
           <item>
-           <widget class="QLabel" name="thumbnail_label">
+           <widget class="QLabel" name="asset_thumbnail_label">
             <property name="text">
              <string>Thumbnail</string>
             </property>
@@ -239,12 +239,36 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="thumbnail_list_listWidget">
+           <widget class="QLabel" name="asset_thumbnail_IMAGE_LABEL">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>168</width>
+              <height>168</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>168</width>
+              <height>168</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::WinPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Sunken</enum>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -402,7 +426,7 @@
             <item>
              <layout class="QHBoxLayout" name="scene_filter_HTL">
               <item>
-               <spacer name="scene_horizontalSpacer_3">
+               <spacer name="scene_horizontal_SPACE">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -418,7 +442,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="scene_filter_text_label_3">
+               <widget class="QLabel" name="scene_filter_text_LABEL">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -437,7 +461,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="scene_filter_lineEdit_3"/>
+               <widget class="QLineEdit" name="scene_filter_LINEEDIT"/>
               </item>
              </layout>
             </item>
@@ -447,7 +471,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="scene_thmbnail_verticalLayout_3" stretch="0,0,0,0,0">
+           <layout class="QVBoxLayout" name="scene_thmbnail_VTL" stretch="0,0,0,0,0">
             <item>
              <widget class="QLabel" name="scene_thumbnail_label">
               <property name="text">
@@ -459,12 +483,39 @@
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="scene_thumbnail_list_listWidget">
+             <widget class="QLabel" name="scene_thumbnail_IMAGE_LABEL">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>168</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>168</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::WinPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+              <property name="text">
+               <string>no image show</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
              </widget>
             </item>
@@ -495,7 +546,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QListWidget" name="assetInfo_list_listWidget_3">
+             <widget class="QListWidget" name="scene_Info_list_LISTWIDGET">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -621,7 +672,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1304</width>
+     <width>1282</width>
      <height>21</height>
     </rect>
    </property>

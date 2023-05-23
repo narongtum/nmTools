@@ -248,11 +248,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			department_text = self.asset_department_listWidget.currentItem().text()
 
 			new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
-
+			version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
 
 			FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
 			self.maya_save(new_full_path, MAYA_EXT)
 
+			# To refresh version viewport
+			self.asset_version_view_listWidget.clear()
+
+			self.show_version_entite(version_folder_path)
 
 
 	def add_recen_file(self, filepath, MAYA_EXT):
@@ -265,10 +269,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		import maya.mel as mel
 		filepath = filepath.replace('\\','/')
-		# mel.eval('addRecentFile("{0},{1}");'.format(filepath,maya_type))
-		# mel.eval('addRecentFile("%s","%s");' % (filepath, maya_type))
 		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
-		# mel.eval('addRecentFile("%s","mayaAscii");' %filepath)
+
 
 	def maya_save(self, filepath, MAYA_EXT):
 

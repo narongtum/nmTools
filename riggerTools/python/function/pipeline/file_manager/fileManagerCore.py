@@ -117,13 +117,50 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		createStep_action.triggered.connect(self.create_job_step)
 		contextMenu.addAction(createStep_action)
 
+		result_job_element = self.query_step_list()	
+
+		step_list = result_job_element['step']
+
+		# Define the dynamic context options
+		dynamic_context = step_list
+
+
+
+		# Create actions for each dynamic context option
+		for option in dynamic_context:
+			action = QtWidgets.QAction(option, self)
+			# Set the action's data to the selected option
+			action.setData(option)
+			# Connect the action's triggered signal to a slot
+			action.triggered.connect(self.handle_dynamic_context)
+			contextMenu.addAction(action)
+
+
+
+
 		# Disconnect the signal-slot connection for the customContextMenuRequested signal
 		self.asset_version_view_listWidget.customContextMenuRequested.disconnect(self.show_step_context)
 
+		# Show the context menu at the specified position
 		contextMenu.exec_(self.asset_version_view_listWidget.mapToGlobal(position))
 
 		# Reconnect the signal-slot connection for the customContextMenuRequested signal
 		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
+
+
+
+
+
+			
+	def handle_dynamic_context(self):
+		# Get the selected action
+		action = self.sender()
+		# Get the data (selected context option) from the action
+		selected_context = action.data()
+		# Perform the desired operation based on the selected context
+		print(f"Selected context: {selected_context}")
+		# You can replace the print statement with your own logic for handling the selected context
+
 
 
 	def find_step_and_version(self, my_list): # Find Step name and max value of this version
@@ -153,32 +190,143 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('result_job_element_144_: {0}'.format(result_job_element))
 		return result_job_element
 
+	def query_step_list(self):
+		asset_path_text = self.get_full_path()
+		new_department_text = self.asset_department_listWidget.currentItem().text()
+		new_folder_path = os.path.join(asset_path_text, new_department_text)
+		new_folder_path = os.path.normpath(new_folder_path)
+		job_step_list = os.path.join(new_folder_path, STATIC_FOLDER[1])
+		job_step_list = os.listdir(job_step_list)
+		FileManagerLog.debug('This job_step_list: {0}'.format(job_step_list))
+
+		# Making list to find jobs step
+		step_filter_list = []
+		for each in job_step_list:
+			# Filter for *.ma or *.mb only
+			if re.search(r'\.ma$|\.mb$', each):
+				step_filter_list.append(each)  
+	
+		result_job_element = self.find_step_and_version(step_filter_list)
+		FileManagerLog.debug('step_filter_list: {0}'.format(step_filter_list))
+		return result_job_element
 
 
 	def create_job_step(self):
-		# When save maya file
+
+		# shift to above
+		# Open Dialog
+		step_name, okPressed = QInputDialog.getText(self, "Create Step", "Enter Step name:")
+
+		if okPressed and step_name:
+			self.create_name_saving(step_name)
+
+			# # # # # # # # # # # # # # # # Shift this to function START # # #
+			# asset_path_text = self.get_full_path()
+			# new_department_text = self.asset_department_listWidget.currentItem().text()
+			# new_folder_path = os.path.join(asset_path_text, new_department_text)
+			# # new_folder_path = self.handle_selected_path(new_folder_path)
+			# new_folder_path = os.path.normpath(new_folder_path)
+			
+			# job_step_list = os.path.join(new_folder_path, STATIC_FOLDER[1])
+			# job_step_list = os.listdir(job_step_list)
+			# FileManagerLog.debug('This job_step_list: {0}'.format(job_step_list))
+
+			# # Making list to find jobs step
+			# step_filter_list = []
+			# for each in job_step_list:
+			# 	# If this file is Maya only
+			# 	if re.search(r'\.ma$|\.mb$', each):
+			# 		step_filter_list.append(each)  
+
+			# 		# step_filter_list.append(step[-3].split('_')[-1])
+
+			# FileManagerLog.debug('step_filter_list: {0}'.format(step_filter_list))
+
+			# # Result
+			# # step_list = ['master', 'master', 'master', 'skel'] 
+			# # unique_step_list = list(set(step_filter_list))
+			# # FileManagerLog.debug('unique_step_list: {0}'.format(unique_step_list))
+
+			# result_job_element = self.find_step_and_version(step_filter_list)
+			# FileManagerLog.debug('THIS IS result_job_element: {0}'.format(result_job_element)) 
+			
+
+
+			# selected_project = self.project_comboBox.currentText()
+
+			# split_path_list = new_folder_path.split('\\')
+			# # Project Regulus is use wired naming 
+			# # We can't use '01' or '02' variation name as a Asset name 
+			# # So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
+
+			# FileManagerLog.debug('I want this: {0}'.format(split_path_list))
+
+
+			# if selected_project == 'P_Regulus':
+			# 	asset_name = split_path_list[-3]
+			# 	variation_name = split_path_list[-2]
+			# 	job_name = split_path_list[-1]
+			# 	FileManagerLog.debug('asset_name: {0}\n variation_name: {1}\n job_name: {2}'.format(asset_name, variation_name, job_name))
+
+			# 	# Join the strings with an underscore
+			# 	final_file_name = asset_name + '_' + variation_name + '_' + job_name
+			# 	FileManagerLog.debug('final_file_name: {0}'.format(final_file_name))
+
+		
+			# else:
+
+			# 	FileManagerLog.debug('There is not REGULUS using original naming')
+			# 	asset_name = split_path_list[-2]
+			# 	job_name = split_path_list[-1]
+			# 	final_file_name = asset_name + '_' + job_name
+
+
+			# step_list = result_job_element['step']
+			# if step_name in step_list:
+
+			# 	index = step_list.index(step_name)
+
+			# 	max_version = result_job_element['max_version'][index]
+			# 	max_version += 1
+			# 	max_version = str(max_version).zfill(PADDING)
+
+			# 	FileManagerLog.debug('If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+
+			# else:
+			# 	max_version = str(1).zfill(PADDING)
+			# 	FileManagerLog.debug('If new file not found: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+
+			# new_file_name =  '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT)
+
+			# # Get full path
+			# asset_path_text = self.get_full_path()
+			# department_text = self.asset_department_listWidget.currentItem().text()
+
+			# new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+			# version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
+
+			# FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
+			# self.maya_save(new_full_path, MAYA_EXT)
+
+			# # To refresh version viewport
+			# self.asset_version_view_listWidget.clear()
+			# # Update version listWidget viewport
+			# self.show_version_entite(version_folder_path)
+
+			# # # # # # # # # # # # # # # # # # # find proper naming shift to function
+
+
+
+	def create_name_saving(self,step_name):
 		asset_path_text = self.get_full_path()
 		new_department_text = self.asset_department_listWidget.currentItem().text()
 		new_folder_path = os.path.join(asset_path_text, new_department_text)
 		# new_folder_path = self.handle_selected_path(new_folder_path)
 		new_folder_path = os.path.normpath(new_folder_path)
-		split_path_list = new_folder_path.split('\\')
 
-		selected_project = self.project_comboBox.currentText()
-		
-
-		job_step_list = os.path.join(new_folder_path, 'Version')
+		job_step_list = os.path.join(new_folder_path, STATIC_FOLDER[1])
 		job_step_list = os.listdir(job_step_list)
 		FileManagerLog.debug('This job_step_list: {0}'.format(job_step_list))
-		
-
-
-
-		# Project Regulus is use wired naming 
-		# We can't use '01' or '02' variation name as a Asset name 
-		# So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
-
-		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
 
 		# Making list to find jobs step
 		step_filter_list = []
@@ -196,6 +344,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# unique_step_list = list(set(step_filter_list))
 		# FileManagerLog.debug('unique_step_list: {0}'.format(unique_step_list))
 
+		result_job_element = self.find_step_and_version(step_filter_list)
+		FileManagerLog.debug('THIS IS result_job_element: {0}'.format(result_job_element)) 
+
+
+
+		selected_project = self.project_comboBox.currentText()
+
+		split_path_list = new_folder_path.split('\\')
+		# Project Regulus is use wired naming 
+		# We can't use '01' or '02' variation name as a Asset name 
+		# So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
+
+		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
 
 
 		if selected_project == 'P_Regulus':
@@ -208,55 +369,51 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			final_file_name = asset_name + '_' + variation_name + '_' + job_name
 			FileManagerLog.debug('final_file_name: {0}'.format(final_file_name))
 
-	
-		else:
 
+		else:
 			FileManagerLog.debug('There is not REGULUS using original naming')
 			asset_name = split_path_list[-2]
 			job_name = split_path_list[-1]
 			final_file_name = asset_name + '_' + job_name
-						
-
-		result_job_element = self.find_step_and_version(step_filter_list)
-		FileManagerLog.debug('THIS IS result_job_element: {0}'.format(result_job_element)) 
-
-		# Open Dialog
-		step_name, okPressed = QInputDialog.getText(self, "Create Step", "Enter Step name:")
-		if okPressed and step_name:
-			
 
 
-			step_list = result_job_element['step']
-			if step_name in step_list:
+		step_list = result_job_element['step']
+		if step_name in step_list:
 
-				index = step_list.index(step_name)
+			index = step_list.index(step_name)
 
-				max_version = result_job_element['max_version'][index]
-				max_version += 1
-				max_version = str(max_version).zfill(PADDING)
+			max_version = result_job_element['max_version'][index]
+			max_version += 1
+			max_version = str(max_version).zfill(PADDING)
 
-				FileManagerLog.debug('If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+			FileManagerLog.debug('If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
 
-			else:
-				max_version = str(1).zfill(PADDING)
-				FileManagerLog.debug('If new file not found: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+		else:
+			max_version = str(1).zfill(PADDING)
+			FileManagerLog.debug('If new file not found: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
 
-			new_file_name =  '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT)
+		new_file_name =  '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT)
 
-			# Get full path
-			asset_path_text = self.get_full_path()
-			department_text = self.asset_department_listWidget.currentItem().text()
+		# Get full path
+		asset_path_text = self.get_full_path()
+		department_text = self.asset_department_listWidget.currentItem().text()
 
-			new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
-			version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
+		new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+		version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
 
-			FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
-			self.maya_save(new_full_path, MAYA_EXT)
+		FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
+		self.maya_save(new_full_path, MAYA_EXT)
 
-			# To refresh version viewport
-			self.asset_version_view_listWidget.clear()
+		# To refresh version viewport
+		self.asset_version_view_listWidget.clear()
+		# Update version listWidget viewport
+		self.show_version_entite(version_folder_path)
 
-			self.show_version_entite(version_folder_path)
+		FileManagerLog.debug('File saving at: {0}'.format(new_full_path)) 
+		return True
+
+
+
 
 
 	def add_recen_file(self, filepath, MAYA_EXT):
@@ -284,16 +441,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		mc.file(save=True, force=True, type=maya_type)
 		FileManagerLog.debug('FILE SAVE AT: {0}'.format(filepath)) 
 		self.add_recen_file(filepath, MAYA_EXT)
-
 		return True
 
 
-
-		
-
-
-
-		
 
 
 	# Context menu for asset_department_listWidget

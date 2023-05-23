@@ -148,18 +148,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
 
 
-
-
-
 			
 	def handle_dynamic_context(self):
 		# Get the selected action
 		action = self.sender()
 		# Get the data (selected context option) from the action
 		selected_context = action.data()
+		
 		# Perform the desired operation based on the selected context
 		print(f"Selected context: {selected_context}")
-		# You can replace the print statement with your own logic for handling the selected context
+		# Replace the print statement with your own logic for handling the selected context
+		self.create_name_saving(selected_context)
 
 
 

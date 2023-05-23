@@ -5,16 +5,19 @@ import json
 import os
 from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
 # Thumbnail
-from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem
+from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem, QMenu, QInputDialog
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QIcon, QPixmap
-
+import subprocess
+import sys
+from function.framework.reloadWrapper import reloadWrapper as reload
 from function.pipeline import logger 
 reload(logger)
-
+import re
 class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
-
+	
+import maya.cmds as mc
 
 
 
@@ -22,7 +25,7 @@ class FileManagerLog(logger.MayaLogger):
 DRIVES = [		"D:\\",
 				"E:\\"		]
 
-PROJECT_NAME = ['P_sample','P_sample02']
+PROJECT_NAME = ['P_sample','P_sample03','P_Regulus']
 
 DICTIONARY_TEMPLATE = {		
 
@@ -36,29 +39,38 @@ DICTIONARY_TEMPLATE = {
 							}
 
 # DEPT_NAME 		= 	[ 'Model', 'Rig']
-DEPT_NAME 		= 	[ 'Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
-# DEPT_EMPTY 		= 	[ 'ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
+DEPT_NAME 		= 	 ['Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
+# DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
 DEPT_EMPTY 		= 	['Commit']
-JOB_TEMPLATE 	= 	[ 'Version', 'Data', 'Output', 'Commit']
-EXCLUDE_VIEW_ITEM = ('data.json', 'thumb.png', 'Commit')
+JOB_TEMPLATE 	= 	['Version', 'Data', 'Output', 'Commit']
+EXCLUDE_VIEW_ITEM = ['data.json', 'thumb.png', 'Commit']
+STATIC_FOLDER = ['Content','Version']
+DEFAULT_PROJECT = 'P_Regulus'
+PADDING = 4
+MAYA_EXT = 'ma'
+
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
 		super(FileManager, self).__init__()
 		self.setupUi(self)
 		self.path = None
-
+		FileManagerLog.debug('Run this first...')
 
 		# Define model as an instance variable
 		self.model = None
 		
-		self.drive_comboBox.setCurrentText(DRIVES[0])
-		self.project_comboBox.setCurrentText(PROJECT_NAME[0])
+		
 
 		# Populate Drive and Project combo boxes
 		self.populate_drives()
 		self.populate_project()
-		self.update_project_comboBox()
+		# self.update_project_comboBox() # It seems redundance with connect update_project_comboBox
+
+		FileManagerLog.debug('Than this...')
+		self.drive_comboBox.setCurrentText(DRIVES[0])
+		self.project_comboBox.setCurrentText(DEFAULT_PROJECT)
+
 
 		# Set "Asset" tab as default
 		self.entite_TAB.setCurrentIndex(0)  
@@ -80,12 +92,292 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Connect the on_version_clicked method to the clicked signal
 		self.asset_version_view_listWidget.itemClicked.connect(self.on_version_clicked)
 
-		# self.display_images(r'D:\\')
+		# # Create jobs at department level
+		# self.asset_department_listWidget = QListWidget()
+		# self.setCentralWidget(self.asset_department_listWidget)
+
+		# Show context for department widget
+		self.asset_department_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
+
+		# Show context for version widget
+		self.asset_version_view_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
+
+		# Set up context menu
+		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
+		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+
+
+	def show_step_context(self, position):
+		# Create Jobs
+		contextMenu = QtWidgets.QMenu(self)
+		createStep_action = QtWidgets.QAction("Create New Step...", self)
+		# Link to method
+		createStep_action.triggered.connect(self.create_job_step)
+		contextMenu.addAction(createStep_action)
+
+		# Disconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_version_view_listWidget.customContextMenuRequested.disconnect(self.show_step_context)
+
+		contextMenu.exec_(self.asset_version_view_listWidget.mapToGlobal(position))
+
+		# Reconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
+
+
+	def find_step_and_version(self, my_list): # Find Step name and max value of this version
+		result_job_element = {
+							"step": [],
+							"max_version": []
+												}
+		result = {}
+
+		for element in my_list:
+			match = re.search(r'_(\w+)\.(\d+)\.ma$|\.mb$', element)
+			if match:
+				name = match.group(1)
+				name = name.split('_')[-1]
+				version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
+				if name not in result or version > int(result[name][1]): # zfill later
+					# result[name] = [element, str(version).zfill(3)]
+					result[name] = [element, version]
+		if result == {}:
+			FileManagerLog.debug('result_job_element_142_: {0}'.format('There are no right naming to Query'))
+			return False
+
+
+		for name in result:
+			result_job_element["step"].append(name)
+			result_job_element["max_version"].append(result[name][1])
+		FileManagerLog.debug('result_job_element_144_: {0}'.format(result_job_element))
+		return result_job_element
+
+
+
+	def create_job_step(self):
+		# When save maya file
+		asset_path_text = self.get_full_path()
+		new_department_text = self.asset_department_listWidget.currentItem().text()
+		new_folder_path = os.path.join(asset_path_text, new_department_text)
+		# new_folder_path = self.handle_selected_path(new_folder_path)
+		new_folder_path = os.path.normpath(new_folder_path)
+		split_path_list = new_folder_path.split('\\')
+
+		selected_project = self.project_comboBox.currentText()
+		
+
+		job_step_list = os.path.join(new_folder_path, 'Version')
+		job_step_list = os.listdir(job_step_list)
+		FileManagerLog.debug('This job_step_list: {0}'.format(job_step_list))
+		
+
+
+
+		# Project Regulus is use wired naming 
+		# We can't use '01' or '02' variation name as a Asset name 
+		# So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
+
+		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
+
+		# Making list to find jobs step
+		step_filter_list = []
+		for each in job_step_list:
+			# If this file is Maya only
+			if re.search(r'\.ma$|\.mb$', each):
+				step_filter_list.append(each)  
+
+				# step_filter_list.append(step[-3].split('_')[-1])
+
+		FileManagerLog.debug('step_filter_list: {0}'.format(step_filter_list))
+
+		# Result
+		# step_list = ['master', 'master', 'master', 'skel'] 
+		# unique_step_list = list(set(step_filter_list))
+		# FileManagerLog.debug('unique_step_list: {0}'.format(unique_step_list))
+
+
+
+		if selected_project == 'P_Regulus':
+			asset_name = split_path_list[-3]
+			variation_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			FileManagerLog.debug('asset_name: {0}\n variation_name: {1}\n job_name: {2}'.format(asset_name, variation_name, job_name))
+
+			# Join the strings with an underscore
+			final_file_name = asset_name + '_' + variation_name + '_' + job_name
+			FileManagerLog.debug('final_file_name: {0}'.format(final_file_name))
+
+	
+		else:
+
+			FileManagerLog.debug('There is not REGULUS using original naming')
+			asset_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			final_file_name = asset_name + '_' + job_name
+						
+
+		result_job_element = self.find_step_and_version(step_filter_list)
+		FileManagerLog.debug('THIS IS result_job_element: {0}'.format(result_job_element)) 
+
+		# Open Dialog
+		step_name, okPressed = QInputDialog.getText(self, "Create Step", "Enter Step name:")
+		if okPressed and step_name:
+			
+
+
+			step_list = result_job_element['step']
+			if step_name in step_list:
+
+				index = step_list.index(step_name)
+
+				max_version = result_job_element['max_version'][index]
+				max_version += 1
+				max_version = str(max_version).zfill(PADDING)
+
+				FileManagerLog.debug('If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+
+			else:
+				max_version = str(1).zfill(PADDING)
+				FileManagerLog.debug('If new file not found: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+
+			new_file_name =  '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT)
+
+			# Get full path
+			asset_path_text = self.get_full_path()
+			department_text = self.asset_department_listWidget.currentItem().text()
+
+			new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+
+
+			FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
+			self.maya_save(new_full_path, MAYA_EXT)
+
+
+
+	def add_recen_file(self, filepath, MAYA_EXT):
+
+		if MAYA_EXT == 'ma':
+			maya_type = 'mayaAscii'
+		elif MAYA_EXT == 'mb':
+			maya_type = 'mayaBinary'
+
+
+		import maya.mel as mel
+		filepath = filepath.replace('\\','/')
+		# mel.eval('addRecentFile("{0},{1}");'.format(filepath,maya_type))
+		# mel.eval('addRecentFile("%s","%s");' % (filepath, maya_type))
+		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
+		# mel.eval('addRecentFile("%s","mayaAscii");' %filepath)
+
+	def maya_save(self, filepath, MAYA_EXT):
+
+		if MAYA_EXT == 'ma':
+			maya_type = 'mayaAscii'
+		elif MAYA_EXT == 'mb':
+			maya_type = 'mayaBinary'
+
+
+		mc.file(rename=filepath)
+		mc.file(save=True, force=True, type=maya_type)
+		FileManagerLog.debug('FILE SAVE AT: {0}'.format(filepath)) 
+		self.add_recen_file(filepath, MAYA_EXT)
+
+		return True
+
+
+
+		
+
+
+
+		
+
+
+	# Context menu for asset_department_listWidget
+	def show_job_context_menu(self, position):
+		# Create Jobs
+		contextMenu = QtWidgets.QMenu(self)
+		createJobs_action = QtWidgets.QAction("Create Jobs", self)
+		# Link to method
+		createJobs_action.triggered.connect(self.create_jobs)
+		contextMenu.addAction(createJobs_action)
+
+		# Add show in Explorer
+		showInExplorer_action = QtWidgets.QAction("Show in Explorer", self)
+		# Link to method
+		showInExplorer_action.triggered.connect(self.show_job_explorer)
+		contextMenu.addAction(showInExplorer_action)
+
+		# Disconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_department_listWidget.customContextMenuRequested.disconnect(self.show_job_context_menu)
+
+		contextMenu.exec_(self.asset_department_listWidget.mapToGlobal(position))
+
+		# Reconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
+
+	def show_job_explorer(self):
+		asset_path_text = self.get_full_path()
+		new_department_text = self.asset_department_listWidget.currentItem().text()
+		new_folder_path = os.path.join(asset_path_text, new_department_text)
+		new_folder_path = self.handle_selected_path(new_folder_path)
+
+		FileManagerLog.debug('This is open explorer path: {0}'.format(new_folder_path))
+
+		# Open the selected folder in the file explorer in hardway
+		if new_folder_path:
+			if sys.platform == "win32": # Windows
+				subprocess.Popen(f'explorer "{new_folder_path}"')
+			elif sys.platform == "darwin": # macOS
+				subprocess.Popen(["open", new_folder_path])
+			else: # Linux 
+				subprocess.Popen(["xdg-open", new_folder_path])	
+					
+
+	# Create jobs for department
+	def create_jobs(self):
+		jobs_name, okPressed = QInputDialog.getText(self, "Create Jobs", "Enter folder name:")
+		if okPressed and jobs_name:
+			# Create the folder at the department level
+			# new_department_text = self.asset_department_listWidget.currentItem().text()
+			asset_path = self.get_full_path()
+			new_folder_path = os.path.join(asset_path, jobs_name)
+			new_folder_path = self.handle_selected_path(new_folder_path)
+
+			if not os.path.exists(new_folder_path):
+				self.asset_department_listWidget.clear()
+
+				# Create new folder
+				# os.makedirs(new_folder_path)
+
+				for job_type in JOB_TEMPLATE:
+					job_each_path = os.path.join(new_folder_path, job_type)
+					os.makedirs(job_each_path, exist_ok=True)
+
+
+
+				FileManagerLog.debug('This is department_name -113- {0}'.format(new_folder_path))
+				# Code to create the folder using the folderPath
+
+				
+				# Populate the list widget with the latest folders or items
+				items = os.listdir(asset_path)
+
+
+				# Exclude unwanted item
+				items_excluded = [dept for dept in items if dept not in EXCLUDE_VIEW_ITEM ]
+				FileManagerLog.debug('This is department_name -125- {0}'.format(items_excluded))
+				self.asset_department_listWidget.addItems(items_excluded)
+
+			else:
+				FileManagerLog.warning('Cannot create a file when that file already exists.')
+			
+			
 
 
 	
 	def display_images(self,image_paths):
-
 		if image_paths is not None:
 			FileManagerLog.debug(image_paths)
 			self.asset_thumbnail_IMAGE_LABEL.setScaledContents(True)
@@ -99,35 +391,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# self.asset_thumbnail_IMAGE_LABEL.clear()
 
 
-	# this function not work
-	# def display_images(self, image_paths):
-	# 	FileManagerLog.debug('Clear the list widget before adding new items')
-
-	# 	# Clear the list widget before adding new items
-	# 	self.scene_thumbnail_list_listWidget.clear()
-
-	# 	for path in image_paths:
-	# 		# Create a QListWidgetItem
-	# 		item = QListWidgetItem()
-			
-	# 		pixmap = QPixmap(path)
-	# 		FileManagerLog.debug('This is pixmap: {0}'.format(pixmap))
-	# 		# Create a QPixmap from the image file path
-	# 		item.setIcon(QIcon(pixmap))
-
-	# 		# pixmap = icon.pixmap(self.iconSize, self.iconSize)
-
-	# 		# Set the icon of the QListWidgetItem using the QPixmap
-	# 		item.setIcon(QIcon(pixmap))
-	# 		# icon = QtGui.QIcon(pixmap)
-
-	# 		# Set a custom size for the QListWidgetItem
-	# 		item.setSizeHint(QSize(294, 296)) # Adjust the width and height as needed
-
-	# 		# Add the QListWidgetItem to the QListWidget
-	# 		# self.scene_thumbnail_list_listWidget.setIcon(item)
-	# 		self.scene_thumbnail_list_listWidget.addItem(item)
-	# 	FileManagerLog.debug('Items added to the list widget: {0}'.format(item))
 
 
 
@@ -146,18 +409,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_drive = self.drive_comboBox.currentText()
 		selected_project = self.project_comboBox.currentText()
 
+
 		print("\nThis is Run When start")
 		# Set selected drive and project as root path
 		try:
-			self.path = os.path.join(selected_drive, "svn_true", selected_project, "Content")
+			self.path = os.path.join(selected_drive, "svn_true", DEFAULT_PROJECT, "Content")
 		except FileNotFoundError:
-			print("Invalid project name!")
+			FileManagerLog.error("Invalid project name!")
 			self.path = os.path.join(selected_drive, "svn_true", PROJECT_NAME[0], "Content")
 		print("Show project path:...\t\t\t", self.path)
 
 		# Update the selected project variable with the current selection
 		selected_project = self.project_comboBox.currentText()
-		print("Show project name _123_:...\t\t\t", selected_project)
+		print("Show project name _255_:...\t\t\t", selected_project)
 
 
 		if selected_project == None:
@@ -174,6 +438,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def show_version_entite(self, version_folder):
+		# Clear the QListWidget
+		self.asset_version_view_listWidget.clear()
 
 		### will shift to method #####
 		# Check if exists
@@ -182,8 +448,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			version_folder = os.path.normpath(version_folder)
 			FileManagerLog.debug("Version_folder path: {0}".format(version_folder) )
 
-			# Clear the QListWidget
-			self.asset_version_view_listWidget.clear()
+
 
 			# If the selection has 'Version' folder
 			if not os.path.isfile(version_folder):
@@ -223,8 +488,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.info('That is "ASSET" we looking for.')
 				self.load_asset_departments(file_path)
 
+				# If folder 'Commit' exist then continue
 				global_commit_folder = os.path.join(file_path, 'Commit')
-				self.load_global_commit(global_commit_folder)
+
+				if os.path.exists(global_commit_folder):
+					self.load_global_commit(global_commit_folder)
 
 				# Show thumbnail
 				thumbnail_path = os.path.join(file_path, 'thumb.png')
@@ -232,13 +500,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			else:
 				# Check if that maybe department folder
 				parent_path = os.path.dirname(file_path)
-				if os.path.join(parent_path, 'data.json'):
-					FileManagerLog.debug('There must be department folder for sure')
+				if os.path.exists(os.path.join(parent_path, 'data.json')):
+					FileManagerLog.debug('There must be department folder for sure: {0}'.format(parent_path))
 
 					# Then show list in version widget
 					version_folder_path = os.path.join(file_path, 'Version')
 					FileManagerLog.debug(version_folder_path)
 					self.show_version_entite(version_folder_path)
+					# Split folder for making nanming working file
+				else:
+					FileManagerLog.debug('There must be normal folder')
+
 
 
 
@@ -272,21 +544,18 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		asset_path = self.get_full_path()
 		self.handle_selected_path(asset_path)
 
-		
 		version_folder = os.path.join(asset_path, department_text, 'Version')
 
 		### will shift to method #####
 		self.show_version_entite(version_folder)
+
 		local_commit_folder = os.path.join(asset_path, department_text, 'Commit')
-		self.load_local_commit(local_commit_folder)
 
-
-
-
-
-
-
-
+		# If folder 'Commit' exist then continue
+		if os.path.exists(local_commit_folder):
+			self.load_local_commit(local_commit_folder)
+		else:
+			pass
 
 
 
@@ -313,7 +582,24 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			current_version_clicked = self.handle_selected_path(current_version_clicked)
 
 			# Do something with the selected path
-			FileManagerLog.debug("Do something with the selected path: {0}".format(current_version_clicked) )
+			FileManagerLog.debug("Do something with the selected path_438_: {0}".format(current_version_clicked) )
+			current_version_clicked = os.path.normpath(current_version_clicked)
+			split_path_list = current_version_clicked.split('\\')
+			FileManagerLog.debug("Split path_441_: {0}".format(split_path_list) )
+			version_element = split_path_list[-1]
+			version_element_list = version_element.split('.')
+			extension = version_element_list[-1] 
+			version_number = version_element_list[-2]
+			element_name = version_element_list[-3]
+
+			# Split
+			element_name_list = element_name.split('_')
+
+			FileManagerLog.debug("Split EXTENSION: {0}".format(extension) )
+			FileManagerLog.debug("Split version_number: {0}".format(version_number) )
+			FileManagerLog.debug("Split element_name: {0}".format(element_name) )
+			FileManagerLog.debug("Step name: {0}".format(element_name_list[-1]) )
+
 		else:# If select via treeview 
 			FileManagerLog.debug(": {0}".format('That maybe selected via treeView') )
 			FileManagerLog.debug('This is file path {0}'.format(asset_path))
@@ -336,8 +622,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		items = os.listdir(folder_path)
 		for each in items:
 			local_commit_list.append(each)
-			self.asset_local_view_listWidget.addItems(local_commit_list)
-			FileManagerLog.debug("\nFound Local Commit: {0}".format(local_commit_list[0]) )
+		self.asset_local_view_listWidget.addItems(local_commit_list)
+		FileManagerLog.debug("\nFound Local Commit: {0}".format(local_commit_list) )
 
 
 
@@ -352,8 +638,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		for each in items:
 			global_commit_list.append(each)
-			self.asset_global_listWidget.addItems(global_commit_list)
-			FileManagerLog.debug("Found Global Commit: {0}".format(global_commit_list[0]) )
+		self.asset_global_listWidget.addItems(global_commit_list)
+		FileManagerLog.debug("Found Global Commit: {0}".format(global_commit_list) )
 
 
 
@@ -365,7 +651,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	# 	self.handle_selected_path(full_path)
 	# 	return full_path
 
-	def get_full_path(self):
+	def get_full_path(self): # Method to get full path from treeView
 		current_index = self.asset_dir_TREEVIEW.currentIndex()
 		full_path = self.model.filePath(current_index)
 		FileManagerLog.debug("Return full path: {0}".format(full_path) )
@@ -374,8 +660,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-	def handle_selected_path(self, path):
-		# Do something with the selected path
+	def handle_selected_path(self, path):# Do something with the selected path
 		norm_path = os.path.normpath(path)
 		FileManagerLog.info("\nHandle_selected_path: {0}".format(norm_path) )
 		return norm_path
@@ -410,8 +695,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# Exclude unwanted item
 			items_excluded = [dept for dept in items if dept not in EXCLUDE_VIEW_ITEM ]
 			self.asset_department_listWidget.addItems(items_excluded)
-
-
 
 
 
@@ -453,8 +736,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 		# Set up context menu
-		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
-		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
+		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
 		# Print some information for debugging purposes
 		print("\nPopulating tree view with file system model...")
@@ -467,6 +750,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	
 
 	def show_context_menu(self, point):
+		# Disconnect the asset_dir_TREEVIEW signal
+		self.asset_dir_TREEVIEW.clicked.disconnect(self.on_treeview_clicked)
 
 		# Get the index of the item that was clicked
 		index = self.asset_dir_TREEVIEW.indexAt(point)
@@ -491,6 +776,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Show the context menu and get the chosen action
 		chosen_action = menu.exec_(self.asset_dir_TREEVIEW.mapToGlobal(point)) 
 
+
 		
 		# If "New entite" was chosen, create a new entite
 		if chosen_action == new_entitie_action:
@@ -508,6 +794,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# Open the folder in the file explorer
 			if os.path.isdir(filepath):
 				os.startfile(filepath)
+
+		# Reconnect the asset_dir_TREEVIEW signal after the chosen action is handled
+		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
 
 
 	def create_entite(self, index):
@@ -630,7 +919,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				print("\tThis is asset path:\t{0}".format(new_asset_path))
 
 				# 'Asset' or 'Scene'
-				print("\tType:\t{0}".format('Asset'))
+				print("\tType:\t{0}".format('Asset-718-'))
 
 				# Asset_name 
 				print("\tAsset name:\t{0}".format(asset_name))
@@ -657,13 +946,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# Refresh the view to show the new asset folders
 				self.asset_dir_TREEVIEW.update()
 
-
+'''
 if __name__ == "__main__":
 	try:
 		app = QtWidgets.QApplication.instance()
 		if not app:
 			app = QtWidgets.QApplication([])
-		fileBrowser = FileManager()
+		# fileBrowser = FileManager()
+		fileBrowser = fileManagerCore.FileManager()
 		fileBrowser.show()
 		print("Starting event loop...")
 		app.exec_()
@@ -674,3 +964,5 @@ if __name__ == "__main__":
 		import traceback
 		traceback.print_exc()
 		sys.exit(-1)
+
+'''

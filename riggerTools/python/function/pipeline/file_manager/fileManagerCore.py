@@ -5,9 +5,10 @@ import json
 import os
 from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
 # Thumbnail
-from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem, QMenu, QInputDialog
+from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem, QMenu, QInputDialog, QMessageBox
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QIcon, QPixmap
+
 import subprocess
 import sys
 from function.framework.reloadWrapper import reloadWrapper as reload
@@ -154,11 +155,29 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		action = self.sender()
 		# Get the data (selected context option) from the action
 		selected_context = action.data()
-		
-		# Perform the desired operation based on the selected context
-		print(f"Selected context: {selected_context}")
-		# Replace the print statement with your own logic for handling the selected context
-		self.create_name_saving(selected_context)
+
+		# Create a confirmation dialog
+		confirmation_dialog = QMessageBox(self)
+		confirmation_dialog.setIcon(QMessageBox.Question)
+		confirmation_dialog.setText(f"Are you sure you want to save this step job: {selected_context}?")
+		confirmation_dialog.setWindowTitle("Confirmation")
+		confirmation_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		confirmation_dialog.setDefaultButton(QMessageBox.No)
+
+		# Execute the dialog and get the user's choice
+		choice = confirmation_dialog.exec_()
+
+		if choice == QMessageBox.Yes:
+			# User confirmed, perform the save operation
+			# Perform the desired operation based on the selected context
+			print(f"Selected context: {selected_context}")
+			# Replace the print statement with your own logic for handling the selected context
+			self.create_name_saving(selected_context)
+
+		else:
+			# User cancelled, do nothing or handle accordingly
+			pass
+
 
 
 

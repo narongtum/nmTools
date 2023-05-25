@@ -420,12 +420,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return True
 
 
-	def maya_open(self, filePath):
+	def maya_open(self, file_path):
+		file_name = file_path.split('\\')[-1]
 		if mc.file(query = True, anyModified=True):
-			reply = QMessageBox.question(
+			reply = QMessageBox.question(			# Use self as the parent
 													self ,
-													'Unsave chganges' ,
-													'Current file has unsaved changes. Do you want to save?' ,
+													'Save Chganges' ,
+													'Current file has unsaved changes. Do you want to save? {0}'.format(file_name) ,
 													QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No
 												)
 
@@ -435,9 +436,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			elif reply == QMessageBox.Cancel:
 				return
 
-		mc.file(filePath, o=True, f=True)
+		mc.file(file_path, o=True, f=True)
 		# add recent file when open
-		# self.addRecenfile( filePath )
+		# self.addRecenfile( file_path )
 
 
 	def maya_add_recen_file(self, filepath, MAYA_EXT):

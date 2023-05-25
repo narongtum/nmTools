@@ -50,6 +50,7 @@ DEFAULT_PROJECT 	= 	'P_Regulus'
 PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	True
+IMAGE_FORMAT		= 	'thumb.png'
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -644,6 +645,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_local_view_listWidget.clear()
 		self.asset_global_listWidget.clear()
 		self.asset_department_listWidget.clear()
+		self.asset_version_view_listWidget.clear()
 
 		# Get the file name and path from the model
 		file_path = self.model.filePath(index)
@@ -673,11 +675,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# Show thumbnail
 				thumbnail_path = os.path.join(file_path, 'thumb.png')
 				self.display_images(thumbnail_path)
+				
+			'''
 			else:
-				# Check if that maybe department folder
+				# Also show version folder when click Department on Treeview
 				parent_path = os.path.dirname(file_path)
 				if os.path.exists(os.path.join(parent_path, 'data.json')):
-					FileManagerLog.debug('There must be department folder for sure: {0}'.format(parent_path))
+					FileManagerLog.debug('There must be department folder on treeView for sure: {0}'.format(parent_path))
 
 					# Then show list in version widget
 					version_folder_path = os.path.join(file_path, 'Version')
@@ -686,6 +690,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					# Split folder for making nanming working file
 				else:
 					FileManagerLog.debug('There must be normal folder')
+			'''
 
 
 

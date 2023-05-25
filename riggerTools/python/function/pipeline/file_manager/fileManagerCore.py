@@ -39,7 +39,7 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
-# DEPT_NAME 		= 	[ 'Model', 'Rig']
+# DEPT_NAME 		= 	['Model', 'Rig']
 DEPT_NAME 			= 	['Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
 # DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
 DEPT_EMPTY 			= 	['Commit']
@@ -677,8 +677,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				self.display_images(thumbnail_path)
 				
 			'''
+			# Show version folder when also click Department on Treeview
+			# Disable for this make confusion
+
 			else:
-				# Also show version folder when click Department on Treeview
+				
 				parent_path = os.path.dirname(file_path)
 				if os.path.exists(os.path.join(parent_path, 'data.json')):
 					FileManagerLog.debug('There must be department folder on treeView for sure: {0}'.format(parent_path))
@@ -813,15 +816,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-
-	# # Share a method that returns the path of the selected
-	# def get_full_path(self, selected_text):
-	# 	# Construct the full path based on the selected text
-	# 	full_path = os.path.join(self.path, selected_text)
-	# 	self.handle_selected_path(full_path)
-	# 	return full_path
-
 	def get_full_path(self): # Method to get full path from treeView
+		# Construct the full path based on the selected text
 		current_index = self.asset_dir_TREEVIEW.currentIndex()
 		full_path = self.model.filePath(current_index)
 		full_path = os.path.normpath(full_path)
@@ -829,7 +825,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return full_path
 
 
-	def get_deep_path(self):		# Return full path of work file
+	def get_deep_path(self):
+		# Return full path to work file and extension		
 		current_index = self.asset_dir_TREEVIEW.currentIndex()
 		full_path = self.model.filePath(current_index)
 		department_text = self.asset_department_listWidget.currentItem().text()

@@ -15,6 +15,16 @@ from function.framework.reloadWrapper import reloadWrapper as reload
 from function.pipeline import logger 
 reload(logger)
 import re
+import pymel.core as pm
+
+
+
+
+
+
+
+
+
 class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
 	
@@ -53,6 +63,7 @@ PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	True
 
+SVN_BIN_PATH = r"C:\Program Files\TortoiseSVN\bin"
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -62,15 +73,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('Run this first...')
 
 		# Define model as an instance variable
-		self.model = None
+		# self.model = None
 		
 		
-		# Maybe BOOM
-		# Set up your model and populate the tree view
-		self.model = QtWidgets.QFileSystemModel()
-		self.asset_dir_TREEVIEW.setModel(self.model)
-		self.check_exists_maya()
 
+		# # initializing model and populate the tree view
+		self.model = QtWidgets.QFileSystemModel()
+		self.model.setRootPath(self.path)
+		self.asset_dir_TREEVIEW.setModel(self.model)
+		# self.check_exists_maya()
+
+
+		# Create an instance of the SvnMaya class
+		self.svn_maya = SvnMaya()
 		
 
 		# Populate Drive and Project combo boxes
@@ -124,12 +139,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the function to the clicked signal button
 		self.asset_localCommit_BTN.clicked.connect(self.push_btn_local_publish)
-
-		# # Try to use as another class but not work
-		# self.asset_version_view_listWidget.itemDoubleClicked.connect(MayaHandler.handle_double_click)
-
-		# self.handler = MayaHandler(asset_path, MAYA_EXT)
-		# self.handler.handle_double_click()
 
 	def handle_double_click(self, item):
 		file_path = self.get_deep_path()
@@ -303,7 +312,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					digits = [count for count in check_digit if count.isdigit()]
 					padding_count = len(digits)
 
-					if padding_count == 4:
+					if padding_count == PADDING:
 
 					# if file_name.split('.')[-1].isdigit():# Check if valid name 
 						
@@ -325,13 +334,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# self.maya_save(new_full_path, MAYA_EXT)
 				FileManagerLog.debug('save file at: {0} and file name {1}'.format(full_path, local_commit_name))
 				save_path = os.path.join(full_path, local_commit_name)
+
+
+				FileManagerLog.debug('Do something before maya file commit')
+
+				FileManagerLog.debug('Commit file at: {0}.{1}'.format(save_path,(MAYA_EXT)))
 				self.maya_save(save_path, MAYA_EXT)
+				# Add SVN
+				self.svn_maya.execute_cmd('add', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
+				# Commit SVN
+				self.svn_maya.execute_cmd('commit', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
+				# Update viewport
+				self.load_local_commit(full_path)
+
 
 			except:
 				FileManagerLog.debug('File not valid name please check: {0}'.format(file_name))
 
 		else:
-			FileManagerLog.debug('There are current file on maya')
+			FileManagerLog.debug('The current file not maya saving file nevertherless later.')
 			return False
 
 
@@ -385,17 +406,26 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Convert the desired directory path to a model index
 		index = self.model.index(file_path)
-		FileManagerLog.debug("This is index _384_ {0}".format(index))
 
-		# Expand the QTreeView to the parent item of the desired directory
-		self.asset_dir_TREEVIEW.expand(index.parent())
+		if index.isValid():
+			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(index, QtCore.QItemSelectionModel.ClearAndSelect)
 
-		# Get the model index of the desired directory
-		desired_index = self.model.index(file_path)
-		FileManagerLog.debug("This is desired_index _384_ {0}".format(desired_index))
+			# Make the treeView scroll to the selected item
+			self.asset_dir_TREEVIEW.scrollTo(index, QtWidgets.QAbstractItemView.PositionAtTop)
 
-		# Select the item at the model index
-		self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(desired_index, QtCore.QItemSelectionModel.ClearAndSelect)
+
+
+		## Expand the QTreeView to the parent item of the desired directory
+		# self.asset_dir_TREEVIEW.expand(index.parent())
+
+		## Get the model index of the desired directory
+		# desired_index = self.model.index(file_path)
+
+
+		## Select the item at the model index
+		# self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(desired_index, QtCore.QItemSelectionModel.ClearAndSelect)
+
+
 
 
 
@@ -1052,17 +1082,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def populate_treeView(self):
 
+
+
 		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
 		# Update the `self.path` variable whenever the user selects a new project
 		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
 
-		# Set up file system model
+		self.check_exists_maya()
+
+		'''
+		## shift to __init__ instead
+		## Set up file system model
 		# model = QtWidgets.QFileSystemModel()
 		# model.setRootPath(self.path)
 
-		# Store model as an instance variable
-		self.model = QtWidgets.QFileSystemModel()  
-		self.model.setRootPath(self.path)
+		## Store model as an instance variable
+		# self.model = QtWidgets.QFileSystemModel()  
+		# self.model.setRootPath(self.path)
+		'''
+
 
 		# Hide some file formats, such as ".pyc" and ".o" files
 		self.model.setNameFilters(['*.pyc', '*.o'])
@@ -1298,21 +1336,80 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# Refresh the view to show the new asset folders
 				self.asset_dir_TREEVIEW.update()
 
-# NO USE CLASS Try to use as another class but not work
-class MayaHandler:
 
+
+class General():
 	def __init__(self):
 		pass
 
-	def do_local_publish(self):
+	def get_scene_name(self):
+		self.Scene_Name = os.path.splitext( os.path.basename( pm.system.sceneName() ) )[0]
 
-		filepath = mc.file( query=True , sn=True )
+	def get_workspace(self):
+		self.WorkSpace_RootDir = pm.workspace(q=1,rd=1)
+		FileManagerLog.debug('self.WorkSpace_RootDir:\t%s',self.WorkSpace_RootDir)
+		# self.RuleEntry_SourceImages = pm.workspace('sourceImages',fileRuleEntry=1,q=1 )
+		# FileManagerLog.debug('self.RuleEntry_SourceImages:\t%s',self.RuleEntry_SourceImages)
+		# self.RuleEntry_3dPaintTextures = pm.workspace('3dPaintTextures',fileRuleEntry=1,q=1 )
+		# self.RuleEntry_Scenes = pm.workspace('scene',fileRuleEntry=1,q=1 )
+		# FileManagerLog.debug('self.RuleEntry_Scenes:\t%s',self.RuleEntry_Scenes)
 
-		file_ext = os.path.basename(filepath)
+	def log_list(self,inputList):
+		if inputList :
+			s = ''
+			if inputList :
+				try :
+					s += str(inputList)
+				except :
+					FileManagerLog.warning('can not convert inputList to string')
+				for i in inputList :
+					s += '\t' + str(i)
+			FileManagerLog.debug(s)
+		else:
+			FileManagerLog.debug('log_list:input is None')
 
+
+	def get_texture_file(self):
+		self.Texture_Files = set()
+		# Get texture file
+		texturesList = cmds.ls(textures=True)
+		if texturesList :
+			for tex in texturesList:
+				if cmds.attributeQuery( 'fileTextureName',node=tex,exists=1 ):
+					texFile = cmds.getAttr( (tex+'.fileTextureName') )
+					print ('texFile:',texFile)
+					self.Texture_Files.add(texFile)
+		self.log_list( self.Texture_Files )
+
+	def get_reference_file(self):
+		# check scene name is not set or not
+		if pm.system.sceneName():
+			# Get reference file
+			self.Reference_File = set( cmds.file(q=True,l=True) )
+			self.log_list( self.Reference_File )        
 		
+	
+	def convert_to_relative(self,parten,inputStr):
+		'''
+		example: convertToRelative('sourceimages','C:/AW/Maya5.0/sourceimages/maya.exe')
+		result: 'sourceimages/maya.exe'
+		'''
+		#p = re.compile('^.*/sourceimages')
+		inputStr = inputStr.replace('\\','/')
+		returnStr = re.sub( ('^.*/' + parten), parten, inputStr )
+		print (inputStr,'\t',returnStr)
+		return returnStr
 
 
+class SvnMaya:
+	def __init__(self):
+		pass
+	def execute_cmd(self, cmd_type, file_path, log_message, close_on_end):
 
+		file_path = os.path.normpath(file_path)
+		# Create a variable to store the command line
+		# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{3}" /closeonend:{4}'.format(SVN_BIN_PATH, cmd_type, file_path, log_message, close_on_end)
+		command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
 
-
+		# Execute the command line
+		subprocess.run(command_line, shell=True)

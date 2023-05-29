@@ -39,18 +39,20 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
+
+THUMBNAIL_NAME		= 	'thumb.png'
 # DEPT_NAME 		= 	['Model', 'Rig']
-DEPT_NAME 			= 	['Model', 'Rig','ConceptArt', 'Texture', 'VFX', 'Anim']
+DEPT_NAME 			= 	['Model', 'Rig','ConceptArt', 'Anim']
 # DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
-DEPT_EMPTY 			= 	['Commit']
+DEPT_EMPTY 			= 	['Commit','Texture']
 JOB_TEMPLATE 		= 	['Version', 'Data', 'Output', 'Commit']
-EXCLUDE_VIEW_ITEM 	= 	['data.json', 'thumb.png', 'Commit']
-STATIC_FOLDER 		= 	['Content','Version']
+EXCLUDE_VIEW_ITEM 	= 	['data.json', THUMBNAIL_NAME, 'Commit']
+STATIC_FOLDER 		= 	['Content','Version','Commit']
 DEFAULT_PROJECT 	= 	'P_Regulus'
 PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	True
-IMAGE_FORMAT		= 	'thumb.png'
+
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -62,6 +64,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Define model as an instance variable
 		self.model = None
 		
+		
+		# Maybe BOOM
+		# Set up your model and populate the tree view
+		self.model = QtWidgets.QFileSystemModel()
+		self.asset_dir_TREEVIEW.setModel(self.model)
+		self.check_exists_maya()
+
 		
 
 		# Populate Drive and Project combo boxes
@@ -113,6 +122,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		self.asset_version_view_listWidget.itemDoubleClicked.connect(self.handle_double_click)
 
+		# Connect the function to the clicked signal button
+		self.asset_localCommit_BTN.clicked.connect(self.push_btn_local_publish)
+
 		# # Try to use as another class but not work
 		# self.asset_version_view_listWidget.itemDoubleClicked.connect(MayaHandler.handle_double_click)
 
@@ -130,7 +142,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			if extension == '.mb' or extension == '.ma':
 				self.maya_open(file_path)
 			else:
-				os.startfile(filePath)
+				os.startfile(file_path)
 		else:
 			FileManagerLog.debug('There are no extension ?.')
 
@@ -264,15 +276,167 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			FileManagerLog.debug('This should be Exists: {0}'.format(result_job_element))
 			return result_job_element
 
+	def push_btn_local_publish(self):
+
+		# Get full path that current open in maya
+		maya_file_path = mc.file( query=True , sn=True )
+
+
+		full_path = self.get_full_path()
+		department_text = self.asset_department_listWidget.currentItem().text()
+		full_path = os.path.join(full_path, department_text, STATIC_FOLDER[2])
+
+
+		if maya_file_path:
+			try:
+				file_ext = os.path.basename(maya_file_path)
+
+				# Splits a pathname into a pair (root, ext)
+				file_name = os.path.splitext(file_ext)[0]
+
+				# Check if righ naming version (****.0001.ma) of this pipeline 
+				check_digit = (os.path.splitext(file_ext)[0]).split('.')[-1]
+
+				if check_digit.isdigit():
+
+					# Check if valid name 
+					digits = [count for count in check_digit if count.isdigit()]
+					padding_count = len(digits)
+
+					if padding_count == 4:
+
+					# if file_name.split('.')[-1].isdigit():# Check if valid name 
+						
+						local_commit_name = file_name.split('.')[0]
+
+						FileManagerLog.debug('This is local_commit_name: {0}'.format(local_commit_name))
+						# do the naming and publish
+						# cut '.000x' and replace with step job
+						# Ex. 		 003_Lucille    01       Rig  skel.ma
+						# 	 		[assetname]_[variation]_[job]_[step]
+						# 		Do something when publish
+
+				else:
+					FileManagerLog.debug('This not valid name: using original ( {0} )'.format(file_name))
+					local_commit_name = file_name
+					pass
+
+				# Saving file to local commit location
+				# self.maya_save(new_full_path, MAYA_EXT)
+				FileManagerLog.debug('save file at: {0} and file name {1}'.format(full_path, local_commit_name))
+				save_path = os.path.join(full_path, local_commit_name)
+				self.maya_save(save_path, MAYA_EXT)
+
+			except:
+				FileManagerLog.debug('File not valid name please check: {0}'.format(file_name))
+
+		else:
+			FileManagerLog.debug('There are current file on maya')
+			return False
+
+
+	def check_exists_maya(self):
+
+		'''
+		Check the curenty maya file that already open is in the proper file manager path
+		'''
+		maya_file_path = mc.file( query=True , sn=True )
+
+		if maya_file_path:
+
+			folder_path = os.path.dirname(maya_file_path)
+
+			parent_folder = os.path.basename(folder_path)
+
+			
+
+			# ensures that the code works correctly regardless of the underlying operating system.
+
+			if parent_folder == 'Version':
+				FileManagerLog.debug("The folder containing 'ajubu.ma' is named 'Version'.")
+
+				folder_path = os.path.dirname(folder_path)
+				asset_path = os.path.dirname(folder_path)
+
+				# Department path
+				asset_name = os.path.basename(asset_path)
+
+				if os.path.exists(os.path.join(asset_path, 'data.json')):
+					print('This file is valid Go on ')
+
+					self.update_to_browser(asset_path)
+
+
+					
+
+
+			elif parent_folder == 'Commit':
+				FileManagerLog.debug("The folder containing 'ajubu.ma' is not named 'Commit'.")
+		else:
+			pass
+
+
+	def update_to_browser(self, file_path):
+		'''
+		Check the curenty maya file that already open is in the proper file manager path
+		'''
+
+		FileManagerLog.debug("This is file path_384_ {0}".format(file_path))
+
+		# Convert the desired directory path to a model index
+		index = self.model.index(file_path)
+		FileManagerLog.debug("This is index _384_ {0}".format(index))
+
+		# Expand the QTreeView to the parent item of the desired directory
+		self.asset_dir_TREEVIEW.expand(index.parent())
+
+		# Get the model index of the desired directory
+		desired_index = self.model.index(file_path)
+		FileManagerLog.debug("This is desired_index _384_ {0}".format(desired_index))
+
+		# Select the item at the model index
+		self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(desired_index, QtCore.QItemSelectionModel.ClearAndSelect)
+
+
+
+
+
+		'''
+		
+		# Get full path
+		asset_path = self.get_full_path()
+		department_text = self.asset_department_listWidget.currentItem().text()
+		publish_path = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
+		publish_path = os.path.normpath(publish_path)
+
+		# Get current selected in Version listWidget
+		selected_task = self.asset_version_view_listWidget.currentItem()
+		file_name = selected_task.text()
+
+		# chech valid name
+
+		
+		if file_name.split('.')[-2].isdigit():
+			FileManagerLog.debug('This file_name: {0}'.format(file_name))
+
+		if publish_path:
+			FileManagerLog.debug('This publish_path: {0}'.format(publish_path))
+		else:
+			pass
+		'''
+
+
+
 
 
 
 	def filter_proper_version_list(self):
+
 	# Make list to proper version workspace listWidget
 	# 1. cut off if naming is not having prior folder name
 	# 2. if file is not ma or mb
 
-				# Get full path
+		# Get full path
 		asset_path = self.get_full_path()
 		department_text = self.asset_department_listWidget.currentItem().text()
 
@@ -288,9 +452,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		path_list = asset_path.split('\\')
 
 		selected_project = self.project_comboBox.currentText()
-
-
-
 
 
 		# I don't know how to manage this 
@@ -554,7 +715,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	
-	def display_images(self,image_paths):
+	def display_images(self, image_paths):
 		if image_paths is not None:
 			FileManagerLog.debug(image_paths)
 			self.asset_thumbnail_IMAGE_LABEL.setScaledContents(True)
@@ -565,7 +726,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			QApplication.processEvents()
 		else:
 			FileManagerLog.debug('There are nothing to show.')
-			# self.asset_thumbnail_IMAGE_LABEL.clear()
+			# Clear thumbnail afer click at another folder
+			self.asset_thumbnail_IMAGE_LABEL.clear()
 
 
 
@@ -673,9 +835,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					self.load_global_commit(global_commit_folder)
 
 				# Show thumbnail
-				thumbnail_path = os.path.join(file_path, 'thumb.png')
+				thumbnail_path = os.path.join(file_path, THUMBNAIL_NAME)
 				self.display_images(thumbnail_path)
+
+				# Do not expand the asset folder if already expanded(Still... not work)
+				if self.asset_dir_TREEVIEW.isExpanded(index):
+					self.asset_dir_TREEVIEW.setExpanded(index, False)
+					FileManagerLog.debug('Please do not expanded.')
 				
+			
 			'''
 			# Show version folder when also click Department on Treeview
 			# Disable for this make confusion
@@ -694,13 +862,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				else:
 					FileManagerLog.debug('There must be normal folder')
 			'''
+			
 
 
 
 
-				# Do not expand the asset folder if already expanded(still not work)
-				# if self.asset_dir_TREEVIEW.isExpanded(index):
-				# 	self.asset_dir_TREEVIEW.setExpanded(index, False)
 
 
 
@@ -1134,13 +1300,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 # NO USE CLASS Try to use as another class but not work
 class MayaHandler:
-	def __init__(self, asset_path, MAYA_EXT):
-		self.asset_path = asset_path
-		self.MAYA_EXT = MAYA_EXT
 
+	def __init__(self):
+		pass
 
-	def handle_double_click(self, asset_path, MAYA_EXT):
-		print(f"Performing action for asset path: {self.asset_path}{self.MAYA_EXT}")
+	def do_local_publish(self):
+
+		filepath = mc.file( query=True , sn=True )
+
+		file_ext = os.path.basename(filepath)
+
+		
 
 
 

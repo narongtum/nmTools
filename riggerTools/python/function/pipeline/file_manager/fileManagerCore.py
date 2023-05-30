@@ -299,6 +299,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if maya_file_path:
 			try:
 				file_ext = os.path.basename(maya_file_path)
+				FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
 
 				# Splits a pathname into a pair (root, ext)
 				file_name = os.path.splitext(file_ext)[0]
@@ -332,24 +333,32 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Saving file to local commit location
 				# self.maya_save(new_full_path, MAYA_EXT)
-				FileManagerLog.debug('save file at: {0} and file name {1}'.format(full_path, local_commit_name))
+				FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
 				save_path = os.path.join(full_path, local_commit_name)
+
+				# maya_save_path = '{0}.{1}'.format(save_path, MAYA_EXT)
 
 
 				FileManagerLog.debug('Do something before maya file commit')
 
-				FileManagerLog.debug('Commit file at: {0}.{1}'.format(save_path,(MAYA_EXT)))
+				FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
 				self.maya_save(save_path, MAYA_EXT)
+
+				# Update localWidget viewport
+				self.load_local_commit(full_path)
+
 				# Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
 				# Commit SVN
 				self.svn_maya.execute_cmd('commit', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
-				# Update viewport
-				self.load_local_commit(full_path)
 
+	
+		
 
-			except:
-				FileManagerLog.debug('File not valid name please check: {0}'.format(file_name))
+			except Exception as e:
+				FileManagerLog.debug('File not valid name please check: {0}'.format(maya_file_path))
+				print("Error:", e)
+				
 
 		else:
 			FileManagerLog.debug('The current file not maya saving file nevertherless later.')
@@ -1404,7 +1413,7 @@ class General():
 class SvnMaya:
 	def __init__(self):
 		pass
-	def execute_cmd(self, cmd_type, file_path, log_message, close_on_end):
+	def execute_cmd(self, cmd_type, file_path, close_on_end):
 
 		file_path = os.path.normpath(file_path)
 		# Create a variable to store the command line

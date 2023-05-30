@@ -74,8 +74,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Define model as an instance variable
 		# self.model = None
-		
-		
+
+
+
 
 		# # initializing model and populate the tree view
 		self.model = QtWidgets.QFileSystemModel()
@@ -93,9 +94,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.populate_project()
 		# self.update_project_comboBox() # It seems redundance with connect update_project_comboBox
 
-		FileManagerLog.debug('Than this...')
+		FileManagerLog.debug('Set default project...')
 		self.drive_comboBox.setCurrentText(DRIVES[0])
 		self.project_comboBox.setCurrentText(DEFAULT_PROJECT)
+
+
+
+		selected_project = self.project_comboBox.currentText()
+
+		# Check manage file type
+		if selected_project == 'P_Regulus':
+			self.USE_VARIATION = True
+		else:
+			self.USE_VARIATION = False
 
 
 		# Set "Asset" tab as default
@@ -369,7 +380,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		'''
 		Check the curenty maya file that already open is in the proper file manager path
-		'''
+		'''		
+
+
+
 		maya_file_path = mc.file( query=True , sn=True )
 
 		if maya_file_path:
@@ -383,7 +397,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# ensures that the code works correctly regardless of the underlying operating system.
 
 			if parent_folder == 'Version':
-				FileManagerLog.debug("The folder containing 'ajubu.ma' is named 'Version'.")
+				FileManagerLog.debug("The folder containing named 'Version'.")
 
 				folder_path = os.path.dirname(folder_path)
 				asset_path = os.path.dirname(folder_path)
@@ -490,11 +504,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		path_list = asset_path.split('\\')
 
-		selected_project = self.project_comboBox.currentText()
+		
 
+
+
+		selected_project = self.project_comboBox.currentText()
 
 		# I don't know how to manage this 
 		if selected_project == 'P_Regulus':
+			# if USE_VARIATION == True:
+
 			path_check = path_list[-2] + '_' + path_list[-1]
 			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
 		else:
@@ -562,7 +581,21 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
 
 
+
+		# # Ask to check manage file type
+		# selected_project = self.project_comboBox.currentText()
+		# if selected_project == 'P_Regulus':
+		# 	self.USE_VARIATION = True
+		# else:
+		# 	self.USE_VARIATION = False
+
+
+
+
 		if selected_project == 'P_Regulus':
+			# if USE_VARIATION == True:
+		
+		
 			asset_name = split_path_list[-3]
 			variation_name = split_path_list[-2]
 			job_name = split_path_list[-1]
@@ -572,8 +605,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			final_file_name = asset_name + '_' + variation_name + '_' + job_name
 			FileManagerLog.debug('final_file_name: {0}'.format(final_file_name))
 
-
 		else:
+
 			FileManagerLog.debug('There is not REGULUS using original naming')
 			asset_name = split_path_list[-2]
 			job_name = split_path_list[-1]

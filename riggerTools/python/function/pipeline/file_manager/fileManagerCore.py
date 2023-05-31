@@ -61,9 +61,9 @@ STATIC_FOLDER 		= 	['Content','Version','Commit']
 DEFAULT_PROJECT 	= 	'P_Regulus'
 PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
-USE_VARIATION 		= 	True
+USE_VARIATION 		= 	('P_Regulus')
+SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
 
-SVN_BIN_PATH = r"C:\Program Files\TortoiseSVN\bin"
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
@@ -101,12 +101,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 		selected_project = self.project_comboBox.currentText()
-
-		# Check manage file type
-		if selected_project == 'P_Regulus':
-			self.USE_VARIATION = True
-		else:
-			self.USE_VARIATION = False
 
 
 		# Set "Asset" tab as default
@@ -226,7 +220,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Create a confirmation dialog
 		confirmation_dialog = QMessageBox(self)
 		confirmation_dialog.setIcon(QMessageBox.Question)
-		confirmation_dialog.setText(f"Are you sure you want to save this step job: {selected_context}?")
+		confirmation_dialog.setText(f"Are you sure you want to save this step job\n\t{selected_context} ?")
 		confirmation_dialog.setWindowTitle("Confirmation")
 		confirmation_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 		confirmation_dialog.setDefaultButton(QMessageBox.No)
@@ -352,16 +346,49 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				FileManagerLog.debug('Do something before maya file commit')
 
-				FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
-				self.maya_save(save_path, MAYA_EXT)
 
-				# Update localWidget viewport
-				self.load_local_commit(full_path)
 
-				# Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
-				# Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
+
+
+
+				reply = QMessageBox(self)
+				reply.setWindowTitle('Commit Changes')
+				reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(local_commit_name))
+
+
+				commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+				save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+				reply.addButton(QMessageBox.Cancel)	
+
+				result = reply.exec_()	
+					
+				if reply.clickedButton() == commit_button:
+					print('COMMIT AND SAVE')
+					# Maya Save
+					FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
+					self.maya_save(save_path, MAYA_EXT)
+					# Add SVN
+					self.svn_maya.execute_cmd('add', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
+					# Commit SVN
+					self.svn_maya.execute_cmd('commit', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
+
+					# Update localWidget viewport
+					self.load_local_commit(full_path)
+
+				elif reply.clickedButton() == save_button:
+					print('SAVE')
+					# Maya Save
+					FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
+					self.maya_save(save_path, MAYA_EXT)
+
+					# Update localWidget viewport
+					self.load_local_commit(full_path)
+
+				elif result == QMessageBox.Rejected:
+						print('Cancel button clicked')
+						pass
+
+
 
 	
 		
@@ -372,7 +399,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				
 
 		else:
-			FileManagerLog.debug('The current file not maya saving file nevertherless later.')
+			FileManagerLog.debug('The current file not maya saving file do it later.')
 			return False
 
 
@@ -511,8 +538,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_project = self.project_comboBox.currentText()
 
 		# I don't know how to manage this 
-		if selected_project == 'P_Regulus':
-			# if USE_VARIATION == True:
+		# if selected_project == 'P_Regulus':
+		if selected_project in USE_VARIATION:
 
 			path_check = path_list[-2] + '_' + path_list[-1]
 			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
@@ -582,19 +609,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-		# # Ask to check manage file type
-		# selected_project = self.project_comboBox.currentText()
+
+
+
+
+
 		# if selected_project == 'P_Regulus':
-		# 	self.USE_VARIATION = True
-		# else:
-		# 	self.USE_VARIATION = False
-
-
-
-
-		if selected_project == 'P_Regulus':
-			# if USE_VARIATION == True:
-		
+		if selected_project in USE_VARIATION:
 		
 			asset_name = split_path_list[-3]
 			variation_name = split_path_list[-2]

@@ -77,17 +77,20 @@ def reloadMenu():
 
 # runAxion menu
 def runMenu():
-	# Delete exists menu
-	if pm.menu( 'MayaWindow|%s' %PROJECT_NAME , exists = True):
-		mc.deleteUI('MayaWindow|%s' %PROJECT_NAME )
+	try:
+		# Delete exists menu
+		if pm.menu( 'MayaWindow|%s' %PROJECT_NAME , exists = True):
+			mc.deleteUI('MayaWindow|%s' %PROJECT_NAME )
 
 
-	# Name of the global variable for the Maya window
-	MainMayaWindow = pm.language.melGlobals['gMainWindow']
+		# Name of the global variable for the Maya window
+		MainMayaWindow = pm.language.melGlobals['gMainWindow']
 
-	# Build a menu and parent under to that Maya Window
-	TAI = pm.menu( PROJECT_NAME, to = True, parent = MainMayaWindow )
+		# Build a menu and parent under to that Maya Window
+		TAI = pm.menu( PROJECT_NAME, to = True, parent = MainMayaWindow )
 
+	except Exception as e:
+		print("Error:", e)
 
 
 
@@ -99,6 +102,15 @@ def runMenu():
 
 
 
+	'''
+
+	 File Manager
+
+	'''
+	
+
+
+
 
 	'''
 
@@ -106,25 +118,35 @@ def runMenu():
 
 	'''
 	#----------------------------------------------------------------------------------------------------------------------
+
+
+
+	#----------------------------------------------------------------------------------------------------------------------
 	mc.menuItem( label = 'Asset' , subMenu = True, tearOff = True)
 
+	mc.menuItem( label = 'File Manager', divider = True )
+
+	mc.menuItem( label = "File Manager",	command = "from function.pipeline.file_manager import run_ui\nreload(run_ui)\nrun_ui.run_file_manager()", ann = "Open File Manager(test)" )
 
 	mc.menuItem( label = 'Publish file', divider = True )
 
-	mc.menuItem( label = "Commit To SVN",	command = "from function.pipeline import svnMaya\nimportlib.reload(svnMaya)\nsvnMaya.commitCurrentPath()", ann = "Commit current file to SVN.(Make sure this file already add.)" , image = ICON_PATH + '\\svn-commit-small.png')	
+	#----------------------------------------------------------------------------------------------------------------------
+	
 
-	mc.menuItem( label = "Local Publish",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfileTools.localPublish()", ann = "Clean file and commit to local department.", image = ICON_PATH + '\\localPublish.png')
+	# mc.menuItem( label = "Commit To SVN",	command = "from function.pipeline import svnMaya\nimportlib.reload(svnMaya)\nsvnMaya.commitCurrentPath()", ann = "Commit current file to SVN.(Make sure this file already add.)" , image = ICON_PATH + '\\svn-commit-small.png')	
 
-	mc.menuItem( label = "Global Publish",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfileTools.globalPublish()", ann = "Clean file and commit to Global Library.", image = ICON_PATH + '\\worldIcon.png')
+	# mc.menuItem( label = "Local Publish",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfileTools.localPublish()", ann = "Clean file and commit to local department.", image = ICON_PATH + '\\localPublish.png')
 
+	# mc.menuItem( label = "Global Publish",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfileTools.globalPublish()", ann = "Clean file and commit to Global Library.", image = ICON_PATH + '\\worldIcon.png')
 
 	#mc.menuItem( label = 'Exporting Tools', divider = True )
 
-	mc.menuItem( label = "Export with Path", command = "from function.asset import exportPathTool as exportPathTool\nimportlib.reload(exportPathTool)\nrun = exportPathTool.Ui()\nrun.createGUI()" , ann = "export To Path From Selected Object" )
+	# mc.menuItem( label = "Export with Path", command = "from function.asset import exportPathTool as exportPathTool\nimportlib.reload(exportPathTool)\nrun = exportPathTool.Ui()\nrun.createGUI()" , ann = "export To Path From Selected Object" )
 	
-	mc.menuItem( label = "Export FBX file to current folder.",	command = "from function.asset import exportFBX\nimportlib.reload(exportFBX)\nexportFBX.noCareExporter()", ann = "Automate export FBX file to curren maya folder.( select mesh and run )")
+	# mc.menuItem( label = "Export FBX file to current folder.",	command = "from function.asset import exportFBX\nimportlib.reload(exportFBX)\nexportFBX.noCareExporter()", ann = "Automate export FBX file to curren maya folder.( select mesh and run )")
 
 	#-----------------------------
+
 
 	mc.menuItem( label = "Create Thumbnails",	command = "from function.pipeline import fileTools as fileTools\nimportlib.reload(fileTools)\nfileTools.createThumbnail()", ann = "Create Thumbnails at current location.")
 

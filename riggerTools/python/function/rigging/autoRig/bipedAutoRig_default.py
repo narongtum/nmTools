@@ -145,13 +145,49 @@ topSpine_bJnt = torsoRig.torsoRig(
 '''
 
 
-# Spine FK Rig
+
+# = = = = = Spine IK Rig (Optional) = = = = = #
+'''
+
+from function.rigging.autoRig.bodyRig import spineIKRig
+reload(spineIKRig)
+
+topSpine_bJnt = spineIKRig.spineHybridIK(
+				nameSpace = '' 		,
+				parentTo = 'ctrl_grp' 						,		
+				tmpJnt = (		'spine01_tmpJnt' 			,
+								'spine02_tmpJnt' 			,
+								'spine03_tmpJnt' 			,
+								'spine04_tmpJnt'			),
+				priorCtrl = 'cog_gmbCtrl'					,
+				priorJnt = hip_bJnt						,				
+				charScale = charScale								,							
+				linkRotOrder = True							)
+				
+
+'''
+
+
+
+
+
+
+
+
+
+# = = = = = Spine FK Rig  = = = = = #
 topSpine_bJnt = spineFkRig.spineRig( 		parentTo = 'ctrl_grp' 								,
 										tmpJnt = (	'spine01_tmpJnt' ,'spine02_tmpJnt', 
 												'spine03_tmpJnt', 'spine04_tmpJnt')			,
 										priorCtrl = 'cog_gmbCtrl'	,
 										charScale = charScale 	,
 										ctrShape = 'circleCurlUp_ctrlShape'						)
+
+
+
+
+
+
 
 
 

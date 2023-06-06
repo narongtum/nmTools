@@ -839,6 +839,10 @@ def doDeleteGrp():
 	else:
 		print("No delete_grp found.")
 
+	# Add delete suffix and prefix 
+	doDeleteSuffixExt(suffix ='_bak')
+	doDeletePrefixExt(prefix = 'bak_')
+
 
 
 
@@ -979,11 +983,12 @@ def delete_unused_skin_suffix(suffix = '*_skc'):
 
 
 def delete_unused_material():
-	if mc.objExists("rig_grp.delete_unused_mat"):
-		mel.eval('MLdeleteUnused()')
-		fileToolsLogger.info('\nUnused material deleted.')
-	else:
-		pass
+	mel.eval('MLdeleteUnused()')
+	fileToolsLogger.info('\nUnused material deleted.')
+
+
+
+
 
 
 
@@ -1017,8 +1022,7 @@ def localPublish( mayafileType = 'ma'):
 
 	#... delete '*_bak'
 	fileToolsLogger.debug('Do Delete prefix.')
-	doDeleteSuffixExt(suffix ='_bak')
-	doDeletePrefixExt(prefix = 'bak_')
+
 
 	# obselet
 	# doDeleteGrpTmp()
@@ -1066,8 +1070,8 @@ def globalPublish():
 
 	#... delete '*_bak'
 	fileToolsLogger.debug('Do Delete prefix.')
-	doDeleteSuffixExt(suffix ='_bak')
-	doDeletePrefixExt(prefix = 'bak_')
+	# doDeleteSuffixExt(suffix ='_bak')
+	# doDeletePrefixExt(prefix = 'bak_')
 
 
 	#... hide Root

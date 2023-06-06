@@ -386,27 +386,33 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def push_btn_global_publish(self):
-		asset_path = self._get_full_path()
-		department_text = self.asset_department_listWidget.currentItem().text()
+		try:
+			asset_path = self._get_full_path()
+			department_text = self.asset_department_listWidget.currentItem().text()
 
-		global_path = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
-		global_path = os.path.normpath(global_path)
+			global_path = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
+			global_path = os.path.normpath(global_path)
 
-		
-		global_path_list = global_path.split(os.path.sep)
-		FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
+			
+			global_path_list = global_path.split(os.path.sep)
+			FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
 
-		selected_project = self.project_comboBox.currentText()
+			selected_project = self.project_comboBox.currentText()
 
-		if selected_project in USE_VARIATION:
+			if selected_project in USE_VARIATION:
 
-			path_check = global_path_list[-4] + '_' + global_path_list[-3] + '_' + global_path_list[-2]
+				path_check = global_path_list[-4] + '_' + global_path_list[-3] + '_' + global_path_list[-2]
 
-		else:
-			path_check = global_path_list[-3] + '_' + global_path_list[-2]
+			else:
+				path_check = global_path_list[-3] + '_' + global_path_list[-2]
 
 
-		FileManagerLog.debug('This is path_check ( {0} )'.format(path_check))
+			FileManagerLog.debug('This is path_check ( {0} )'.format(path_check))
+
+		except Exception as e:
+			print("Error:", e)
+			FileManagerLog.debug('Path file not valid name please check: {0}'.format(global_path))
+
 
 
 

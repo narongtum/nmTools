@@ -204,9 +204,9 @@ def currentPath():
 def openContainerFile( path = None ):
 	os.startfile(path)
 
-def countJnt():
+def countJnt(suffix = '*_bJnt'):
 	num = 0
-	bindJnt = mc.ls('*_bJnt')
+	bindJnt = mc.ls(suffix)
 
 	if bindJnt:
 		for each in bindJnt:
@@ -217,6 +217,7 @@ def countJnt():
 		rJnt = 45 - num
 		
 		fileToolsLogger.info('%i joint remaining\n' %rJnt)
+		fileToolsLogger.info('%i joint number is\n' %num)
 		mc.inViewMessage(amg = "<hl>The number of bind joint is %s</hl>" %num, pos = "midCenterTop", fade = True)
 	else:
 		fileToolsLogger.info('There are no joint to count.')
@@ -839,6 +840,10 @@ def doDeleteGrp():
 	else:
 		print("No delete_grp found.")
 
+	# Add delete suffix and prefix 
+	doDeleteSuffixExt(suffix ='_bak')
+	doDeletePrefixExt(prefix = 'bak_')
+
 
 
 
@@ -979,11 +984,12 @@ def delete_unused_skin_suffix(suffix = '*_skc'):
 
 
 def delete_unused_material():
-	if mc.objExists("rig_grp.delete_unused_mat"):
-		mel.eval('MLdeleteUnused()')
-		fileToolsLogger.info('\nUnused material deleted.')
-	else:
-		pass
+	mel.eval('MLdeleteUnused()')
+	fileToolsLogger.info('\nUnused material deleted.')
+
+
+
+
 
 
 
@@ -1017,8 +1023,7 @@ def localPublish( mayafileType = 'ma'):
 
 	#... delete '*_bak'
 	fileToolsLogger.debug('Do Delete prefix.')
-	doDeleteSuffixExt(suffix ='_bak')
-	doDeletePrefixExt(prefix = 'bak_')
+
 
 	# obselet
 	# doDeleteGrpTmp()
@@ -1066,8 +1071,8 @@ def globalPublish():
 
 	#... delete '*_bak'
 	fileToolsLogger.debug('Do Delete prefix.')
-	doDeleteSuffixExt(suffix ='_bak')
-	doDeletePrefixExt(prefix = 'bak_')
+	# doDeleteSuffixExt(suffix ='_bak')
+	# doDeletePrefixExt(prefix = 'bak_')
 
 
 	#... hide Root

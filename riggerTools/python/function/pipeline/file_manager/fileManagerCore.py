@@ -17,7 +17,8 @@ reload(logger)
 import re
 import pymel.core as pm
 
-
+from function.pipeline import fileTools as fileTools 
+reload(fileTools)
 
 
 
@@ -45,7 +46,8 @@ DICTIONARY_TEMPLATE = {
 							"entitie_name":""			,
 							"full_entity_name":""		,
 							"comment":""				,
-							"department_name":""
+							"department_name":""		,
+							"add_path_SVN":""
 
 							}
 
@@ -74,7 +76,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Define model as an instance variable
 		# self.model = None
-
+		
 
 
 
@@ -155,6 +157,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
+
 
 	def handle_double_click(self, item):
 		# Double click is mean open
@@ -386,27 +389,89 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def push_btn_global_publish(self):
-		asset_path = self._get_full_path()
-		department_text = self.asset_department_listWidget.currentItem().text()
+		# Publish global file that Maya currenly open
 
-		global_path = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
-		global_path = os.path.normpath(global_path)
+		try:
+			asset_path = self._get_full_path()
+			department_text = self.asset_department_listWidget.currentItem().text()
 
-		
-		global_path_list = global_path.split(os.path.sep)
-		FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
+			global_path = os.path.join(asset_path, STATIC_FOLDER[2])
+			global_path = os.path.normpath(global_path)
 
-		selected_project = self.project_comboBox.currentText()
+			
+			global_path_list = global_path.split(os.path.sep)
+			FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
 
-		if selected_project in USE_VARIATION:
+			selected_project = self.project_comboBox.currentText()
 
-			path_check = global_path_list[-4] + '_' + global_path_list[-3] + '_' + global_path_list[-2]
+			if selected_project in USE_VARIATION:
 
-		else:
-			path_check = global_path_list[-3] + '_' + global_path_list[-2]
+				global_commit_name = global_path_list[-4] + '_' + global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+
+			else:
+				global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
 
 
-		FileManagerLog.debug('This is path_check ( {0} )'.format(path_check))
+			FileManagerLog.debug('\nThis is global_path ( {0} )'.format(global_path))
+			FileManagerLog.debug('This is global_commit_name ( {0} )'.format(global_commit_name))
+
+			save_full_path = os.path.join(global_path, global_commit_name)
+
+			line_number = sys._getframe().f_lineno
+			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
+
+
+			reply = QMessageBox(self)
+			reply.setWindowTitle('Commit Changes')
+			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(global_commit_name))
+
+
+			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+			reply.addButton(QMessageBox.Cancel)	
+
+			result = reply.exec_()	
+			# Do global_commit_name	
+			if reply.clickedButton() == commit_button:
+
+				# 1. Delete 'delete_grp'
+				fileTools.doDeleteGrp()				
+
+				# 2. Maya Save
+				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
+				self.maya_save(global_path, global_commit_name, MAYA_EXT)
+
+				# 3. Add SVN
+				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+				# 4. Commit SVN
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+				# 5. Update localWidget viewport
+				self.load_global_commit(global_path)
+
+			elif reply.clickedButton() == save_button:
+				# 1. Delete 'delete_grp'
+				fileTools.doDeleteGrp()
+
+				# 2. Maya Save
+				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
+				self.maya_save(global_path, global_commit_name, MAYA_EXT)
+
+				# 3. Update localWidget viewport
+				self.load_global_commit(global_path)
+
+			elif result == QMessageBox.Rejected:
+					print('Cancel button clicked')
+					pass
+
+
+
+
+		except Exception as e:
+			print("Error:", e)
+			FileManagerLog.debug('Path file not valid name please check: {0}'.format(global_path))
+
 
 
 
@@ -459,14 +524,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					pass
 
 				# Saving file to local commit location
-				# self.maya_save(new_full_path, MAYA_EXT)
+
 				FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
-				save_path = os.path.join(full_path, local_commit_name)
-
-				# maya_save_path = '{0}.{1}'.format(save_path, MAYA_EXT)
+				save_full_path = os.path.join(full_path, local_commit_name)
 
 
-				FileManagerLog.debug('Do something before maya file commit')
+				line_number = sys._getframe().f_lineno
+				FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
 
 
 
@@ -483,27 +547,39 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				reply.addButton(QMessageBox.Cancel)	
 
 				result = reply.exec_()	
-					
-				if reply.clickedButton() == commit_button:
-					print('COMMIT AND SAVE')
-					# Maya Save
-					FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
-					self.maya_save(save_path, MAYA_EXT)
-					# Add SVN
-					self.svn_maya.execute_cmd('add', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
-					# Commit SVN
-					self.svn_maya.execute_cmd('commit', file_path=save_path+'.'+MAYA_EXT, close_on_end=0)
 
-					# Update localWidget viewport
+				# Local commit action
+				if reply.clickedButton() == commit_button:
+					# 1. Do clean up scene
+					fileTools.doDeleteGrp()
+					fileTools.delete_unused_material()
+					fileTools.deleteDisplayLayer()
+
+					# 2. Maya Save
+					FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
+					self.maya_save(full_path, local_commit_name, MAYA_EXT)
+
+					# 3. Add SVN
+					self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+					# 4. Commit SVN
+					self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+					# 5. Update localWidget viewport
 					self.load_local_commit(full_path)
 
 				elif reply.clickedButton() == save_button:
-					print('SAVE')
-					# Maya Save
-					FileManagerLog.debug('save_path: {0}  ,  MAYA_EXT: {1}'.format(save_path,(MAYA_EXT)))
-					self.maya_save(save_path, MAYA_EXT)
+					# 1. Do clean up scene
+					fileTools.doDeleteGrp()
+					fileTools.delete_unused_material()
+					fileTools.deleteDisplayLayer()
 
-					# Update localWidget viewport
+
+					# 2. Maya Save
+					FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
+					self.maya_save(full_path, local_commit_name, MAYA_EXT)
+
+					# 3. Update localWidget viewport
 					self.load_local_commit(full_path)
 
 				elif result == QMessageBox.Rejected:
@@ -574,7 +650,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		Check the curenty maya file that already open is in the proper file manager path
 		'''
 
-		FileManagerLog.debug("This is file path_384_ {0}".format(file_path))
+		FileManagerLog.debug("This is file path{0}".format(file_path))
 
 		# Convert the desired directory path to a model index
 		index = self.model.index(file_path)
@@ -754,7 +830,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			asset_name = split_path_list[-2]
 			job_name = split_path_list[-1]
 			final_file_name = asset_name + '_' + job_name
-			FileManagerLog.debug('None_Variation_asset_name_352_: {0}\t{1}\t'.format(asset_name, job_name))
+			line_number = sys._getframe().f_lineno
+			FileManagerLog.debug('None_Variation_asset_name_{2}_: {0}\t{1}\t'.format(asset_name, job_name,line_number))
 
 		FileManagerLog.debug('THIS IS >>>\t\t\tresult_job_element:\t\t\t {0}'.format(result_job_element))
 		FileManagerLog.debug('THIS IS TYPE>>>\t\t\tresult_job_element:\t\t\t {0}'.format(type(result_job_element)))
@@ -769,7 +846,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				max_version += 1
 				max_version = str(max_version).zfill(PADDING)
 
-				FileManagerLog.debug('If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT))
+				line_number = sys._getframe().f_lineno
+
+				FileManagerLog.debug('({4})If having already step name: {0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, MAYA_EXT, line_number))
 
 			else:
 				max_version = str(1).zfill(PADDING)
@@ -782,18 +861,22 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-		new_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+		save_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+
+		save_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
+
 		version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
 
-		FileManagerLog.debug('THIS IS new_full_path: {0}'.format(new_full_path)) 
-		self.maya_save(new_full_path, MAYA_EXT)
+		line_number = sys._getframe().f_lineno
+		FileManagerLog.debug('({1})THIS IS save_full_path: {0}'.format(save_full_path,line_number)) 
+		self.maya_save(save_path, new_file_name, MAYA_EXT)
 
 		# To refresh version viewport
 		self.asset_version_view_listWidget.clear()
 		# Update version listWidget viewport
 		self.show_version_entite(version_folder_path)
 
-		FileManagerLog.debug('File saving at: {0}'.format(new_full_path)) 
+		FileManagerLog.debug('File saving at: {0}'.format(save_full_path)) 
 		return True
 
 
@@ -830,19 +913,31 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		filepath = filepath.replace('\\','/')
 		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
 
-	def maya_save(self, file_path, MAYA_EXT):
+	def maya_save(self, save_path, save_name, MAYA_EXT, fixed_name = False):
 
 		if MAYA_EXT == 'ma':
 			maya_type = 'mayaAscii'
 		elif MAYA_EXT == 'mb':
 			maya_type = 'mayaBinary'
 
+		if fixed_name:
+			if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != '':
+				save_name = mc.getAttr("rig_grp.asset_name")
 
-		mc.file(rename=file_path)
+		save_full_path = os.path.join(save_path,save_name)
+		mc.file(rename=save_full_path)
 		mc.file(save=True, force=True, type=maya_type)
-		FileManagerLog.debug('FILE SAVE AT: {0}'.format(file_path)) 
-		self.maya_add_recen_file(file_path, MAYA_EXT)
+		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
+		self.maya_add_recen_file(save_full_path, MAYA_EXT)
 		return True
+
+
+
+
+
+
+
+
 
 	def maya_reference(self, file_path):
 		folder, file_name = os.path.split(file_path)
@@ -1025,7 +1120,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def show_version_entite(self, version_folder):
 		# Clear the QListWidget
 		self.asset_version_view_listWidget.clear()
-		self.asset_local_view_listWidget.clear()
+		# self.asset_local_view_listWidget.clear()
 
 		### will shift to method #####
 		# Check if exists
@@ -1209,7 +1304,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		for each in items:
 			local_commit_list.append(each)
 		self.asset_local_view_listWidget.addItems(local_commit_list)
-		FileManagerLog.debug("\nFound Local Commit: {0}".format(local_commit_list) )
+		FileManagerLog.debug("Found Local Commit: {0}".format(local_commit_list) )
 
 
 
@@ -1490,7 +1585,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, department_name, comment ):
+	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, department_name, comment, add_path_SVN ):
 		# Write to dictionary
 		entitie_dict = DICTIONARY_TEMPLATE
 		entitie_dict["base_path"] = base_path
@@ -1499,6 +1594,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		entitie_dict["full_entity_name"] = full_entity_name
 		entitie_dict["department_name"] = department_name
 		entitie_dict["comment"] = comment
+		entitie_dict["add_path_SVN"] = add_path_SVN
+
 		return entitie_dict
 
 
@@ -1565,11 +1662,42 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# Get department name
 				department_name = self.get_department_name(new_asset_path)
 				FileManagerLog.info('This is department_name:\t\t{0}')
+
+
+
+				# Write Add path for SVN
+				add_path_for_SVN = []
+
+				# Add root Asset folder
+				add_path_for_SVN.append(os.path.normpath(new_asset_path)) 
+
+				# Add 'Commit' Asset folder
+				folder_global_path = os.path.normpath(os.path.join(new_asset_path, STATIC_FOLDER[2]))
+				add_path_for_SVN.append(folder_global_path)
+
+				
+				for each in department_name:
+					if each in DEPT_EMPTY:
+						continue
+					else:
+						folder_version_path = os.path.normpath(os.path.join(new_asset_path, each, STATIC_FOLDER[1]))
+						folder_commit_path = os.path.normpath(os.path.join(new_asset_path, each, STATIC_FOLDER[2]))
+						add_path_for_SVN.append(folder_version_path)
+						add_path_for_SVN.append(folder_commit_path)
+
+
+
 			
 				# Write to json file
-				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, department_name, "")
+				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, department_name,"", add_path_for_SVN)
 				print (entite_dict)
 				self.write_entite_folder(entite_dict)
+
+
+				self.svn_maya.execute_cmd('add', file_path=add_path_for_SVN[0], close_on_end=0, add_fixed_folder = True)
+
+
+
 
 			else:
 				print("\tThere are already folder skipped.")
@@ -1646,12 +1774,16 @@ class General():
 class SvnMaya:
 	def __init__(self):
 		pass
-	def execute_cmd(self, cmd_type, file_path, close_on_end):
+	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False):
 
 		file_path = os.path.normpath(file_path)
 		# Create a variable to store the command line
 		# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{3}" /closeonend:{4}'.format(SVN_BIN_PATH, cmd_type, file_path, log_message, close_on_end)
-		command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+		if add_fixed_folder == False:
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+		else:
+			FileManagerLog.debug('Specific "Add" folder.')
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3} --depth=files /nodlg'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
 
 		# Execute the command line
 		subprocess.run(command_line, shell=True)

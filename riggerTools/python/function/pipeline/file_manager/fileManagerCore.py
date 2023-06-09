@@ -830,7 +830,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			asset_name = split_path_list[-2]
 			job_name = split_path_list[-1]
 			final_file_name = asset_name + '_' + job_name
-			FileManagerLog.debug('None_Variation_asset_name_352_: {0}\t{1}\t'.format(asset_name, job_name))
+			line_number = sys._getframe().f_lineno
+			FileManagerLog.debug('None_Variation_asset_name_{2}_: {0}\t{1}\t'.format(asset_name, job_name,line_number))
 
 		FileManagerLog.debug('THIS IS >>>\t\t\tresult_job_element:\t\t\t {0}'.format(result_job_element))
 		FileManagerLog.debug('THIS IS TYPE>>>\t\t\tresult_job_element:\t\t\t {0}'.format(type(result_job_element)))

@@ -12,13 +12,13 @@ reload(core)
 
 source = 'upperLegLFT_bJnt'
 side = 'LFT'
-destination_grp = 'skirt01LFTOffset_grp'
+destination_grp = 'legBackOffset_grp'
 
 
 
-sensitive = (0,1,0,50)
+sensitive = (0,1,0,90)
 direction = ('forward','rear','backward')
-direction =  direction[1]
+direction =  direction[2]
 baseName = 'along' + direction.capitalize()
 
 
@@ -102,7 +102,7 @@ turn_off_mdl.attr('output') >> collectValue_pma.attr('input3D[0].input3Dx')
 collectValue_pma.attr('output3Dx') >> destination_grp.attr('rotateX')
 
 
-
+print('DONE')
 
 
 

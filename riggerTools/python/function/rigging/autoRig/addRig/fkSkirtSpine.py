@@ -1,5 +1,7 @@
 # rigging.autoRig.addRig
 
+#... This function is create spine FK by no dynamic joint
+
 """
 from function.rigging.autoRig.addRig import fkSkirtSpine as fse
 reload(fse)
@@ -184,18 +186,19 @@ def fkSkirtSpline(
 	num = 0
 	for i in range(len(bJntChain)):
 		# psCon = mc.parentConstraint( each + side +'_fkJnt', each + side +'_ikJnt' , each + side +'_buffJnt'  , name = each + 'Switch' + side + '_parCons' )
-		print '# # # pair constraint # # #'
-		print baseName + '%02d%s_psCon' % ((num + 1), side)
+		print ('# # # pair constraint # # #')
+		print (baseName + '%02d%s_psCon' % ((num + 1), side))
 		# print fkChain[i]
-		print ikChain[i]
-		print bJntChain[i]
+		print (ikChain[i])
+		print (bJntChain[i])
 
 		# psCon = mc.parentConstraint( fkChain[i] , ikChain[i] , bJntChain[i] , name = baseName + '%02d%s_psCon' %(( num +1),side) )
 		psCon = mc.parentConstraint(
 			ikChain[i], bJntChain[i], name=baseName + '%02d%s_psCon' % ((num + 1), side))
 
 	# make fkSpine twistable
-	ctrlShape = mc.listHistory(ikSpGen_jnt_grp[3][0])[0]
+	#... Query first controller
+	ctrlShape = mc.listHistory(ikSpGen_jnt_grp[4][0])[0]
 	fk_ctrl = core.Dag(ctrlShape)
 	fk_ctrl.addAttribute( longName = 'Twist' , defaultValue = 0 , keyable = True )
 	fk_ctrl.addAttribute( longName = 'Roll' , defaultValue = 0 , keyable = True )

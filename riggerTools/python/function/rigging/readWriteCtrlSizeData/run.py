@@ -28,16 +28,19 @@ def savingData():
 		
 		print ('\nWriting CtrlData...')
 		for each in allCtrl:
-			shapeName = wcd.validateCurve(each)  
-			crvShapeData = wcd.getShape(each) 
-			shape = shapeName[0]
-			allShapeName.append(shape)
-			
-			path = SHAPE_LIBRARY_PATH + shape + ext
-			
-			# save data 
-			wcd.saveData(path , data = crvShapeData)
-			print ('%s' %each)
+			shapeName = wcd.validateCurve(each)
+			if shapeName != ''  :
+				crvShapeData = wcd.getShape(each) 
+				shape = shapeName[0]
+				allShapeName.append(shape)
+				
+				path = SHAPE_LIBRARY_PATH + shape + ext
+				
+				# save data 
+				wcd.saveData(path , data = crvShapeData)
+				print ('%s' %each)
+			else:
+				print('There are no dict data Pass...')
 
 		# print ('\n# # # # Save CtrlData Done # # # #')
 		misc.makeHeader('Save CtrlData Done')

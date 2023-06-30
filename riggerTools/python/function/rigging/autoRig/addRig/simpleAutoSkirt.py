@@ -12,7 +12,7 @@ reload(core)
 
 source = 'upperLegLFT_bJnt'
 side = 'LFT'
-destination_grp = 'legBackOffset_grp'
+destination_grp = 'back1Offset_grp'
 
 
 

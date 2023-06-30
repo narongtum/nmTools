@@ -86,14 +86,21 @@ def validateCurve( crv = None ):
 	# print 'validate :%s'%crv
 	
 	if mc.nodeType(crv) == "transform" and mc.nodeType(mc.listRelatives(crv, c=1, s=1)[0]) == "nurbsCurve":
+		print('transform and nurbsCurve')
 		crvShapes = mc.listRelatives(crv, c=1, s=1)
+
+	elif mc.nodeType(mc.listRelatives(crv, shapes=True)) == 'nurbsSurface':
+		print("The object " + crv + " passed to validateCurve() is not a curve skipped.")
+		crvShapes = ''
+		pass
 
 	elif mc.nodeType(crv) == "nurbsCurve":
 		crvShapes = mc.listRelatives(mc.listRelatives(crv, p=1)[0], c=1, s=1)
+		print('nurbsCurve')
 
 	elif mc.nodeType(crv) == "transform":
 		crvShapes = mc.listRelatives(crv, shapes=True)
-
+		print('transform')		
 
 	else:
 		mc.error("The object " + crv + " passed to validateCurve() is not a curve")

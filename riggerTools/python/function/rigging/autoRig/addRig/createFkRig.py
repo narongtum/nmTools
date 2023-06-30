@@ -242,7 +242,7 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt'  ,'ear03LFT_tmpJnt')	,
 					charScale = ''	, priorJnt = 'head01_bJnt' 			,
 					side = 'LFT' ,ctrlShape = 'circle_ctrlShape'  , localWorld = False , 
-					color = 'red' , curlCtrl = False ,suffix = '_bJnt'	):
+					color = 'red' , curlCtrl = False ,suffix = '_bJnt' , useHierarchy = True	):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -258,6 +258,9 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 	zGrps = []
 	bJnts = []
 	ofGrps = []
+
+
+
 
 	# For loop in tmpJnt 
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
@@ -303,23 +306,55 @@ def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 		zGrps.append( zroGrp )
 		bJnts.append( bJnt )
 		ofGrps.append( offsetGrp )
+
+
+		'''
 		
-		if not  num  == 0:
-			zroGrp.parent( gmbls[ num -1] )
-			bJnt.parent( bJnts[ num -1] )
+		if not num == 0:
+			if useHierarchy == True:
+				zroGrp.parent( gmbls[ num -1] )
+				bJnt.parent( bJnts[ num -1] )
+			else:
+				zroGrp.parent( rigGrp )
 		else:
 			rigGrp.maSnap(bJnts[0])
 			zroGrp.parent( rigGrp )
+		'''
+
+		if useHierarchy == True:
+			if not num == 0:
+				print('\nERROROOEOROEO\n')
+				zroGrp.parent( gmbls[ num -1] )
+				bJnt.parent( bJnts[ num -1] )
+			else:
+				print('\nERROROOnERROROOEOROEOnERROROOEOROEOEOROEO\n')
+				rigGrp.maSnap(bJnts[0])
+				zroGrp.parent( rigGrp )
+
+		elif useHierarchy == False:
+			bJnt.parent( priorJnt )
+			zroGrp.parent( rigGrp )
 
 
+	if mc.objExists(parentTo):
+		if useHierarchy == True:	
+			if priorJnt :
+				rigGrp.parent( parentTo )
+				bJnts[0].parent( priorJnt )
+			else:
+				print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
+				print ('There are no joint arg return blind joint name: %s' %bJnts[0])
 
-		
-	if priorJnt :
-		rigGrp.parent( parentTo )
-		bJnts[0].parent( priorJnt )
+		elif useHierarchy == False:
+			rigGrp.parent( parentTo )
 	else:
-		print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
-		print ('There are no joint arg return blind joint name: %s' %bJnts[0])
+		if priorJnt == '':
+			pass
+		else:
+			print('\nERROROO_351351OEO\n')
+			bJnts[0].parent( priorJnt )
+
+
 		
 
 	# create local / world follwer arg #

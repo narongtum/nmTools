@@ -153,6 +153,13 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		result.parameterU.connect(pointOnSurface.parameterU)
 		result.parameterV.connect(pointOnSurface.parameterV)
 
+		# assign 'white color'
+		result.setAttr('overrideEnabled', 1)
+		result.setAttr('overrideColor', 16)
+
+
+
+
 
 
 		# Compose a 4x4 matrix

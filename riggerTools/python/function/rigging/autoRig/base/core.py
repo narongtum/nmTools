@@ -113,7 +113,7 @@ for each in sys.path:
 
 # =============================
 # Inheritence Example:
-# ex 1
+#... Example 1
 '''
 To use:
 
@@ -125,8 +125,7 @@ rig_grp.attr('size') >> still_grp.attr( 'sx' )
 '''
 
 
-
-# ex 2
+#... Example 2
 '''
 from function.rigging.autoRig.base import core
 reload(core)
@@ -141,13 +140,11 @@ cube.addAttribute(ln = 'size' , k = True , dv = 1)
 misc.autoSuffix( cube.name )
 
 
-# ex 3 how to use property
+#... Example 3 how to use property
 shape = self.shape
 
 
-
-
-# ex 4 
+#... Example 4 
 # Create COG controller
 name = 'cog'
 cog_ctrl = core.Dag(name + '_ctrl')
@@ -162,31 +159,32 @@ cogGmbl_ctrl.rotateOrder = 'xzy'
 neckJnt_parCons = core.parentConstraint( neckGmbl_ctrl , neck_bJnt )
 
 
-
-
-# ex 5
+#... Example 5
 rotateShape
 
 
-# ex 6 : create null grp
+#... Example 6 : create null grp
 rollBackAnkleIkZro_grp = core.Null( ctrlName + 'Aim' + side + 'Zro_grp' )
 
-# ex 7 : aim constraint
+
+#... Example 7 : aim constraint
 lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = False , aimVector = (0,1,0) ,upVector = (0,0,-1)  , worldUpObject = lowerUpObj_loc.name)
 
-# ex 7 : auto suffix
+
+#... Example 7 : auto suffix
 child = core.Null('Aimasdasda')
 child.suffix
 
 
-
-# ex 9 : parent
+#... Example 9 : parent
 upperLeg_bJnt.parent( priorJnt )
 
-# ex 10: Create node
+
+#... Example 10: Create node
 mul = core.MultiDoubleLinear('null1')
 
-# ex 11: Add attribute collection
+
+#... Example 11: Add attribute collection
 
 cube.addAttribute( at = 'enum', keyable = True , en = '###:', longName = 'Eye_preset'  )
 cube.addAttribute( at = 'enum', keyable = True , en = 'Green:Blue:Red', longName = 'rotate_Order'  )
@@ -198,61 +196,57 @@ stick_ctrl.addAttribute( longName = 'startFrame', defaultValue = 1 ,at = 'float'
 stick_ctrl.addAttribute( dataType = 'string' , longName = 'region')
 stick_ctrl.addAttribute( attributeType = 'bool' , longName = 'fkVis' , minValue = 0 , maxValue = 1 , defaultValue = 1 , keyable = True )
 
-# ex 12 :Set color
+
+#... Example 12 :Set color
 # gmblCtrl.color = 'white'
 # self.attr('rotateOrder')
 
-# ex 13 :Create zro grp
+
+#... Example 13 :Create zro grp
 # gmblCtrl.color = 'white'
 
-# ex 14 :lock and hide attr
+
+#... Example 14 :lock and hide attr
 # stick_ctrl.lockHideAttrLst( 'tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy' , 'sz' , 'v' )
 
 
-
-# ex 15 :set drawing override
+#... Example 15 :set drawing override
 self.attr( 'overrideEnabled' ).value = 1
-self.attr( 'overrideDisplayType' ).value = 2
+self.attr( 'overrideDisplayType' ).value = 0
+self.attr( 'overrideColor', 16) # assign white color to locator
 
 
-# ex 16 :set rotation order of specific controller
+#... Example 16 :set rotation order of specific controller
 cube = core.Dag('cube1')
 cube.nmCreateController('cube_ctrlShape')
 cube.addRotEnum('zxy')
 
 
-
-# ex 17 :create joint
+#... Example 17 :create joint
 a = core.Joint()
 a.name = 'asda'
 
 
-# ex 18 : set spcial volume
+#... Example 18 : set spcial volume
 a = core.Joint()
 a.name = 'asda'
 
 
-# ex 19 : create IK
+#... Example 19 : create IK
 twistAim_ikh = core.DoIk( startJoint = upperFollow01_jnt , endEffector = upperFollow02_jnt , solverType = 'ikRPsolver' )
 
 
-
-# ex 20 :  createJntShape
-
+#... Example 20 :  createJntShape
 some2 = core.Joint()
 some2.name = 'someName_jnt'
 some2.createJntShape(localScale = 4)
 
 
-# ex 21 :  ParentConstraint
+#... Example 21 :  ParentConstraint
 neckJnt_parCons = core.ParentConstraint( neckGmbl_ctrl , neck_bJnt ,mo=False, )
 
 
-
-
-
-
-# ex 22 :  Using Store data to node
+# Example 22 :  Using Store data to node
 from function.rigging.autoRig.base import core
 reload(core)
 
@@ -276,7 +270,7 @@ type(json_noman)
 
 
 
-# Add a double3 attribute named Eye_preset with children x, y and z
+#... Add a double3 attribute named Eye_preset with children x, y and z
 node = core.MetaClass(name='fread')
 node.addAttribute( at = 'double3', keyable = True, longName = 'Eye_preset'  )
 node.addAttribute( longName='x',at = 'double', parent = 'Eye_preset'  )
@@ -284,16 +278,26 @@ node.addAttribute( longName='y',at = 'double', parent = 'Eye_preset'  )
 node.addAttribute( longName='z',at = 'double', parent = 'Eye_preset'  )
 
 
-
-# Example 23 :  Using lock attr
+#... Example 23 :  Using lock attr
 parentConMatrix_meta = core.MetaGeneric('matCon')
 parentConMatrix_meta.attr('Base_Name').value = 'wp_ssr_miko'
 parentConMatrix_meta.setLocked('Base_Name')
 
-# Example 24: Link message
+
+#... Example 24: Link message
+metaNode = core.MetaGeneric('move_grp')
+metaNode.addAttribute( dataType = 'string' , longName = 'region')
+metaNode.addAttribute( attributeType = 'message' , longName = 'clavLFT_jnt')
+metaNode.addAttribute( attributeType = 'message' , longName = 'neck_jnt')
+joint.attr('message') >> hook_node.attr('upJnt')
+mc.connectAttr('head02_bJnt' + '.message', metaNode.name + '.clavLFT_jnt')
+mc.listConnections( metaNode.name + '.' + 'clavLFT_jnt')[0]
+mc.getAttr('hook.velocity')
+mc.getAttr('move_grp_meta.clavLFT_jnt')
+metaNode.attr('clavLFT_jnt').getMessage()
 
 
-# Example 25: SetAttribute
+#... Example 25: SetAttribute
 stick_ctrl.setAttribute('location'  , region , type = 'string')
 
 '''

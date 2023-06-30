@@ -56,7 +56,7 @@ THUMBNAIL_NAME		= 	'thumb.png'
 # DEPT_NAME 		= 	['Model', 'Rig']
 DEPT_NAME 			= 	['Model', 'Rig', 'Anim']
 # DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
-DEPT_EMPTY 			= 	['Commit','Texture', 'ConceptArt']
+DEPT_EMPTY 			= 	['Commit','Texture', 'ConceptArt','FBX']
 JOB_TEMPLATE 		= 	['Version', 'Data', 'Output', 'Commit', 'FBX']
 EXCLUDE_VIEW_ITEM 	= 	['data.json', THUMBNAIL_NAME, 'Commit']
 STATIC_FOLDER 		= 	['Content','Version','Commit']
@@ -138,7 +138,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_version_view_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
 
-		# Show context for local widget
+		#... Show context for global widget
+		self.asset_global_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.asset_global_listWidget.customContextMenuRequested.connect(self.handle_right_click_global_widget)
+
+		#... Show context for local widget
 		self.asset_local_view_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.asset_local_view_listWidget.customContextMenuRequested.connect(self.handle_right_click_local_widget)
 
@@ -147,10 +151,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
 		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
-		# Handle double click
+		#... Handle double click
 		self.asset_version_view_listWidget.itemDoubleClicked.connect(self.handle_double_click)
 
 		self.asset_local_view_listWidget.itemDoubleClicked.connect(self.handle_double_click_local_widget)
+
+		self.asset_global_listWidget.itemDoubleClicked.connect(self.handle_double_click_global_widget)
 
 		# Connect the function to the clicked signal button
 		self.asset_localCommit_BTN.clicked.connect(self.push_btn_local_publish)
@@ -173,6 +179,58 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		else:
 			FileManagerLog.debug('There are no extension ?.')
 			os.startfile(file_path)
+
+	#... Handle right click for global widget
+	def show_global_widget_explorer(self):
+		asset_path_text = self._get_full_path()		
+		full_path = os.path.join(asset_path_text, STATIC_FOLDER[2])
+		FileManagerLog.debug('this is new_folder_path: \t\t {0}'.format(full_path))
+		self._open_folder_path(full_path)
+
+	def handle_right_click_global_widget(self, position):
+		contextMenu = QtWidgets.QMenu(self)
+
+		#... Add show in Explorer
+		showInExplorer_action = QtWidgets.QAction("Show in Explorer", self)
+		# Link to method
+		showInExplorer_action.triggered.connect(self.show_global_widget_explorer)
+		contextMenu.addAction(showInExplorer_action)
+
+		#... Add Reference action
+		reference_action = QtWidgets.QAction("Reference selected this file...", self)
+		# Link to method
+		reference_action.triggered.connect(self.handle_reference_global_widget)
+		contextMenu.addAction(reference_action)
+
+		# Disconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_global_listWidget.customContextMenuRequested.disconnect(self.handle_right_click_global_widget)
+
+		contextMenu.exec_(self.asset_global_listWidget.mapToGlobal(position))
+
+		# Reconnect the signal-slot connection for the customContextMenuRequested signal
+		self.asset_global_listWidget.customContextMenuRequested.connect(self.handle_right_click_global_widget)
+
+
+	def handle_reference_global_widget(self):
+		file_path = self.get_deep_path_global_commit()
+		FileManagerLog.debug("Return file_path name: {0}".format(file_path) )
+		self.maya_reference(file_path)
+
+
+	def get_deep_path_global_commit(self):
+		asset_path_text = self._get_full_path()
+		# full_department_path = self._get_department_path()
+
+		global_commit = self.asset_global_listWidget.currentItem()
+		global_commit_text = global_commit.text()
+
+		full_path = os.path.join(asset_path_text, STATIC_FOLDER[2], global_commit_text)
+		full_path = os.path.normpath(full_path)
+
+		FileManagerLog.debug("Return full_path name: {0}".format(full_path) )
+		return full_path
+
+
 
 
 	def show_local_widget_explorer(self):
@@ -219,7 +277,26 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		file_path = self.get_deep_path_local_commit()
 		self.maya_reference(file_path)
 
+	def handle_double_click_global_widget(self):
+		#... Double click is mean open
+		full_path = self._get_full_path()
 
+		global_commit = self.asset_global_listWidget.currentItem()
+		global_commit_text = global_commit.text()
+
+		file_path = os.path.join(full_path, STATIC_FOLDER[2], global_commit_text)
+		file_path = os.path.normpath(file_path)
+
+		FileManagerLog.debug('This is file_path >>> {0}'.format(file_path))
+		#... Next try to open file
+
+		file_name, extension = os.path.splitext(file_path)
+
+		if extension == '.mb' or extension == '.ma':
+			self.maya_open(file_path)
+		else:
+			FileManagerLog.debug('File are no extension ?.')
+			os.startfile(file_path)
 
 
 	def handle_double_click_local_widget(self, item):
@@ -348,20 +425,105 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 													}
 			result = {}
 
+			# Try to find another method for list that include more '_' in name
+			current_index = self.asset_dir_TREEVIEW.currentIndex()
+			full_path = self.model.filePath(current_index)
+
+			full_path = os.path.normpath(full_path)
+
+			full_path = full_path.split('\\')
+			FileManagerLog.debug('\n\n\nGot full_path: {0}'.format(full_path))
+			department_text = self.asset_department_listWidget.currentItem().text()
+
+			if self.project_comboBox.currentText() in USE_VARIATION:
+				use_name = full_path[-2] + '_' + full_path[-1] + '_' + department_text + '_'	
+			else:
+				use_name = full_path[-1] + '_' + department_text + '_'
+
+			line_number = sys._getframe().f_lineno
+			FileManagerLog.debug('\nGot Result({1}): {0}'.format(full_path, line_number))
+			FileManagerLog.debug('Got use_name: {0}'.format(use_name))
+
+			
+			FileManagerLog.debug('Got Result: {0}\n\n\n'.format(department_text))
+
+
+			# filter out not proper name
+			filtered_list = [name for name in my_list if name.startswith(use_name)]
+
+			# Useing new condition
+			for element in filtered_list:
+
+				
+
+				# Replace with proper folder structer name
+				replace_name = element.replace(use_name,'')
+				replace_name = replace_name.split('.')
+
+				if len(replace_name) == 3:
+					name = replace_name[0]	
+					print(replace_name[0])
+
+					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
+					if name not in result or version > int(result[name][1]):
+						result[name] = [element, version]
+
+
+
+				else:
+					print('that not right')
+					continue
+
+
+				
+		
+			'''
+			# this condition is can't query step name that underscore more than one
+
 			for element in my_list:
 				# split name and extension using regular expression
 				# Warning !!! Weak condition
 				match = re.search(r'_(\w+)\.(\d+)\.ma$|\.mb$', element)
 				if match:
 					name = match.group(1)
+					# name = Lucille_01_Rig_skirt_some
+
+					# New condition
+					FileManagerLog.debug('Got Result match.group(1): {0}\n'.format(name))
+					FileManagerLog.debug('Got Result use_name: {0}'.format(use_name))
+					replace_name = name.replace(use_name,'')
+					
+					# name = replace_name
+					## replace this condition to another
+					# Old condition
 					name = name.split('_')[-1]
+					FileManagerLog.debug('I want this name same: {0}\n'.format(name))
+					FileManagerLog.debug('I want this replace_name same : {0}\n'.format(replace_name))
+
+					
+					
+
+
+
+
+
+
+
 					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
 					if name not in result or version > int(result[name][1]): # zfill later
 						# result[name] = [element, str(version).zfill(3)]
 						result[name] = [element, version]
+			'''
+
+
+
+
 			if result == {}:
 				FileManagerLog.debug('result_job_element_209_: {0}'.format('There are no right naming to Query'))
 				return False
+
+
+
 
 
 			for name in result:
@@ -406,10 +568,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			if selected_project in USE_VARIATION:
 
-				global_commit_name = global_path_list[-4] + '_' + global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+				global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
 
 			else:
-				global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+				global_commit_name = global_path_list[-2] + '_' + department_text
 
 
 			FileManagerLog.debug('\nThis is global_path ( {0} )'.format(global_path))
@@ -434,31 +596,31 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# Do global_commit_name	
 			if reply.clickedButton() == commit_button:
 
-				# 1. Delete 'delete_grp'
-				fileTools.doDeleteGrp()				
+				# 1.Procress manage scene
+				do_global_commit()			
 
-				# 2. Maya Save
+				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
 				self.maya_save(global_path, global_commit_name, MAYA_EXT)
 
-				# 3. Add SVN
+				# 3.Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
 
-				# 4. Commit SVN
+				# 4.Commit SVN
 				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
 
-				# 5. Update localWidget viewport
+				# 5.Update localWidget viewport
 				self.load_global_commit(global_path)
 
 			elif reply.clickedButton() == save_button:
-				# 1. Delete 'delete_grp'
-				fileTools.doDeleteGrp()
+				# 1.Procress manage scene
+				do_global_commit()
 
-				# 2. Maya Save
+				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
 				self.maya_save(global_path, global_commit_name, MAYA_EXT)
 
-				# 3. Update localWidget viewport
+				# 3.Update localWidget viewport
 				self.load_global_commit(global_path)
 
 			elif result == QMessageBox.Rejected:
@@ -550,10 +712,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Local commit action
 				if reply.clickedButton() == commit_button:
-					# 1. Do clean up scene
-					fileTools.doDeleteGrp()
-					fileTools.delete_unused_material()
-					fileTools.deleteDisplayLayer()
+					# 1. Procress manage scene
+					do_local_commit()
 
 					# 2. Maya Save
 					FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
@@ -569,10 +729,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					self.load_local_commit(full_path)
 
 				elif reply.clickedButton() == save_button:
-					# 1. Do clean up scene
-					fileTools.doDeleteGrp()
-					fileTools.delete_unused_material()
-					fileTools.deleteDisplayLayer()
+					# 1. Procress manage scene
+					do_local_commit()
 
 
 					# 2. Maya Save
@@ -1215,6 +1373,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def on_department_clicked(self, item):
 
+		# Clear viewport
+		self.asset_local_view_listWidget.clear()
+		self.asset_global_listWidget.clear()
+
 		# Get selected department
 		selected_item = self.asset_department_listWidget.currentItem()
 		# Return departments name
@@ -1226,6 +1388,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# self.handle_selected_path(asset_path)
 
 		version_folder = os.path.join(asset_path, department_text, 'Version')
+
+
+		#... Query to show asset at global widget
+		global_commit_folder = os.path.join(asset_path, 'Commit', )
+		#... If folder 'Commit' exist then continue
+		if os.path.exists(global_commit_folder):
+			self.load_global_commit(global_commit_folder)
+		else:
+			pass
+
 
 		### will shift to method #####
 		self.show_version_entite(version_folder)
@@ -1787,3 +1959,67 @@ class SvnMaya:
 
 		# Execute the command line
 		subprocess.run(command_line, shell=True)
+
+
+
+def do_local_commit():
+	ngSkin = mc.ls('ngSkinToolsData_*')
+	if ngSkin:
+		from ngSkinTools2.operations import removeLayerData
+		# remove all ngSkinTools custom nodes in a scene
+		removeLayerData.removeCustomNodes()
+		FileManagerLog.info('Delete ngSkinTools2...\n')
+	else:
+		FileManagerLog.info('There are no ngSkinTools skipped...\n')
+
+	# Remove unused ref
+	fileTools.remUnRef() 
+
+	# Import ref
+	fileTools.impRem()
+
+	# Delete layer
+	fileTools.deleteDisplayLayer()
+
+	# Add new method for re-organize group struture when publish
+	fileTools.doMoveGrp()
+
+	# Move node to target
+	fileTools.doDeleteGrp()	
+
+
+	#... delete '*_bak'
+	FileManagerLog.debug('Do Delete prefix.')
+
+	# Hide Root
+	# fileTools.doHideGrp( 'Root',0 )
+	# fileTools.doHideGrp( 'root',0 )
+
+	# count joint
+	fileTools.countJnt()
+
+	# Hold for now cause invalid
+	# fileTools.delete_unused_skin_suffix()
+
+	# fileTools.delete_unused_material() 
+
+	mc.select(deselect = True)
+
+
+def do_global_commit():
+	# Remove unused ref
+	fileTools.remUnRef()
+
+	# Import ref
+	fileTools.impRem()
+
+	# Hide Root
+	fileTools.doHideGrp( 'Root',0 )
+	fileTools.doHideGrp( 'root',0 )
+
+	# Move node to target
+	fileTools.doDeleteGrp()	
+
+	# Count joint
+	fileTools.countJnt()
+	mc.select(deselect = True)	

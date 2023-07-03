@@ -19,14 +19,6 @@ class Ui_MainWindow(object):
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1282, 616)
         MainWindow.setMinimumSize(QSize(1282, 616))
-        self.actionfunction_a = QAction(MainWindow)
-        self.actionfunction_a.setObjectName(u"actionfunction_a")
-        self.actionfunction_b = QAction(MainWindow)
-        self.actionfunction_b.setObjectName(u"actionfunction_b")
-        self.actionfunction_c = QAction(MainWindow)
-        self.actionfunction_c.setObjectName(u"actionfunction_c")
-        self.actionfunction_d = QAction(MainWindow)
-        self.actionfunction_d.setObjectName(u"actionfunction_d")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -100,27 +92,16 @@ class Ui_MainWindow(object):
 
         self.saveBar_horizontal.addItem(self.save_SPACE)
 
-        self.save_BTN = QPushButton(self.centralwidget)
-        self.save_BTN.setObjectName(u"save_BTN")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.save_BTN.sizePolicy().hasHeightForWidth())
-        self.save_BTN.setSizePolicy(sizePolicy3)
-        self.save_BTN.setMinimumSize(QSize(100, 50))
-
-        self.saveBar_horizontal.addWidget(self.save_BTN)
-
 
         self.gridLayout_2.addLayout(self.saveBar_horizontal, 3, 0, 1, 1)
 
         self.entite_TAB = QTabWidget(self.centralwidget)
         self.entite_TAB.setObjectName(u"entite_TAB")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.entite_TAB.sizePolicy().hasHeightForWidth())
-        self.entite_TAB.setSizePolicy(sizePolicy4)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.entite_TAB.sizePolicy().hasHeightForWidth())
+        self.entite_TAB.setSizePolicy(sizePolicy3)
         self.asset_TAB = QWidget()
         self.asset_TAB.setObjectName(u"asset_TAB")
         self.horizontalLayout_2 = QHBoxLayout(self.asset_TAB)
@@ -168,11 +149,11 @@ class Ui_MainWindow(object):
 
         self.asset_thumbnail_IMAGE_LABEL = QLabel(self.asset_TAB)
         self.asset_thumbnail_IMAGE_LABEL.setObjectName(u"asset_thumbnail_IMAGE_LABEL")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.asset_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
-        self.asset_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy5)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.asset_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
+        self.asset_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy4)
         self.asset_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 168))
         self.asset_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 168))
         self.asset_thumbnail_IMAGE_LABEL.setFrameShape(QFrame.WinPanel)
@@ -193,8 +174,8 @@ class Ui_MainWindow(object):
 
         self.assetInfo_list_listWidget = QListWidget(self.asset_TAB)
         self.assetInfo_list_listWidget.setObjectName(u"assetInfo_list_listWidget")
-        sizePolicy4.setHeightForWidth(self.assetInfo_list_listWidget.sizePolicy().hasHeightForWidth())
-        self.assetInfo_list_listWidget.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.assetInfo_list_listWidget.sizePolicy().hasHeightForWidth())
+        self.assetInfo_list_listWidget.setSizePolicy(sizePolicy3)
 
         self.asset_thumbnail_VTL.addWidget(self.assetInfo_list_listWidget)
 
@@ -211,11 +192,11 @@ class Ui_MainWindow(object):
 
         self.asset_global_listWidget = QListWidget(self.asset_TAB)
         self.asset_global_listWidget.setObjectName(u"asset_global_listWidget")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.asset_global_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_global_listWidget.setSizePolicy(sizePolicy6)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.asset_global_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_global_listWidget.setSizePolicy(sizePolicy5)
 
         self.asset_level_global_VTL.addWidget(self.asset_global_listWidget)
 
@@ -232,8 +213,8 @@ class Ui_MainWindow(object):
 
         self.asset_department_listWidget = QListWidget(self.asset_TAB)
         self.asset_department_listWidget.setObjectName(u"asset_department_listWidget")
-        sizePolicy4.setHeightForWidth(self.asset_department_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_department_listWidget.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.asset_department_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_department_listWidget.setSizePolicy(sizePolicy3)
 
         self.asset_level_global_VTL.addWidget(self.asset_department_listWidget)
 
@@ -250,8 +231,8 @@ class Ui_MainWindow(object):
 
         self.asset_local_view_listWidget = QListWidget(self.asset_TAB)
         self.asset_local_view_listWidget.setObjectName(u"asset_local_view_listWidget")
-        sizePolicy6.setHeightForWidth(self.asset_local_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_local_view_listWidget.setSizePolicy(sizePolicy6)
+        sizePolicy5.setHeightForWidth(self.asset_local_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_local_view_listWidget.setSizePolicy(sizePolicy5)
 
         self.asset_level_local_VTL.addWidget(self.asset_local_view_listWidget)
 
@@ -268,8 +249,8 @@ class Ui_MainWindow(object):
 
         self.asset_version_view_listWidget = QListWidget(self.asset_TAB)
         self.asset_version_view_listWidget.setObjectName(u"asset_version_view_listWidget")
-        sizePolicy4.setHeightForWidth(self.asset_version_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.asset_version_view_listWidget.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.asset_version_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.asset_version_view_listWidget.setSizePolicy(sizePolicy3)
 
         self.asset_level_local_VTL.addWidget(self.asset_version_view_listWidget)
 
@@ -330,8 +311,8 @@ class Ui_MainWindow(object):
 
         self.scene_thumbnail_IMAGE_LABEL = QLabel(self.scene_TAB)
         self.scene_thumbnail_IMAGE_LABEL.setObjectName(u"scene_thumbnail_IMAGE_LABEL")
-        sizePolicy5.setHeightForWidth(self.scene_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
-        self.scene_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy5)
+        sizePolicy4.setHeightForWidth(self.scene_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
+        self.scene_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy4)
         self.scene_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 128))
         self.scene_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 128))
         self.scene_thumbnail_IMAGE_LABEL.setLayoutDirection(Qt.LeftToRight)
@@ -353,8 +334,8 @@ class Ui_MainWindow(object):
 
         self.scene_Info_list_LISTWIDGET = QListWidget(self.scene_TAB)
         self.scene_Info_list_LISTWIDGET.setObjectName(u"scene_Info_list_LISTWIDGET")
-        sizePolicy4.setHeightForWidth(self.scene_Info_list_LISTWIDGET.sizePolicy().hasHeightForWidth())
-        self.scene_Info_list_LISTWIDGET.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.scene_Info_list_LISTWIDGET.sizePolicy().hasHeightForWidth())
+        self.scene_Info_list_LISTWIDGET.setSizePolicy(sizePolicy3)
 
         self.scene_thmbnail_VTL.addWidget(self.scene_Info_list_LISTWIDGET)
 
@@ -371,8 +352,8 @@ class Ui_MainWindow(object):
 
         self.scene_global_listWidget = QListWidget(self.scene_TAB)
         self.scene_global_listWidget.setObjectName(u"scene_global_listWidget")
-        sizePolicy6.setHeightForWidth(self.scene_global_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_global_listWidget.setSizePolicy(sizePolicy6)
+        sizePolicy5.setHeightForWidth(self.scene_global_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_global_listWidget.setSizePolicy(sizePolicy5)
 
         self.scene_departmentLib_VTL.addWidget(self.scene_global_listWidget)
 
@@ -389,8 +370,8 @@ class Ui_MainWindow(object):
 
         self.scene_department_listWidget = QListWidget(self.scene_TAB)
         self.scene_department_listWidget.setObjectName(u"scene_department_listWidget")
-        sizePolicy4.setHeightForWidth(self.scene_department_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_department_listWidget.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.scene_department_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_department_listWidget.setSizePolicy(sizePolicy3)
 
         self.scene_departmentLib_VTL.addWidget(self.scene_department_listWidget)
 
@@ -407,8 +388,8 @@ class Ui_MainWindow(object):
 
         self.scene_local_view_listWidget = QListWidget(self.scene_TAB)
         self.scene_local_view_listWidget.setObjectName(u"scene_local_view_listWidget")
-        sizePolicy6.setHeightForWidth(self.scene_local_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_local_view_listWidget.setSizePolicy(sizePolicy6)
+        sizePolicy5.setHeightForWidth(self.scene_local_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_local_view_listWidget.setSizePolicy(sizePolicy5)
 
         self.scene_locallib_VTL.addWidget(self.scene_local_view_listWidget)
 
@@ -425,8 +406,8 @@ class Ui_MainWindow(object):
 
         self.scene_version_view_listWidget = QListWidget(self.scene_TAB)
         self.scene_version_view_listWidget.setObjectName(u"scene_version_view_listWidget")
-        sizePolicy4.setHeightForWidth(self.scene_version_view_listWidget.sizePolicy().hasHeightForWidth())
-        self.scene_version_view_listWidget.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.scene_version_view_listWidget.sizePolicy().hasHeightForWidth())
+        self.scene_version_view_listWidget.setSizePolicy(sizePolicy3)
 
         self.scene_locallib_VTL.addWidget(self.scene_version_view_listWidget)
 
@@ -448,21 +429,17 @@ class Ui_MainWindow(object):
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QRect(0, 0, 1282, 21))
-        self.menu_FILE = QMenu(self.menubar)
-        self.menu_FILE.setObjectName(u"menu_FILE")
-        self.menu_TOOLS = QMenu(self.menubar)
-        self.menu_TOOLS.setObjectName(u"menu_TOOLS")
+        self.menuFile = QMenu(self.menubar)
+        self.menuFile.setObjectName(u"menuFile")
+        self.menuTools = QMenu(self.menubar)
+        self.menuTools.setObjectName(u"menuTools")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.menubar.addAction(self.menu_FILE.menuAction())
-        self.menubar.addAction(self.menu_TOOLS.menuAction())
-        self.menu_FILE.addAction(self.actionfunction_a)
-        self.menu_FILE.addAction(self.actionfunction_b)
-        self.menu_TOOLS.addAction(self.actionfunction_c)
-        self.menu_TOOLS.addAction(self.actionfunction_d)
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuTools.menuAction())
 
         self.retranslateUi(MainWindow)
 
@@ -474,17 +451,12 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"FileManager", None))
-        self.actionfunction_a.setText(QCoreApplication.translate("MainWindow", u"function_a", None))
-        self.actionfunction_b.setText(QCoreApplication.translate("MainWindow", u"function_b", None))
-        self.actionfunction_c.setText(QCoreApplication.translate("MainWindow", u"function_c", None))
-        self.actionfunction_d.setText(QCoreApplication.translate("MainWindow", u"function_d", None))
         self.drive_label.setText(QCoreApplication.translate("MainWindow", u"Drive", None))
         self.project_label.setText(QCoreApplication.translate("MainWindow", u"Project", None))
-        self.save_BTN.setText(QCoreApplication.translate("MainWindow", u"Save", None))
         self.asset_filter_text_label.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.asset_thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
         self.asset_thumbnail_IMAGE_LABEL.setText("")
-        self.AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"AssetInfo", None))
+        self.AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"Asset Info", None))
         self.asset_global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
         self.asset_commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
         self.asset_department_label.setText(QCoreApplication.translate("MainWindow", u"Department", None))
@@ -503,7 +475,7 @@ class Ui_MainWindow(object):
         self.scene_localCommit_BTN.setText(QCoreApplication.translate("MainWindow", u"Local Publish", None))
         self.scene_version_label_TXT.setText(QCoreApplication.translate("MainWindow", u"Version", None))
         self.entite_TAB.setTabText(self.entite_TAB.indexOf(self.scene_TAB), QCoreApplication.translate("MainWindow", u"Scene", None))
-        self.menu_FILE.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
-        self.menu_TOOLS.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
+        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
     # retranslateUi
 

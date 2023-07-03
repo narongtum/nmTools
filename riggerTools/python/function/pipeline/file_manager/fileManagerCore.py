@@ -8,6 +8,7 @@ from function.pipeline.file_manager.file_manager_ui import fileManagerMainUI
 from PySide2.QtWidgets import QApplication, QListWidget, QListWidgetItem, QMenu, QInputDialog, QMessageBox
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtCore import QDir, QSortFilterProxyModel
 
 import subprocess
 import sys
@@ -1029,9 +1030,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('({1})THIS IS save_full_path: {0}'.format(save_full_path,line_number)) 
 		self.maya_save(save_path, new_file_name, MAYA_EXT)
 
-		# To refresh version viewport
+		#... To refresh version viewport
 		self.asset_version_view_listWidget.clear()
-		# Update version listWidget viewport
+		#... Update version listWidget viewport
 		self.show_version_entite(version_folder_path)
 
 		FileManagerLog.debug('File saving at: {0}'.format(save_full_path)) 
@@ -1308,10 +1309,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_global_listWidget.clear()
 		self.asset_department_listWidget.clear()
 		self.asset_version_view_listWidget.clear()
+		self.assetInfo_list_listWidget.clear()
+
 
 		# Get the file name and path from the model
 		file_path = self.model.filePath(index)
 		FileManagerLog.debug('This is file path {0}'.format(file_path))
+
+
+
 
 		#  Checks if the item is a file or not.
 		if os.path.isfile(file_path):
@@ -1328,6 +1334,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.debug('That is "ASSET" we looking for.')
 				self.load_asset_departments(file_path)
 
+				
 				# If folder 'Commit' exist then continue
 				global_commit_folder = os.path.join(file_path, 'Commit')
 
@@ -1342,6 +1349,34 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				if self.asset_dir_TREEVIEW.isExpanded(index):
 					self.asset_dir_TREEVIEW.setExpanded(index, False)
 					FileManagerLog.debug('Please do not expanded.')
+
+				#... show data json file to widget
+				with open(data_file, "r") as file:
+					json_data = json.load(file)
+
+				self.assetInfo_list_listWidget.addItem(json_data['comment'])
+
+
+			#... Fail for now
+			# #... Make filter Start
+			# filter_text = self.asset_filter_lineEdit.text()
+
+			# proxy_model = QSortFilterProxyModel()
+			# proxy_model.setSourceModel(self.model)
+
+			# proxy_model.setFilterRegExp(filter_text)
+			# proxy_model.setFilterKeyColumn(0)
+
+			# #... Set the proxy model on the asset_dir_TREEVIEW
+			# self.asset_dir_TREEVIEW.setModel(proxy_model)
+
+
+			# #... Set the root index to show the filtered results
+			# root_index = self.asset_dir_TREEVIEW.model().index(QDir.currentPath())
+			# self.asset_dir_TREEVIEW.setRootIndex(root_index)
+
+			# #... Make filter End
+
 				
 			
 			'''
@@ -1362,6 +1397,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				else:
 					FileManagerLog.debug('There must be normal folder')
 			'''
+
 			
 
 

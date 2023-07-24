@@ -2466,16 +2466,22 @@ class Nurb( Dag ):
 
 class Locator( Dag ):
 	""" Create Locator Object """
-	def __init__( self , name ):
+	def __init__( self, name, lock = False, scale = 1 ):
 		Dag.__init__( self , mc.spaceLocator(name = name)[0] )
-		# lock drawing override
+		#... lock drawing override
+		
 		# this lock is cause problem that child will can not select
-		# self.attr( 'overrideEnabled' ).value = 1
-		# self.attr( 'overrideDisplayType' ).value = 2
-
-
-
-
+		if lock:
+			locShape = Dag(self.shape)	
+			locShape.attr( 'overrideDisplayType' ).value = 1
+			locShape.attr( 'overrideEnabled' ).value = 1
+			locShape.attr( 'overrideColor' ).value = 16
+			locShape.attr('localScaleX').value = scale*0.25
+			locShape.attr('localScaleY').value = scale*0.25
+			locShape.attr('localScaleZ').value = scale*0.25
+		#... assign 'white color'
+		# self.setAttr('overrideEnabled', 1)
+		
 
 
 

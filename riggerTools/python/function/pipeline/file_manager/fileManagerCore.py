@@ -68,6 +68,43 @@ USE_VARIATION 		= 	('P_Regulus')
 SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
 
 
+
+class FilterProxyModel(QtCore.QSortFilterProxyModel):
+	def __init__(self, parent=None):
+		super(FilterProxyModel, self).__init__(parent)
+		self._pattern = ""
+
+	@property
+	def pattern(self):
+		return self._pattern
+
+	@pattern.setter
+	def pattern(self, value):
+		self._pattern = value
+		self.invalidateFilter()
+
+	def filterAcceptsRow(self, sourceRow, sourceParent):
+		if not self.pattern:
+			return True
+
+		sourceModel = self.sourceModel()
+		index = sourceModel.index(sourceRow, 0, sourceParent)
+		filePath = sourceModel.filePath(index)
+		fileName = sourceModel.fileName(index)
+
+		if self.pattern.lower() in fileName.lower():
+			return True
+
+		if sourceModel.isDir(index):
+			childCount = sourceModel.rowCount(index)
+			for i in range(childCount):
+				if self.filterAcceptsRow(i, index):
+					return True
+
+		return False
+
+
+
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
 		super(FileManager, self).__init__()
@@ -80,11 +117,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		
 
 
-
-		# # initializing model and populate the tree view
-		self.model = QtWidgets.QFileSystemModel()
-		self.model.setRootPath(self.path)
-		self.asset_dir_TREEVIEW.setModel(self.model)
 		# self.check_exists_maya()
 
 
@@ -100,7 +132,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('Set default project...')
 		self.drive_comboBox.setCurrentText(DRIVES[0])
 		self.project_comboBox.setCurrentText(DEFAULT_PROJECT)
-
 
 
 		selected_project = self.project_comboBox.currentText()
@@ -165,7 +196,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
 
-
+	def filter_model(self, text):
+		self.proxyModel.pattern = text
+		
 	def handle_double_click(self, item):
 		# Double click is mean open
 		file_path = self.get_deep_path()
@@ -1627,7 +1660,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def populate_treeView(self):
 
-
+		# # initializing model and populate the tree view
+		self.model = QtWidgets.QFileSystemModel()
+		self.model.setRootPath(self.path)
+		self.asset_dir_TREEVIEW.setModel(self.model)
 
 		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
 		# Update the `self.path` variable whenever the user selects a new project

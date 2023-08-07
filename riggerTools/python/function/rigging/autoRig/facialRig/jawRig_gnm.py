@@ -1,3 +1,5 @@
+#... explain seal mouth 08_16:47
+
 import maya.cmds as mc
 import sys
 
@@ -190,7 +192,14 @@ def createJawBase():
 	print(jaw_inverse_jnt)
 	addOffset(jaw_inverse_jnt, suffix='OFF')
 	mc.select(cl=True)
+
+	addOffset(jaw_jnt, suffix='AUTO')
+	addOffset(jaw_inverse_jnt, suffix='AUTO')
+
 	print('error mai')
+
+
+
 
 
 #... 05 Main Connections And Acces Methods (Start)
@@ -348,6 +357,9 @@ def createJawAttrs():
 	mc.addAttr(node, ln=sorted(getLipParts()['C_lower'].keys())[0], min=0, max=1, dv=0)
 	mc.setAttr('{}.{}'.format(node, sorted(getLipParts()['C_lower'].keys())[0]), lock=1)
 
+	createOffsetFollow()
+	addSealAttr()
+
 
 # 07 Minor Connections And Initial Values
 
@@ -407,14 +419,71 @@ def createConstraints():
 				const = mc.parentConstraint(broad_jnt, lip_jnt, mo=True)[0]
 				mc.setAttr('{}.interpType'.format(const), 2)
 
+				#... 07 Minor Connections And Initial Values(20:40)
 
 
 
 
+def createIntialValues(part, degree=1.3):
+	jaw_attr = [part for part in lipPart(part) if not part.startswith('C') and not part.startswith('R') ]
+	value = len(jaw_attr)
+
+
+	for index, attr_name in enumerate(jaw_attr[::-1]):
+		attr = 'jaw_attributes.{}'.format(attr_name)
+
+		linear_value = float(index) / float(value-1)
+
+		
+
+		div_value = linear_value / degree
+		final_value = div_value * linear_value
+
+		mc.setAttr(attr, final_value)
+
+#... END of 07 Minor Connections And Initial Values
 
 
 
+#... START of 08 Connect Seal Part 1
+def createOffsetFollow():
+	jaw_attr = 'jaw_attributes'
+	jaw_joint = '{}_{}_{}'.format(CENTER, JAW, JOINT)
+	jaw_auto = '{}_{}_{}_AUTO'.format(CENTER, JAW, JOINT)
 
+	#.. add follow attrbutes
+	mc.addAttr(jaw_attr, ln='follow_ty', min=-10, max=10, dv=0)
+	mc.addAttr(jaw_attr, ln='follow_tz', min=-10, max=10, dv=0)
+
+	unit = mc.createNode('unitConversion', name = '{}_{}_follow_UNIT'.format(CENTER, JAW))
+
+	remap_y = mc.createNode('remapValue', name='{}_{}_followY_REMAP'.format(CENTER, JAW))
+	mc.setAttr('{}.inputMax'.format(remap_y), 1)
+
+	remap_z = mc.createNode('remapValue', name='{}_{}_followY_REMAP'.format(CENTER, JAW))
+	mc.setAttr('{}.inputMax'.format(remap_z), 1)
+
+	mult_y = mc.createNode('multDoubleLinear', name='{}_{}_follow_MULT'.format(CENTER, JAW))
+	mc.setAttr('{}.input2'.format(mult_y), -1)
+
+	mc.connectAttr('{}.rx'.format(jaw_joint), '{}.input'.format(unit))
+	mc.connectAttr('{}.output'.format(unit), '{}.inputValue'.format(remap_y))
+	mc.connectAttr('{}.output'.format(unit), '{}.inputValue'.format(remap_z))
+
+	mc.connectAttr('{}.follow_ty'.format(jaw_attr), '{}.input1'.format(mult_y))
+	mc.connectAttr('{}.follow_tz'.format(jaw_attr), '{}.outputMax'.format(remap_z))
+	mc.connectAttr('{}.output'.format(mult_y), '{}.outputMax'.format(remap_y))
+
+	mc.connectAttr('{}.outValue'.format(remap_y), '{}.ty'.format(jaw_auto))
+	mc.connectAttr('{}.outValue'.format(remap_z), '{}.tz'.format(jaw_auto))
+
+#... create seal feature
+def addSealAttr():
+	mc.addAttr(jaw_attr, at='double', ln='L_seal', min=0, max=10, dv=0 )
+	mc.addAttr(jaw_attr, at='double', ln='R_seal', min=0, max=10, dv=0 )
+
+	mc.addAttr(jaw_attr, at='double', ln='L_seal_delay', min=0, max=10, dv=4 )
+	mc.addAttr(jaw_attr, at='double', ln='R_seal_delay', min=0, max=10, dv=4 )
 
 # Call the function to create guides with default values
 #createGuides()
@@ -422,7 +491,7 @@ def createConstraints():
 #jaw_guides()
 
 #... create template
-createGuides()
+createGuides(number=9)
 
 createHierarchy()
 createMinorJoints()
@@ -433,3 +502,9 @@ createSeal('lower')
 createSeal('upper')
 createJawAttrs()
 createConstraints()
+createIntialValues('upper')
+createIntialValues('lower')
+
+#... set intial value for make smooth shape
+#... get all the Left part
+

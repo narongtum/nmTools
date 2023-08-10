@@ -277,17 +277,17 @@ def openCurrentMayaDir():
 			fileType = 'mayaBinary'
 			
 		# Must convert slashes before calling to the mel:
-		# mel.eval('addRecentFile("%s", "%s")'%(myPath.replace('\\', '/'), fileType)) # not work
+		mel.eval('addRecentFile("%s", "%s")'%(myPath.replace('\\', '/'), fileType)) # not work
 
 		
-		recent_files = mc.optionVar(q='RecentFilesList')
-		if not recent_files:
-			recent_files = []
-		myPathList = [myPath.replace('\\', '/')]  
-		recent_files.insert(0, myPathList)
-		mc.optionVar(sv=('RecentFilesList', ';'.join(recent_files)))
-		mc.optionVar(sv=('defaultRecentFileType', fileType))
-		fileToolsLogger.info('\nsaving recent file...')
+		# recent_files = mc.optionVar(q='RecentFilesList')
+		# if not recent_files:
+		# 	recent_files = []
+		# myPathList = [myPath.replace('\\', '/')]  
+		# recent_files.insert(0, myPathList)
+		# mc.optionVar(sv=('RecentFilesList', ';'.join(recent_files)))
+		# mc.optionVar(sv=('defaultRecentFileType', fileType))
+		# fileToolsLogger.info('\nsaving recent file...')
 		
 
 

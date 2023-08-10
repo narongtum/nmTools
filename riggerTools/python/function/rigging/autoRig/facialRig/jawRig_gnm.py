@@ -1,4 +1,4 @@
-#... explain seal mouth 08_16:47
+
 
 import maya.cmds as mc
 import sys
@@ -91,7 +91,7 @@ def createGuides(number=5):
 
 def lip_guides():
 	grp = '{}_lipMinor_{}_{}_{}'.format(CENTER, JAW, GUIDE, GROUP)
-	guides = list()
+	guides = []
 	#guides = [loc for loc in mc.listRelatives(grp) if mc.objExists(grp)]
 	if mc.objExists(grp):
 		for loc in mc.listRelatives(grp):
@@ -128,7 +128,7 @@ def createHierarchy():
 #... create minor joint
 def createMinorJoints():
 	#... create joint along locator
-	minor_joints = list()
+	minor_joints = []
 	for guide in lip_guides():
 		mat = mc.xform(guide, q=True, m=True, ws=True)
 		jnt = mc.joint(name = guide.replace(GUIDE, JOINT))
@@ -460,7 +460,7 @@ def createOffsetFollow():
 	remap_y = mc.createNode('remapValue', name='{}_{}_followY_REMAP'.format(CENTER, JAW))
 	mc.setAttr('{}.inputMax'.format(remap_y), 1)
 
-	remap_z = mc.createNode('remapValue', name='{}_{}_followY_REMAP'.format(CENTER, JAW))
+	remap_z = mc.createNode('remapValue', name='{}_{}_followZ_REMAP'.format(CENTER, JAW))
 	mc.setAttr('{}.inputMax'.format(remap_z), 1)
 
 	mult_y = mc.createNode('multDoubleLinear', name='{}_{}_follow_MULT'.format(CENTER, JAW))
@@ -479,11 +479,152 @@ def createOffsetFollow():
 
 #... create seal feature
 def addSealAttr():
+	jaw_attr = 'jaw_attributes'
 	mc.addAttr(jaw_attr, at='double', ln='L_seal', min=0, max=10, dv=0 )
 	mc.addAttr(jaw_attr, at='double', ln='R_seal', min=0, max=10, dv=0 )
 
 	mc.addAttr(jaw_attr, at='double', ln='L_seal_delay', min=0, max=10, dv=4 )
 	mc.addAttr(jaw_attr, at='double', ln='R_seal_delay', min=0, max=10, dv=4 )
+
+
+
+
+
+def connectSeal(part):
+
+	seal_token = 'seal_{}'.format(part)
+
+	jaw_attrs = 'jaw_attributes'
+
+	lip_jnts = lipPart(part)
+
+	value = len(lip_jnts)
+	seal_driver = mc.createNode('lightInfo', name='C_{}_DRV'.format(seal_token))
+
+	triggers = {'L': [], 'R':[]}
+
+	for side in 'LR':
+		#... get falloff
+		delay_sub_name = '{}_{}_delay_SUB'.format(side, seal_token) 							
+		delay_sub = mc.createNode('plusMinusAverage', name= delay_sub_name) 					
+
+		mc.setAttr('{}.operation'.format(delay_sub), 2)											
+		mc.setAttr('{}.input1D[0]'.format(delay_sub), 10)										
+		mc.connectAttr('{}.{}_seal_delay'.format(jaw_attrs, side), '{}.input1D[1]'.format(delay_sub))	#.... link value from jaw_attrs grp
+
+		lerp = 1 / float(value-1)	
+
+		delay_div_name = '{}_{}_delay_DIV'.format(side, seal_token)						
+		delay_div = mc.createNode('multDoubleLinear', name = delay_div_name)			
+		mc.setAttr('{}.input2'.format(delay_div), lerp)	
+		mc.connectAttr('{}.output1D'.format(delay_sub), '{}.input1'.format(delay_div))	
+
+		mult_triggers = []	
+		sub_triggers = []	
+		triggers[side].append(mult_triggers)	
+		triggers[side].append(sub_triggers)		
+
+		for index in range(value):
+			index_name = 'jaw_{:02d}'.format(index)
+
+			#... create MULT node
+			delay_mult_name = '{}_{}_{}_delay_MULT'.format(index_name, side, seal_token)		
+			delay_mult = mc.createNode('multDoubleLinear', name=delay_mult_name)				
+			mc.setAttr('{}.input1'.format(delay_mult), index)									
+			mc.connectAttr('{}.output'.format(delay_div), '{}.input2'.format(delay_mult))		
+
+			mult_triggers.append(delay_mult)													
+
+			#... create SUB node
+			delay_sub_name = '{}_{}_{}_delay_SUB'.format(index_name, side, seal_token)			
+			delay_sub = mc.createNode('plusMinusAverage', name=delay_sub_name)					
+			mc.connectAttr('{}.output'.format(delay_mult), '{}.input1D[0]'.format(delay_sub))			
+			mc.connectAttr('{}.{}_seal_delay'.format(jaw_attrs, side), '{}.input1D[1]'.format(delay_sub))		
+
+			sub_triggers.append(delay_sub)														
+
+			# 09_[12:55]
+			
+	num_spans = value #... not sure num_spans is
+
+
+	#... store psCons name
+	const_targets = [] 
+	for jnt in lip_jnts: 
+		attrs=mc.listAttr('{}_parentConstraint1'.format(jnt), ud=True) 
+		for attr in attrs: 
+			if 'SEAL' in attr: 
+				const_targets.append('{}_parentConstraint1.{}'.format(jnt, attr)) 
+
+
+	#... beyond this is very complex
+	#... connect seal trigger to driver node
+	for left_index, const_target in enumerate(const_targets):	
+		right_index = num_spans - left_index -1					
+		index_name = '{}_{}'.format(seal_token, left_index)
+
+
+		#... store value to dict [0] is MULT, [1] is SUB
+		l_mult_trigger, l_sub_trigger = triggers['L'][0][left_index], triggers['L'][1][left_index]		
+		r_mult_trigger, r_sub_trigger = triggers['R'][0][right_index], triggers['R'][1][right_index]	
+
+
+		#... LFET
+		l_remap_name = 'L_{}_{}_REMAP'.format(seal_token, index_name)						
+		l_remap = mc.createNode('remapValue', name = l_remap_name)							
+		mc.setAttr('{}.outputMax'.format(l_remap), 1)										
+		mc.setAttr('{}.value[0].value_Interp'.format(l_remap), 2)							
+
+		mc.connectAttr('{}.output'.format(l_mult_trigger), '{}.inputMin'.format(l_remap))			
+		mc.connectAttr('{}.output1D'.format(l_sub_trigger), '{}.inputMax'.format(l_remap))			
+
+		#... connect left seal attribure to input of remap
+		mc.connectAttr('{}.L_seal'.format(jaw_attrs), '{}.inputValue'.format(l_remap))		
+
+		#... RIGHT
+		# substract 1 minus result from left remap
+
+		r_sub_name = 'R_{}_offset_{}_SUB'.format(seal_token, index_name)	
+		r_sub = mc.createNode('plusMinusAverage', name=r_sub_name)			
+		mc.setAttr('{}.input1D[0]'.format(r_sub), 1)						
+		mc.setAttr('{}.operation'.format(r_sub), 2)							
+
+		mc.connectAttr('{}.outValue'.format(l_remap), '{}.input1D[1]'.format(r_sub))	#...change [0] to [1]
+
+		r_remap_name = 'R_{}_{}_REMAP'.format(seal_token, index_name)				
+		r_remap = mc.createNode('remapValue', name = r_remap_name)					
+		mc.setAttr('{}.outputMax'.format(r_remap), 1) 								
+		mc.setAttr('{}.value[0].value_Interp'.format(r_remap), 2)					
+
+		mc.connectAttr('{}.output'.format(r_mult_trigger), '{}.inputMin'.format(r_remap))	
+		mc.connectAttr('{}.output1D'.format(r_sub_trigger), '{}.inputMax'.format(r_remap))	
+
+		#... connect left seal attribure to input of remap
+		mc.connectAttr('{}.R_seal'.format(jaw_attrs), '{}.inputValue'.format(r_remap)) 
+		
+		mc.connectAttr('{}.output1D'.format(r_sub), '{}.outputMax'.format(r_remap))# if remove this line the R_zip will work
+		# mc.connectAttr('{}.output1D'.format(r_sub), '{}.inputMin'.format(r_remap))
+		print('{}.output1D'.format(r_sub), '{}.outputMax'.format(r_remap))
+
+
+
+		#... final addition for both side
+		plus_name = '{}_SUM'.format(index_name)
+		plus = mc.createNode('plusMinusAverage', name=plus_name)
+
+		mc.connectAttr('{}.outValue'.format(l_remap), '{}.input1D[0]'.format(plus))
+		mc.connectAttr('{}.outValue'.format(r_remap), '{}.input1D[1]'.format(plus))
+
+		clamp_name = '{}_CLAMP'.format(index_name)
+		clamp = mc.createNode('remapValue', name=clamp_name)
+		mc.connectAttr('{}.output1D'.format(plus), '{}.inputValue'.format(clamp))
+
+		mc.addAttr(seal_driver, at='double', ln=index_name, min=0, max=1, dv=0)
+		mc.connectAttr('{}.outValue'.format(clamp), '{}.{}'.format(seal_driver, index_name))
+
+		mc.connectAttr('{}.{}'.format(seal_driver, index_name), const_target)
+		print('End of function')
+		# 09_[30:00]
 
 # Call the function to create guides with default values
 #createGuides()
@@ -491,7 +632,7 @@ def addSealAttr():
 #jaw_guides()
 
 #... create template
-createGuides(number=9)
+#createGuides(number=8)
 
 createHierarchy()
 createMinorJoints()
@@ -504,7 +645,68 @@ createJawAttrs()
 createConstraints()
 createIntialValues('upper')
 createIntialValues('lower')
+connectSeal('upper')
+connectSeal('lower')
 
 #... set intial value for make smooth shape
 #... get all the Left part
+#... explain seal mouth 08_16:47
 
+
+
+def createJawPin():
+	pin_driver = mc.createNode('lightInfo', name='{}_pin_DRV'.format(CENTER))
+	jaw_attr = 'jaw_attributes'
+
+	for side in 'LR':
+		
+
+		mc.addAttr(jaw_attr, at='bool', ln='{}_auto_corner_pin'.format(side))
+		mc.addAttr(jaw_attr, at='double', ln='{}_corner_pin'.format(side), min=-10, max=10, dv=0)
+		mc.addAttr(jaw_attr, at='double', ln='{}_input_ty'.format(side), min=-10, max=10, dv=0)
+
+		#... create clamp and connect the input_ty
+		clamp = mc.createNode('clamp', name='{}_corner_pin_auto_CLAMP'.format(side))
+		mc.setAttr('{}.minR'.format(clamp), -10)
+		mc.setAttr('{}.maxR'.format(clamp), 10)
+
+		mc.connectAttr('{}.{}_input_ty'.format(jaw_attr, side), '{}.inputR'.format(clamp))
+
+		#... create the condition for the two sernario
+		cnd = mc.createNode('condition', name='{}_corner_pin_auto_CND'.format(side))
+		mc.setAttr('{}.operation'.format(cnd), 0)
+		mc.setAttr('{}.secondTerm'.format(cnd), 1)
+
+		mc.connectAttr('{}.{}_auto_corner_pin'.format(jaw_attr, side), '{}.firstTerm'.format(cnd))
+		mc.connectAttr('{}.outputR'.format(clamp), '{}.colorIfTrueR'.format(cnd))
+		mc.connectAttr('{}.{}_corner_pin'.format(jaw_attr, side), '{}.colorIfFalseR'.format(cnd))
+
+		#... create addtion
+		plus = mc.createNode('plusMinusAverage', name='{}_corner_pin_auto_PLUS'.format(side))
+		mc.setAttr('{}.input1D[1]'.format(plus), 10)
+		mc.connectAttr('{}.outColorR'.format(cnd), '{}.input1D[0]'.format(plus))
+
+		#... create division
+		div = mc.createNode('multDoubleLinear', name='{}_corner_pin_DIV'.format(side))
+		mc.setAttr('{}.input2'.format(div), 0.05)
+		mc.connectAttr('{}.output1D'.format(plus), '{}.input1'.format(div))
+
+		#... add final attributes to the driver node
+		mc.addAttr(pin_driver, at='double', ln='{}_pin'.format(side), min=0, max=1, dv=0)
+		mc.connectAttr('{}.output'.format(div), '{}.{}_pin'.format(pin_driver, side))
+		# [10_18:00]
+
+		#... connect driver to broad joint constraint targets
+		const_pin_up = '{}_jaw_broadCorner_JNT_OFF_parentConstraint1.C_jaw_broadUpper_JNT_OFFW0'.format(side)
+		const_pin_down = '{}_jaw_broadCorner_JNT_OFF_parentConstraint1.C_jaw_broadLower_JNT_OFFW1'.format(side)
+
+		mc.connectAttr('{}.{}_pin'.format(pin_driver, side), const_pin_up)
+
+		rev = mc.createNode('reverse', name='{}_corner_pin_REV'.format(side))
+		mc.connectAttr('{}.{}_pin'.format(pin_driver, side), '{}.inputX'.format(rev))
+		mc.connectAttr('{}.outputX'.format(rev), const_pin_down)
+
+
+
+
+#createJawPin()

@@ -1,10 +1,10 @@
-# generate blendshape 
-# ref from jin joe
-# create facialBshBase_grp first
+#... generate blendshape 
 
-# already in build
-# from function.rigging.blendShape import generate_blendShape as bshTools
-# reload(bshTools)
+
+#... 1. cut head poly name it  "facialBase_ply"
+#... 2. to the grp name it "facialBshBase_grp"
+#... 3. exe this function 
+
 
 import maya.cmds as mc
 
@@ -15,8 +15,6 @@ import pprint
 
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
-
-
 
 
 

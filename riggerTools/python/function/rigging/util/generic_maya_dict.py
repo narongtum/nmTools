@@ -98,7 +98,8 @@ COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 				'black'     : 1 ,           'gray'          : 2 ,
 				'softGray'  : 3 ,           'darkRed'       : 4 ,
 				'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
-				'green'     : 14 ,          'none'          : 0     }
+				'green'     : 14 ,          'softBlue'      : 18 ,
+				'none'      : 0     }
 
 
 # for arg message in arm and leg function

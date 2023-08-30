@@ -227,11 +227,6 @@ a = core.Joint()
 a.name = 'asda'
 
 
-#... Example 18 : set spcial volume
-a = core.Joint()
-a.name = 'asda'
-
-
 #... Example 19 : create IK
 twistAim_ikh = core.DoIk( startJoint = upperFollow01_jnt , endEffector = upperFollow02_jnt , solverType = 'ikRPsolver' )
 
@@ -299,6 +294,10 @@ metaNode.attr('clavLFT_jnt').getMessage()
 
 #... Example 25: SetAttribute
 stick_ctrl.setAttribute('location'  , region , type = 'string')
+
+
+#... Example 25: Create joint
+joint = core.Joint('nameJnt')
 
 '''
 
@@ -2503,12 +2502,14 @@ class Joint( Dag ):
 	WARNING !!! joint object adjust for assign name when create
 	no need name it will cause error
 	'''
-	''' 
-	def __init__( self  , name = '' ):
-		Dag.__init__( self , mc.createNode('joint' , name = name )  )'''
 
-	def __init__( self , name = 'joint_1'):
+	def __init__( self , name = 'joint_1', radius=1, overrideEnabled=True, overrideColor=1, scaleCompensate=False):
 		Dag.__init__( self , mc.createNode('joint' , name = name )  )
+		self.attr('radius').value = radius
+		self.attr('radius').overrideEnabled = overrideEnabled
+		self.attr('overrideEnabled').value = overrideEnabled
+		self.attr('overrideColor').value = overrideColor
+		self.attr('segmentScaleCompensate').value = scaleCompensate
 		#... Disable seqment scale compensage as a default (Disable here if anythin wrong.)
 
 

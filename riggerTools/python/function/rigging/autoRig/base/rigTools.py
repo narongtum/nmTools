@@ -464,15 +464,31 @@ def zroDoubleGrp( obj , zroNam = 'Zro_grp' , offNam = 'Offset_grp' ):
 
 
 # add offset group
-def zroGrpWithOffset( obj  ):
+def zroGrpWithOffset( obj ):
 	''' old naming '''
 
 	child = core.Dag( obj )
-	name = child.name.split('_')
+
+	# mc.error(child.name)
+
+	#... UPDATE for namming like 'R_upEyeLid01_GRP'
+	if child.name.split('_')[0] == 'L' or child.name.split('_')[0] == 'R':
+		if child.name.count('_') == 1:
+			name = child.name
+		elif child.name.count('_') > 1:
+			parts  = child.name.split('_')
+			name = '_'.join(parts[:-1])
+	else:
+		#... get rid of last prefix and underscore '_prefix'
+		parts  = child.name.split('_')
+		name = '_'.join(parts[:-1])
 
 
-	zro_grp = core.Null( name[0] + 'Zro_grp' )
-	offset_grp = core.Null( name[0] + 'Offset_grp' )
+
+
+
+	zro_grp = core.Null( name + 'Zro_grp' )
+	offset_grp = core.Null( name + 'Offset_grp' )
 
 	offset_grp.parent( zro_grp )
 	zro_grp.snap( child )

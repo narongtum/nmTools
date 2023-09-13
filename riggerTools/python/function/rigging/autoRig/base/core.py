@@ -299,6 +299,16 @@ stick_ctrl.setAttribute('location'  , region , type = 'string')
 #... Example 25: Create joint
 joint = core.Joint('nameJnt')
 
+
+
+#... Set size
+neck_ctrl.editCtrlShape( axis = charScale * 2.8 )
+
+
+
+
+
+
 '''
 
 

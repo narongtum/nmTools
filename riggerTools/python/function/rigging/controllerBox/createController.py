@@ -142,7 +142,7 @@ class ControlMaker( object ) :
 			self.createController(shapeName = 'ring_ctrlShape')
 
 		elif label == 'sphere':
-			self.createController(shapeName = 'sphere_ctrlShape')
+			self.createController(shapeName = 'plainSphereB_ctrlShape')
 
 		elif label == 'square':
 			self.createController(shapeName = 'square_ctrlShape')

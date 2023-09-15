@@ -292,7 +292,28 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 	return_list = []
 
 	if selected:
-		if selected[0].count('_') == 1:
+		if selected[0].split('_')[0] == 'L' or selected[0].split('_')[0] == 'R':
+			if selected[0].count('_') == 1:
+				for each in selected:
+					rawName = each
+					
+					storeNamLst.append( rawName )
+					rawNamLst.append( each )
+
+			elif selected[0].count('_') > 1:
+				# mc.error('selected[0]')
+				for each in selected:
+					parts = each.split('_')
+					rawName = '_'.join(parts[:-1])
+					storeNamLst.append( rawName )
+					rawNamLst.append( each )
+
+					print('I am here\n\n{}\n\n\n'.format(rawName))
+
+
+
+		#... If having one underscore 'something_ctrl'
+		elif selected[0].count('_') == 1:
 			for each in selected:
 				rawName = each.split('_')[0]
 				# name with first index
@@ -305,18 +326,21 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 				storeNamLst.append( rawName )
 				rawNamLst.append( each )
 
-
-		elif selected[0].count('_') == 2: # for naming that use underscore more than one
+		#... for naming that use underscore more than one
+		elif selected[0].count('_') > 2: 
 			for each in selected:
-				each_split = each.split('_')
-				rawName = each_split[0] + each_split[1]
+				# each_split = each.split('_')
+				# rawName = each_split[0] + each_split[1]
+				parts = each.split('_')
+				rawName = '_'.join(parts[:-1])
+
 				storeNamLst.append( rawName )
 				rawNamLst.append( each )
 
-		elif selected[0].count('_') > 2:
-			for each in selected:
-				storeNamLst.append( each ) # for naming that use underscore more than one
-				rawNamLst.append( each )
+		# elif selected[0].count('_') > 2:
+		# 	for each in selected:
+		# 		storeNamLst.append( each ) 
+		# 		rawNamLst.append( each )
 
 
 
@@ -339,6 +363,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 				gimbal_ctrl.hideArnoldNode()
 
 				# Create zero group
+				# mc.error(child_ctrl.name)
 				childZro_grp = rigTools.zroGrpWithOffset( child_ctrl )
 
 

@@ -299,6 +299,16 @@ stick_ctrl.setAttribute('location'  , region , type = 'string')
 #... Example 25: Create joint
 joint = core.Joint('nameJnt')
 
+
+
+#... Set size
+neck_ctrl.editCtrlShape( axis = charScale * 2.8 )
+
+
+
+
+
+
 '''
 
 
@@ -2712,7 +2722,8 @@ def parentShape( parent = '' , child = '' ):
 
 #       
 #	EXPERIMENT: try to use classmethod instead
-#
+#... to use 
+# constr_object = Constr.psConstr('pCube1','pSphere1', maintainOffset=True)
 
 class Constr( Constraint ):
 	""" base class for constraint """

@@ -201,7 +201,14 @@ def findLastName(name):
 		return None
 
 
-def rawName(name):
+def findRawName(name):
+	parts = name.split('_')
+	rawName = '_'.join(parts[:-1])
+	return rawName
+
+
+
+def rawName(name): #... not good leave it behide
 	lastname = name.split('_')
 	if len(lastname) == 2:
 		return lastname[0], lastname[1]

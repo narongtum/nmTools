@@ -1,21 +1,34 @@
+#...source >>> I:\Resource\Tutorial\Rigging The Jaw with Python in Maya\MyFile
 
 
 import maya.cmds as mc
 import sys
+
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+#... change joint to controller
 
 # object constants
 GROUP = 'GRP'
 JOINT = 'JNT'
 GUIDE = 'GUIDE'
 JAW = 'jaw'
-
+PROXY_JOINT = 'pxyJnt'
 #... side constants
 LEFT = 'L'
 RIGHT = 'R'
 CENTER = 'C'
+jaw_attr = 'jaw_attributes'
+CONTROLLER = 'ctrl'
+ctrlShape = 'sphereB_ctrlShape'
+charScale = 0.125
 
-#... zero group
 def addOffset(dst, suffix='OFF'):
+	'''
+	create zero group  
+	'''
 
 	print('got name: {0}'.format(dst))
 
@@ -32,6 +45,9 @@ def addOffset(dst, suffix='OFF'):
 
 
 def createGuides(number=5):
+	'''
+	create locator template guide  
+	'''	
 	jaw_guide_grp = mc.createNode('transform', name='{}_{}_{}_{}'.format(CENTER, JAW, GUIDE, GROUP))
 	locs_grp = mc.createNode('transform', name='{}_{}_lip_{}_{}'.format(CENTER, JAW, GUIDE, GROUP), parent=jaw_guide_grp)
 
@@ -90,6 +106,9 @@ def createGuides(number=5):
 
 
 def lip_guides():
+	'''
+	return name template
+	'''
 	grp = '{}_lipMinor_{}_{}_{}'.format(CENTER, JAW, GUIDE, GROUP)
 	guides = []
 	#guides = [loc for loc in mc.listRelatives(grp) if mc.objExists(grp)]
@@ -114,29 +133,37 @@ def build():#... collection of function
 
 
 def createHierarchy():
-	# create template group
+	'''
+	create template group
+	'''
 	main_grp = mc.createNode('transform', name='{}_{}_rig_{}'.format(CENTER, JAW, GROUP))
 	lip_grp = mc.createNode('transform', name='{}_{}Lip_{}'.format(CENTER, JAW, GROUP), parent=main_grp)
 	base_grp = mc.createNode('transform', name='{}_{}Base_{}'.format(CENTER, JAW, GROUP), parent=main_grp)
 
-	lip_minor_grp = mc.createNode('transform', name='{}_{}Lig_minor_{}'.format(CENTER, JAW, GROUP), parent=lip_grp)
-	lip_broad_grp = mc.createNode('transform', name='{}_{}Lig_broad_{}'.format(CENTER, JAW, GROUP), parent=lip_grp)
+	lip_minor_grp = mc.createNode('transform', name='{}_{}Rig_minor_{}'.format(CENTER, JAW, GROUP), parent=lip_grp)
+	lip_broad_grp = mc.createNode('transform', name='{}_{}Rig_broad_{}'.format(CENTER, JAW, GROUP), parent=lip_grp)
 
 	mc.select(cl=True)
 
-# 04 Main Structre
-#... create minor joint
+#... change here
 def createMinorJoints():
-	#... create joint along locator
+	'''
+	04 create Main Structre minor joint
+	create joint along locator
+	'''
+
 	minor_joints = []
 	for guide in lip_guides():
 		mat = mc.xform(guide, q=True, m=True, ws=True)
-		jnt = mc.joint(name = guide.replace(GUIDE, JOINT))
-		mc.setAttr('{}.radius'.format(jnt), 0.5)
+		# jnt = mc.joint(name = guide.replace(GUIDE, JOINT))
+		jnt = mc.createNode('transform', name = guide.replace(GUIDE, JOINT))
+		mc.setAttr('{}.displayHandle'.format(jnt), 1)
+
+		# mc.setAttr('{}.radius'.format(jnt), 0.25)
 		mc.xform(jnt, m=mat, ws=True)
 
 		#... parent
-		mc.parent(jnt, '{}_{}Lig_minor_{}'.format(CENTER, JAW, GROUP))
+		mc.parent(jnt, '{}_{}Rig_minor_{}'.format(CENTER, JAW, GROUP))
 
 		minor_joints.append(jnt)
 		
@@ -145,16 +172,28 @@ def createMinorJoints():
 
 def createBroadJoints():
 	upper_joint = mc.joint(name='{}_{}_broadUpper_{}'.format(CENTER, JAW, JOINT))
+	mc.setAttr('{}.overrideEnabled'.format(upper_joint), 1)
+	mc.setAttr('{}.overrideColor'.format(upper_joint), 18)
+	mc.setAttr('{}.radius'.format(upper_joint), 4)
 	mc.select(cl=True)
 	lower_joint = mc.joint(name='{}_{}_broadLower_{}'.format(CENTER, JAW, JOINT))
+	mc.setAttr('{}.overrideEnabled'.format(lower_joint), 1)
+	mc.setAttr('{}.overrideColor'.format(lower_joint), 18)
+	mc.setAttr('{}.radius'.format(lower_joint), 4)
 	mc.select(cl=True)
 	left_joint = mc.joint(name='{}_{}_broadCorner_{}'.format(LEFT, JAW, JOINT))
+	mc.setAttr('{}.overrideEnabled'.format(left_joint), 1)
+	mc.setAttr('{}.overrideColor'.format(left_joint), 18)
+	mc.setAttr('{}.radius'.format(left_joint), 4)
 	mc.select(cl=True)
 	right_joint = mc.joint(name='{}_{}_broadCorner_{}'.format(RIGHT, JAW, JOINT))
+	mc.setAttr('{}.overrideEnabled'.format(right_joint), 1)
+	mc.setAttr('{}.overrideColor'.format(right_joint), 18)
+	mc.setAttr('{}.radius'.format(right_joint), 4)
 	mc.select(cl=True)
 
 	#... parent joints under broad group
-	mc.parent([upper_joint, lower_joint, left_joint,right_joint],'{}_{}Lig_broad_{}'.format(CENTER, JAW, GROUP))
+	mc.parent([upper_joint, lower_joint, left_joint,right_joint],'{}_{}Rig_broad_{}'.format(CENTER, JAW, GROUP))
 
 	#... retrieve guide position
 	upper_pos = mc.xform('{}_{}Upper_lip_{}'.format(CENTER, JAW,  GUIDE), q=True, m=True, ws=True)
@@ -172,9 +211,13 @@ def createBroadJoints():
 
 
 def createJawBase():
-	jaw_jnt = mc.joint(name='{}_{}_{}'.format(CENTER, JAW, JOINT))
-	jaw_inverse_jnt = mc.joint(name='{}_inverse_{}_{}'.format(CENTER, JAW, JOINT))
+	jaw_jnt = mc.joint(name='{}_{}_{}'.format(CENTER, JAW, PROXY_JOINT))
+	jaw_inverse_jnt = mc.joint(name='{}_inverse_{}_{}'.format(CENTER, JAW, PROXY_JOINT))
 
+	#... make it bigger
+	mc.setAttr('{}.radius'.format(jaw_jnt), 2)
+	mc.setAttr('{}.radius'.format(jaw_inverse_jnt), 2)
+	
 	jaw_mat = mc.xform(jaw_guides()[0], q=True, m=True, ws=True)
 	jaw_inverse_mat = mc.xform(jaw_guides()[1], q=True, m=True, ws=True)
 
@@ -196,13 +239,6 @@ def createJawBase():
 	addOffset(jaw_jnt, suffix='AUTO')
 	addOffset(jaw_inverse_jnt, suffix='AUTO')
 
-	print('error mai')
-
-
-
-
-
-#... 05 Main Connections And Acces Methods (Start)
 
 def constraintBroadJoints():
 	jaw_jnt = '{}_{}_{}'.format(CENTER, JAW, JOINT)
@@ -217,7 +253,7 @@ def constraintBroadJoints():
 	upper_off = addOffset(broad_upper)
 	lower_off = addOffset(broad_lower)
 	left_off = addOffset(broad_left)	
-	right_off = addOffset(broad_right)	
+	right_off = addOffset(broad_right)
 
 	#... Create constraints to upper and lower to jaw joint
 	print('\nthis is lower_off: {}'.format(lower_off))
@@ -237,10 +273,10 @@ def getLipParts():
 	lower_token = '{0}Lower'.format(JAW)
 	corner_token = '{0}Corner'.format(JAW)
 
-	C_upper = '{}_{}_broadUpper_{}'.format(CENTER, JAW, JOINT)
-	C_lower = '{}_{}_broadLower_{}'.format(CENTER, JAW, JOINT)
-	L_corner = '{}_{}_broadCorner_{}'.format(LEFT, JAW, JOINT)
-	R_corner = '{}_{}_broadCorner_{}'.format(RIGHT, JAW, JOINT)
+	C_upper = '{}_{}_broadUpper_{}'.format(CENTER, JAW, CONTROLLER)
+	C_lower = '{}_{}_broadLower_{}'.format(CENTER, JAW, CONTROLLER)
+	L_corner = '{}_{}_broadCorner_{}'.format(LEFT, JAW, CONTROLLER)
+	R_corner = '{}_{}_broadCorner_{}'.format(RIGHT, JAW, CONTROLLER)
 
 	
 	lip_joints = mc.listRelatives('{}_{}Lip_{}'.format(CENTER, JAW, GROUP), allDescendents=True)
@@ -251,10 +287,11 @@ def getLipParts():
 
 	for joint in lip_joints:
 
-		if mc.objectType(joint) != 'joint':
+		# if mc.objectType(joint) != 'joint':
+		if mc.objectType(joint) != 'transform':
 			continue
 
-		if joint.startswith('C') and upper_token in joint:
+		if joint.startswith('C') and upper_token in joint: #... ask if any in 'common'
 			lookup['C_upper'][joint] = [C_upper]
 
 		if joint.startswith('C') and lower_token in joint:
@@ -290,23 +327,19 @@ def lipPart(part):
 	#... End of chaper 04
 
 
-# def lipPart(part):
-#     lookup = getLipParts()
-#     print(lookup)  # Add this line to see the dictionary
-#     lip_parts = [reversed(sorted(lookup['{}_{}'.format(side, part)].keys())) for side in [CENTER, LEFT, RIGHT]]
-#     return [joint for joint_list in lip_parts for joint in joint_list]
-
-
-
 
 #.... 06 Create Seal And Jaw Attribute
 def createSeal(part):
+	'''
+	crete constraint for seal 
+	connect constraint to broad joint by distrubute weight 
+	'''
 	seal_name = '{}_seal_{}'.format(CENTER, GROUP)
 	seal_parent = seal_name if mc.objExists(seal_name) else mc.createNode('transform', name = seal_name, parent='{}_{}_rig_{}'.format(CENTER, JAW, GROUP))
 	part_grp = mc.createNode('transform', name=seal_name.replace('seal','seal_{}'.format(part)), parent=seal_parent)
 
-	l_corner = '{}_{}_broadCorner_{}'.format(LEFT, JAW, JOINT)
-	r_corner = '{}_{}_broadCorner_{}'.format(RIGHT, JAW, JOINT)
+	l_corner = '{}_{}_broadCorner_{}'.format(LEFT, JAW, CONTROLLER)
+	r_corner = '{}_{}_broadCorner_{}'.format(RIGHT, JAW, CONTROLLER)
 
 	value = len(lipPart(part))
 
@@ -337,11 +370,23 @@ def createSeal(part):
 
 	mc.select(cl=True)
 
+#... END of part 1/3
+
+
+
+
+
+
+
+
 
 def createJawAttrs():
-	node = mc.createNode('transform', name='jaw_attributes', parent='{}_{}_rig_{}'.format(CENTER, JAW, GROUP))
+	# node = mc.createNode('transform', name='jaw_attributes', parent='{}_{}_rig_{}'.format(CENTER, JAW, GROUP))
+	jaw_attributes = core.Dag(jaw_attr)
+	jaw_attributes.nmCreateController('gear_ctrlShape')
+	node = jaw_attributes.name
 	mc.addAttr(node, ln=sorted(getLipParts()['C_upper'].keys())[0], min=0, max=1, dv=0)
-	print('yeah')
+	
 	# exit(1)
 	mc.setAttr('{}.{}'.format(node, sorted(getLipParts()['C_upper'].keys())[0]), lock=1)
 
@@ -357,7 +402,7 @@ def createJawAttrs():
 	mc.addAttr(node, ln=sorted(getLipParts()['C_lower'].keys())[0], min=0, max=1, dv=0)
 	mc.setAttr('{}.{}'.format(node, sorted(getLipParts()['C_lower'].keys())[0]), lock=1)
 
-	createOffsetFollow()
+	createOffsetFollow(jaw_attr)
 	addSealAttr()
 
 
@@ -431,25 +476,18 @@ def createIntialValues(part, degree=1.3):
 
 	for index, attr_name in enumerate(jaw_attr[::-1]):
 		attr = 'jaw_attributes.{}'.format(attr_name)
-
 		linear_value = float(index) / float(value-1)
-
-		
-
 		div_value = linear_value / degree
 		final_value = div_value * linear_value
 
 		mc.setAttr(attr, final_value)
 
-#... END of 07 Minor Connections And Initial Values
 
 
-
-#... START of 08 Connect Seal Part 1
-def createOffsetFollow():
-	jaw_attr = 'jaw_attributes'
-	jaw_joint = '{}_{}_{}'.format(CENTER, JAW, JOINT)
-	jaw_auto = '{}_{}_{}_AUTO'.format(CENTER, JAW, JOINT)
+def createOffsetFollow(jaw_attr=''):
+	
+	jaw_joint = '{}_{}_{}'.format(CENTER, JAW, PROXY_JOINT)
+	jaw_auto = '{}_{}_{}_AUTO'.format(CENTER, JAW, PROXY_JOINT)
 
 	#.. add follow attrbutes
 	mc.addAttr(jaw_attr, ln='follow_ty', min=-10, max=10, dv=0)
@@ -485,6 +523,15 @@ def addSealAttr():
 
 	mc.addAttr(jaw_attr, at='double', ln='L_seal_delay', min=0, max=10, dv=4 )
 	mc.addAttr(jaw_attr, at='double', ln='R_seal_delay', min=0, max=10, dv=4 )
+
+#... END of part 2/3
+
+
+
+
+
+
+
 
 
 
@@ -626,31 +673,6 @@ def connectSeal(part):
 		print('End of function')
 		# 09_[30:00]
 
-# Call the function to create guides with default values
-#createGuides()
-#lip_guides()
-#jaw_guides()
-
-#... create template
-#createGuides(number=8)
-
-createHierarchy()
-createMinorJoints()
-createBroadJoints()
-createJawBase()
-constraintBroadJoints()
-createSeal('lower')
-createSeal('upper')
-createJawAttrs()
-createConstraints()
-createIntialValues('upper')
-createIntialValues('lower')
-connectSeal('upper')
-connectSeal('lower')
-
-#... set intial value for make smooth shape
-#... get all the Left part
-#... explain seal mouth 08_16:47
 
 
 
@@ -705,8 +727,7 @@ def createJawPin():
 		rev = mc.createNode('reverse', name='{}_corner_pin_REV'.format(side))
 		mc.connectAttr('{}.{}_pin'.format(pin_driver, side), '{}.inputX'.format(rev))
 		mc.connectAttr('{}.outputX'.format(rev), const_pin_down)
+#... END of part 3/3
 
 
 
-
-#createJawPin()

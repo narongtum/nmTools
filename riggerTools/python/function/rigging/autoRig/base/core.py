@@ -2722,7 +2722,8 @@ def parentShape( parent = '' , child = '' ):
 
 #       
 #	EXPERIMENT: try to use classmethod instead
-#
+#... to use 
+# constr_object = Constr.psConstr('pCube1','pSphere1', maintainOffset=True)
 
 class Constr( Constraint ):
 	""" base class for constraint """

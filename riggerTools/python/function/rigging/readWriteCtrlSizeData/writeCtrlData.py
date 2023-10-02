@@ -78,34 +78,39 @@ def filePath(filename = None):
 
 
 # 1 validateCurve
-# define shapaNode
+# define shapeNode
 
 
 def validateCurve( crv = None ):
 	'''Checks whether the transform we are working with is actually a curve and returns it's shapes'''
-	# print 'validate :%s'%crv
-	
-	if mc.nodeType(crv) == "transform" and mc.nodeType(mc.listRelatives(crv, c=1, s=1)[0]) == "nurbsCurve":
-		print('transform and nurbsCurve')
-		crvShapes = mc.listRelatives(crv, c=1, s=1)
+	print ('validate: %s'%crv)
 
-	elif mc.nodeType(mc.listRelatives(crv, shapes=True)) == 'nurbsSurface':
-		print("The object " + crv + " passed to validateCurve() is not a curve skipped.")
-		crvShapes = ''
-		pass
+	try:
+		if mc.nodeType(crv) == "transform" and mc.nodeType(mc.listRelatives(crv, c=1, s=1)[0]) == "nurbsCurve":
+			# print('transform and nurbsCurve')
+			crvShapes = mc.listRelatives(crv, c=1, s=1)
 
-	elif mc.nodeType(crv) == "nurbsCurve":
-		crvShapes = mc.listRelatives(mc.listRelatives(crv, p=1)[0], c=1, s=1)
-		print('nurbsCurve')
+		elif mc.nodeType(mc.listRelatives(crv, shapes=True)) == 'nurbsSurface':
+			print("The object " + crv + " passed to validateCurve() is not a curve skipped.")
+			crvShapes = ''
+			pass
 
-	elif mc.nodeType(crv) == "transform":
-		crvShapes = mc.listRelatives(crv, shapes=True)
-		print('transform')		
+		elif mc.nodeType(crv) == "nurbsCurve":
+			crvShapes = mc.listRelatives(mc.listRelatives(crv, p=1)[0], c=1, s=1)
+			print('nurbsCurve')
 
-	else:
-		mc.error("The object " + crv + " passed to validateCurve() is not a curve")
+		elif mc.nodeType(crv) == "transform":
+			crvShapes = mc.listRelatives(crv, shapes=True)
+			print('transform')		
 
-	return crvShapes
+		else:
+			mc.error("The object " + crv + " passed to validateCurve() is not a curve")
+
+		return crvShapes
+	except:
+		mc.error("The object " + crv + " passed to validateCurve is not a curve please check")
+
+
 
 
 

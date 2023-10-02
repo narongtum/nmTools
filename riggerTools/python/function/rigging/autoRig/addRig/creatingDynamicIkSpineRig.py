@@ -46,6 +46,7 @@ using TabNine
 destination :
 rigging.autoRig.addRig
 '''
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 from maya import cmds as mc
 import pymel.core as pm
@@ -85,7 +86,7 @@ def createDynamicTail(
 		parentTo = 'ctrl_grp'  			,
 		priorJnt = 'hip_bJnt'			,
 		ctrlShape ='cube_ctrlShape'		,
-		meta = ''):
+		meta = False):
 
 	# # # # # # # # # # # # # # # #
 	# in case using exists hair system
@@ -674,7 +675,11 @@ def createDynamicTail(
 	dynIkSpline_meta.addAttribute( dataType = 'string' , longName = 'reverseNode')
 	dynIkSpline_meta.setAttribute('reverseNode', revNode , type = 'string')
 
-	# dynIkSpline_meta.setAttribute('Side', side , type = 'string')
+	dynIkSpline_meta.addAttribute( dataType = 'string' , longName = 'stickCtrl')
+	dynIkSpline_meta.setAttribute('stickCtrl', stick_ctrl.name , type = 'string')
+
+	if side:
+		dynIkSpline_meta.setAttribute('Side', side , type = 'string')
 
 
 	if selectedHairSystem == "":

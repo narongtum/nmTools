@@ -2869,3 +2869,45 @@ class IkSpring( Ik ):
 	mm.eval('ikSpringSolver;')
 	def __init__( self , startJoint = '' , endEffector = ''  ):
 		Ik.__init__( self , mc.ikHandle( startJoint = startJoint , endEffector = endEffector ,  solver = 'ikSpringSolver') [0] )
+
+
+
+
+
+
+#... to find value U in pointOnCurveInfo
+
+def getUParam( pnt = [], crv = None):
+
+	point = om.MPoint(pnt[0],pnt[1],pnt[2])
+	curveFn = om.MFnNurbsCurve(getDagPath(crv))
+	paramUtill=om.MScriptUtil()
+	paramPtr=paramUtill.asDoublePtr()
+	isOnCurve = curveFn.isPointOnCurve(point)
+	if isOnCurve == True:
+		
+		curveFn.getParamAtPoint(point , paramPtr,0.001,om.MSpace.kObject )
+	else :
+		point = curveFn.closestPoint(point,paramPtr,0.001,om.MSpace.kObject)
+		curveFn.getParamAtPoint(point , paramPtr,0.001,om.MSpace.kObject )
+	
+	param = paramUtill.getDouble(paramPtr)
+	print (param)  
+	return param
+
+
+
+def getDagPath(objectName):
+	# check for objectName type
+	objectName = objectName if isinstance(objectName, list) else [objectName]
+	
+	oNodeList=[]
+	for o in objectName:
+		selectionList = om.MSelectionList()
+		selectionList.add(o)
+		oNode = om.MDagPath()
+		selectionList.getDagPath(0, oNode)
+		oNodeList.append(oNode)
+	# if the input was a single object (not a list), then return a single result
+	# otherwise return a list
+	return oNodeList[0] if len(oNodeList) == 1 else oNodeList 

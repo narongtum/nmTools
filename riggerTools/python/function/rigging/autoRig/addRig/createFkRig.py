@@ -27,7 +27,7 @@ reload(mnd)
 
 
 #... FK the attatch with joint in Arg directly
-#... Do not use with tempJnt
+#... connect direct with joint arg
 def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'ear01LFT_bJnt','ear02LFT_bJnt'  ,'ear03LFT_bJnt')	,
 					charScale = 1	, priorJnt = 'head01_bJnt' 			,
@@ -237,12 +237,13 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 
 
 
-# using with tempjoint 
-def newCreateFkRig(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
-					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt'  ,'ear03LFT_tmpJnt')	,
-					charScale = ''	, priorJnt = 'head01_bJnt' 			,
-					side = 'LFT' ,ctrlShape = 'circle_ctrlShape'  , localWorld = False , 
-					color = 'red' , curlCtrl = False ,suffix = '_bJnt' , useHierarchy = True	):
+#... using with tempjoint 
+#... priorJnt can be false
+def newCreateFkRig(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
+					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
+					charScale = 1, priorJnt = 'head01_bJnt' 			,
+					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
+					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True	):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''

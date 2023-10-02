@@ -107,7 +107,10 @@ def runMenu():
 	 File Manager
 
 	'''
-	
+	mc.menuItem( label = "File Manager",	command = "from function.pipeline.file_manager import run_ui\nreload(run_ui)\nrun_ui.run_file_manager()", ann = "Open File Manager(test)" )
+
+	#-----------------------------
+	mc.menuItem(divider = True)
 
 
 
@@ -118,15 +121,8 @@ def runMenu():
 
 	'''
 	#----------------------------------------------------------------------------------------------------------------------
-
-
-
-	#----------------------------------------------------------------------------------------------------------------------
 	mc.menuItem( label = 'Asset' , subMenu = True, tearOff = True)
 
-	mc.menuItem( label = 'File Manager', divider = True )
-
-	mc.menuItem( label = "File Manager",	command = "from function.pipeline.file_manager import run_ui\nreload(run_ui)\nrun_ui.run_file_manager()", ann = "Open File Manager(test)" )
 
 	mc.menuItem( label = 'Publish file', divider = True )
 

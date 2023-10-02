@@ -16,7 +16,7 @@
 
 
 '''
-
+#... direct run
 from function.rigging.blendShape import blendshapeTools as bshTools
 reload(bshTools)
 
@@ -34,6 +34,8 @@ eyelidAll_dict = bshTools.createBshToPly( bsh_dict = bshTools.EYELIDALL_DICT , s
 
 
 '''
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 import maya.cmds as mc
 
 from function.rigging.util import misc as misc
@@ -236,10 +238,10 @@ def createBshToPly( bsh_dict, side):
 
 	# xOffset = 0.5
 
-	print 'boundBox X is :%i' %bbX
-	print 'boundBox Y is :%i' %bbY
-	print 'This is %s part\n' %basePoly_bsh
-	print 'This is %s posiBlock\n' %bsh_dict['posiBlock'][0]
+	print ('boundBox X is :%i' %bbX)
+	print ('boundBox Y is :%i' %bbY)
+	print ('This is %s part\n' %basePoly_bsh)
+	print ('This is %s posiBlock\n' %bsh_dict['posiBlock'][0])
 
 
 	xVal += xOffset
@@ -293,7 +295,7 @@ def createBshToPly( bsh_dict, side):
 
 
 			
-	print 'xVal is ' + '%i' %xOffset
+	print ('xVal is ' + '%i' %xOffset)
 
 
 	base_crvName.append( bsh_dict['facialRegion'] + 'All%s_bsh' %side )
@@ -309,12 +311,12 @@ def createBshToPly( bsh_dict, side):
 				'posiBlock'		: bsh_dict['posiBlock']							,
 				'side' 			: bsh_dict['side']										}
 
-	print '####################'
-	print  bsh_dict['attrBshNam']
-	print '####################'
-	print '\n'
-	print 'Position Block: ' + str(bsh_dict['posiBlock'][0])
-	print '####################'
+	print ('####################')
+	print ( bsh_dict['attrBshNam'])
+	print ('####################')
+	print ('\n')
+	print ('Position Block: ' + str(bsh_dict['posiBlock'][0]))
+	print ('####################')
 	mc.move( bshData['posiBlock'][0]*60 , 0 , 0 , bshData['bshGrp'] , r = True)
 
 	mc.select(deselect = True)
@@ -376,7 +378,7 @@ def _duplicateForBsh( bsh_dict ,side = '', nameSpace=None ):
 	# xOffset = 0.5
 	yVal = 0
 
-	print 'This is %s part\n' %base_crv
+	print ('This is %s part\n' %base_crv)
 
 	if bsh_dict['side']:
 
@@ -436,8 +438,8 @@ def _duplicateForBsh( bsh_dict ,side = '', nameSpace=None ):
 		# mc.blendShape( bshMember , name = bsh_dict['facialRegion'] + 'All%s_bsh' %side)
 
 		mc.move( xVal , 0 , 0, bshGrp , r = True )
-		print '%s has move to ' %bshGrp
-		print xVal
+		print ('%s has move to ' %bshGrp)
+		print (xVal)
 
 		# grpBsh = mc.group( em = True , name = bsh_dict['facialRegion'] + 'Bsh_grp'  )
 		# mc.parent( getBshGrp , grpBsh)
@@ -453,7 +455,7 @@ def _duplicateForBsh( bsh_dict ,side = '', nameSpace=None ):
 					'side' 			: bsh_dict['side']										}
 		
 		#print bshData
-		print '### connect blend shape complete ###\n'
+		print ('### connect blend shape complete ###\n')
 		return bshData
 
 	# in case not side
@@ -506,8 +508,8 @@ def _duplicateForBsh( bsh_dict ,side = '', nameSpace=None ):
 		# mc.blendShape( bshMember , name = bsh_dict['facialRegion'] + 'All%s_bsh' %side)
 
 		mc.move( xVal , 0 , 0, bshGrp , r = True )
-		print '%s has move to ' %bshGrp
-		print xVal
+		print ('%s has move to ' %bshGrp)
+		print (xVal)
 
 		# grpBsh = mc.group( em = True , name = bsh_dict['facialRegion'] + 'Bsh_grp'  )
 		# mc.parent( getBshGrp , grpBsh)
@@ -523,7 +525,7 @@ def _duplicateForBsh( bsh_dict ,side = '', nameSpace=None ):
 					'side' 			: bsh_dict['side']										}
 		
 		#print bshData
-		print '### connect blend shape complete ###\n'
+		print ('### connect blend shape complete ###\n')
 		return bshData
 
 
@@ -572,7 +574,7 @@ def _singleConnectBsh( singleBsh_dict ):
 
 	bshMember = mc.blendShape( bshList , name =  singleBsh_dict['facialPart'] + 'All_bsh' )
 
-	print 'blendshape the %s' %'something'
+	print ('blendshape the %s' %'something')
 	
 	# grpBsh = mc.group( em = True , name = singleBsh_dict['facialPart'] + 'SosoBsh_grp'  )
 
@@ -610,7 +612,7 @@ def _pairConnectBsh( pairBsh_dict ):
 
 		bshMember = mc.blendShape( bshList , name =  pairBsh_dict[i]['facialPart'] + 'All%s_bsh' %side[i] )
 
-		print 'blendshape the %s' %side[i]
+		print ('blendshape the %s' %side[i])
 	
 	grpBsh = mc.group( em = True , name = pairBsh_dict[0]['facialPart'] + 'Bsh_grp'  )
 
@@ -857,6 +859,7 @@ def getTargetName(blendShape,targetGeo):
 	targetConnPlug = mc.listConnections(targetConnAttr,sh=True,p=True,d=True,s=False)[0]
 	
 	# Get Target Index
+	print(targetConnPlug)
 	targetInd = int(targetConnPlug.split('.')[2].split('[')[1].split(']')[0])
 	# Get Target Alias
 	targetAlias = mc.aliasAttr(blendShape+'.weight['+str(targetInd)+']',q=True)
@@ -897,12 +900,12 @@ def addBshInbetween( bsh_dict , bshName , bshInbName , targetWeight=0.5 ):
 			bshBaseName=bshBaseName.replace('LFT' , 'RGT')
 			objBshName=objBshName.replace('LFT' , 'RGT')
 
-			print 'Change side from LFT to RGT...'
-			print bshName
-			print bshInbName
-			print bshBaseName
-			print objBshName
-			print separater + ' Blendshape Complete ' + separater	
+			print ('Change side from LFT to RGT...')
+			print (bshName)
+			print (bshInbName)
+			print (bshBaseName)
+			print (objBshName)
+			print (separater + ' Blendshape Complete ' + separater	)
 
 
 
@@ -939,7 +942,7 @@ def connectInbetween( bsh_dict , MembIndex , inbIndex ,weight):
 		# create inbetween
 		addTatgetInbetween( bshBaseName , bshInbName , bshMemName , objBshName , weight)
 
-		print 'inserted %s to %s at weight %f' %(bshInbName,bshMemName,weight)
+		print ('inserted %s to %s at weight %f' %(bshInbName,bshMemName,weight))
 
 
 
@@ -983,7 +986,7 @@ def connectInbetweenForPly( bsh_dict , MembIndex , inbIndex ,weight):
 	# create inbetween
 	addTatgetInbetween( bshBaseName , bshInbName , bshMemName , objBshName , weight)
 
-	print 'inserted %s to %s at weight %f' %(bshInbName,bshMemName,weight)
+	print ('inserted %s to %s at weight %f' %(bshInbName,bshMemName,weight))
 
 
 
@@ -1026,5 +1029,5 @@ def connectCtrlToBsh(ctrlNam,part,behv,attr,side,bshBase,bshMember,positive = Tr
 	ctrl.attr( attr ) >> mulVal.attr( 'input1' )
 	mulVal.attr( 'output' ) >> animCurve.attr( 'input' )
 	animCurve.attr( 'output' ) >> bshNode.attr( bshMember )
-	print '### Connect value success ###\n'
+	print ('### Connect value success ###\n')
 	return True

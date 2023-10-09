@@ -257,7 +257,7 @@ def doAddAttr ( povName ,  region ):
 
 
 
-def connectIkJnt( stretchNode , upperIKJnt , lowerIKJnt , blendName , namLock , povName ):
+def connectIkJnt( stretchNode , upperIKJnt , lowerIKJnt , blendName , namLock , povName, alongAxis ):
 	'''
 	Connect node to ik joint
 	'''
@@ -270,9 +270,15 @@ def connectIkJnt( stretchNode , upperIKJnt , lowerIKJnt , blendName , namLock , 
 
 	mc.connectAttr (	'%s.output2Dx'	%stretchNode	,  '%s.color2R' 	%blendName	,	force = True)
 	mc.connectAttr (	'%s.output2Dy'	%stretchNode	,  '%s.color2G' 	%blendName	,	force = True)
-	mc.connectAttr (	'%s.outputR'	%blendName		,  '%s.translateY'  %upperIKJnt	,	force = True) 
-	mc.connectAttr (	'%s.outputG'	%blendName		,  '%s.translateY'  %lowerIKJnt	,	force = True)   
-	
+	if alongAxis == 'y':
+		mc.connectAttr (	'%s.outputR'	%blendName		,  '%s.translateY'  %upperIKJnt	,	force = True) 
+		mc.connectAttr (	'%s.outputG'	%blendName		,  '%s.translateY'  %lowerIKJnt	,	force = True)
+	elif alongAxis == 'x'   :
+		mc.connectAttr (	'%s.outputR'	%blendName		,  '%s.translateX'  %upperIKJnt	,	force = True) 
+		mc.connectAttr (	'%s.outputG'	%blendName		,  '%s.translateX'  %lowerIKJnt	,	force = True)
+	elif alongAxis == 'z'   :
+		mc.connectAttr (	'%s.outputR'	%blendName		,  '%s.translateZ'  %upperIKJnt	,	force = True) 
+		mc.connectAttr (	'%s.outputG'	%blendName		,  '%s.translateZ'  %lowerIKJnt	,	force = True)
 	# connect blend value to POV
 	MidLockLogger.info('%s.%s'  %(povName,namLock))
 	mc.connectAttr (	'%s.%s'  %(povName,namLock)	,	'%s.blender'	%blendName 	,	force = True)

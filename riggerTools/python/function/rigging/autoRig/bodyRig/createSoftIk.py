@@ -69,7 +69,7 @@ def softIK(		priorMeta, region, side, ctrlName,
 
 
 
-	#finds name for joints
+	#... finds name for joints
 	startJoint = mc.listConnections( ikhName + ".startJoint" )
 	endEffector = mc.listConnections( ikhName + ".endEffector" )
 	endJoint = mc.listConnections( endEffector, d = False, s = True )
@@ -78,11 +78,19 @@ def softIK(		priorMeta, region, side, ctrlName,
 	mc.select( startJoint, hi = True )
 	mc.select( endJoint, hi = True, d = True )
 	mc.select( endEffector, d = True )
-	mc.select( endJoint, tgl = True )
+
+	if MAYA_VERSION != '2022':
+		mc.select( endJoint, toggle = True ) #... only maya 2022 is not select end joint
+	else:
+		SoftIkLogger.debug('# # # # found maya 2022 change order HERE')
+		mc.select( endJoint[0], toggle = True ) #... only maya 2022 is not select end joint
 
 	#lists the joints
 	joints = []
 	joints = mc.ls( sl = True )
+
+
+
 	n = len(joints)
 	#------------------ Filter something not joint -------------------------------------------------------------------#
 	for each in range(n):
@@ -91,14 +99,18 @@ def softIK(		priorMeta, region, side, ctrlName,
 	    if mc.nodeType(joints[each]) != 'joint':
 	        del_lana = each
 
-	# remove unwanted         
+	#... remove unwanted         
 	joints.pop(del_lana)        
 	n = len(joints)        
 
 
+	SoftIkLogger.debug('number is:{0}'.format(n))
+	SoftIkLogger.debug('name is:{0}'.format(joints))
 
+	if len(joints) < 3:
+		mc.warning('EndEffector not found.')
 
-	#gives position value for joints
+	#... gives position value for joints
 	firstPos = mc.xform( joints[0], q = True, piv = True, ws = True )
 	lastPos = mc.xform( joints[n - 1], q = True, piv = True, ws = True )
 	fPoints  = firstPos[0:3]
@@ -243,6 +255,8 @@ def softIK(		priorMeta, region, side, ctrlName,
 	meta_node = core.MetaGeneric('%s_distance' %name)
 
 	if MAYA_VERSION == '2018':
+		meta_node.setAttribute('Base_Name'  , __name__ , type = 'string')
+	elif MAYA_VERSION == '2022':
 		meta_node.setAttribute('Base_Name'  , __name__ , type = 'string')
 	else:
 		meta_node.attr('Base_Name').value = '%s' %(__name__)

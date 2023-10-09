@@ -25,9 +25,6 @@ reload( create )
 from function.rigging.tools import proc as pc
 reload(pc)
 
-from function.rigging.util import mayaNodeDict as mnd
-reload(mnd)
-
 from function.rigging.autoRig.bodyRig import fkIkGenRig
 reload( fkIkGenRig )
 

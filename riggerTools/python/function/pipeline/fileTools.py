@@ -891,28 +891,31 @@ def doMoveGrp():
 def remUnRef():
 	if mc.objExists('delete_grp'):
 		listDelete = mc.listRelatives('|delete_grp', children=True)
-		for each in listDelete:
-			if ':' in each:
-				nameSpace = None
-				nameObj = None
-				print ('this is %s' %each)
-				nameSpace = each.split(':')[0]
-				nameObj = each.split(':')[1]
-				
-				if mc.objExists('%s_parentConstraint1' %nameObj) and mc.objExists('%s_scaleConstraint1' %nameObj):
-					print( 'yeah there are have connection do nothing')
+		if listDelete:
+			for each in listDelete:
+				if ':' in each:
+					nameSpace = None
+					nameObj = None
+					print ('this is %s' %each)
+					nameSpace = each.split(':')[0]
+					nameObj = each.split(':')[1]
 					
-					
-				else:
-					print ('no connection let remove them')
-					try:
-						refNode = mc.referenceQuery( each , referenceNode = True )
-						fileName = mc.referenceQuery( refNode , filename = True )
-						mc.file( fileName , rr = True )
-					except:
-						 print ('skip the redundance referenceNode')
+					if mc.objExists('%s_parentConstraint1' %nameObj) and mc.objExists('%s_scaleConstraint1' %nameObj):
+						print( 'yeah there are have connection do nothing')
+						
+						
+					else:
+						print ('no connection let remove them')
+						try:
+							refNode = mc.referenceQuery( each , referenceNode = True )
+							fileName = mc.referenceQuery( refNode , filename = True )
+							mc.file( fileName , rr = True )
+						except:
+							 print ('skip the redundance referenceNode')
 
-		mc.delete('delete_grp') # delete at lase
+			mc.delete('delete_grp') # delete at lase
+		else:
+			print("No delete_grp found.")
 
 	else:
 		print("No delete_grp found.")

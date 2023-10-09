@@ -764,6 +764,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				elif reply.clickedButton() == save_button:
 					# 1. Procress manage scene
+					line_number = sys._getframe().f_lineno
+					FileManagerLog.debug('({0})Do local commit'.format(line_number))
 					do_local_commit()
 
 

@@ -22,9 +22,6 @@ reload( create )
 from function.rigging.tools import proc as pc
 reload(pc)
 
-# from function.rigging.util import mayaNodeDict as mnd
-# reload(mnd)
-
 from function.rigging.autoRig.bodyRig import fkIkGenRig
 reload( fkIkGenRig )
 
@@ -71,8 +68,12 @@ def armRigExt(
 			linkRotOrder = False			,
 			ctrlShape = 'fk_ctrlShape'		,
 			creTwistJnt = True 				,
-			softIk = True					,				
-			stickShape = 'stick_ctrlShape'):
+			softIk = True					,
+			softIkPrimaryAxis = 2					,
+			softIkUpAxis = 2				,
+			alongAxis = 'y',			
+			stickShape = 'stick_ctrlShape',
+			):
 
 	core.makeHeader(	'Start of %s%s Rig' %(region,side)	)
 
@@ -105,7 +106,7 @@ def armRigExt(
 					linkRotOrder = linkRotOrder 	,
 					ctrlShape = ctrlShape			,
 					creTwistJnt = creTwistJnt		,
-
+					alongAxis = alongAxis,	
 					stickShape = stickShape				)
 
 		
@@ -135,7 +136,7 @@ def armRigExt(
 		if softIk == True:
 
 			softIkfunc.softIK(	priorMeta = priorMeta ,region = region, side = side, ctrlName = softIk_name[0],
-						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
+						upAxis = softIkUpAxis, primaryAxis = softIkPrimaryAxis, ikhName = ikhAll_name[0], 
 						inputMax = 40, outputMax = 4  )
 
 			print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))

@@ -10,9 +10,6 @@ reload(rigTools)
 from function.rigging.util import misc
 reload( misc )
 
-# from function.rigging.autoRig.bodyRig import ribbonRig
-# reload( ribbonRig )
-
 from function.rigging.autoRig.bodyRig import ribbonRigExt as ribbonRig
 reload( ribbonRig )
 

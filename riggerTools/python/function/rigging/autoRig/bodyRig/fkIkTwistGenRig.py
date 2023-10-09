@@ -76,7 +76,8 @@ def fkIkTwistGenRig(
 				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
 				creTwistJnt = True ,
 				# softIk = False ,
-				stickShape = 'stick_ctrlShape'
+				stickShape = 'stick_ctrlShape',
+				alongAxis = 'y'
 				):	#... stick_ctrlShape , 	gear_ctrlShape	
 				
 				
@@ -712,13 +713,14 @@ def fkIkTwistGenRig(
 	stretchNode = create.iKStretch(	ikJnt = (    upper_IkJnt.name , middle_IkJnt.name , lower_IkJnt.name )  , 
 								ikCtrl = ( ikRoot_ctrl.name , lowerIk_ctrl.name ) , 
 								side = side , scaleCtrl = 'placement_ctrl'	, 
-								region = region ,noTouchGrp = noTouchGrp , nameSpace = nameSpace ,lowNam = rawName[2] 
+								region = region ,noTouchGrp = noTouchGrp , nameSpace = nameSpace ,
+								lowNam = rawName[2], 
+								alongAxis = alongAxis 
 								)
 	pmaNode = stretchNode[0]
 	psStreEndName = stretchNode[1]
 
 
-	
 
 	
 
@@ -913,9 +915,7 @@ def fkIkTwistGenRig(
 
 
 
-	print (''' \n
-	# = = = = = = Create Knee Elbow Lock Rig function
-	''')
+	print (''' \n # = = = = = = Create Knee Elbow Lock Rig function''')
 
 	print ('Create %s' %ikRootGmbl_ctrl.name)
 	rawNameUPR , distanceUPRName , povUPR_Ctrl , lowerUPR_loc , upperUPR_loc = midLockModule.createDistance( nameSpace , part = 'up' , startP = ikRootGmbl_ctrl.name , endP = pov_ctrl.name )
@@ -929,8 +929,7 @@ def fkIkTwistGenRig(
 										uprNam 		= rawNameUPR	           )
 	# cancle arg 'type' but arfraid of error then keep
 	attrName = midLockModule.doAddAttr( povUPR_Ctrl , region )
-	midLockModule.connectIkJnt(	stretchNode = pmaNode , upperIKJnt = middle_IkJnt.name , lowerIKJnt = lower_IkJnt.name , blendName = blendName , namLock = attrName	, povName = povUPR_Ctrl )
-
+	midLockModule.connectIkJnt(	stretchNode = pmaNode , upperIKJnt = middle_IkJnt.name , lowerIKJnt = lower_IkJnt.name , blendName = blendName , namLock = attrName	, povName = povUPR_Ctrl, alongAxis = alongAxis )
 
 
 
@@ -993,6 +992,17 @@ def fkIkTwistGenRig(
 	print (''' \n
 	# = = = = = = Create ribbon Rig function
 	''')
+
+
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+	# 	try to break for debug don't forget for change it back
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+
+	mc.error('STOP RIGHT THERE!!! {}'.format(upper_bJnt.name))
+
+
+
+
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Create ribbon rig
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #

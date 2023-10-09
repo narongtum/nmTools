@@ -4,38 +4,67 @@ from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.rigging.autoRig.base import core
 reload(core)
+
 from function.rigging.tools import dTool as dc 
 reload(dc)
+
+import math
+#... find magnitude
+def mag( v ):
+	return( math.sqrt( pow(v[0], 2) + pow(v[1], 2) + pow(v[2], 2) ) )
 
 def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) , 
 					ikCtrl = ('ikRoot' , 'ankleIk_ctrl') , region = ''	, 
 					side = '' , scaleCtrl = 'placement_ctrl'	,
 					noTouchGrp = 	'noTouchGrp'		,
-					nameSpace ='',lowNam = '' ):
-	# lowNam is lower name
-	# For use run both  arg older and newer 
+					nameSpace ='',lowNam = '', alongAxis = 'y' ):
+	#... lowNam is lower name For use run both  arg older and newer 
 	part = nameSpace + lowNam
 	strJnt = ikJnt[0]
 	midJnt = ikJnt[1]
 	endJnt = ikJnt[2]
 
-	strJntTy = mc.getAttr( midJnt+'.ty')  
-	endJntTy = mc.getAttr( endJnt+'.ty')
+	#... try new method to find length
+	AA = mc.xform( strJnt, q = True, piv = True, ws = True )
+	AB = mc.xform( midJnt, q = True, piv = True, ws = True )
+	x = AB[0] - AA[0]
+	y = AB[1] - AA[1]
+	z = AB[2] - AA[2]
+	v = [x,y,z]
+	length_AB = mag(v)
 
+	AC = mc.xform( midJnt, q = True, piv = True, ws = True )
+	x = AC[0] - AB[0]
+	y = AC[1] - AB[1]
+	z = AC[2] - AB[2]
+	v = [x,y,z]
+	length_BC = mag(v)
+
+
+	if alongAxis == 'y':
+		strJntPosi = mc.getAttr( midJnt+'.ty')  
+		endJntPosi = mc.getAttr( endJnt+'.ty')
+	elif alongAxis == 'x':
+		strJntPosi = mc.getAttr( midJnt+'.tx')  
+		endJntPosi = mc.getAttr( endJnt+'.tx')
+	elif alongAxis == 'z':
+		strJntPosi = mc.getAttr( midJnt+'.tz')  
+		endJntPosi = mc.getAttr( endJnt+'.tz')
 
 	if side == 'LFT':
-		disJnt = strJntTy + endJntTy
+		disJnt = strJntPosi + endJntPosi
 		ampVal = 0.1
 
 	elif side == 'RGT':
-		disJnt = (strJntTy + endJntTy)*(-1)
+		disJnt = (strJntPosi + endJntPosi)*(-1)
 		ampVal = (-0.1)
 
 	else:
-		disJnt = strJntTy + endJntTy
+		disJnt = strJntPosi + endJntPosi
 		ampVal = 0.1
 
-
+	print(disJnt)
+	print(length_AB + length_BC)
 
 
 	# Ctrl Name
@@ -113,8 +142,8 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 	# Create legStretchLFT_mdv and Set
 	mc.createNode('multiplyDivide', n = mdvNode)
 	mc.setAttr ( mdvNode + '.operation', 1)
-	mc.setAttr( mdvNode + '.input2.input2X', strJntTy)
-	mc.setAttr( mdvNode + '.input2.input2Y', endJntTy)
+	mc.setAttr( mdvNode + '.input2.input2X', strJntPosi)
+	mc.setAttr( mdvNode + '.input2.input2Y', endJntPosi)
 	# Connect
 	mc.connectAttr( cndNode + '.outColor.outColorR', mdvNode + '.input1.input1X')
 	mc.connectAttr( cndNode + '.outColor.outColorR', mdvNode + '.input1.input1Y')
@@ -130,8 +159,8 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 
 	# Create blendColors
 	mc.createNode('blendColors', n = bcNode)
-	mc.setAttr( bcNode + '.color2R', strJntTy)
-	mc.setAttr( bcNode + '.color2G', endJntTy)
+	mc.setAttr( bcNode + '.color2R', strJntPosi)
+	mc.setAttr( bcNode + '.color2G', endJntPosi)
 	# connect
 	mc.connectAttr( mdvNode + '.output', bcNode + '.color1')
 	mc.connectAttr( endCtrl + '.autoStretch', bcNode + '.blender')
@@ -145,19 +174,30 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 	mc.connectAttr( mdvAmpNode + '.outputX', pmaNode + '.input2D[2].input2Dx')
 	mc.connectAttr( mdvAmpNode + '.outputY', pmaNode + '.input2D[2].input2Dy')
 
-	# export translante to Joint
-	mc.connectAttr ( pmaNode + '.output2D.output2Dx', midJnt + '.ty')
-	mc.connectAttr ( pmaNode + '.output2D.output2Dy', endJnt + '.ty')
+	#... Check condition for Export translante to Joint
+	#... find arg to accept axis
 
+	if alongAxis == 'y':
+		mc.connectAttr ( pmaNode + '.output2D.output2Dx', midJnt + '.ty')
+		mc.connectAttr ( pmaNode + '.output2D.output2Dy', endJnt + '.ty')
+	elif alongAxis == 'x':
+		mc.connectAttr ( pmaNode + '.output2D.output2Dx', midJnt + '.tx')
+		mc.connectAttr ( pmaNode + '.output2D.output2Dy', endJnt + '.tx')
+	elif alongAxis == 'z':
+		mc.connectAttr ( pmaNode + '.output2D.output2Dx', midJnt + '.tz')
+		mc.connectAttr ( pmaNode + '.output2D.output2Dy', endJnt + '.tz')
 	# ==================== # End of Dode Create IK strerchy 
 
 
 
 	# ==================== # Create AutoStretch_mdv for scale compensete
 	# sum a -> b length
-	# abLength = strJntTy + endJntTy
+	# abLength = strJnt + endJnt
 	# change this value to abs for fix the RGT side not stretch properly
-	abLength = abs(strJntTy + endJntTy)
+	abLength = abs(strJntPosi + endJntPosi)
+
+	if abLength == 0:
+		mc.error('Length is zero something wrong please check')
 
 	# get the c lenge
 	cLength = mc.getAttr( disNode + '.distance')

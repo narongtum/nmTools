@@ -786,7 +786,8 @@ def bipedLegRigExt(
 					ctrlShape = 'fk_ctrlShape',
 					creTwistJnt = True,
 					softIk = True ,
-					stickShape = 'stick_ctrlShape'	):
+					stickShape = 'stick_ctrlShape',
+					alongAxis = 'y'	):
 	
 
 	misc.makeHeader(	'Start of %s%s Rig' %(region,side)	)
@@ -818,8 +819,8 @@ def bipedLegRigExt(
 					linkRotOrder = linkRotOrder,
 					ctrlShape = ctrlShape ,
 					creTwistJnt = creTwistJnt		,
-
-					stickShape = stickShape		)
+					stickShape = stickShape	,
+					alongAxis = alongAxis	)
 
 
 

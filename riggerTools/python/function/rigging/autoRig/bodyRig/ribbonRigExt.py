@@ -1,12 +1,5 @@
-#... Ribbon rig latest version
+#... Ribbon rig convert
 #... uncheck scale segment compensage
-
-'''
-from function.rigging.autoRig.bodyRig import ribbonRigExt as rbnExt
-reload( rbnExt )
-'''
-
-
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 
@@ -27,13 +20,30 @@ reload(logger)
 import pymel.core as pm
 
 class RibbonLogger(logger.MayaLogger):
-	LOGGER_NAME = "Ribbon"
+    LOGGER_NAME = "Ribbon"
 
 
 
 
 
+# nameSpace = ''			
+# width = 10								
+# numJoints = 3								
+# side = 'LFT'	
+# jointTop = 'upperLegLFT_tmpJnt'	
+# jointBtm = 'lowerLegLFT_tmpJnt'	
+# part = 'upLeg'	#'upArm','lwrArm','upLeg','lwrLeg'			
+# charScale = 1								
+# noTouch_grp = 'noTouch_grp'			
+# showInfo = True 			
+# upPlana = ''	
+# ctrl_grp = 'ribbon_grp'
+# alongAxis = 'x' 
 
+
+
+
+#... start function
 def ribbonRigExt(	nameSpace = ''	,		
 					width = 10		,							
 					numJoints = 5	,								
@@ -45,8 +55,8 @@ def ribbonRigExt(	nameSpace = ''	,
 					noTouch_grp = 'noTouch_grp'	,		
 					showInfo = True 			,
 					upPlana = ''	,
-					ctrl_grp = 'ribbon_grp' ):
-
+					ctrl_grp = 'ribbon_grp',
+					alongAxis = 'y' ):
 
 	# new arg
 	# upPlana = 'z+'   # 'y+' or 'z+' only
@@ -54,8 +64,8 @@ def ribbonRigExt(	nameSpace = ''	,
 
 	part_list = ('upArm','lwrArm','upLeg','lwrLeg')
 
-
-	if part in part_list:
+	#... Ask new along axis (1)
+	if part in part_list and alongAxis == 'y':
 		if side == 'LFT':
 			if part  == 'upArm' or part  == 'lwrArm':
 				upPlana = 'x-'
@@ -67,13 +77,30 @@ def ribbonRigExt(	nameSpace = ''	,
 			elif part  == 'upLeg' or part  == 'lwrLeg':
 				upPlana = 'z-'
 
+			
+	#... Ask new along axis (2)
+	elif part in part_list and alongAxis == 'x':
+		if side == 'LFT':
+			if part  == 'upArm' or part  == 'lwrArm':
+				upPlana = 'z-'
+			elif part  == 'upLeg' or part  == 'lwrLeg':
+				upPlana = 'y+'
+		elif side == 'RGT':
+			if part  == 'upArm' or part  == 'lwrArm':
+				upPlana = 'z+'
+			elif part  == 'upLeg' or part  == 'lwrLeg':
+				upPlana = 'y-'
+
 
 	else:
 		RibbonLogger.info('No corrective list. This might be a spine ribbon.')
 		if not upPlana:
 			RibbonLogger.critical('Please specific the up axis.')
 			return False
-		
+
+
+	RibbonLogger.info('AlongAxis is {}\nUpPlana is {}'.format(alongAxis,upPlana))
+
 
 
 
@@ -82,7 +109,6 @@ def ribbonRigExt(	nameSpace = ''	,
 	RibbonLogger.info('start of Ribbon function')
 	noTouch_grp = '%s%s' %(	nameSpace , noTouch_grp	) 
 	ribbonCollect_grp = core.Null('%sRibbon%s_grp' %(part,side) )
-
 	armRotOrder = 'yxz'
 
 	# inside function
@@ -116,7 +142,7 @@ def ribbonRigExt(	nameSpace = ''	,
 		btmPart_pxyJnt.matchPosition(btmPart)
 
 	# elif rbnType == 'spine': # 'z+'
-	elif upPlana == 'z+': # 'z+'
+	elif upPlana == 'z+' and alongAxis == 'y': # 'z+'
 		topPart = core.Dag( jointTop )
 		btmPart = core.Dag( jointBtm )
 		topPart_pxyJnt = rigTools.jointAt( topPart )
@@ -124,10 +150,9 @@ def ribbonRigExt(	nameSpace = ''	,
 		# For Fix twist fail using prosition only no orient
 		btmPart_pxyJnt = rigTools.jointAt( topPart )
 		btmPart_pxyJnt.matchPosition(btmPart)
-
 
 	# elif rbnType == 'spine': # 'z+'
-	elif upPlana == 'z-': # 'z+'
+	elif upPlana == 'z-'and alongAxis == 'y': # 'z+'
 		topPart = core.Dag( jointTop )
 		btmPart = core.Dag( jointBtm )
 		topPart_pxyJnt = rigTools.jointAt( topPart )
@@ -136,7 +161,25 @@ def ribbonRigExt(	nameSpace = ''	,
 		btmPart_pxyJnt = rigTools.jointAt( topPart )
 		btmPart_pxyJnt.matchPosition(btmPart)
 
+	#... Ask along axis (2)
+	elif upPlana == 'z-' and alongAxis == 'x':
+		topPart = core.Dag( jointTop )
+		btmPart = core.Dag( jointBtm )
+		topPart_pxyJnt = rigTools.jointAt( topPart )
 
+		# For Fix twist fail using prosition only no orient
+		btmPart_pxyJnt = rigTools.jointAt( topPart )
+		btmPart_pxyJnt.matchPosition(btmPart)
+
+	#... Ask along axis (3)
+	elif upPlana == 'y+' and alongAxis == 'x':
+		topPart = core.Dag( jointTop )
+		btmPart = core.Dag( jointBtm )
+		topPart_pxyJnt = rigTools.jointAt( topPart )
+
+		# For Fix twist fail using prosition only no orient
+		btmPart_pxyJnt = rigTools.jointAt( topPart )
+		btmPart_pxyJnt.matchPosition(btmPart)
 
 
 	topPart_pxyJnt.name = partElem + types + position[0] + side + '_pxyJnt'
@@ -183,6 +226,11 @@ def ribbonRigExt(	nameSpace = ''	,
 		midUpValue = 	 ( 0,0,10 ) 
 		supUpValue = 	 ( 0,0,-10 )
 
+	elif alongAxis == 'x' and upPlana == 'y+':
+		aimVector = 	 ( 0,1,0 ) 
+		upVector = 		 ( 0,0,-1 ) 
+		midUpValue = 	 ( 0,0,10 ) 
+		supUpValue = 	 ( 0,10,0 )
 	#
 	# create top btm joint
 	#
@@ -267,7 +315,7 @@ def ribbonRigExt(	nameSpace = ''	,
 	crvA = core.duplicate( deformCrv.name ,  name =  name + 'TmpA_crv', rr=True )
 	crvB = core.duplicate( deformCrv.name ,  name =  name + 'TmpB_crv', rr=True )
 
-
+	#... Ask new along axis (1)
 	if upPlana == 'x+' or upPlana == 'x-':
 		mc.move( 0, 0,  0.5, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 		mc.move( 0, 0, -0.5, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
@@ -278,10 +326,36 @@ def ribbonRigExt(	nameSpace = ''	,
 		else: # RGT Leg
 			mc.move( -0.5, 0, 0, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 			mc.move(  0.5, 0, 0, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
-	elif upPlana == 'z-':
+	elif upPlana == 'z-' and alongAxis == 'y':
 		mc.move(  0.5, 0, 0, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 		mc.move( -0.5, 0, 0, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
 
+	#... add new condition
+	elif upPlana == 'z-' and alongAxis == 'x':
+		mc.move( 0, 0.5, 0, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		mc.move( 0, -0.5, 0, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		
+	#... add new condition
+	elif upPlana == 'z+' and alongAxis == 'x':
+		mc.move( 0, 0.5, 0, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		mc.move( 0, -0.5, 0, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+
+
+	#... add new condition
+	elif upPlana == 'y+' and alongAxis == 'x':
+		mc.move( 0, 0, 0.5, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		mc.move( 0, 0, -0.5, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		
+	#... add new condition
+	elif upPlana == 'y-' and alongAxis == 'x':
+		mc.move( 0, 0, 0.5, crvA.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+		mc.move( 0, 0, -0.5, crvB.name, relative=True,objectSpace=True, worldSpaceDistance = True )
+
+	#if part == 'upLeg' or part == 'lwrLeg':
+	#	crvA.freeze()
+	#	crvB.freeze()
+
+			
 	# TODO: insert log instead
 	# caue problem lambert1 is locked
 	# https://forums.autodesk.com/t5/maya-shading-lighting-and/initialshadinggroup-dagsetmembers-1-destination-is-locked/m-p/11166619#M36987
@@ -389,7 +463,12 @@ def ribbonRigExt(	nameSpace = ''	,
 
 
 
-	# start for loop
+
+
+
+
+
+	#... start for loop
 
 	for each in range (0 , numJoints ):
 
@@ -399,17 +478,50 @@ def ribbonRigExt(	nameSpace = ''	,
 		name =  partElem + types + '%02d'%num + side
 		#       [region] + [Rbn] +     [01]   + [LFT]
 
-		# using pin to surface to pin flc to desire UV cooordinate
-		flc_name = rigTools._pinToSurface(
-						oNurbs = ribbon_nrb.name 	,
-						side = side 				,
-						region = partElem + types   ,
-						uPos = uPos_cell_list[each] ,
-						vPos = vPos 				,
-						num = num)
-		folicle = core.Dag(flc_name)
-		# End of create folicle
+		if part == 'upLeg' and alongAxis == 'x' or part == 'lwrLeg' and alongAxis == 'x':
+			#...[START] Create Follicle old style because along X is not attatch dunno why
+			folicle = core.Null( name + '_flc')
+			folicle.follicle( name = folicle.name + 'Shape', ss = True )
+			folicleShape = core.Dag( folicle.shape )
+			ribbon_nrb.attr('local') >> folicleShape.attr('inputSurface')
+			ribbon_nrb.attr('worldMatrix[0]') >> folicleShape.attr('inputWorldMatrix')
 
+			# Connected armALFTShape.outRotate to armALFT.rotate
+			folicleShape.attr('outRotate') >> folicle.attr('rotate')
+			folicleShape.attr('outTranslate') >> folicle.attr('translate')
+
+			# hide visibility
+			folicle.attr('v').value = showInfo
+			
+			# Inbetween formula
+			uVal = ((0.5 / numJoints) * (each + 1) * 2) - ((0.5 / (numJoints * 2)) * 2)
+
+			'''
+			if side == 'RGT':
+				print 'The offset value is %d' %abs(uVal -1)
+				uVal= abs(uVal -1)
+			'''
+
+			# set value
+			folicleShape.attr('parameterV').value = 0.5
+			folicleShape.attr('parameterU').value = uVal
+			#...[END] Create Follicle old style because along X is not work dunno why
+		else:
+			#... [START] using pin to surface to pin flc to desire UV cooordinate
+			flc_name = rigTools._pinToSurface(
+							oNurbs = ribbon_nrb.name 	,
+							side = side 				,
+							region = partElem + types   ,
+							uPos = uPos_cell_list[each] ,
+							vPos = vPos 				,
+							num = num)
+
+			folicle = core.Dag(flc_name)
+			# [End] of create folicle
+
+
+
+		
 
 		ribbon_jnt = core.Joint()
 		ribbon_jnt.name = name + '_pxyJnt'
@@ -423,11 +535,16 @@ def ribbonRigExt(	nameSpace = ''	,
 		elif upPlana == 'x+':
 			ribbon_jnt.freeze()
 			ribbon_jnt.setRotate( (0,180,0) )
-		elif upPlana == 'z-':
+		elif upPlana == 'z-' and alongAxis == 'y':
 			ribbon_jnt.freeze( translate= True,rotate= True,scale= True,normal= False,preserveNormals=True,jointOrient=False)
 			ribbon_jnt.setRotate( (-90,90,0) )
 			ribbon_jnt.freeze()
-			
+		elif upPlana == 'z-' and alongAxis == 'x':
+			ribbon_jnt.freeze()
+		elif upPlana == 'y+' and alongAxis == 'x':
+			# ribbon_jnt.freeze( translate= True,rotate= True,scale= True,normal= False,preserveNormals=True,jointOrient=False)
+			# ribbon_jnt.setRotate( (-90,90,0) )
+			ribbon_jnt.freeze()	
 
 				
 			
@@ -464,13 +581,19 @@ def ribbonRigExt(	nameSpace = ''	,
 
 
 
-		if upPlana == 'z+':
+		if upPlana == 'z+' and alongAxis == 'y':
 			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , 0 ) )
+		elif upPlana == 'z-' and alongAxis == 'x':
+			print('set axis mai na.')
+			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , 90 ) )
 		elif upPlana == 'x-':
 			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , -90 ) )
+		elif upPlana == 'y+' and alongAxis == 'x':
+			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , 90 ) )
 		elif upPlana == 'x+':
 			pass
 				#ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , -90 ) )
+
 
 
 
@@ -593,13 +716,22 @@ def ribbonRigExt(	nameSpace = ''	,
 		midUpValue = 	( 0,10,0 )
 		midAimUp_loc.setTranslate( midUpValue )
 
-	elif upPlana == 'z+'  or upPlana == 'z-' :
+	elif upPlana == 'z+'  and alongAxis == 'y':
 		midUpValue = 	( 0,0,10 )
 		midAimUp_loc.setTranslate( midUpValue )
 
+	elif upPlana == 'z-' and alongAxis == 'y':
+		midUpValue = 	( 0,0,10 )
+		midAimUp_loc.setTranslate( midUpValue )
 
+	#... add for along x
+	elif upPlana == 'z-' and alongAxis == 'x':
+		midUpValue = ( 0,10,0 )
+		midAimUp_loc.setTranslate( midUpValue )
 
-
+	elif upPlana == 'y+' and alongAxis == 'x':
+		midUpValue = ( 0,0,10 )
+		midAimUp_loc.setTranslate( midUpValue )
 
 
 
@@ -645,15 +777,25 @@ def ribbonRigExt(	nameSpace = ''	,
 		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
 
-	elif upPlana == 'z+':
+	elif alongAxis == 'y' and upPlana == 'z+':
 		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (-1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
 		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
 
-	elif upPlana == 'z-':
+	elif alongAxis == 'y' and upPlana == 'z-':
 		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
 		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
+
+	#... add using this condition 
+	elif alongAxis == 'x' and upPlana == 'z-':
+		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (-1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
+		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
+
+	#... add using this condition 
+	elif alongAxis == 'x' and upPlana == 'y+':
+		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (-1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
+		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
 
 	#										#
@@ -676,11 +818,16 @@ def ribbonRigExt(	nameSpace = ''	,
 	elif upPlana == 'z+':
 		topUpObj_loc.setTranslate( supUpValue )
 
-	elif upPlana == 'z-':
+	elif alongAxis == 'y' and upPlana == 'z-':
 		topUpObj_loc.setTranslate( supUpValue )
 
-
-
+	#... add
+	elif alongAxis == 'x' and upPlana == 'z-':
+		topUpObj_loc.setTranslate( supUpValue )
+		
+	#... add
+	elif alongAxis == 'x' and upPlana == 'y+':
+		topUpObj_loc.setTranslate( supUpValue )
 
 
 	topPart_pxyJnt.parent( topAimed_grp )
@@ -785,14 +932,53 @@ def ribbonRigExt(	nameSpace = ''	,
 	# LFT leg 
 	# # # # # # # # # # 
 			
-	elif upPlana == 'z+':
+	elif alongAxis == 'y' and upPlana == 'z+':
 		upper_aimCons = core.aimConstraint(  lowerLocate_loc , topAimed_grp , mo = True , aimVector = (0, -1, 0) ,upVector = upVector, worldUpType='object', worldUpObject = topUpObj_loc.name )
 		lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = True , aimVector = (0, 1, 0) ,upVector = upVector, worldUpType='object'  , worldUpObject = lowerUpObj_loc.name)
 
-	elif upPlana == 'z-':
+	elif alongAxis == 'y' and upPlana == 'z-':
 		upper_aimCons = core.aimConstraint(  lowerLocate_loc , topAimed_grp , mo = True , aimVector = (0, -1, 0) ,upVector = upVector, worldUpType='object', worldUpObject = topUpObj_loc.name )
 		lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = True , aimVector = (0, 1, 0) ,upVector = upVector, worldUpType='object'  , worldUpObject = lowerUpObj_loc.name)
 		
+
+
+	# # # # # # # # # # 
+	# Add new condition
+	# # # 
+		# # # # # # # # # # 
+		# LFT arm
+		# # # # # # # # # # 
+
+	elif alongAxis == 'x' and upPlana == 'z-':
+		upper_aimCons = core.aimConstraint(  lowerLocate_loc , topAimed_grp ,  mo = True , aimVector = (1, 0, 0) ,upVector = (0, 0, -1), worldUpType='object', worldUpObject = topUpObj_loc.name )
+		# upper_aimCons.attr('worldUpType').value = 1
+		# upper_aimCons.attr('offsetX').value = 0
+		# upper_aimCons.attr('offsetY').value = 90
+		# upper_aimCons.attr('offsetZ').value = 0
+
+		lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = True , aimVector = (1, 0, 0) ,upVector = (0, 0, -1), worldUpType='object'  , worldUpObject = lowerUpObj_loc.name)
+		# lower_aimCons.attr('worldUpType').value = 1
+		# lower_aimCons.attr('offsetY').value = 90
+
+		ribbonMid_ctrl.rotateShape( rotate = ( 0 , 0 , 90) )
+
+	elif alongAxis == 'x' and upPlana == 'y+':
+		upper_aimCons = core.aimConstraint(  lowerLocate_loc , topAimed_grp ,  mo = True , aimVector = (1, 0, 0) ,upVector = (0, 1, 0), worldUpType='object', worldUpObject = topUpObj_loc.name )
+		# upper_aimCons.attr('worldUpType').value = 1
+		# upper_aimCons.attr('offsetX').value = 0
+		# upper_aimCons.attr('offsetY').value = 90
+		# upper_aimCons.attr('offsetZ').value = 0
+
+		lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = True , aimVector = (1, 0, 0) ,upVector = (0, 1, 0), worldUpType='object'  , worldUpObject = lowerUpObj_loc.name)
+		# lower_aimCons.attr('worldUpType').value = 1
+		# lower_aimCons.attr('offsetY').value = 90
+
+		ribbonMid_ctrl.rotateShape( rotate = ( 0 , 0 , 90) )
+
+
+
+
+
 	upper_aimCons.name = partElem + types + position[0] + side + '_aimCons'
 	lower_aimCons.name = partElem + types + position[1] + side + '_aimCons'
 
@@ -910,7 +1096,10 @@ def ribbonRigExt(	nameSpace = ''	,
 	# Connect Lower twsit
 	addTwistVal = core.AddDoubleLinear( partElem + 'Twist' + side + '_adl' )
 	ribbonMid_ctrl.attr('Lower_Twist') >> addTwistVal.attr('input1')
-	addTwistVal.attr('output') >> btmPart_pxyJnt.attr('rotateY')
+	if alongAxis == 'y':
+		addTwistVal.attr('output') >> btmPart_pxyJnt.attr('rotateY')
+	elif alongAxis == 'x':
+		addTwistVal.attr('output') >> btmPart_pxyJnt.attr('rotateX')
 
 	# Create condition
 	condTwistVal = core.Condition( partElem + 'Twist' + side + '_cond' )
@@ -919,10 +1108,16 @@ def ribbonRigExt(	nameSpace = ''	,
 	condTwistVal.attr('colorIfFalseR').value = 0
 
 
-	if side == 'LFT':
+	if side == 'LFT' and alongAxis == 'y':
 		btmPart.attr('rotateY') >> condTwistVal.attr('colorIfTrueR')
-	elif side == 'RGT':
+	elif side == 'RGT' and alongAxis == 'y':
 		topPart.attr('rotateY') >> condTwistVal.attr('colorIfTrueR')
+	condTwistVal.attr('outColorR') >> addTwistVal.attr('input2')
+
+	if side == 'LFT' and alongAxis == 'x':
+		btmPart.attr('rotateX') >> condTwistVal.attr('colorIfTrueR')
+	elif side == 'RGT' and alongAxis == 'x':
+		topPart.attr('rotateX') >> condTwistVal.attr('colorIfTrueR')
 	condTwistVal.attr('outColorR') >> addTwistVal.attr('input2')
 
 
@@ -1040,18 +1235,21 @@ def ribbonRigExt(	nameSpace = ''	,
 
 
 
+
+
+
 # Benefical of ribbon functon for make elbow or knee move
 def makeHigesMover( 	nameSpace = ''	,
-						part = ''		, 
-						side = 'LFT' 	, 
-						btmName = ''	, 
-						topName = ''  	, 
-						charScale = '' 	, 
-						noTouch_grp = 'noTouch_grp' 	,
-						moverPosition = 'lowerArmLFT_bJnt'	,
-						ctrl_grp = 'ctrl_grp'		,
-
-					 ):
+					part = ''		, 
+					side = 'LFT' 	, 
+					btmName = ''	, 
+					topName = ''  	, 
+					charScale = '' 	, 
+					noTouch_grp = 'noTouch_grp' 	,
+					moverPosition = 'lowerArmLFT_bJnt'	,
+					ctrl_grp = 'ctrl_grp'		,
+					alongAxis = 'y'
+				 ):
 
 	# naming = charName + elem
 
@@ -1093,6 +1291,7 @@ def makeHigesMover( 	nameSpace = ''	,
 		mc.error('What part is it?')
 
 
+	# mc.error('STOP RIGHT THERE!!! {}'.format(upper_bJnt.name))
 
 
 

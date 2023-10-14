@@ -9,7 +9,8 @@ reload(misc)
 from function.framework.reloadWrapper import reloadWrapper as reload
 
 
-
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
 
 
 from function.pipeline import logger 
@@ -1157,8 +1158,12 @@ def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = 
 	print (' # # # # # # # # #  Matrix parent complete # # # # # # # # # # # #  \n')
 
 
-def del_sel_matrix():
-	selected = mc.ls(sl=True)
+def del_sel_matrix(selected = []):
+	#... Get short name
+	mulMtx = mnd.get_short_name('multMatrix')
+	quat = mnd.get_short_name('quatToEuler')
+	deComp = mnd.get_short_name('decomposeMatrix')
+
 	for each in selected:
 		list_sel = mc.listConnections(each, destination=True)
 
@@ -1168,12 +1173,16 @@ def del_sel_matrix():
 				# if each.endswith('_dmpMtx'):
 					# logger.MayaLogger.info('Delete %s' %each)
 					# mc.delete(each)
-				if each.endswith('_quaEul'):
+				if each.endswith(mulMtx):
 					logger.MayaLogger.info('Delete %s' %each)
 					mc.delete(each)
-				if each.endswith('_mulMtx'):
+				if each.endswith(quat):
 					logger.MayaLogger.info('Delete %s' %each)
 					mc.delete(each)
+				if each.endswith(deComp):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+
 			except:
 				print('There are no matrix node to delete.')
 	print('Delete Done...')

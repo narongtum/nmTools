@@ -35,7 +35,10 @@ reload(mnd)
 from function.rigging.autoRig.bodyRig import twistRig as tr
 reload(tr)
 
+import sys
+
 import logging
+
 logger = logging.getLogger('fkIkTwistRig')
 logger.setLevel(logging.DEBUG)
 
@@ -295,11 +298,16 @@ def fkIkTwistGenRig(
 	stick_ctrl.attr( attScaleName ) >> lower_bJnt.attr( 'sz' )
 	'''
 
-
-
-
 	# Lock and hide
 	stick_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' ,'rx' , 'ry' , 'rz' , 'sx' , 'sy' , 'sz' , 'v' )
+
+
+
+	#... freeze bind joint
+	upper_bJnt.freeze()
+	middle_bJnt.freeze()
+	lower_bJnt.freeze()
+
 
 
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
@@ -994,15 +1002,14 @@ def fkIkTwistGenRig(
 	''')
 
 
-	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
-	# 	try to break for debug don't forget for change it back
-	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
-
-	mc.error('STOP RIGHT THERE!!! {}'.format(upper_bJnt.name))
 
 
 
 
+	
+
+
+	sys.exit('Try to run manual')
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Create ribbon rig
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
@@ -1025,7 +1032,8 @@ def fkIkTwistGenRig(
 			charScale = charScale					,
 			noTouch_grp = noTouchGrp				,
 			showInfo = showInfo  					,
-			ctrl_grp = fkIkRig_grp.name )
+			ctrl_grp = fkIkRig_grp.name 		,
+			alongAxis = alongAxis )
 
 
 
@@ -1040,11 +1048,14 @@ def fkIkTwistGenRig(
 				charScale = charScale					,
 				noTouch_grp = noTouchGrp				,
 				showInfo = showInfo  					,
-				ctrl_grp = fkIkRig_grp.name )
+				ctrl_grp = fkIkRig_grp.name 		,
+				alongAxis = alongAxis)
 
 		logger.info('This is something that ribbonRig return >>>> \n\n\n\n')
 		logger.info(hingesUprBtm)
 		logger.info('++++++++++++++++++++++++++++++++++++++++++++++++ \n\n\n\n')
+		
+
 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 		# Create elbow mover 
@@ -1076,9 +1087,9 @@ def fkIkTwistGenRig(
 	# so put manual for user drive value insted		
 	
 	
-
+	# sys.exit('BREAK')
 	follow_grp = tr.twistRigAuto(	 
-									nameSpace = nameSpace,
+									nameSpace = nameSpace ,
 									parent_jnt = upper_buffJnt.name , 
 									child_jnt = middle_buffJnt.name , 
 									fk_shoulderCtrl = upper_ctrl.name ,
@@ -1087,7 +1098,9 @@ def fkIkTwistGenRig(
 									region = region ,
 									priorJnt = priorJnt ,
 									stick_ctrl = stick_ctrl.name ,
-									charScale = charScale )
+									charScale = charScale,
+									showInfo = showInfo,
+									alongAxis = alongAxis )
 
 
 	mc.parent( follow_grp[0] , noTouchGrp )

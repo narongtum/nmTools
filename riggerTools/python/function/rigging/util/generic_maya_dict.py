@@ -3,7 +3,7 @@
 
 '''
 
-node short name dictionary
+node short name dictionary (use this)
 
 
 from function.rigging.util import generic_maya_dict as mnd
@@ -23,8 +23,15 @@ nodeDict = mnd.NODE_dict
 for each in nodeDict:
 	if each["longName"] == 'joint':
 		node_exp = each["shortName"]
-			
+
+
+
+
+nodeDict = mnd.NODE_dict['eulerToQuat']
+		
 '''
+
+
 
 
 
@@ -88,6 +95,14 @@ NODE_dict = [
 	
 
 ]
+
+
+
+def get_short_name(long_name):
+	for node in NODE_dict:
+		if node['longName'] == long_name:
+			return node['shortName']
+	return long_name
 
 
 

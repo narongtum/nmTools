@@ -305,7 +305,10 @@ joint = core.Joint('nameJnt')
 neck_ctrl.editCtrlShape( axis = charScale * 2.8 )
 
 
-
+#... Example 26: delete matrix constraint
+from function.rigging.util import misc
+sel= 'broadA04_jnt'
+misc.del_sel_matrix(selected = [sel])
 
 
 

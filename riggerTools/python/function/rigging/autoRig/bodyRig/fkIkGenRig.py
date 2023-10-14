@@ -651,7 +651,7 @@ def fkIkGenRig(
 
 
 
-	# Create ik stretchy
+	#------------------------------ Create ik Stretchy -----------------------------#
 	stretchNode = create.iKStretch(	ikJnt = (    upper_IkJnt.name , middle_IkJnt.name , lower_IkJnt.name )  , 
 								ikCtrl = ( ikRoot_ctrl.name , lowerIk_ctrl.name ) , 
 								side = side , scaleCtrl = 'placement_ctrl'	, 

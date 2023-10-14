@@ -685,109 +685,110 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 		if maya_file_path:
-			try:
-				file_ext = os.path.basename(maya_file_path)
-				FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
+			# try:
+			file_ext = os.path.basename(maya_file_path)
+			FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
 
-				# Splits a pathname into a pair (root, ext)
-				file_name = os.path.splitext(file_ext)[0]
+			# Splits a pathname into a pair (root, ext)
+			file_name = os.path.splitext(file_ext)[0]
 
-				# Check if righ naming version (****.0001.ma) of this pipeline 
-				check_digit = (os.path.splitext(file_ext)[0]).split('.')[-1]
+			# Check if righ naming version (****.0001.ma) of this pipeline 
+			check_digit = (os.path.splitext(file_ext)[0]).split('.')[-1]
 
-				if check_digit.isdigit():
+			if check_digit.isdigit():
 
-					# Check if valid name 
-					digits = [count for count in check_digit if count.isdigit()]
-					padding_count = len(digits)
+				# Check if valid name 
+				digits = [count for count in check_digit if count.isdigit()]
+				padding_count = len(digits)
 
-					if padding_count == PADDING:
+				if padding_count == PADDING:
 
-					# if file_name.split('.')[-1].isdigit():# Check if valid name 
-						
-						local_commit_name = file_name.split('.')[0]
+				# if file_name.split('.')[-1].isdigit():# Check if valid name 
+					
+					local_commit_name = file_name.split('.')[0]
 
-						FileManagerLog.debug('This is local_commit_name: {0}'.format(local_commit_name))
-						# do the naming and publish
-						# cut '.000x' and replace with step job
-						# Ex. 		 003_Lucille    01       Rig  skel.ma
-						# 	 		[assetname]_[variation]_[job]_[step]
-						# 		Do something when publish
+					FileManagerLog.debug('This is local_commit_name: {0}'.format(local_commit_name))
+					# do the naming and publish
+					# cut '.000x' and replace with step job
+					# Ex. 		 003_Lucille    01       Rig  skel.ma
+					# 	 		[assetname]_[variation]_[job]_[step]
+					# 		Do something when publish
 
-				else:
-					FileManagerLog.debug('This not valid name: using original ( {0} )'.format(file_name))
-					local_commit_name = file_name
-					pass
+			else:
+				FileManagerLog.debug('This not valid name: using original ( {0} )'.format(file_name))
+				local_commit_name = file_name
+				pass
 
-				# Saving file to local commit location
+			# Saving file to local commit location
 
-				FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
-				save_full_path = os.path.join(full_path, local_commit_name)
+			FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
+			save_full_path = os.path.join(full_path, local_commit_name)
 
 
+			line_number = sys._getframe().f_lineno
+			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
+
+
+
+
+
+
+			reply = QMessageBox(self)
+			reply.setWindowTitle('Commit Changes')
+			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(local_commit_name))
+
+
+			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+			reply.addButton(QMessageBox.Cancel)	
+
+			result = reply.exec_()	
+
+			# Local commit action
+			if reply.clickedButton() == commit_button:
+				# 1. Procress manage scene
+				do_local_commit()
+
+				# 2. Maya Save
+				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
+				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
+				self.maya_save(full_path, local_commit_name, MAYA_EXT)
+
+				# 3. Add SVN
+				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+				# 4. Commit SVN
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+
+				# 5. Update localWidget viewport
+				self.load_local_commit(full_path)
+
+			elif reply.clickedButton() == save_button:
+				# 1. Procress manage scene
 				line_number = sys._getframe().f_lineno
-				FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
+				FileManagerLog.debug('({0})Do local commit'.format(line_number))
+				do_local_commit()
 
 
+				# 2. Maya Save
+				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
+				self.maya_save(full_path, local_commit_name, MAYA_EXT)
 
+				# 3. Update localWidget viewport
+				self.load_local_commit(full_path)
 
-
-
-				reply = QMessageBox(self)
-				reply.setWindowTitle('Commit Changes')
-				reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(local_commit_name))
-
-
-				commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
-				save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
-				reply.addButton(QMessageBox.Cancel)	
-
-				result = reply.exec_()	
-
-				# Local commit action
-				if reply.clickedButton() == commit_button:
-					# 1. Procress manage scene
-					do_local_commit()
-
-					# 2. Maya Save
-					FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
-					self.maya_save(full_path, local_commit_name, MAYA_EXT)
-
-					# 3. Add SVN
-					self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
-
-					# 4. Commit SVN
-					self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
-
-					# 5. Update localWidget viewport
-					self.load_local_commit(full_path)
-
-				elif reply.clickedButton() == save_button:
-					# 1. Procress manage scene
-					line_number = sys._getframe().f_lineno
-					FileManagerLog.debug('({0})Do local commit'.format(line_number))
-					do_local_commit()
-
-
-					# 2. Maya Save
-					FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-					self.maya_save(full_path, local_commit_name, MAYA_EXT)
-
-					# 3. Update localWidget viewport
-					self.load_local_commit(full_path)
-
-				elif result == QMessageBox.Rejected:
-						print('Cancel button clicked')
-						pass
+			elif result == QMessageBox.Rejected:
+					print('Cancel button clicked')
+					pass
 
 
 
 	
 		
 
-			except Exception as e:
-				FileManagerLog.debug('File not valid name please check: {0}'.format(maya_file_path))
-				print("Error:", e)
+			'''except Exception as e:
+													FileManagerLog.debug('File not valid name please check: {0}'.format(maya_file_path))
+													print("Error:", e)'''
 				
 
 		else:
@@ -1107,18 +1108,20 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		filepath = filepath.replace('\\','/')
 		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
 
-	def maya_save(self, save_path, save_name, MAYA_EXT, fixed_name = False):
+	def maya_save(self, save_path, save_name, MAYA_EXT):
 
 		if MAYA_EXT == 'ma':
 			maya_type = 'mayaAscii'
 		elif MAYA_EXT == 'mb':
 			maya_type = 'mayaBinary'
 
-		if fixed_name:
-			if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != '':
-				save_name = mc.getAttr("rig_grp.asset_name")
 
-		save_full_path = os.path.join(save_path,save_name)
+		if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != None:
+			save_name = mc.getAttr("rig_grp.asset_name")
+		else:
+			pass
+		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path,save_name))
+		save_full_path = os.path.join(save_path, save_name)
 		mc.file(rename=save_full_path)
 		mc.file(save=True, force=True, type=maya_type)
 		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 

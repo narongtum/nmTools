@@ -55,7 +55,9 @@ def twistRigAuto(			nameSpace = '',
 							region = 'leg' ,
 							priorJnt = 'handStickLFT_ctrl', 
 							stick_ctrl = '',
-							charScale = 1.0 ):
+							charScale = 1.0 ,
+							showInfo = True,
+							alongAxis = 'y' ):
 
 
 
@@ -112,22 +114,36 @@ def twistRigAuto(			nameSpace = '',
 
 
 	# Find distance between shoulder to elbow
-	lenght = elbow_jnt.attr('translateY').value 
+	if alongAxis == 'y':
+		lenght = elbow_jnt.attr('translateY').value 
+	if alongAxis == 'x':
+		lenght = elbow_jnt.attr('translateX').value 
+
 	# Divide half
 	lenght = lenght/2
 
 
 	# Change value by side
-	if side == 'LFT':
+	#... Add more condition
+	if side == 'LFT' and alongAxis == 'y':
 		i = 1
 		aimVec = (0,1,0)
 		upVec = (0,0,-1)
 
-	elif side == 'RGT':
+	elif side == 'RGT' and alongAxis == 'y':
 		i = -1
 		aimVec = (0,-1,0)
 		upVec = (0,0,1)
 
+	elif side == 'LFT' and alongAxis == 'x':
+		i = 1
+		aimVec = (1,0,0)
+		upVec = (0,-1,0)
+
+	elif side == 'RGT' and alongAxis == 'x':
+		i = -1
+		aimVec = (-1,0,0)
+		upVec = (0,1,0)
 
 
 	upperTwist01_jnt = core.Joint()
@@ -156,7 +172,10 @@ def twistRigAuto(			nameSpace = '',
 	upperTwist01_jnt.maSnap( parent_jnt )
 
 	# make it forward a bit
-	mc.move(0,  i*0.0125, 0 ,  upperTwist01_jnt.name , relative=True, objectSpace=True, worldSpaceDistance=True )
+	if alongAxis == 'y':
+		mc.move(0, i*0.0125, 0 ,  upperTwist01_jnt.name , relative=True, objectSpace=True, worldSpaceDistance=True )
+	elif alongAxis == 'x':
+		mc.move(i*0.0125, 0, 0 ,  upperTwist01_jnt.name , relative=True, objectSpace=True, worldSpaceDistance=True )
 
 	upperTwist01_jnt.freeze()
 
@@ -168,7 +187,11 @@ def twistRigAuto(			nameSpace = '',
 	upperTwist01_jnt.parent(shoulder_jnt)
 
 	upperTwist02_jnt.freeze()
-	upperTwist02_jnt.attr('translateY').value = lenght
+	if alongAxis == 'y':
+		upperTwist02_jnt.attr('translateY').value = lenght
+	elif alongAxis == 'x':
+		upperTwist02_jnt.attr('translateX').value = lenght
+
 	upperTwist01_jnt.attr('radius').value = charScale*4
 
 	upperTwist01_jnt.attr('localScaleX').value = charScale*0.1
@@ -187,7 +210,16 @@ def twistRigAuto(			nameSpace = '',
 	#upVectorGuide_loc.freeze()
 	#upVectorGuide_loc.attr('translateY').value = 0.5
 
-	upVectorGuide_loc.moveObj( position = ( 0 , 0 , -10 * 1 * lenght*0.5 ) )
+
+	if alongAxis == 'y':
+		MOVE_POSITION = ( 0, 0, lenght*-1*1.25 )
+	elif alongAxis == 'x':
+		MOVE_POSITION = ( 0, lenght*-1*1.25, 0 )
+		
+
+	
+	upVectorGuide_loc.moveObj( position = MOVE_POSITION )
+	
 	upVectorGuide_loc.setColor('white')
 
 
@@ -202,7 +234,7 @@ def twistRigAuto(			nameSpace = '',
 	# create following joint 
 	upperFollow01_jnt = rigTools.jointAt( upperTwist01_jnt )
 	upperFollow01_jnt.name = nameSpace + 'upper%sFollow01%s_twJnt' %(region,side) 
-	upperFollow01_jnt.moveObj( position = ( 0 , 0 , -10 * 1 * lenght * 0.085 ) )
+	upperFollow01_jnt.moveObj( position = MOVE_POSITION )
 	upperFollow01_jnt.setJointColor('white')
 
 	upperFollow01_jnt.freeze()
@@ -211,7 +243,7 @@ def twistRigAuto(			nameSpace = '',
 
 	upperFollow02_jnt = rigTools.jointAt( upperTwist02_jnt )
 	upperFollow02_jnt.name = nameSpace + 'upper%sFollow02%s_twJnt' %(region,side) 
-	upperFollow02_jnt.moveObj( position = ( 0 , 0 , -10 * 1 * lenght * 0.085 ) )
+	upperFollow02_jnt.moveObj( position = MOVE_POSITION )
 	upperFollow01_jnt.setJointColor('white')
 	upperFollow02_jnt.parent(upperFollow01_jnt)
 
@@ -298,7 +330,8 @@ def twistRigAuto(			nameSpace = '',
 	followGrp_scalCons = core.scaleConstraint( priorJnt , follow_grp , mo = True	 )
 	followGrp_scalCons.name = nameSpace + 'upper%sFollow%s_scalCons' %(region,side) 
 
-	upperFollow01_jnt.attr('visibility').value = 0
+	if showInfo == False:
+		upperFollow01_jnt.attr('visibility').value = 0
 	
 	misc.makeHeader(	nameSpace + 'twistRigAuto %s%s Complete' %(region,side)	)
 

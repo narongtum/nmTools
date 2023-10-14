@@ -28,8 +28,37 @@ class RigToolsLogger(logger.MayaLogger):
 
 
 
+def createFollicle(name, uVal, vVal):
+	# num =  each + 1
+	# Common name
+	# name =  partElem + types + '%02d'%num + side
 
+	# Create Follicle
+	folicle = core.Null( name + '_flc')
+	folicle.follicle( name = folicle.name + 'Shape', ss = True )
+	folicleShape = core.Dag( folicle.shape )
+	ribbon_nrb.attr('local') >> folicleShape.attr('inputSurface')
+	ribbon_nrb.attr('worldMatrix[0]') >> folicleShape.attr('inputWorldMatrix')
 
+	# Connected armALFTShape.outRotate to armALFT.rotate
+	folicleShape.attr('outRotate') >> folicle.attr('rotate')
+	folicleShape.attr('outTranslate') >> folicle.attr('translate')
+
+	# hide visibility
+	folicle.attr('v').value = 0
+	
+	# Inbetween formula
+	uVal = ((0.5 / numJoints) * (each + 1) * 2) - ((0.5 / (numJoints * 2)) * 2)
+
+	'''
+	if side == 'RGT':
+		print 'The offset value is %d' %abs(uVal -1)
+		uVal= abs(uVal -1)
+	'''
+
+	# set value
+	folicleShape.attr('parameterV').value = 0.5
+	folicleShape.attr('parameterU').value = uVal
 
 
 

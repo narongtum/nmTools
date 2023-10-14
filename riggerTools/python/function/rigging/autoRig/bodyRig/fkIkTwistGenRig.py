@@ -1009,7 +1009,7 @@ def fkIkTwistGenRig(
 	
 
 
-	sys.exit('Try to run manual')
+	
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Create ribbon rig
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
@@ -1056,7 +1056,7 @@ def fkIkTwistGenRig(
 		logger.info('++++++++++++++++++++++++++++++++++++++++++++++++ \n\n\n\n')
 		
 
-
+		# sys.exit('Try to run manual 1059')
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 		# Create elbow mover 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #		

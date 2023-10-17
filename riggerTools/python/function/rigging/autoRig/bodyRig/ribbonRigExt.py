@@ -22,7 +22,7 @@ import pymel.core as pm
 class RibbonLogger(logger.MayaLogger):
     LOGGER_NAME = "Ribbon"
 
-
+import sys
 
 
 
@@ -1273,7 +1273,7 @@ def makeHigesMover( 	nameSpace = ''	,
 	if part == 'arm':
 		print ('\nThis is maybe Arm.')
 
-		if side == 'LFT':
+		if side == 'LFT' and alongAxis == 'y':
 			upAxis = ( 0,0,90 )
 		elif side == 'RGT':
 			upAxis = ( 180,0,90 )
@@ -1281,37 +1281,64 @@ def makeHigesMover( 	nameSpace = ''	,
 	elif part == 'leg' or part == 'frontLeg' or part == 'backLeg' or part == 'upLeg' or part == 'lwrLeg'  :
 		print ('\nThis is maybe Leg.')
 
-		if side == 'LFT':
+		if side == 'LFT' and alongAxis == 'y':
 			# upAxis = ( 0,0,180 )	default value
 			upAxis = ( 0,0,180 )
-		elif side == 'RGT':
+		elif side == 'RGT' and alongAxis == 'y':
 			# upAxis = ( 0,180,0 ) default value
+			upAxis = ( 0,0,0 )
+		elif side == 'LFT' and alongAxis == 'x':
 			upAxis = ( 0,0,0 )
 	else:
 		mc.error('What part is it?')
 
 
-	# mc.error('STOP RIGHT THERE!!! {}'.format(upper_bJnt.name))
+	
 
 
 
 	hinges_jnt = core.Joint()
 	hinges_jnt.maSnap( moverPosition )
-	# Translate elbow or knee a bit for solve weight error
-	hinges_jnt.moveObj(position = (0,charScale*0.01,0))
+	
 
+	# Translate elbow or knee a bit for solve weight error
+	if alongAxis == 'y':
+		hinges_jnt.moveObj(position = (0, charScale*0.01, 0))
+	elif alongAxis == 'x':
+		hinges_jnt.moveObj(position = (charScale*0.01, 0, 0))
+
+	
 	hinges_jnt.freeze()
-	hinges_jnt.setRotate( upAxis )
-	hinges_jnt.freeze()
+
+	if alongAxis == 'y':
+		hinges_jnt.setRotate( upAxis )
+		hinges_jnt.freeze()
 
 	rbnHinges_ctrl.maSnap( hinges_jnt ) 
 	hinges_jnt.name = name + side + '_rbnBJnt'
 
-	if part == 'leg':
-		rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 0 )	)
-	elif part == 'arm':
-		rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
 
+	
+
+
+	if alongAxis == 'y':
+
+		if part == 'leg':
+			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 0 )	)
+		elif part == 'arm':
+			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
+
+	elif alongAxis == 'x':
+		if part == 'leg':
+			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
+		elif part == 'arm':
+			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
+
+
+	# sys.exit(rbnHinges_ctrl.name)
+
+	
+	
 
 	# Parent to bind joint for exporting
 	# hinges_jnt.parent( moverPosition )

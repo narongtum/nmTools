@@ -815,7 +815,7 @@ def snapPointCon(source ,target):
 
 
 #####################################################
-#      constraint between proxy joint and bind joint old(naming)               
+#      constraint pair between proxy joint and bind joint old(naming)               
 #####################################################
 def constraintProxyJnt( child = 'bind_jnt', parent = 'proxy_jnt' ):
 	naming = '*_' + parent
@@ -1208,7 +1208,7 @@ def parentSufficMatrix( child = '' , parent = '' , mo = True, w = 1, t = True, r
 	for each in proxyList:
 		spEach = each.split('_')
 		childNam = spEach[0] + '_' + child
-		parentMatrix( each , childNam, mo = mo, t = t, r = r, s = s)
+		parentMatrix( each , childNam, mo = mo, translate = t, rotate = r, scale = s)
 		print ('parent %s >>> %s' %(each , childNam))
 
 	print ('\t\t\t### constraint matrix complete ###')

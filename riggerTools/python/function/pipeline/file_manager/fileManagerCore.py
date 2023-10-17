@@ -417,7 +417,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
 
 
-			
+	#... right click at version widget
 	def handle_dynamic_context(self):
 		# Get the selected action
 		action = self.sender()
@@ -635,7 +635,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(global_path, global_commit_name, MAYA_EXT)
+				save_full_path = self.maya_save(global_path, global_commit_name, MAYA_EXT)
 
 				# 3.Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
@@ -1063,8 +1063,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
 
 		line_number = sys._getframe().f_lineno
-		FileManagerLog.debug('({1})THIS IS save_full_path: {0}'.format(save_full_path,line_number)) 
-		self.maya_save(save_path, new_file_name, MAYA_EXT)
+		FileManagerLog.debug('({1})THIS IS save_full_path: {0}'.format(save_full_path,line_number))
+
+		#... using saving version 
+		self.maya_save_version(save_path, new_file_name, MAYA_EXT)
+		# self.maya_save(save_path, new_file_name, MAYA_EXT)
 
 		#... To refresh version viewport
 		self.asset_version_view_listWidget.clear()
@@ -1108,6 +1111,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		filepath = filepath.replace('\\','/')
 		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
 
+	#... this method is for publish saving only
+	#... change to return path for make it more dynamic
 	def maya_save(self, save_path, save_name, MAYA_EXT):
 
 		if MAYA_EXT == 'ma':
@@ -1118,8 +1123,30 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != None:
 			save_name = mc.getAttr("rig_grp.asset_name")
+			FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
 		else:
+			FileManagerLog.debug('Not found naming specific.')
 			pass
+		# mc.error('test error')
+
+		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path, save_name))
+		save_full_path = os.path.join(save_path, save_name)
+		mc.file(rename=save_full_path)
+		mc.file(save=True, force=True, type=maya_type)
+		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
+		self.maya_add_recen_file(save_full_path, MAYA_EXT)
+		return save_full_path
+
+
+
+	#... this method is for saving version only
+	def maya_save_version(self, save_path, save_name, MAYA_EXT):
+
+		if MAYA_EXT == 'ma':
+			maya_type = 'mayaAscii'
+		elif MAYA_EXT == 'mb':
+			maya_type = 'mayaBinary'
+
 		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path,save_name))
 		save_full_path = os.path.join(save_path, save_name)
 		mc.file(rename=save_full_path)
@@ -1127,9 +1154,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
 		self.maya_add_recen_file(save_full_path, MAYA_EXT)
 		return True
-
-
-
 
 
 

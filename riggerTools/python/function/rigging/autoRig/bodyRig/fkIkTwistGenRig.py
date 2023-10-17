@@ -1067,7 +1067,8 @@ def fkIkTwistGenRig(
 														topName = hingesLwrTop 		 , 
 														charScale = charScale		,
 														moverPosition = middle_buffJnt.name	,
-														ctrl_grp = 'ctrl_grp'		
+														ctrl_grp = 'ctrl_grp',
+														alongAxis = alongAxis		
 																									)
 		
 

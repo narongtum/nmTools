@@ -12,6 +12,8 @@ import maya.cmds as mc
 from function.rigging.util import misc
 reload( misc )
 
+import sys
+
 import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
@@ -215,12 +217,22 @@ def twistRigAuto(			nameSpace = '',
 		MOVE_POSITION = ( 0, 0, lenght*-1*1.25 )
 	elif alongAxis == 'x':
 		MOVE_POSITION = ( 0, lenght*-1*1.25, 0 )
-		
+	
 
-	
-	upVectorGuide_loc.moveObj( position = MOVE_POSITION )
-	
+
+
+	if alongAxis == 'y':
+		MOVE_UPVEC = ( 0, 0, lenght*-1*2.5 )
+	elif alongAxis == 'x' and side == 'LFT':
+		MOVE_UPVEC = ( 0, lenght*-1*2.5, 0 )
+	elif alongAxis == 'x' and side == 'RGT':
+		MOVE_UPVEC = ( 0, lenght*-1*2.5, 0 )
+
+	#... if to short it will flip
+	upVectorGuide_loc.moveObj( position = MOVE_UPVEC )
 	upVectorGuide_loc.setColor('white')
+
+
 
 
 
@@ -334,5 +346,8 @@ def twistRigAuto(			nameSpace = '',
 		upperFollow01_jnt.attr('visibility').value = 0
 	
 	misc.makeHeader(	nameSpace + 'twistRigAuto %s%s Complete' %(region,side)	)
+
+	#... for debug
+	# sys.exit(upVectorGuide_loc.name)
 
 	return follow_grp.name , upperTwist01_jnt.name 

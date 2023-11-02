@@ -1,3 +1,4 @@
+#... jaw rig using weight distribute
 #...source >>> I:\Resource\Tutorial\Rigging The Jaw with Python in Maya\MyFile
 
 
@@ -730,4 +731,4 @@ def createJawPin():
 #... END of part 3/3
 
 
-
+#...Improve readability of this function.

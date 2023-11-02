@@ -22,8 +22,10 @@ from function.pipeline import fileTools as fileTools
 reload(fileTools)
 
 
-
-
+try:
+	from shiboken2 import wrapInstance
+except:
+	from sid import wrapInstance as wrapInstance
 
 
 
@@ -31,6 +33,7 @@ class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
 	
 import maya.cmds as mc
+MAYA_VERSION = int(mc.about(v=True))
 
 
 
@@ -66,6 +69,21 @@ PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	('P_Regulus')
 SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
+
+
+
+
+import maya.OpenMayaUI as OpenMayaUI
+
+#... get this window on top
+#... chad vernon said about parent window on top at 1:16 (crateing the remapping dialog)
+def getMayaMainWindow():
+	main_window_ptr = OpenMayaUI.MQtUtil.mainWindow() #... find maya pointer
+	if MAYA_VERSION >= 2022:
+		pointer = wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
+	else:
+		pointer = wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
+	return pointer
 
 
 
@@ -107,7 +125,8 @@ class FilterProxyModel(QtCore.QSortFilterProxyModel):
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def __init__(self):
-		super(FileManager, self).__init__()
+		parent = getMayaMainWindow()
+		super(FileManager, self).__init__(parent=parent)
 		self.setupUi(self)
 		self.path = None
 		FileManagerLog.debug('Run this first...')

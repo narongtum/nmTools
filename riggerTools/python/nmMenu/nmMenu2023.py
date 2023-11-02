@@ -355,7 +355,7 @@ def runMenu():
 	#------------------------------------------------
 
 	# skinWrangler
-	mc.menuItem( label = "SkinWrangler", command = "from function.rigging.skin.skinWrangler import skinWrangler as sw\nimportlib.reload(sw)\nskinWranglerWindow = sw.show()" , ann = "By Christopher Evans, https://github.com/chrisevans3d/skinWrangler" )
+	mc.menuItem( label = "SkinWrangler", command = "from function.rigging.skin.skinWrangler import skinWrangler2023 as sw\nimportlib.reload(sw)\nskinWranglerWindow = sw.show()" , ann = "By Christopher Evans, https://github.com/chrisevans3d/skinWrangler" )
 	#... Round skin weight
 	mc.menuItem( label = "Round Skin Weight", command = "from function.framework.reloadWrapper import reloadWrapper as reload\nfrom function.rigging.skin import roundSkinWeight as rsw\nreload(rsw)\nselected = mc.ls(sl=True)[0]\nrsw.roundSkinWeight(digit=3, selection=selected)" , ann = "Convert from MEL" )
 

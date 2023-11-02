@@ -75,6 +75,30 @@ else:
 
 
 
+def ctrlWidth(Width = 5):
+	for each in mnd.make_controller_thicker:
+		_makeCurveWidth(name = each , Width = Width)
+
+
+
+
+
+def _makeCurveWidth(name = '', Width = 5):
+	print(name)
+	if mc.objExists(name):
+		try:
+			shapeCtrl = shapeName(name)
+			mc.setAttr('{}.lineWidth'.format(shapeCtrl), Width)
+			print('{} has expand curve width.'.format(name))
+		except:
+			pass
+	else:
+		print('{} not found.'.format(name))
+			
+			
+
+
+
 
 
 

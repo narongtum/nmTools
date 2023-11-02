@@ -20,7 +20,7 @@ reload(logger)
 import pymel.core as pm
 
 class RibbonLogger(logger.MayaLogger):
-    LOGGER_NAME = "Ribbon"
+	LOGGER_NAME = "Ribbon"
 
 import sys
 
@@ -29,9 +29,9 @@ import sys
 # nameSpace = ''			
 # width = 10								
 # numJoints = 3								
-# side = 'LFT'	
-# jointTop = 'upperLegLFT_tmpJnt'	
-# jointBtm = 'lowerLegLFT_tmpJnt'	
+# side = 'RGT'	
+# jointTop = 'upperLegRGT_tmpJnt'	
+# jointBtm = 'lowerLegRGT_tmpJnt'	
 # part = 'upLeg'	#'upArm','lwrArm','upLeg','lwrLeg'			
 # charScale = 1								
 # noTouch_grp = 'noTouch_grp'			
@@ -39,26 +39,27 @@ import sys
 # upPlana = ''	
 # ctrl_grp = 'ribbon_grp'
 # alongAxis = 'x' 
-
+# pinMethod = 'original'
 
 
 
 #... start function
 def ribbonRigExt(	nameSpace = ''	,		
-					width = 10		,							
-					numJoints = 5	,								
-					side = 'LFT'	,
-					jointTop = 'upperLegLFT_tmpJnt'	,
-					jointBtm = 'lowerLegLFT_tmpJnt'	,
-					part = 'upLeg'	,#'upArm','lwrArm','upLeg','lwrLeg'	,		
-					charScale = 1	,							
-					noTouch_grp = 'noTouch_grp'	,		
-					showInfo = True 			,
-					upPlana = ''	,
-					ctrl_grp = 'ribbon_grp',
-					alongAxis = 'y' ):
+				width = 10		,							
+				numJoints = 5	,								
+				side = 'LFT'	,
+				jointTop = 'upperLegLFT_tmpJnt'	,
+				jointBtm = 'lowerLegLFT_tmpJnt'	,
+				part = 'upLeg'	,#'upArm','lwrArm','upLeg','lwrLeg'	,		
+				charScale = 1	,							
+				noTouch_grp = 'noTouch_grp'	,		
+				showInfo = True 			,
+				upPlana = ''	,
+				ctrl_grp = 'ribbon_grp',
+				alongAxis = 'y' ,
+				pinMethod = 'matrix'):
 
-	# new arg
+	#... new arg
 	# upPlana = 'z+'   # 'y+' or 'z+' only
 
 
@@ -78,7 +79,7 @@ def ribbonRigExt(	nameSpace = ''	,
 				upPlana = 'z-'
 
 			
-	#... Ask new along axis (2)
+	#... Ask along axis 'X'
 	elif part in part_list and alongAxis == 'x':
 		if side == 'LFT':
 			if part  == 'upArm' or part  == 'lwrArm':
@@ -96,10 +97,10 @@ def ribbonRigExt(	nameSpace = ''	,
 		RibbonLogger.info('No corrective list. This might be a spine ribbon.')
 		if not upPlana:
 			RibbonLogger.critical('Please specific the up axis.')
-			return False
+			#return False
 
 
-	RibbonLogger.info('AlongAxis is {}\nUpPlana is {}'.format(alongAxis,upPlana))
+	RibbonLogger.info('AlongAxis is {} UpPlana is {}'.format(alongAxis,upPlana))
 
 
 
@@ -161,8 +162,18 @@ def ribbonRigExt(	nameSpace = ''	,
 		btmPart_pxyJnt = rigTools.jointAt( topPart )
 		btmPart_pxyJnt.matchPosition(btmPart)
 
-	#... Ask along axis (2)
+	#... Ask along axis 'X' along and 'LET' side
 	elif upPlana == 'z-' and alongAxis == 'x':
+		topPart = core.Dag( jointTop )
+		btmPart = core.Dag( jointBtm )
+		topPart_pxyJnt = rigTools.jointAt( topPart )
+
+		# For Fix twist fail using prosition only no orient
+		btmPart_pxyJnt = rigTools.jointAt( topPart )
+		btmPart_pxyJnt.matchPosition(btmPart)
+
+	#... Ask along axis 'X' along and 'RGT' side
+	elif upPlana == 'z+' and alongAxis == 'x':
 		topPart = core.Dag( jointTop )
 		btmPart = core.Dag( jointBtm )
 		topPart_pxyJnt = rigTools.jointAt( topPart )
@@ -173,6 +184,16 @@ def ribbonRigExt(	nameSpace = ''	,
 
 	#... Ask along axis (3)
 	elif upPlana == 'y+' and alongAxis == 'x':
+		topPart = core.Dag( jointTop )
+		btmPart = core.Dag( jointBtm )
+		topPart_pxyJnt = rigTools.jointAt( topPart )
+
+		# For Fix twist fail using prosition only no orient
+		btmPart_pxyJnt = rigTools.jointAt( topPart )
+		btmPart_pxyJnt.matchPosition(btmPart)
+
+	#... Ask along axis (3)
+	elif upPlana == 'y-' and alongAxis == 'x':
 		topPart = core.Dag( jointTop )
 		btmPart = core.Dag( jointBtm )
 		topPart_pxyJnt = rigTools.jointAt( topPart )
@@ -231,6 +252,14 @@ def ribbonRigExt(	nameSpace = ''	,
 		upVector = 		 ( 0,0,-1 ) 
 		midUpValue = 	 ( 0,0,10 ) 
 		supUpValue = 	 ( 0,10,0 )
+
+	elif alongAxis == 'x' and upPlana == 'y-':
+		aimVector = 	 ( 0,1,0 ) 
+		upVector = 		 ( 0,0,-1 ) 
+		midUpValue = 	 ( 0,0,10 ) 
+		supUpValue = 	 ( 0,-10,0 )
+
+
 	#
 	# create top btm joint
 	#
@@ -478,7 +507,7 @@ def ribbonRigExt(	nameSpace = ''	,
 		name =  partElem + types + '%02d'%num + side
 		#       [region] + [Rbn] +     [01]   + [LFT]
 
-		if part == 'upLeg' and alongAxis == 'x' or part == 'lwrLeg' and alongAxis == 'x':
+		if pinMethod == 'original':
 			#...[START] Create Follicle old style because along X is not attatch dunno why
 			folicle = core.Null( name + '_flc')
 			folicle.follicle( name = folicle.name + 'Shape', ss = True )
@@ -506,7 +535,7 @@ def ribbonRigExt(	nameSpace = ''	,
 			folicleShape.attr('parameterV').value = 0.5
 			folicleShape.attr('parameterU').value = uVal
 			#...[END] Create Follicle old style because along X is not work dunno why
-		else:
+		elif pinMethod == 'matrix':
 			#... [START] using pin to surface to pin flc to desire UV cooordinate
 			flc_name = rigTools._pinToSurface(
 							oNurbs = ribbon_nrb.name 	,
@@ -589,6 +618,8 @@ def ribbonRigExt(	nameSpace = ''	,
 		elif upPlana == 'x-':
 			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , -90 ) )
 		elif upPlana == 'y+' and alongAxis == 'x':
+			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , 90 ) )
+		elif upPlana == 'y-' and alongAxis == 'x':
 			ribbon_ctrl.rotateShape( rotate = ( 0 , 0 , 90 ) )
 		elif upPlana == 'x+':
 			pass
@@ -733,9 +764,15 @@ def ribbonRigExt(	nameSpace = ''	,
 		midUpValue = ( 0,0,10 )
 		midAimUp_loc.setTranslate( midUpValue )
 
+	elif upPlana == 'y-' and alongAxis == 'x':
+		midUpValue = ( 0,0,10 )
+		midAimUp_loc.setTranslate( midUpValue )
 
 
 
+	#... rotate middle shape
+	if upPlana == 'y-' and alongAxis == 'x':
+		ribbonMid_ctrl.rotateShape( rotate = ( 0 , 0 , 90 ) )
 
 
 
@@ -797,6 +834,10 @@ def ribbonRigExt(	nameSpace = ''	,
 		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (-1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
 		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
+	#... add using this condition 
+	elif alongAxis == 'x' and upPlana == 'y-':
+		middle_aimCons = core.aimConstraint( ribbonTopMov_ctrl , ribbonMidAim_grp ,  mo = True , aimVector = (-1,0,0) ,upVector = (0,1,0), worldUpType='object', worldUpObject = midAimUp_loc.name )
+		middle_aimCons.name = name + types + '_AimUp' + side + '_aimCons'
 
 	#										#
 	# 	Create Up aim for upper ribbon 		#
@@ -825,10 +866,13 @@ def ribbonRigExt(	nameSpace = ''	,
 	elif alongAxis == 'x' and upPlana == 'z-':
 		topUpObj_loc.setTranslate( supUpValue )
 		
-	#... add
+	#... add 'X' along and 'Left' side
 	elif alongAxis == 'x' and upPlana == 'y+':
 		topUpObj_loc.setTranslate( supUpValue )
 
+	#... add 'X' along and 'Left' side
+	elif alongAxis == 'x' and upPlana == 'y-':
+		topUpObj_loc.setTranslate( supUpValue )
 
 	topPart_pxyJnt.parent( topAimed_grp )
 	# hide visibility
@@ -976,6 +1020,17 @@ def ribbonRigExt(	nameSpace = ''	,
 		ribbonMid_ctrl.rotateShape( rotate = ( 0 , 0 , 90) )
 
 
+	elif alongAxis == 'x' and upPlana == 'y-':
+		upper_aimCons = core.aimConstraint(  lowerLocate_loc , topAimed_grp ,  mo = True , aimVector = (1, 0, 0) ,upVector = (0, 1, 0), worldUpType='object', worldUpObject = topUpObj_loc.name )
+		# upper_aimCons.attr('worldUpType').value = 1
+		# upper_aimCons.attr('offsetX').value = 0
+		# upper_aimCons.attr('offsetY').value = 90
+		# upper_aimCons.attr('offsetZ').value = 0
+
+		lower_aimCons = core.aimConstraint(  topLocate_loc , lowerAimed_grp , mo = True , aimVector = (1, 0, 0) ,upVector = (0, 1, 0), worldUpType='object'  , worldUpObject = lowerUpObj_loc.name)
+		# lower_aimCons.attr('worldUpType').value = 1
+		# lower_aimCons.attr('offsetY').value = 90
+		# ribbonMid_ctrl.rotateShape( rotate = ( 0 , 0 , 90) )
 
 
 
@@ -1088,9 +1143,15 @@ def ribbonRigExt(	nameSpace = ''	,
 	rbnCtrl_parCons = core.parentConstraint( ribbonTopMov_ctrl , rbnCtrl_grp , mo = True )
 	rbnCtrl_parCons.name = partElem + types + 'Ctrl' + side + '_parCons'
 
-	# Connect Upper Attr
-	ribbonMid_ctrl.attr('Upper_Twist') >> topPart_pxyJnt.attr('rotateY')
-	# Connection Detail to visibility
+
+	if alongAxis == 'y':
+		#... Connect Upper Attr
+		ribbonMid_ctrl.attr('Upper_Twist') >> topPart_pxyJnt.attr('rotateY')
+	elif alongAxis == 'x':
+		#... Connect Upper Attr
+		ribbonMid_ctrl.attr('Upper_Twist') >> topPart_pxyJnt.attr('rotateX')
+		
+	#... Connection Detail to visibility
 	ribbonMid_ctrl.attr('Detail') >> detail_grp.attr('visibility')
 
 	# Connect Lower twsit
@@ -1240,16 +1301,16 @@ def ribbonRigExt(	nameSpace = ''	,
 
 # Benefical of ribbon functon for make elbow or knee move
 def makeHigesMover( 	nameSpace = ''	,
-					part = ''		, 
-					side = 'LFT' 	, 
-					btmName = ''	, 
-					topName = ''  	, 
-					charScale = '' 	, 
-					noTouch_grp = 'noTouch_grp' 	,
-					moverPosition = 'lowerArmLFT_bJnt'	,
-					ctrl_grp = 'ctrl_grp'		,
-					alongAxis = 'y'
-				 ):
+				part = ''		, 
+				side = 'LFT' 	, 
+				btmName = ''	, 
+				topName = ''  	, 
+				charScale = '' 	, 
+				noTouch_grp = 'noTouch_grp' 	,
+				moverPosition = 'lowerArmLFT_bJnt'	,
+				ctrl_grp = 'ctrl_grp'		,
+				alongAxis = 'y'
+			 ):
 
 	# naming = charName + elem
 
@@ -1289,17 +1350,20 @@ def makeHigesMover( 	nameSpace = ''	,
 			upAxis = ( 0,0,0 )
 		elif side == 'LFT' and alongAxis == 'x':
 			upAxis = ( 0,0,0 )
+		elif side == 'RGT' and alongAxis == 'x':
+			upAxis = ( 0,0,0 )
+
 	else:
 		mc.error('What part is it?')
 
 
-	
+
 
 
 
 	hinges_jnt = core.Joint()
 	hinges_jnt.maSnap( moverPosition )
-	
+
 
 	# Translate elbow or knee a bit for solve weight error
 	if alongAxis == 'y':
@@ -1307,7 +1371,7 @@ def makeHigesMover( 	nameSpace = ''	,
 	elif alongAxis == 'x':
 		hinges_jnt.moveObj(position = (charScale*0.01, 0, 0))
 
-	
+
 	hinges_jnt.freeze()
 
 	if alongAxis == 'y':
@@ -1318,7 +1382,7 @@ def makeHigesMover( 	nameSpace = ''	,
 	hinges_jnt.name = name + side + '_rbnBJnt'
 
 
-	
+
 
 
 	if alongAxis == 'y':
@@ -1331,14 +1395,16 @@ def makeHigesMover( 	nameSpace = ''	,
 	elif alongAxis == 'x':
 		if part == 'leg':
 			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
+			if side == 'RGT':
+				pass
 		elif part == 'arm':
 			rbnHinges_ctrl.rotateShape( rotate = ( 0 , 0 , 90 )	)
 
 
 	# sys.exit(rbnHinges_ctrl.name)
 
-	
-	
+
+
 
 	# Parent to bind joint for exporting
 	# hinges_jnt.parent( moverPosition )

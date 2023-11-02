@@ -80,7 +80,8 @@ def fkIkTwistGenRig(
 				creTwistJnt = True ,
 				# softIk = False ,
 				stickShape = 'stick_ctrlShape',
-				alongAxis = 'y'
+				alongAxis = 'y' ,
+				pinMethod = 'matrix'
 				):	#... stick_ctrlShape , 	gear_ctrlShape	
 				
 				
@@ -1000,6 +1001,9 @@ def fkIkTwistGenRig(
 	print (''' \n
 	# = = = = = = Create ribbon Rig function
 	''')
+
+
+	# sys.exit('runmanual')
 
 
 

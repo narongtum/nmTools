@@ -787,7 +787,8 @@ def bipedLegRigExt(
 					creTwistJnt = True,
 					softIk = True ,
 					stickShape = 'stick_ctrlShape',
-					alongAxis = 'y'	):
+					alongAxis = 'y',
+					pinMethod = 'matrix'	): #... using  'original' or 'matrix' only
 	
 
 	misc.makeHeader(	'Start of %s%s Rig' %(region,side)	)
@@ -820,7 +821,8 @@ def bipedLegRigExt(
 					ctrlShape = ctrlShape ,
 					creTwistJnt = creTwistJnt		,
 					stickShape = stickShape	,
-					alongAxis = alongAxis	)
+					alongAxis = alongAxis	,
+					pinMethod = pinMethod)
 
 
 

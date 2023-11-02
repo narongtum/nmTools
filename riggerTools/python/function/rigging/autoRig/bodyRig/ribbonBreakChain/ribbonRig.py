@@ -14,7 +14,7 @@ import maya.cmds as mc
 ''' log '''
 
 # Breakup ribbon chain
-# found outmake wrong rotation
+# found out make wrong rotation
 
 
 

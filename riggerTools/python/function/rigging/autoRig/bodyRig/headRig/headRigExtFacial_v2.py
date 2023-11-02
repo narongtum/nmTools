@@ -1,4 +1,7 @@
-# Neck rig module
+#... Neck rig module
+#... add top, bottom head joint
+#... add reverse jaw for jaw rig
+
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload
 
@@ -121,15 +124,15 @@ def _eyeCtrl( nameSpace = ''  , eyeJntNam = '' , side = ''  , headJnt = '' , cha
 
 
 
-# add 'headTop_tmpJnt',	'headBottom_tmpJnt' for suit facial JH rig
+# add 'headTop_tmpJnt',	'headBottom_tmpJnt', 'reverseJaw' for suit facial JH rig
 
 def headRig(	nameSpace = '' ,
 				parentTo = 'ctrl_grp'  ,
 				tmpJnt = ( 		'head01_tmpJnt', 'eyeLFT_tmpJnt', 'eyeRGT_tmpJnt' 	,    # head
 				'jaw01Lwr_tmpJnt', 'jaw02Lwr_tmpJnt', 'jaw03Lwr_tmpJnt' 				,    # jaw
-				'jaw01Upr_tmpJnt', 'jaw02Upr_tmpJnt'									,	
+				'jaw01Upr_ctrl_tmpJnt', 'jaw02Upr_tmpJnt'									,	
 				'eye_tmpJnt', 'eyeTargetLFT_tmpJnt', 'eyeTargetRGT_tmpJnt'				,
-				'headTop_tmpJnt', 'headBottom_tmpJnt'	    )							,
+				'headTop_tmpJnt', 'headBottom_tmpJnt', 'inverseJaw01_tmpJnt'	    )							,
 				faceCtrl = False	,
 				priorJnt = ''		,
 				charScale = ''		,
@@ -182,8 +185,9 @@ def headRig(	nameSpace = '' ,
 		try:
 			headTop = core.Dag( tmpJnt[11] )
 			headButtom = core.Dag( tmpJnt[12] )
+			jawReverse = core.Dag( tmpJnt[13] )
 		except:
-			mc.error('\n\theadTop, headButtom joint not found.')
+			mc.error('\n\theadTop, headButtom, jawReverse temp joint not found.')
 
 	if not headTop:
 		mc.error('\n\tYou maybe want to turn on facial Rig First.')
@@ -204,23 +208,19 @@ def headRig(	nameSpace = '' ,
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# New element head top Start
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
-	headTop_jnt = rigTools.jointAt( headTop )
-	headButtom_jnt = rigTools.jointAt( headButtom )
-
-	headTop_jnt.name = nameSpace + 'headTop' + '_bJnt'
-	headButtom_jnt.name = nameSpace + 'headBottom' + '_bJnt'
-
-	headTop_jnt.parent( head01_bJnt )
-	headButtom_jnt.parent( head01_bJnt )
+	headTop_bJnt = rigTools.jointAt( headTop )
+	headButtom_bJnt = rigTools.jointAt( headButtom )
+	jawReverse_bJnt = rigTools.jointAt( jawReverse )
 
 
-	# Create Head Rig Group
-	headRig_grp = core.Null()
-	headRig_grp.name = nameSpace + 'headRig_grp'
-	# Parenting and positioning
-	headRig_grp.matchPosition( head1 )
-	headRig_grp.matchRotation( head1 )
-	headRotOrder = 'xzy'
+	headTop_bJnt.name = nameSpace + 'headTop' + '_bJnt'
+	headButtom_bJnt.name = nameSpace + 'headBottom' + '_bJnt'
+
+	headTop_bJnt.parent( head01_bJnt )
+	headButtom_bJnt.parent( head01_bJnt )
+
+	jawReverse_bJnt.parent( headTop_bJnt )
+	jawReverse_bJnt.name = nameSpace + 'jawReverse' + '_bJnt'
 
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# New element head top End
@@ -230,7 +230,21 @@ def headRig(	nameSpace = '' ,
 
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Head setup 
-	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #	
+
+	# Create Head Rig Group
+	headRig_grp = core.Null()
+	headRig_grp.name = nameSpace + 'headRig_grp'
+	# Parenting and positioning
+	headRig_grp.matchPosition( head1 )
+	headRig_grp.matchRotation( head1 )
+	headRotOrder = 'xzy'
+
+
+
+
+
+
 	part = nameSpace + 'head01'
 	head_ctrl = core.Dag( part + '_ctrl' )
 	head_ctrl.nmCreateController( ctrlShape ) # circleSphere_ctrlShape , cubeExpand_ctrlShape
@@ -302,31 +316,29 @@ def headRig(	nameSpace = '' ,
 		#...Parent each (change hirachy)
 		# jaw1Lwr_bJnt.parent( head01_bJnt )
 		jaw2Lwr_bJnt.parent( jaw1Lwr_bJnt )
-		jaw1Upr_bJnt.parent( headButtom_jnt )
-		jaw1Lwr_bJnt.parent( headButtom_jnt )
+		jaw1Upr_bJnt.parent( jawReverse_bJnt )
+		jaw1Lwr_bJnt.parent( headButtom_bJnt )
 
 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 		# Create special locator
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 
-		#... Create spcial locator
+		#... Create special locator
 		jaw1Upr_loc = core.Locator(name = 'jaw1Upr_bLoc', lock = True, scale = charScale)
 		jaw1Upr_loc.snap( jaw1Upr_bJnt )
 		jaw1Lwr_loc = core.Locator(name = 'jaw1Lwr_bLoc', lock = True, scale = charScale)
 		jaw1Lwr_loc.snap( jaw1Lwr_bJnt )
 
 
-		#... Create spcial locator
+		#... Create special locator
 		# headTop_ctrl = core.Locator(name = 'headTop_ctrl', lock = True, scale = charScale)
 		headTop_ctrl = core.Dag( part + 'Top_ctrl' )
 		headTop_ctrl.nmCreateController( 'circle_ctrlShape' )
 		headTop_ctrl.rotateOrder = 'xzy'
 		headTop_ctrl.editCtrlShape( axis = charScale * 1.25 )
 		headTop_ctrl.color = 'white'
-		headTop_ctrl.snap( headTop_jnt )
-
-
+		headTop_ctrl.snap( headTop_bJnt )
 
 
 		# headBottom_ctrl = core.Locator(name = 'headBottom_ctrl', lock = True, scale = charScale)
@@ -336,47 +348,77 @@ def headRig(	nameSpace = '' ,
 		headBottom_ctrl.editCtrlShape( axis = charScale * 1.25 )
 		headBottom_ctrl.color = 'white'
 
-		headBottom_ctrl.snap( headButtom_jnt )
+		headBottom_ctrl.snap( headButtom_bJnt )
 
-
-		
-
-		
 		headTopZro_grp = rigTools.zeroGroup( headTop_ctrl )
 		headTopZro_grp.name = nameSpace + 'head'+'TopZro' + '_grp'
 		headBottomZro_grp = rigTools.zeroGroup( headBottom_ctrl )
 		headBottomZro_grp.name = nameSpace + 'head'+'BottomZro' + '_grp'
 
-		headTopZro_grp.parent(headGmbl_ctrl)
+		
 		headBottomZro_grp.parent(headGmbl_ctrl)
 
-		
+
+
+
+
+
+
+		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+		# Reverse Jaw setup
+		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #	
+		part = nameSpace + 'jaw01Reverse'
+		jaw01Rev_ctrl = core.Dag( part + '_ctrl' )
+		jaw01Rev_ctrl.nmCreateController('square_ctrlShape')
+		jaw01Rev_ctrl.editCtrlShape( axis = charScale * 3.5)
+		jaw01Rev_ctrl.moveShape(  move = (  0  ,0 , charScale * 1.12  )  )
+		jaw01RevZro_grp = rigTools.zeroGroup( jaw01Rev_ctrl )
+		jaw01RevZro_grp.name = part + 'Zro_grp'
+		jaw01RevGmbl_ctrl = core.createGimbal( jaw01Rev_ctrl )
+		jaw01Rev_ctrl.color = 'red'
+		jaw01Rev_ctrl.rotateOrder = headRotOrder
+		jaw01RevGmbl_ctrl.rotateOrder = headRotOrder
+		jaw01RevZro_grp.snap( jawReverse_bJnt )
+		jawReverse_bJnt.attr('segmentScaleCompensate').value = 0
+
+		#... Parent
+		jaw01RevZro_grp.parent( headGmbl_ctrl )
+
+
+		#... Constraint joint parent to controller
+		jawReverse_parCons = core.parentConstraint( jaw01RevGmbl_ctrl , jawReverse_bJnt )
+		jawReverse_parCons.name = part + 'Jnt_parCons'
+
+
+		#... parent head top to reverse
+		headTopZro_grp.parent(jaw01RevGmbl_ctrl)
 
 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 		# Upper Jaw setup
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 
-		part = nameSpace + 'jaw01Upr'
-		jaw01Upr = core.Dag( part + '_ctrl' )
-		jaw01Upr.nmCreateController('squareExpand_ctrlShape')
-		#jaw01Upr.rotateShape(  rotate = ( -70 , 0 , 0  )  )
-		jaw01Upr.editCtrlShape( axis = charScale * 3.5)
-		jaw01Upr.moveShape(  move = (  0  ,0 , charScale * 1.12  )  )
-		jaw01UprZro_grp = rigTools.zeroGroup( jaw01Upr )
-		jaw01UprZro_grp.name = part + 'Zro_grp'
-		jaw01GmblUpr_ctrl = core.createGimbal( jaw01Upr )
-		jaw01Upr.color = 'red'
-		jaw01Upr.rotateOrder = headRotOrder
+		part = nameSpace + 'jaw01Upr_ctrl'
+		jaw01Upr_ctrl = core.Dag( part + '_ctrl' )
+		jaw01Upr_ctrl.nmCreateController('squareExpand_ctrlShape')
+		#jaw01Upr_ctrl.rotateShape(  rotate = ( -70 , 0 , 0  )  )
+		jaw01Upr_ctrl.editCtrlShape( axis = charScale * 3.5)
+		jaw01Upr_ctrl.moveShape(  move = (  0  ,0 , charScale * 1.12  )  )
+		jaw01Upr_ctrlZro_grp = rigTools.zeroGroup( jaw01Upr_ctrl )
+		jaw01Upr_ctrlZro_grp.name = part + 'Zro_grp'
+		jaw01GmblUpr_ctrl = core.createGimbal( jaw01Upr_ctrl )
+		jaw01Upr_ctrl.color = 'red'
+		jaw01Upr_ctrl.rotateOrder = headRotOrder
 		jaw01GmblUpr_ctrl.rotateOrder = headRotOrder
-		jaw01UprZro_grp.snap( jaw1Upr_bJnt )
+		jaw01Upr_ctrlZro_grp.snap( jaw1Upr_bJnt )
 		jaw1Lwr_bJnt.attr('segmentScaleCompensate').value = 0
 
-		#... Paren
-		# jaw01UprZro_grp.parent( headGmbl_ctrl )
-		jaw01UprZro_grp.parent( headBottom_ctrl )
-		jaw1Upr_loc.parent( jaw01UprZro_grp )
-		jaw01Upr.parent( jaw1Upr_loc )
+		#... Parent 
+		# jaw01Upr_ctrlZro_grp.parent( headBottom_ctrl )
+		# jaw01Upr_ctrlZro_grp.parent( jaw01RevGmbl_ctrl )
+		jaw01Upr_ctrlZro_grp.parent( jaw01RevGmbl_ctrl )
+		jaw1Upr_loc.parent( jaw01Upr_ctrlZro_grp )
+		jaw01Upr_ctrl.parent( jaw1Upr_loc )
 
 		#... Constraint joint parent to controller
 		jaw01Lwr_parCons = core.parentConstraint( jaw01GmblUpr_ctrl , jaw1Upr_bJnt )
@@ -485,8 +527,8 @@ def headRig(	nameSpace = '' ,
 
 
 
-		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeLFT.name , side = 'LFT' , headJnt = headTop_jnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetLFT.name  )
-		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeRGT.name , side = 'RGT' , headJnt = headTop_jnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetRGT.name  )
+		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeLFT.name , side = 'LFT' , headJnt = headTop_bJnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetLFT.name  )
+		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeRGT.name , side = 'RGT' , headJnt = headTop_bJnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetRGT.name  )
 
 
 
@@ -501,19 +543,19 @@ def headRig(	nameSpace = '' ,
 
 
 	# = = = = = = = = = = = = = = = = = = #
-	#  Spcial locator for facial rig      #
+	#  special locator for facial rig      #
 	# = = = = = = = = = = = = = = = = = = #
 
-	headTopCtrl_parCons = core.parentConstraint( headTop_ctrl , headTop_jnt )
+	headTopCtrl_parCons = core.parentConstraint( headTop_ctrl , headTop_bJnt )
 	headTopCtrl_parCons.name = part + '_Top' + 'Jnt_parCons'
 
-	headBottomCtrl_parCons = core.parentConstraint( headBottom_ctrl , headButtom_jnt )
+	headBottomCtrl_parCons = core.parentConstraint( headBottom_ctrl , headButtom_bJnt )
 	headBottomCtrl_parCons.name = part + '_Bottom' + 'Jnt_parCons'	
 
 
 
-	headTop_parCons = core.parentConstraint( head01_bJnt , headTopZro_grp, mo = True )
-	headTop_parCons.name = part + '_headTop' + 'Jnt_parCons'
+	# headTop_parCons = core.parentConstraint( head01_bJnt , headTopZro_grp, mo = True ) # <-- disable because change to under reverse
+	# headTop_parCons.name = part + '_headTop' + 'Jnt_parCons'
 
 	# print('\nStop righe there...')
 	# sys.exit(0)
@@ -544,7 +586,7 @@ def headRig(	nameSpace = '' ,
 headRig(	parentTo = 'ctrl_grp'  , 
 				tmpJnt = ( 		'head01_tmpJnt' , 'eyeLFT_tmpJnt' , 'eyeRGT_tmpJnt' ,		# head
 				'jaw01Lwr_tmpJnt' , 'jaw02Lwr_tmpJnt' , 'jaw03Lwr_tmpJnt' 			,		# jaw
-				'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
+				'jaw01Upr_ctrl_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
 				'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 		# eye			
 																			),
 				faceCtrl = True	,

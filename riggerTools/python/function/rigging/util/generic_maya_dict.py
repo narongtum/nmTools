@@ -3,7 +3,7 @@
 
 '''
 
-node short name dictionary (use this)
+#... Generig dictionary file 
 
 
 from function.rigging.util import generic_maya_dict as mnd
@@ -14,7 +14,7 @@ reload(mnd)
 
 
 '''
-# How to use
+#... How to use
 
 
 
@@ -140,8 +140,14 @@ rgbCode = {		'black':	(0,0,0)		,
 
 
 
-
-
+make_controller_thicker = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl',
+								'lowerArmLFTFK_ctrl','handLFTFK_ctrl','upperLegLFTFK_ctrl','lowerLegLFTFK_ctrl','footLFTFK_ctrl','upperArmLFTFK_ctrl','handLFTFK_ctrl'
+								'lowerArmRGTFK_ctrl','handRGTFK_ctrl','upperLegRGTFK_ctrl','lowerLegRGTFK_ctrl','footRGTFK_ctrl','upperArmRGTFK_ctrl','handRGTFK_ctrl'
+								'hip_ctrl','spine01FK_ctrl','spine02FK_ctrl','spine03FK_ctrl',					
+								'upperArmFkLFT_ctrl','lowerArmFkLFT_ctrl','handFkLFT_ctrl',
+								'upperArmFkRGT_ctrl','lowerArmFkRGT_ctrl','handFkRGT_ctrl',
+								'handIkLFT_ctrl','handIkRGT_ctrl','hip_ctrl','handStickLFT_ctrl','handStickRGT_ctrl',
+								'cog_ctrl','clavLFT_ctrl','clavRGT_ctrl')
 
 
 standardJnt_list = [		'ankleLFT_bJnt','ankleRGT_bJnt','ballLFT_bJnt','ballRGT_bJnt',

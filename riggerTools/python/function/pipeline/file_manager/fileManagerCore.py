@@ -283,7 +283,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug("Return full_path name: {0}".format(full_path) )
 		return full_path
 
-
+	def handle_reference_version_widget(self):
+		file_path = self.get_deep_path()
+		FileManagerLog.debug("Return file path name: {0}".format(file_path))
+		self.maya_reference(file_path)
 
 
 	def show_local_widget_explorer(self):
@@ -298,6 +301,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		FileManagerLog.debug('this is new_folder_path: \t\t {0}'.format(new_folder_path))
 		self._open_folder_path(new_folder_path)
+
+		
+
+
 
 
 	def handle_right_click_local_widget(self, position):
@@ -383,7 +390,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self._open_folder_path(new_folder_path)
 		
 
-
+	#... [update] Add handle right click version widget
 	def show_step_context(self, position):
 
 		# Create Jobs
@@ -400,6 +407,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Link to method
 		createStep_action.triggered.connect(self.create_job_step)
 		contextMenu.addAction(createStep_action)
+
+		#... Add Reference action
+		reference_action = QtWidgets.QAction("Reference selected this file...", self)
+		# Link to method
+		reference_action.triggered.connect(self.handle_reference_version_widget)
+		contextMenu.addAction(reference_action)
 
 		result_job_element = self.query_step_list()
 		FileManagerLog.debug('There are alway step list why?_122_: \t\t {0}'.format(result_job_element))

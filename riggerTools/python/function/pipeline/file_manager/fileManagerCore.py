@@ -153,15 +153,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.project_comboBox.setCurrentText(DEFAULT_PROJECT)
 
 
-		selected_project = self.project_comboBox.currentText()
+		# selected_project = self.project_comboBox.currentText() #... no need
 
+		#...  Set menu bar
+		self.setupMenuBar()
 
-		# Set "Asset" tab as default
+		#... Set "Asset" tab as default
 		self.entite_TAB.setCurrentIndex(0)  
 
-		# Connect signals
+		#... Connect project signals
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
-		# Connect project
+		#... Connect project
 		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)	
 
 		# Called whenever a new item is clicked
@@ -170,7 +172,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Connect the on_treeview_clicked method to the clicked signal
 		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
 
-		# Connect the on_department_clicked method to the clicked signal
+		# Connect The 'on_department_clicked' method to the clicked signal
 		self.asset_department_listWidget.itemClicked.connect(self.on_department_clicked)
 
 		# # Connect the on_version_clicked method to the left clicked signal
@@ -197,8 +199,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_local_view_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.asset_local_view_listWidget.customContextMenuRequested.connect(self.handle_right_click_local_widget)
 
-
-		# Set up context menu
+		#... Set up context menu
 		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
 		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
@@ -214,6 +215,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
+
+	def setupMenuBar(self):
+		file_menu = self.menuFile
+		toos_menu = self.menuTools
+
+		# Create 'Print A' action and add it to the 'File' menu
+		print_a_action = FileManagerActions.createPrintAAction(self, self.printA)
+		file_menu.addAction(print_a_action)
+
+		# Create 'Print A' action and add it to the 'File' menu
+		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
+		toos_menu.addAction(print_b_action)	
+
+
+	def printA(self):
+		print("Print A")
+
+	def printB(self):
+		print("Print B")
 
 	def filter_model(self, text):
 		self.proxyModel.pattern = text
@@ -1336,7 +1356,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.project_comboBox.clear()
 		self.project_comboBox.addItems(PROJECT_NAME)
 
-
+	#... initialization when open file manager
 	def update_project_comboBox(self):
 
 		selected_drive = self.drive_comboBox.currentText()
@@ -2156,3 +2176,18 @@ def do_global_commit():
 	# Count joint
 	fileTools.countJnt()
 	mc.select(deselect = True)	
+
+
+
+class FileManagerActions:
+	@staticmethod
+	def createPrintAAction(parent, callback):
+		print_a_action = QtWidgets.QAction("Print A", parent)
+		print_a_action.triggered.connect(callback)
+		return print_a_action
+
+	@staticmethod
+	def createPrintBAction(parent, callback):
+		print_b_action = QtWidgets.QAction("Print B", parent)
+		print_b_action.triggered.connect(callback)
+		return print_b_action

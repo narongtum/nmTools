@@ -1,7 +1,14 @@
+# DO NOT USE MERGE TO JOINT TOOLS
+
+
+
 '''
 from function.rigging.skeleton import replaceTmpJnt as rtj
 reload(rtj)
 '''
+
+
+
 from function.framework.reloadWrapper import reloadWrapper as reloader
 
 from function.rigging.autoRig.base import core

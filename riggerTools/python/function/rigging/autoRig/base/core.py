@@ -310,8 +310,9 @@ from function.rigging.util import misc
 sel= 'broadA04_jnt'
 misc.del_sel_matrix(selected = [sel])
 
-
-
+#... Set attr string
+metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
+metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
 '''
 
 
@@ -1004,6 +1005,7 @@ class MetaRoot ( Node ):
 		self.addAttribute( dataType = 'string' , longName = 'Base_Dir') #... Folder path
 		self.addAttribute( dataType = 'string' , longName = 'Source_File_Path') #... Folder path to file specific
 		self.addAttribute( dataType = 'string' , longName = 'Root_Joint')
+		self.addAttribute( dataType = 'string' , longName = 'NameSpace')
 		self.addAttribute( attributeType = 'message' , longName = 'rig_grp')
 		self.addAttribute( attributeType = 'message' , longName = 'Meta_Children')
 
@@ -1020,8 +1022,11 @@ class MetaGeneric( Node ):
 		#... Header
 		self.addAttribute( attributeType = 'message' , longName = 'Rig_Prior')
 		self.addAttribute( dataType = 'string' , longName = 'Base_Name')
+		self.addAttribute( dataType = 'string' , longName = 'ParentTo')
+		self.addAttribute( dataType = 'string' , longName = 'PriorJnt')
 		self.addAttribute( dataType = 'string' , longName = 'Side')
-
+		self.addAttribute( dataType = 'string' , longName = 'CtrlShape')
+		self.addAttribute( dataType = 'string' , longName = 'Color')
 
 	
 	def lockAllAttr(self):

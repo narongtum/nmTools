@@ -5,7 +5,7 @@ reload(createFkRig)
 
 
 '''
- Collection of FK additional controller
+[Latast] Collection of FK additional controller
 '''
 
 
@@ -19,10 +19,10 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
-from function.rigging.util import misc as misc
+from function.rigging.util import misc
 reload( misc )
 
-from function.rigging.util import mayaNodeDict as mnd
+from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 
@@ -33,7 +33,7 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 					charScale = 1	, priorJnt = 'head01_bJnt' 			,
 					side = 'LFT' ,ctrlShape = 'circle_ctrlShape'  , localWorld = False , 
 					color = 'red' , curlCtrl = False ,suffix = '_bJnt',parentToPriorJnt = False,
-					parentMatrix = False):
+					parentMatrix = False, rotateOrder = 'zxy'):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -58,25 +58,13 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
 
 
-
-		myColor = mnd.askColor(side)
-
-		ctrl.color = myColor
-
-
-		'''
-		if not color:
-			if side:
-				if side == 'LFT':
-					ctrl.color = 'red'
-				elif side == 'RGT':
-					ctrl.color = 'blue'
-
-
-			ctrl.color = 'red'
+		if side:
+			myColor = mnd.askColor(side)
+			ctrl.color = myColor
 		else:
 			ctrl.color = color
-		'''
+
+
 
 
 		
@@ -85,15 +73,17 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 		# bJnt = rigTools.jointAt( tmp )
 
 
-		# bJnt.name =  '%s%s%02d%s%s'  %(nameSpace,	name,( num +1),side,suffix)
-		# bJnt.name =  '%s%s%02d%s%s'  %(nameSpace,	name,( num +1),side,'_bJnt')
+
 		zroGrp,offsetGrp = rigTools.zroNewGrpWithOffset( ctrl )
 		zroGrp.snap( bJnt )
 		zroGrp.name = '%s%s%02d%sZro_grp'  %(nameSpace,	name,( num +1),side	)
 		offsetGrp.name = '%s%s%02d%sOffset_grp'  %(nameSpace,	name,( num +1),side	)
 
 
-		
+		#... set RotationOrder
+		ctrl.rotateOrder = rotateOrder 
+		gimbal.rotateOrder = rotateOrder
+			
 		ctrls.append( ctrl )
 		jnts.append( tmpJnt[ num ] )
 		gmbls.append( gimbal )
@@ -219,7 +209,9 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 
 		print ('\nPARENT IT ...')
 
-	# End
+
+
+	#... End
 	if parentToPriorJnt:
 		print('mc.parent(jnts[0], priorJnt)')
 		mc.parent(jnts[0], priorJnt)
@@ -235,15 +227,13 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 
 
 
-
-
 #... using with tempjoint 
-#... priorJnt can be false
+#... priorJnt can be None
 def newCreateFkRig(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
 					charScale = 1, priorJnt = 'head01_bJnt' 			,
 					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
-					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True	):
+					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -300,7 +290,10 @@ def newCreateFkRig(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		offsetGrp.name = '%s%s%02d%sOffset_grp'  %(nameSpace,	name,( num +1),side	)
 
 
-		
+		#... set Rotation Order
+		ctrl.rotateOrder = rotateOrder 
+		gimbal.rotateOrder = rotateOrder
+
 		ctrls.append( ctrl )
 		jnts.append( tmpJnt[ num ] )
 		gmbls.append( gimbal )
@@ -410,6 +403,12 @@ def newCreateFkRig(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 	else:
 		return gmbls[0] ,rigGrp.name , bJnts  , ctrls
 	# End
+
+
+
+
+
+
 
 
 

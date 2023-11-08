@@ -364,4 +364,15 @@ ribbon_joint =   {   'arm_rbn'  :	[	u'lwrArmRbn01RGT_rbnBJnt',
 															u'upLegRbn02RGT_rbnBJnt',
 															u'upLegRbn03LFT_rbnBJnt',
 															u'upLegRbn03RGT_rbnBJnt']    	}
-					
+
+
+
+def askColor(side):
+	if side == 'LFT':
+		return 'red'
+	elif side == 'RGT':
+		return 'blue'
+	elif side == 'MID':
+		return 'yellow'
+	else:
+		return 'white'					

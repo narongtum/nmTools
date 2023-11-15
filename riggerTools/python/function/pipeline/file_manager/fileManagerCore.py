@@ -86,7 +86,7 @@ def getMayaMainWindow():
 	return pointer
 
 
-
+#... try for enable filter widget
 class FilterProxyModel(QtCore.QSortFilterProxyModel):
 	def __init__(self, parent=None):
 		super(FilterProxyModel, self).__init__(parent)
@@ -287,7 +287,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def handle_reference_global_widget(self):
 		file_path = self.get_deep_path_global_commit()
 		FileManagerLog.debug("Return file_path name: {0}".format(file_path) )
-		self.maya_reference(file_path)
+		self.maya_reference_noAsk(file_path)
 
 
 	def get_deep_path_global_commit(self):
@@ -303,10 +303,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug("Return full_path name: {0}".format(full_path) )
 		return full_path
 
+	#... right click and reference
 	def handle_reference_version_widget(self):
 		file_path = self.get_deep_path()
 		FileManagerLog.debug("Return file path name: {0}".format(file_path))
-		self.maya_reference(file_path)
+		self.maya_reference_noAsk(file_path)
 
 
 	def show_local_widget_explorer(self):
@@ -1207,8 +1208,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.maya_add_recen_file(save_full_path, MAYA_EXT)
 		return True
 
-
-
+	def maya_reference_noAsk(self, file_path):
+		folder, file_name = os.path.split(file_path)
+		file_name, file_ext = os.path.splitext(file_name)
+		mc.file(file_path, reference=True, namespace=file_name)
 
 
 

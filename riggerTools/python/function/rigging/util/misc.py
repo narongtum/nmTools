@@ -3,6 +3,10 @@
 from function.rigging.util import misc
 reload(misc)
 
+
+Can do
+1. Make controller thicker
+
 '''
 
 # Reload module
@@ -76,7 +80,7 @@ else:
 
 
 def ctrlWidth(Width = 5):
-	for each in mnd.make_controller_thicker:
+	for each in mnd.controller_thicker_list:
 		_makeCurveWidth(name = each , Width = Width)
 
 

@@ -139,15 +139,37 @@ rgbCode = {		'black':	(0,0,0)		,
 				'white':	(1,1,1)			}
 
 
+make_bigger_list = (		'head01_ctrl','eyeCenter_ctrl',
 
-make_controller_thicker = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl',
+					'hip_ctrl','spine01FK_ctrl','spine02FK_ctrl','spine03FK_ctrl',
+
+					'upperArmFkLFT_ctrl','lowerArmFkLFT_ctrl','handFkLFT_ctrl',
+					'ballLegFkLFT_ctrl','ankleFkLFT_ctrl','lowerLegFkLFT_ctrl','upperLegFkLFT_ctrl'
+
+					'upperArmFkRGT_ctrl','lowerArmFkRGT_ctrl','handFkRGT_ctrl',
+					'ballLegFkRGT_ctrl','ankleFkRGT_ctrl','lowerLegFkRGT_ctrl','upperLegFkRGT_ctrl'	,
+
+					'upperArmIkRootLFT_ctrl','upperLegIkRootLFT_ctrl','footIkLFT_ctrl','handIkLFT_ctrl',	
+					'upperArmIkRootRGT_ctrl','upperLegIkRootRGT_ctrl','footIkRGT_ctrl','handIkRGT_ctrl'		
+)
+					
+
+
+
+
+
+
+
+controller_thicker_list = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl',
 								'lowerArmLFTFK_ctrl','handLFTFK_ctrl','upperLegLFTFK_ctrl','lowerLegLFTFK_ctrl','footLFTFK_ctrl','upperArmLFTFK_ctrl','handLFTFK_ctrl'
 								'lowerArmRGTFK_ctrl','handRGTFK_ctrl','upperLegRGTFK_ctrl','lowerLegRGTFK_ctrl','footRGTFK_ctrl','upperArmRGTFK_ctrl','handRGTFK_ctrl'
 								'hip_ctrl','spine01FK_ctrl','spine02FK_ctrl','spine03FK_ctrl',					
 								'upperArmFkLFT_ctrl','lowerArmFkLFT_ctrl','handFkLFT_ctrl',
 								'upperArmFkRGT_ctrl','lowerArmFkRGT_ctrl','handFkRGT_ctrl',
 								'handIkLFT_ctrl','handIkRGT_ctrl','hip_ctrl','handStickLFT_ctrl','handStickRGT_ctrl',
-								'cog_ctrl','clavLFT_ctrl','clavRGT_ctrl')
+								'cog_ctrl','clavLFT_ctrl','clavRGT_ctrl','footIkRGT_ctrl','footIkLFT_ctrl',
+								'ballLegFkLFT_ctrl','ankleFkLFT_ctrl','lowerLegFkLFT_ctrl','upperLegFkLFT_ctrl',
+								'ballLegFkRGT_ctrl','ankleFkRGT_ctrl','lowerLegFkRGT_ctrl','upperLegFkRGT_ctrl')
 
 
 standardJnt_list = [		'ankleLFT_bJnt','ankleRGT_bJnt','ballLFT_bJnt','ballRGT_bJnt',
@@ -367,6 +389,14 @@ ribbon_joint =   {   'arm_rbn'  :	[	u'lwrArmRbn01RGT_rbnBJnt',
 
 
 
+
+
+
+
+
+
+
+
 def askColor(side):
 	if side == 'LFT':
 		return 'red'
@@ -376,3 +406,5 @@ def askColor(side):
 		return 'yellow'
 	else:
 		return 'white'					
+
+

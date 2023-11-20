@@ -842,7 +842,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			
 
 			# ensures that the code works correctly regardless of the underlying operating system.
-			# ... There is in Version folder
+
+			# ... There is in 'VERSION' folder
+
 			if parent_folder == STATIC_FOLDER[1]:
 				FileManagerLog.debug("The folder containing named 'Version'.")
 
@@ -862,7 +864,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 					
 
-			#... There is in Commit folder
+			#... There is in 'COMMIT' folder
 
 			elif parent_folder == STATIC_FOLDER[2]:
 				FileManagerLog.debug("	Their is Commit file.")
@@ -1015,11 +1017,22 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 			#... Populate version widget
-			version_folder = os.path.join(file_path, department_name, 'Version')
+			version_folder = os.path.join(file_path, department_name, STATIC_FOLDER[1])
 			
 			version_folder = os.path.normpath(version_folder)
 			FileManagerLog.debug('	This is version_folder >>> {0}'.format(version_folder))
 			self.show_version_entite(version_folder)
+
+
+			#... Populate currenly selected file in asset_version_view_listWidget
+			
+			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements[-1]))
+			asset_name = path_elements[-1]
+			version_item = self.asset_version_view_listWidget.findItems(asset_name, QtCore.Qt.MatchExactly)
+			FileManagerLog.debug('	This is version_item >>> {0}'.format(version_item))
+			if version_item:
+				self.asset_version_view_listWidget.setCurrentItem(version_item[0])
+
 
 			#... Populate asset Info
 			data_file = os.path.join(file_path, 'data.json')

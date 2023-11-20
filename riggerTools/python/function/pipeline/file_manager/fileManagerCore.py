@@ -892,7 +892,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		else:
 			pass
 
-
+	#... If user already open scene 
 	def update_to_browser(self, file_path):
 		'''
 		Check the curenty maya file that already open is in the proper file manager path
@@ -906,8 +906,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if index.isValid():
 			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(index, QtCore.QItemSelectionModel.ClearAndSelect)
 
-			# Make the treeView scroll to the selected item
+			#... Make the treeView scroll to the selected item
 			self.asset_dir_TREEVIEW.scrollTo(index, QtWidgets.QAbstractItemView.PositionAtTop)
+
+			
+
 
 
 
@@ -916,7 +919,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		## Get the model index of the desired directory
 		# desired_index = self.model.index(file_path)
-
 
 		## Select the item at the model index
 		# self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(desired_index, QtCore.QItemSelectionModel.ClearAndSelect)
@@ -1421,7 +1423,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	
 	# Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
-
+		#... refresh everytime that click at treeview
 		self.asset_local_view_listWidget.clear()
 		self.asset_global_listWidget.clear()
 		self.asset_department_listWidget.clear()

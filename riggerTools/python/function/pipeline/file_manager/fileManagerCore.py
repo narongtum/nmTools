@@ -13,8 +13,12 @@ from PySide2.QtCore import QDir, QSortFilterProxyModel
 import subprocess
 import sys
 from function.framework.reloadWrapper import reloadWrapper as reload
+
+#...  ogging system 
+import logging
 from function.pipeline import logger 
 reload(logger)
+
 import re
 import pymel.core as pm
 
@@ -31,6 +35,12 @@ except:
 
 class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
+
+
+
+
+
+FileManagerLog.set_level(logging.DEBUG)
 	
 import maya.cmds as mc
 MAYA_VERSION = int(mc.about(v=True))
@@ -69,6 +79,7 @@ PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	('P_Regulus')
 SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
+
 
 
 
@@ -124,6 +135,8 @@ class FilterProxyModel(QtCore.QSortFilterProxyModel):
 
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
+	# Class variable to keep track of open windows
+	open_windows = []
 	def __init__(self):
 		parent = getMayaMainWindow()
 		super(FileManager, self).__init__(parent=parent)
@@ -133,11 +146,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Define model as an instance variable
 		# self.model = None
-		
 
 
-		# self.check_exists_maya()
-
+		# ... My existing code
 
 		# Create an instance of the SvnMaya class
 		self.svn_maya = SvnMaya()
@@ -558,49 +569,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 				else:
-					print('that not right')
+					FileManagerLog.error('{0} is wrong here.'.format(use_name))
 					continue
 
 
 				
-		
-			'''
-			# this condition is can't query step name that underscore more than one
 
-			for element in my_list:
-				# split name and extension using regular expression
-				# Warning !!! Weak condition
-				match = re.search(r'_(\w+)\.(\d+)\.ma$|\.mb$', element)
-				if match:
-					name = match.group(1)
-					# name = Lucille_01_Rig_skirt_some
-
-					# New condition
-					FileManagerLog.debug('Got Result match.group(1): {0}\n'.format(name))
-					FileManagerLog.debug('Got Result use_name: {0}'.format(use_name))
-					replace_name = name.replace(use_name,'')
-					
-					# name = replace_name
-					## replace this condition to another
-					# Old condition
-					name = name.split('_')[-1]
-					FileManagerLog.debug('I want this name same: {0}\n'.format(name))
-					FileManagerLog.debug('I want this replace_name same : {0}\n'.format(replace_name))
-
-					
-					
-
-
-
-
-
-
-
-					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
-					if name not in result or version > int(result[name][1]): # zfill later
-						# result[name] = [element, str(version).zfill(3)]
-						result[name] = [element, version]
-			'''
 
 
 
@@ -719,7 +693,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		except Exception as e:
 			print("Error:", e)
-			FileManagerLog.debug('Path file not valid name please check: {0}'.format(global_path))
+			FileManagerLog.error('Path file not valid name please check: {0}'.format(global_path))
 
 
 
@@ -868,8 +842,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			
 
 			# ensures that the code works correctly regardless of the underlying operating system.
-
-			if parent_folder == 'Version':
+			# ... There is in Version folder
+			if parent_folder == STATIC_FOLDER[1]:
 				FileManagerLog.debug("The folder containing named 'Version'.")
 
 				folder_path = os.path.dirname(folder_path)
@@ -879,18 +853,89 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				asset_name = os.path.basename(asset_path)
 
 				if os.path.exists(os.path.join(asset_path, 'data.json')):
-					print('This file is valid Go on ')
+					FileManagerLog.debug('This file is valid Go on ')
 
 					self.update_to_browser(asset_path)
+
+					self.populate_version_from_open_scene(asset_path)
 
 
 					
 
+			#... There is in Commit folder
 
-			elif parent_folder == 'Commit':
-				FileManagerLog.debug("The folder containing 'ajubu.ma' is not named 'Commit'.")
-		else:
-			pass
+			elif parent_folder == STATIC_FOLDER[2]:
+				FileManagerLog.debug("	Their is Commit file.")
+
+				#... check is global or local commit file
+				back_folder_path = os.path.dirname(folder_path)
+				FileManagerLog.debug("	back_folder_path path is >>> {0}".format(back_folder_path))
+
+				#... Check valid data
+				if os.path.exists(os.path.join(back_folder_path, 'data.json')):
+
+					#... This is global commit
+					FileManagerLog.debug('	855-This file is Global Commit >>> {0}'.format(back_folder_path))
+
+					#... Show Asset name at global widget
+					#... Make auto selected Asset name for make script continue to work
+					asset_index = self.model.index(back_folder_path)
+					self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(asset_index, QtCore.QItemSelectionModel.ClearAndSelect)
+					# Make the treeView scroll to the selected item
+					self.asset_dir_TREEVIEW.scrollTo(asset_index, QtWidgets.QAbstractItemView.PositionAtTop)
+
+					#... Show file on global widget
+					self.load_global_commit(folder_path)
+
+
+
+
+
+				else:
+					FileManagerLog.debug('This file Local Commit')
+
+					# Extract the desired part of the path
+					assetName_path = os.path.dirname(back_folder_path)
+
+
+					#... Select Asset Name
+					FileManagerLog.debug('	886-	This is assetName_path >>> {0}'.format(assetName_path))
+					asset_index = self.model.index(assetName_path)
+					self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(asset_index, QtCore.QItemSelectionModel.ClearAndSelect)
+					self.asset_dir_TREEVIEW.scrollTo(asset_index, QtWidgets.QAbstractItemView.PositionAtTop)
+
+					#... Select Department Name
+
+					#... normalize path first
+					back_folder_path = os.path.normpath(back_folder_path)
+					path_elements = back_folder_path.split(os.path.sep)
+					FileManagerLog.debug('	90001-	This is Department Name >>> {0}'.format(path_elements[-1]))
+
+					#... Add department here
+					self.asset_department_listWidget.addItem(path_elements[-1])
+					department_item = self.asset_department_listWidget.findItems(path_elements[-1], QtCore.Qt.MatchExactly)
+					self.asset_department_listWidget.setCurrentItem(department_item[0])
+
+					#... Populate asset Info
+					data_file = os.path.join(assetName_path, 'data.json')
+					with open(data_file, "r") as file:
+						json_data = json.load(file)
+					self.assetInfo_list_listWidget.addItem(json_data['comment'])
+
+					#... Populate thumbnail
+					thumbnail_path = os.path.join(assetName_path, THUMBNAIL_NAME)
+					self.display_images(thumbnail_path)
+
+					global_path = os.path.join(assetName_path, STATIC_FOLDER[2])
+					self.load_global_commit(global_path)
+
+
+					self.load_local_commit(folder_path)
+					#... Make auto selected asset name for make script continue to work
+
+
+			else:
+				pass
 
 	#... If user already open scene 
 	def update_to_browser(self, file_path):
@@ -926,32 +971,83 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-
-
-
-		'''
+	def populate_version_from_open_scene(self, file_path):
+		#... Mimic the behavior of a user manually clicking on an item in the UI
 		
-		# Get full path
-		asset_path = self._get_full_path()
-		department_text = self.asset_department_listWidget.currentItem().text()
-		publish_path = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
-		publish_path = os.path.normpath(publish_path)
-
-		# Get current selected in Version listWidget
-		selected_task = self.asset_version_view_listWidget.currentItem()
-		file_name = selected_task.text()
-
-		# chech valid name
-
+		FileManagerLog.debug('	This is file_path >>> {0}'.format(file_path))
+		# Get the current Maya scene file path
+		current_scene_path = pm.system.sceneName()
 		
-		if file_name.split('.')[-2].isdigit():
-			FileManagerLog.debug('This file_name: {0}'.format(file_name))
+		# Check if the scene is saved
+		if current_scene_path:
+			# Normalize the path
+			current_scene_path = os.path.normpath(current_scene_path)
 
-		if publish_path:
-			FileManagerLog.debug('This publish_path: {0}'.format(publish_path))
-		else:
-			pass
-		'''
+			# Split the path to extract relevant information
+			path_elements = current_scene_path.split(os.path.sep)
+			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements))
+			
+			# Extract the asset and department names
+			asset_name = path_elements[-4]
+			department_name = path_elements[-3]
+
+			# Convert the desired directory path to a model index
+			FileManagerLog.debug('	922 - This is file_path >>> {0}'.format(file_path))
+			asset_index  = self.model.index(file_path)
+
+			# Create a QItemSelection for the asset item
+			selection = QtCore.QItemSelection(asset_index, asset_index)
+
+			# Emit the clicked signal on the asset item
+			self.asset_dir_TREEVIEW.clicked.emit(asset_index)
+			FileManagerLog.debug('Click signal emitted')
+
+			# Set the current selection in asset_dir_TREEVIEW
+			self.asset_dir_TREEVIEW.selectionModel().select(selection, QtCore.QItemSelectionModel.ClearAndSelect)
+
+
+
+			#... Add department here
+			self.asset_department_listWidget.addItem(department_name)
+			department_item = self.asset_department_listWidget.findItems(department_name, QtCore.Qt.MatchExactly)
+			FileManagerLog.debug('	Make selected department item.')
+			self.asset_department_listWidget.setCurrentItem(department_item[0])
+
+
+			#... Populate version widget
+			version_folder = os.path.join(file_path, department_name, 'Version')
+			
+			version_folder = os.path.normpath(version_folder)
+			FileManagerLog.debug('	This is version_folder >>> {0}'.format(version_folder))
+			self.show_version_entite(version_folder)
+
+			#... Populate asset Info
+			data_file = os.path.join(file_path, 'data.json')
+			with open(data_file, "r") as file:
+				json_data = json.load(file)
+			self.assetInfo_list_listWidget.addItem(json_data['comment'])
+
+			#... Populate thumbnail
+			thumbnail_path = os.path.join(file_path, THUMBNAIL_NAME)
+			self.display_images(thumbnail_path)
+
+			#... Populate global
+			#... Query to show asset at global widget
+			global_commit_folder = os.path.join(file_path, STATIC_FOLDER[2], )
+			#... If folder 'Commit' exist then continue
+			if os.path.exists(global_commit_folder):
+				self.load_global_commit(global_commit_folder)
+			else:
+				pass
+
+			#... Populate local
+			local_commit_folder = os.path.join(file_path, department_name, STATIC_FOLDER[2])
+
+			# If folder 'Commit' exist then continue
+			if os.path.exists(local_commit_folder):
+				self.load_local_commit(local_commit_folder)
+			else:
+				pass
 
 
 
@@ -1367,15 +1463,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_drive = self.drive_comboBox.currentText()
 		selected_project = self.project_comboBox.currentText()
 
-
-		print("\nThis is Run When start")
+		FileManagerLog.info("\nThis is Run When start")
 		# Set selected drive and project as root path
 		try:
 			self.path = os.path.join(selected_drive, "svn_true", DEFAULT_PROJECT, "Content")
 		except FileNotFoundError:
 			FileManagerLog.error("Invalid project name!")
 			self.path = os.path.join(selected_drive, "svn_true", PROJECT_NAME[0], "Content")
-		print("Show project path:...\t\t\t", self.path)
+
+		FileManagerLog.info("Show project path:...\t\t\t", self.path)
 
 		# Update the selected project variable with the current selection
 		selected_project = self.project_comboBox.currentText()
@@ -1455,7 +1551,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				
 				# If folder 'Commit' exist then continue
-				global_commit_folder = os.path.join(file_path, 'Commit')
+				global_commit_folder = os.path.join(file_path, STATIC_FOLDER[2])
 
 				if os.path.exists(global_commit_folder):
 					self.load_global_commit(global_commit_folder)
@@ -1497,30 +1593,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# #... Make filter End
 
 				
-			
-			'''
-			# Show version folder when also click Department on Treeview
-			# Disable for this make confusion
 
-			else:
-				
-				parent_path = os.path.dirname(file_path)
-				if os.path.exists(os.path.join(parent_path, 'data.json')):
-					FileManagerLog.debug('There must be department folder on treeView for sure: {0}'.format(parent_path))
-
-					# Then show list in version widget
-					version_folder_path = os.path.join(file_path, 'Version')
-					FileManagerLog.debug(version_folder_path)
-					self.show_version_entite(version_folder_path)
-					# Split folder for making nanming working file
-				else:
-					FileManagerLog.debug('There must be normal folder')
-			'''
 
 			
-
-
-
 
 
 
@@ -1546,7 +1621,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 		#... Query to show asset at global widget
-		global_commit_folder = os.path.join(asset_path, 'Commit', )
+		global_commit_folder = os.path.join(asset_path, STATIC_FOLDER[2], )
 		#... If folder 'Commit' exist then continue
 		if os.path.exists(global_commit_folder):
 			self.load_global_commit(global_commit_folder)
@@ -1557,7 +1632,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		### will shift to method #####
 		self.show_version_entite(version_folder)
 
-		local_commit_folder = os.path.join(asset_path, department_text, 'Commit')
+		local_commit_folder = os.path.join(asset_path, department_text, STATIC_FOLDER[2])
 
 		# If folder 'Commit' exist then continue
 		if os.path.exists(local_commit_folder):
@@ -1659,6 +1734,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug("Return full path: {0}".format(full_path) )
 		return full_path
 
+	def _get_full_path_pm(self):
+		#... Construct the full path no care treeview is selected
+		current_scene_path = pm.system.sceneName()
+		full_path = os.path.normpath(current_scene_path)
+		return full_path
 
 	def get_deep_path(self):
 		# Return full path to work file and extension		
@@ -1797,9 +1877,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
 
 		# Print some information for debugging purposes
-		print("\nPopulating tree view with file system model...")
-		print("populate_treeView project path:... _456_\t\t\t", self.path)
-		print("Model root path:...\t\t\t", self.model.rootPath())
+
+		FileManagerLog.info("Populating tree view with file system model...")
+		FileManagerLog.info("populate_treeView project path:...\t\t\t{0}".format(self.path))
+		FileManagerLog.info("Model root path:...\t\t\t{0}".format(self.model.rootPath()	))
 
 		# Show department listWidget when selected asset
 		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])

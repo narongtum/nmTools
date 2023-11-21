@@ -434,17 +434,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		setp_showInExplorer_action.triggered.connect(self.show_local_version_explorer)
 		contextMenu.addAction(setp_showInExplorer_action)
 
+		#... Add Reference action
+		reference_action = QtWidgets.QAction("Reference selected this file...", self)
+		# Link to method
+		reference_action.triggered.connect(self.handle_reference_version_widget)
+		contextMenu.addAction(reference_action)
+
 
 		createStep_action = QtWidgets.QAction("Create New Step...", self)
 		# Link to method
 		createStep_action.triggered.connect(self.create_job_step)
 		contextMenu.addAction(createStep_action)
 
-		#... Add Reference action
-		reference_action = QtWidgets.QAction("Reference selected this file...", self)
-		# Link to method
-		reference_action.triggered.connect(self.handle_reference_version_widget)
-		contextMenu.addAction(reference_action)
+
 
 		result_job_element = self.query_step_list()
 		FileManagerLog.debug('There are alway step list why?_122_: \t\t {0}'.format(result_job_element))

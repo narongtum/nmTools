@@ -12,6 +12,20 @@ mtc.parentConMatrix( sel[0], sel[1], mo = True, translate = True, rotate = True,
 '''
 
 
+
+
+'''
+from function.rigging.constraint import matrixConstraint 
+reload(matrixConstraint)
+
+'''
+
+
+
+
+
+
+
 '''
 from function.rigging.util import misc as misc
 from function.framework.reloadWrapper import reloadWrapper as reload
@@ -36,8 +50,49 @@ reload(core)
 from function.pipeline import logger 
 reload(logger)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
 class Constraint(logger.MayaLogger):
 	LOGGER_NAME = "ConstraintLog"
+
+
+
+from function.rigging.util import misc
+reload(misc)
+
+
+#... constraint parent suffix name to bind suffix name
+def matrixConListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt' ):
+	namLst = []
+	for each in namJntList:
+		fitstNam = misc.splitName( each )[0]
+		namLst.append( fitstNam )
+
+	
+	for each in namLst:
+		parentNam = each + '_' + parent
+		childNam = each + '_' + child
+
+		print('This is parentNam >>> {}'.format(parentNam))
+		print('This is childNam >>> {}'.format(childNam))
+
+		parentConMatrix(parentNam, childNam, mo = True, translate = True, rotate = True, scale = True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def _getDagPath(node=None):
@@ -275,7 +330,35 @@ def deleteMartixNode():
 		mc.delete(quatToEuler)
 
 
+#... delete martix node by selection list
+def del_sel_matrix(selected = []):
+	#... Get short name
+	mulMtx = mnd.get_short_name('multMatrix')
+	quat = mnd.get_short_name('quatToEuler')
+	deComp = mnd.get_short_name('decomposeMatrix')
 
+	for each in selected:
+		list_sel = mc.listConnections(each, destination=True)
+
+		for each in list_sel:
+			try:
+				# .. because after delete it will can't find the rest
+				# if each.endswith('_dmpMtx'):
+					# logger.MayaLogger.info('Delete %s' %each)
+					# mc.delete(each)
+				if each.endswith(mulMtx):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+				if each.endswith(quat):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+				if each.endswith(deComp):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+
+			except:
+				print('There are no matrix node to delete.')
+	print('Delete Done...')
 
 
 

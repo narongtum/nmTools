@@ -313,6 +313,14 @@ misc.del_sel_matrix(selected = [sel])
 #... Set attr string
 metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
 metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
+
+
+#... Change joint color
+metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
+metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
+
+
+
 '''
 
 
@@ -1715,6 +1723,8 @@ class Dag( Node ) :
 		else :  
 			mc.setAttr( '%s.overrideEnabled'    % shape , 1 )
 			mc.setAttr( '%s.overrideColor'      % shape , colorId )
+
+		print('set color')
 	
 
 
@@ -1780,10 +1790,31 @@ class Dag( Node ) :
 
 
 
+	# # # # # # # # # # # # #
+	# About joint adjustment #
+	# # # # # # # # # ## # # 
+
+	def setJointColor( self , color ):
+		COLOR_dict = mnd.COLOR_dict
+
+		if color in COLOR_dict.keys():
+			colorId = COLOR_dict[color]
+			mc.setAttr( '%s.overrideEnabled'    % self.name , 1 )
+			mc.setAttr( '%s.overrideColor'      % self.name, colorId )
+
+		else:
+			colorId = 0
+			mc.error("Insert string keyword such as yellow")
 
 
+	def setJointOutlineColor( self,color ):
+		RGB_dict = mnd.rgbCode
 
-
+		if color in RGB_dict.keys():
+			colorId = RGB_dict[color]
+			mc.setAttr(   	 '%s.useOutlinerColor' %self.name ,True   )
+			mc.setAttr (	 '%s.outlinerColor' %self.name , colorId[0],colorId[1],colorId[2]	)
+			mm.eval('AEdagNodeCommonRefreshOutliners();')
 
 
 

@@ -878,7 +878,7 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 
 
 
-
+#... constraint parent suffix name to bind suffix name
 def constraintListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt' ):
 	namLst = []
 	for each in namJntList:
@@ -1110,7 +1110,8 @@ def rotateOffset(tgt, dmpMtx, mulMtx):
 
 
 def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = True):
-	# This is Outdate
+
+	# This is Outdate the latest is in function.rigging.constraint
 	# Add Another version at rigging.constraint
 	# TODO : connectAttr -force head_gmbCtrl.rotateOrder head_bJnt_quaEul.inputRotateOrder;  connect rotate order
 

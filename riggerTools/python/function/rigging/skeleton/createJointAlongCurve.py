@@ -72,6 +72,7 @@ class buildUI(object):
 		mc.showWindow()
 
 	#-----------------------------------------------------------------------------------------------------------------------------#
+
 	def _core_along_curve( self, prefix , name , suffix , jointAmount , curveSelected ):
 		rootJnt = ''
 		previousJnt = ''
@@ -114,8 +115,11 @@ class buildUI(object):
 				mc.joint(rootJnt, e=True, oj= 'yzx', sao = 'yup' , ch = True, zso = True)
 
 
-		# use Fibonacci length		
+
 		else:
+			#... if use Fibonacci length
+			#... make jointAmount delete the previous last
+
 
 
 			# limit for 30 number
@@ -123,6 +127,8 @@ class buildUI(object):
 					377,610,987,1597,2584,4181,6765,10946,
 					17711,28657,46368,75025,121393,
 					196418,317811,514229 )
+
+			length_value = (0,0.267,0.496,0.634,0.746,0.822,0.887,0.948,1.00)
 
 			if jointAmount >= len(fibo):
 				mc.error("Terminate Limit for 30 number.")
@@ -172,8 +178,16 @@ class buildUI(object):
 
 			previousVal = 0
 
-			# i = 0
+			#... loop through value
 			for i in range(0,len(sumVal)):
+
+				#... check if the previous last number
+				# previous_last = len(sumVal)-1
+				print ('This is number %s' %i)
+				# print ('This is number %s' %previous_last)
+
+
+
 				mc.select( cl=True )
 
 
@@ -186,6 +200,7 @@ class buildUI(object):
 
 				motionPath = mc.pathAnimation( newJnt, c = curveSelected, fractionMode = True )
 				mc.cutKey( motionPath + ".u", time = () )
+
 				print (sumVal[i])
 
 				previousVal += sumVal[i]
@@ -213,11 +228,12 @@ class buildUI(object):
 					
 				mc.joint(rootJnt, e=True, oj= 'yzx', sao = 'yup' , ch = True, zso = True)	
 
-				mc.delete(newJnt + ".tx", icn = True)
-				mc.delete(newJnt + ".ty", icn = True)
-				mc.delete(newJnt + ".tz", icn = True)
-					
-				mc.delete(motionPath)
+				#... Delete connection
+				# mc.delete(newJnt + ".tx", icn = True)
+				# mc.delete(newJnt + ".ty", icn = True)
+				# mc.delete(newJnt + ".tz", icn = True)
+				# mc.delete(motionPath)
+
 				mc.select( cl=True )
 
 

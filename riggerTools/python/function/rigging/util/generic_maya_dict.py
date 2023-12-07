@@ -110,7 +110,7 @@ def get_short_name(long_name):
 COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 				'softBlue'  : 18 ,          'blue'          : 6 ,
 				'white'     : 16 ,          'brown'         : 11 ,
-				'black'     : 1 ,           'gray'          : 2 ,
+				'black'     : 1 ,           'gray'          : 3 ,
 				'softGray'  : 3 ,           'darkRed'       : 4 ,
 				'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
 				'green'     : 14 ,          'softBlue'      : 18 ,

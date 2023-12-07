@@ -70,7 +70,8 @@ def quradrupedLegRig(		nameSpace = '' 	,
 							ribbonRes = 'low'	,				
 							ribbonName = ('upLeg', 'lwrLeg'),	
 							charScale = 1,
-							region = 'backLeg'):
+							region = 'backLeg',
+							alongAxis = 'y'):
 
 	core.makeHeader(	'Start of %s%s Rig' %('quradrupedLegRig',side)	)
 
@@ -876,7 +877,7 @@ def quradrupedLegRig(		nameSpace = '' 	,
 										side 		=  side   					,
 										uprNam 		= rawNameUPR	)
 	attrName = midLockModule.doAddAttr( povUPR_Ctrl , region )
-	midLockModule.connectIkJnt(	stretchNode = pmaNode , upperIKJnt = midLeg_ikJnt.name , lowerIKJnt = lowerLeg_ikJnt.name , blendName = blendName , namLock = attrName	, povName = povUPR_Ctrl )
+	midLockModule.connectIkJnt(	stretchNode = pmaNode , upperIKJnt = midLeg_ikJnt.name , lowerIKJnt = lowerLeg_ikJnt.name , blendName = blendName , namLock = attrName	, povName = povUPR_Ctrl,alongAxis = alongAxis )
 
 
 

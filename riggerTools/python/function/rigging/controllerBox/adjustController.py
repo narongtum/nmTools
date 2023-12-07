@@ -50,7 +50,7 @@ import maya.cmds as mc
 from function.rigging.readWriteCtrlSizeData import writeCtrlData as wcd
 reload(wcd)
 
-from function.rigging.util import misc as misc
+from function.rigging.util import misc 
 reload(misc)
 
 from function.rigging.autoRig.base import core
@@ -66,7 +66,7 @@ reload(rigTools)
 # =================================
 def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
 							constraint = True, matrixConst = False, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy'):
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False):
 	'''
 	Create Controller at selected object.
 	@param scale: A dictionary of template component and items.
@@ -162,7 +162,8 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 
 				return_list.append(childZro_grp.name)
 				return_list.append(child_ctrl.name)
-
+				return_list.append(gimbal_ctrl.name)
+				
 				#... set RotationOrder
 				child_ctrl.rotateOrder = rotateOrder 
 				gimbal_ctrl.rotateOrder = rotateOrder
@@ -188,6 +189,15 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 
 				else:
 					continue
+
+		if parentUnder:
+			print('YEAH')
+
+			mc.parent(childZro_grp.name, selected[i])
+
+
+
+
 		return return_list
 	else:
 		mc.warning('Please select something.')

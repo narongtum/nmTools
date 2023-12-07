@@ -18,20 +18,24 @@ import maya.mel as mel
 import sys
 
 
+
+
+
+
+
+
 # Export FBX version no need to bake joint to key
 # Select joint and select Mesh
+
+'''
+from function.asset import exportFBX
+reload(exportFBX)
+selection = mc.ls(sl=True)
+exportFBX.exportFBXnoConnection(selection, fileName = selection[-1])
+'''
 def exportFBXnoConnection(selection, fileName = ''):
 	
 	# verify if anything is selected
-
-	# selection = pm.ls(sl=True)
-	if not selection:
-		pm.confirmDialog(title='No objects selected', message='Please select one or more object(s) to export.',
-							 button=['OK'], defaultButton='OK')
-		original_selection = None
-		return
-		
-		original_selection = pm.ls(sl=True)
 
 	path = fileTools.findCurrentPath()
 	path = path.replace('\\','/')

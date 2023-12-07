@@ -1,10 +1,6 @@
 # latest Use this (not in Rig tools)
 
-"""
-from function.rigging.autoRig.addRig import pinLocatorToSurfac as pls
-reload(pls)
 
-"""
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 
@@ -31,6 +27,27 @@ as close to the object as possible. Otherwise, you can specify U and V coordinat
 
 
 
+
+
+
+"""
+from function.rigging.autoRig.addRig import pinLocatorToSurfac as pls
+reload(pls)
+
+ pls.pin_locator_surface(	# need pxy nrb to drive locator
+							nurbs = 'glue_nrb',
+							region = 'ribCage',
+							side = '',
+							source_loc = ('strapALFT_loc','strapARGT_loc'),
+							locator_scale = 1
+						)
+
+"""
+
+
+
+import maya.cmds as mc
+
 from function.pipeline import logger 
 reload(logger)
 
@@ -43,6 +60,8 @@ reload(core)
 class PinLogger(logger.MayaLogger):
 	LOGGER_NAME = "pin_locator_surface"
 
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
 
 # TODO : create proxy joint follow locator that create
 # no need to specified UV
@@ -57,8 +76,9 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 							region = 'ribCage',
 							side = '',
 							source_loc = ('strapALFT_loc','strapARGT_loc'),
-							locator_scale = 1
-						):
+							locator_scale = 1,
+							creJnt = False , suffixJnt = '_pxyJnt',
+							creCtrl = False , ctrlShape = 'circle_ctrlShape'):
 	# need locator to guide flc
 
 
@@ -209,6 +229,37 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		# locator_list.reverse()
 
 		# pm.delete(sourceObj)
+
+		#... [ Update if use joint]
+		#... create joint and parent under locator
+		
+
+		if creJnt:
+			child_joint = core.Joint()
+			child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
+			child_joint.maSnap( pName )
+			#... no need to parent
+			# child_joint.parent( pName )
+			child_joint.freeze()
+			# child_joint = mc.createNode('joint' , name =  )
+			# child_joint = pm.createNode( 'joint', name = '{}{:02d}{}_jnt'.format(region,num+1,side) )
+
+		if creCtrl:
+			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = 1, ctrlShape = ctrlShape, color = 'yellow', 
+							constraint = False, matrixConst = False, mo = False, translate=True, 
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
+
+			
+			
+			# child_joint = core.Joint()
+			# child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
+			# child_joint.maSnap( pName )
+			# child_joint.parent( gmbl_ctrl )
+			# child_joint.freeze()
+
+		
+		
+
 	PinLogger.info('Create {0} Locator glue Complete'.format(each))
 	return locator_list
 
@@ -436,16 +487,3 @@ def _create_ctrl_bJnt_for_glue(
 
 
 
-"""
-from function.rigging.autoRig.addRig import pinLocatorToSurfac as pls
-reload(pls)
-
- pls.pin_locator_surface(	# need pxy nrb to drive locator
-							nurbs = 'glue_nrb',
-							region = 'ribCage',
-							side = '',
-							source_loc = ('strapALFT_loc','strapARGT_loc'),
-							locator_scale = 1
-						)
-
-"""

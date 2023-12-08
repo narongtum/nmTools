@@ -5,10 +5,17 @@
 #... 2. to the grp name it "facialBshBase_grp"
 #... 3. exe this function 
 
+'''
+from function.rigging.blendShape import generate_blendShape as gbs
+reload(gbs)
+gbs.duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 )
+'''
+
 
 import maya.cmds as mc
 
 from function.rigging.util import boundingBox as bBox
+from function.framework.reloadWrapper import reloadWrapper as reload
 reload(bBox)
 
 import pprint
@@ -19,7 +26,7 @@ reload(mnd)
 
 
 
-# def createBshToPly( bsh_dict, side ):
+
 '''
 for mocap project
 @param bsh_dict: Global dictionary from this module
@@ -168,4 +175,4 @@ def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', mu
 
 
 # execute
-duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 )
+#duplicateForBlendshape( blendshapeAtEnd = True,blendshape_dict = mnd.facial_dict_ARKit, multiplier = 2.0 )

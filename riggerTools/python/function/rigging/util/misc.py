@@ -37,7 +37,7 @@ from function.pipeline import logger
 import maya.cmds as mc
 import pymel.core as pm
 import maya.OpenMaya as om
-
+import re
 
 
 
@@ -74,8 +74,52 @@ else:
 # importlib.reload( ext )
 
 
+# # # # # # # # # # # # # # # #
+# ...  List hierarchy from selected in autodesk maya using python
+# # # # # # # # # # # # # # # #
+
+import maya.cmds as mc
+import re
+
+from function.rigging.util import generic_maya_dict as mnd
+
+reload(mnd)
 
 
+def setRotateOrder(rotateOrder='yzx'):
+	# Get the parent selected objects only I will take care the rest
+	selected = mc.ls(sl=True)
+
+	# Loop through each selected object and list its children
+	for obj in selected:
+		children = mc.listRelatives(obj, allDescendents=True)
+
+	# Define the regex pattern for *_ctrl
+	pattern = r'^.*_ctrl$'
+
+	ctrl_list = []
+
+	for each in children:
+		# Basic matching
+		if re.search(pattern, each):
+			print(f"String '{each}' ends with '_ctrl'")
+			ctrl_list.append(each)
+
+	# # # # # # # # # # # # # # # #
+	# ... Select and set rotate order
+	# # # # # # # # # # # # # # # #
+
+
+	rot_dict = mnd.rotOrder_dict
+	index = rot_dict[order]
+
+	for each in ctrl_list:
+		try:
+			mc.setAttr('{}.rotateOrder'.format(each), index)
+			print('Change rotate order to {0} complete.'.format(order))
+		except:
+			print(each)
+			continue
 
 
 

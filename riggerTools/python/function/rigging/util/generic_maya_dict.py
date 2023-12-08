@@ -149,8 +149,8 @@ make_bigger_list = (		'head01_ctrl','eyeCenter_ctrl',
 					'upperArmFkRGT_ctrl','lowerArmFkRGT_ctrl','handFkRGT_ctrl',
 					'ballLegFkRGT_ctrl','ankleFkRGT_ctrl','lowerLegFkRGT_ctrl','upperLegFkRGT_ctrl'	,
 
-					'upperArmIkRootLFT_ctrl','upperLegIkRootLFT_ctrl','footIkLFT_ctrl','handIkLFT_ctrl',	
-					'upperArmIkRootRGT_ctrl','upperLegIkRootRGT_ctrl','footIkRGT_ctrl','handIkRGT_ctrl'		
+					'upperArmIkRootLFT_ctrl','upperLegIkRootLFT_ctrl','footIkLFT_ctrl','handIkLFT_ctrl',
+					'upperArmIkRootRGT_ctrl','upperLegIkRootRGT_ctrl','footIkRGT_ctrl','handIkRGT_ctrl'
 )
 					
 
@@ -163,7 +163,7 @@ make_bigger_list = (		'head01_ctrl','eyeCenter_ctrl',
 controller_thicker_list = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl',
 								'lowerArmLFTFK_ctrl','handLFTFK_ctrl','upperLegLFTFK_ctrl','lowerLegLFTFK_ctrl','footLFTFK_ctrl','upperArmLFTFK_ctrl','handLFTFK_ctrl'
 								'lowerArmRGTFK_ctrl','handRGTFK_ctrl','upperLegRGTFK_ctrl','lowerLegRGTFK_ctrl','footRGTFK_ctrl','upperArmRGTFK_ctrl','handRGTFK_ctrl'
-								'hip_ctrl','spine01FK_ctrl','spine02FK_ctrl','spine03FK_ctrl',					
+								'hip_ctrl','spine01FK_ctrl','spine02FK_ctrl','spine03FK_ctrl',
 								'upperArmFkLFT_ctrl','lowerArmFkLFT_ctrl','handFkLFT_ctrl',
 								'upperArmFkRGT_ctrl','lowerArmFkRGT_ctrl','handFkRGT_ctrl',
 								'handIkLFT_ctrl','handIkRGT_ctrl','hip_ctrl','handStickLFT_ctrl','handStickRGT_ctrl',
@@ -183,6 +183,33 @@ standardJnt_list = [		'ankleLFT_bJnt','ankleRGT_bJnt','ballLFT_bJnt','ballRGT_bJ
 		'thumb01LFT_bJnt','thumb01RGT_bJnt','thumb02LFT_bJnt',
 		'thumb02RGT_bJnt','thumb03LFT_bJnt','thumb03RGT_bJnt',
 		'upperArmLFT_bJnt','upperArmRGT_bJnt','upperLegLFT_bJnt','upperLegRGT_bJnt'	]
+
+
+
+
+
+
+
+
+
+regulus_facial_dict = {'facialRegion': 'facial'    ,
+							   'posiBlock' : (1,1)         	,
+
+							   'name_all':['eyeWondering_L',
+										   'eyeWondering_R',
+										   'eyeBlink_L',
+										   'eyeBlink_R',
+										   'eyeAngry_L',
+										   'eyeAngry_R'] ,
+
+							   'name_exclude':[]}
+
+
+
+
+
+
+
 
 
 
@@ -405,6 +432,6 @@ def askColor(side):
 	elif side == 'MID':
 		return 'yellow'
 	else:
-		return 'white'					
+		return 'white'
 
 

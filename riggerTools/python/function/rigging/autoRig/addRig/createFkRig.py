@@ -751,9 +751,10 @@ def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, pa
 	#... Make curl controller 
 	if curlCtrl:
 		curl_ctrl = core.Dag('%s%s_ctrl'  %( tmpGrps[0] , 'Curl')	)
-		curl_ctrl.nmCreateController( 'stick_ctrlShape' )
+		#... change style
+		curl_ctrl.nmCreateController( 'circle_ctrlShape' )
 		curl_ctrl.editCtrlShape( axis = charScale * 3.3 )
-		curl_ctrl.rotateShape( rotate = ( 90 , 0 , 0) )
+		# curl_ctrl.rotateShape( rotate = ( 90 , 0 , 0) )
 		curl_ctrl.color = 'white'
 		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
 		curl_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )

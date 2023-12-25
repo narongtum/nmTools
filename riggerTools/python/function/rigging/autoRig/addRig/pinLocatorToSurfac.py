@@ -65,7 +65,7 @@ reload(adjust)
 
 # TODO : create proxy joint follow locator that create
 # no need to specified UV
-
+gon it
 # this is redundance with rigTools Use this instead
 # create locator at specified uv coordinate
 # from Chris Lesage (Rigmarole Studio)

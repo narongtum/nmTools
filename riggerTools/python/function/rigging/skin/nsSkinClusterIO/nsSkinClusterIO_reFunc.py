@@ -1,4 +1,5 @@
-# Warning... INSTALL NUMPY FIRST
+#... Warning... INSTALL NUMPY FIRST
+#... This is approve for my pipeline
 
 ###########################
 '''
@@ -518,15 +519,15 @@ reload (fileTools)
 
 def _processPath():
 	dataRaw = fileTools.getAssetData()
-	mayaFileName = dataRaw[0][-1]
+	status = dataRaw[0][-2]
 
-	if 'hero' in mayaFileName:
+	if status == 'commit':
 		print ('This is hero file')
-		filePath  = fileTools.desinatePath('\\RIG\\data\\skinData')
+		filePath  = fileTools.desinatePath('\\RIG\\Data\\skinData')
 
 	else:
 		print ('This is version file')
-		filePath  = fileTools.desinatePath('\\data\\skinData')
+		filePath  = fileTools.desinatePath('\\Data\\skinData')
 
 
 	fileTools.currentFilePath(filePath)

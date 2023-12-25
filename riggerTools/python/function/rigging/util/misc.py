@@ -923,7 +923,7 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 
 
 #... constraint parent suffix name to bind suffix name
-def constraintListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt' ):
+def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
 	namLst = []
 	for each in namJntList:
 		fitstNam = splitName( each )[0]
@@ -935,6 +935,8 @@ def constraintListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt
 		childNam = each + '_' + child
 		mc.parentConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_psCon')
 		mc.scaleConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_scCon')
+
+		print ('%s object has been create.' %each)
 
 
 

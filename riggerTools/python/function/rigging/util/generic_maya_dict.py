@@ -3,7 +3,7 @@
 
 '''
 
-#... Generig dictionary file 
+#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
 
 
 from function.rigging.util import generic_maya_dict as mnd
@@ -91,7 +91,8 @@ NODE_dict = [
 	{	'longName': 'quatToEuler'							,	'shortName': 'quatToEuler'					},
 	{	'longName': 'blendMatrix'							,	'shortName': 'blendMat'					},
 	{	'longName': 'blendShape'							,	'shortName': 'bsh'					},
-	{	'longName': 'network'							,	'shortName': 'meta'					}
+	{	'longName': 'network'							,	'shortName': 'meta'					},
+	{	'longName': 'setRange'							,	'shortName': 'setRange'}
 	
 
 ]

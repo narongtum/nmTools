@@ -1287,11 +1287,18 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			maya_type = 'mayaBinary'
 
 
-		if mc.objExists("rig_grp.asset_name") and mc.getAttr("rig_grp.asset_name") != None:
-			save_name = mc.getAttr("rig_grp.asset_name")
-			FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
+		if mc.objExists("rig_grp.enable") == True:
+			if mc.getAttr("rig_grp.asset_name") != '':
+				FileManagerLog.debug('asset_name no data skipped')
+
+				if mc.getAttr("rig_grp.enable") == True:
+					if mc.getAttr("rig_grp.asset_name") != None:
+						save_name = mc.getAttr("rig_grp.asset_name")
+						FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
+			else:
+				pass
 		else:
-			FileManagerLog.debug('Not found naming specific.')
+			FileManagerLog.debug('Not found naming specific. skipped')
 			pass
 		# mc.error('test error')
 

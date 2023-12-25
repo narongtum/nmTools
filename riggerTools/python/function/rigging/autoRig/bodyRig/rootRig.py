@@ -128,6 +128,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	# rig_grp.addAttribute( dataType = 'string' , longName = 'Project')
 	# rig_grp.addAttribute( longName = 'Version', at = 'float'  , min = 0  , keyable = False )
 	# rig_grp.addAttribute( dataType = 'string' , longName = 'Base_Dir')
+	rig_grp.addAttribute( attributeType = 'bool' , longName = 'enable', defaultValue = 0 , keyable = False )
 	rig_grp.addAttribute( attributeType = 'enum', en = 'Player:Weapon', longName = 'asset_type', keyable = False   )
 	rig_grp.addAttribute( dataType = 'string' , longName = 'asset_name', keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_skin', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )

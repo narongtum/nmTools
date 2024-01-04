@@ -13,13 +13,13 @@ from maya import OpenMaya
 
 
 # # # # # # 
-# Part 1
+# Part 1 # make this to function and return dict that up or down
 # # # # # # 
 
 
 
-objectsInGroup = mc.listRelatives('group1', children=True)
-#objectsInGroup = mc.listRelatives('group2', children=True)
+#objectsInGroup = mc.listRelatives('group1', children=True)
+objectsInGroup = mc.listRelatives('group2', children=True)
 # Select all objects in the list.
 mc.select(objectsInGroup)
 
@@ -205,12 +205,13 @@ reload(adjust)
 try: #... ask if part_dict is exists before
 	part_dict
 except NameError:
-	part_dict = {'up':[],'down':[]}
+	part_dict = {'up':[],'down':[], 'fillUp':''}
 
 if PART == 'up':
 	#part_dict = {PART:[]}
 	ctrl_name = adjust.creControllerFunc( jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = 'yellow' )
 	part_dict[PART].append(ctrl_name)
+	part_dict['fillUp'] = True
 
 elif PART == 'down':
 	#part_dict = {PART:[]}
@@ -222,46 +223,80 @@ elif PART == 'down':
 			part_dict[PART].append(ctrl_name)
 
 
+#...#...#...#...#...#...
+#... End of part 2 (make this to function and run two time for up and down)
+#...#...#...#...#...#...
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#...#...#...#...#...#...
+#... Start of part 2.5
+#...#...#...#...#...#...
+
+'''
+# Make inbetween controller move following both corner and middle 
+'''
 
 import pprint
-pprint.pprint(part_dict['up'])
+if len(part_dict['up']) >1:
+    mc.error('length must be not more than one.')
+    
+pprint.pprint(part_dict['up'][0])
+pprint.pprint(part_dict['down'])
 
-if part_dict.get('up'):
+# # # # # # # #
+#... up part
+# # # # # # # #
+L_up_between_zro = part_dict['up'][0][6] # L_eye03Zro_grp
+up_middle_ctrl = part_dict['up'][0][5] # L_eye02_gmbCtrl
+R_up_between_zro = part_dict['up'][0][0] # L_eye01Zro_grp
+L_corner_ctrl = part_dict['up'][0][-2] # L_eye08_ctrl
+R_corner_ctrl = part_dict['up'][0][-5] # L_eye07_ctrl
 
-	#... try to get right name I dunno why dict order is not the same
-	L_between_zro = part_dict['up'][0][6] # L_eye03Zro_grp
-	middle_ctrl = part_dict['up'][0][5] # L_eye02_gmbCtrl
-	R_between_zro = part_dict['up'][0][0] # L_eye01Zro_grp
-	L_corner_ctrl = part_dict['up'][0][-2] # L_eye08_ctrl
-	R_corner_ctrl = part_dict['up'][0][-5] # L_eye07_ctrl
-
-
-	constr_object = core.pointConstraint( L_corner_ctrl,middle_ctrl,L_between_zro, maintainOffset=True) 
-	constr_object.name = L_between_zro + '_poiCon'
-	constr_object = core.pointConstraint( middle_ctrl,R_corner_ctrl,R_between_zro, maintainOffset=True) 
-	constr_object.name = R_between_zro + '_poiCon'
-
-
-
-
-if part_dict.get('down'):
-	print('down is exists')
-	
-	L_corner = part_dict['up'][0][-3]
-	R_corner = part_dict['up'][0][-1]
-		
+#... [pattern constraint] corner_ctrl and middle_ctrl ---> inbetween_zro
+constr_object = core.pointConstraint( L_corner_ctrl, up_middle_ctrl, L_up_between_zro, maintainOffset=True) 
+constr_object.name = L_up_between_zro + '_poiCon'
+constr_object = core.pointConstraint( R_corner_ctrl, up_middle_ctrl, R_up_between_zro, maintainOffset=True) 
+constr_object.name = R_up_between_zro + '_poiCon'
 
 
-	#... find raw name from L to R
-	middle = part_dict['down'][1][1]
 
-	#... between
-	L_between_zro = part_dict['down'][0][0]
-	R_between_zro = part_dict['down'][2][0]
+# # # # # # # #
+#... down part
+# # # # # # # #
 
 
-	constr_object = core.pointConstraint( L_corner,middle,L_between_zro, maintainOffset=True) 
-	constr_object.name = L_between_zro + '_poiCon'
-	constr_object = core.pointConstraint( middle,R_corner,R_between_zro, maintainOffset=True) 
-	constr_object.name = R_between_zro + '_poiCon'
+down_middle_ctrl = part_dict['down'][1][1]
+R_down_between_zro = part_dict['down'][0][0]
+L_down_between_zro = part_dict['down'][2][0]
+
+constr_object = core.pointConstraint( L_corner_ctrl, down_middle_ctrl, L_down_between_zro, maintainOffset=True) 
+constr_object.name = L_down_between_zro + '_poiCon'
+constr_object = core.pointConstraint( R_corner_ctrl, down_middle_ctrl, R_down_between_zro, maintainOffset=True) 
+constr_object.name = R_down_between_zro + '_poiCon'
+
+
+
+
+
+
+
+
+
+
+
+# # # # # # # #
+#		Next step
+# # # # # # # #

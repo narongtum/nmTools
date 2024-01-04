@@ -3,6 +3,9 @@
 import maya.cmds as mc
 from maya import OpenMaya
 
+from function.rigging.autoRig.base import core
+reload(core)
+
 #... [Must have]
 #... 1. eye center locator
 #... 2. eye up vector locator
@@ -32,11 +35,12 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 						crv_hi = 'L_upLidHigh_CRV',
 						crv_low = 'L_upLidLow_CRV',
 						crtlShape = 'plainSphereB_ctrlShape',
-						ctrlSize = 0.01	)
+						ctrlSize = 0.01 ,
+						color = 'yellow'	):
 
 
 
-	objectsInGroup = mc.listRelatives('group_name', children=True)
+	objectsInGroup = mc.listRelatives(group_name, children=True)
 	# Select all objects in the list.
 	mc.select(objectsInGroup)
 	loc = mc.ls(sl=True, fl=True)[0]
@@ -90,8 +94,7 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 
 
 
-	from function.rigging.autoRig.base import core
-	reload(core)
+
 
 
 
@@ -208,25 +211,29 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 
 	#... there are run two time first is up second is down
 	try: #... ask if part_dict is exists before
-		part_dict
+		part_dict = {}
 	except NameError:
-		part_dict = {'up':[],'down':[], 'fillUp':''}
+		part_dict = {'up':[],'down':[]}
 
 	if PART == 'up':
-		#part_dict = {PART:[]}
-		ctrl_name = adjust.creControllerFunc( jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = 'yellow' )
+		part_dict[PART] = []
+		# part_dict = {PART:[]}
+		ctrl_name = adjust.creControllerFunc( jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
 		part_dict[PART].append(ctrl_name)
-		part_dict['fillUp'] = True
+
 
 	elif PART == 'down':
-		#part_dict = {PART:[]}
+		part_dict[PART] = []
 		for each in jointCurve:
 			if mc.objExists('{}.isCorner'.format(each)):
 				continue
 			else:
-				ctrl_name = adjust.creControllerFunc( [each], scale = ctrlSize, ctrlShape = crtlShape, color = 'yellow' )
+				ctrl_name = adjust.creControllerFunc( [each], scale = ctrlSize, ctrlShape = crtlShape, color = color )
 				part_dict[PART].append(ctrl_name)
 
+	print('DONE')
+
+	return part_dict
 
 	#...#...#...#...#...#...
 	#... End of part 2 (make this to function and run two time for up and down)
@@ -234,10 +241,22 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 
 
 
+eye_up_dict = createControlEye(		group_name = 'group1', 
+									CENTER = 'L_center', SIDE = 'L',
+									PART = 'up',
+									crv_hi = 'L_upLidHigh_CRV',
+									crv_low = 'L_upLidLow_CRV',
+									crtlShape = 'plainSphereB_ctrlShape',
+									ctrlSize = 0.01	)
 
 
-
-
+eye_down_dict = createControlEye(		group_name = 'group2', 
+									CENTER = 'L_center', SIDE = 'L',
+									PART = 'down',
+									crv_hi = 'L_downLidHigh_CRV',
+									crv_low = 'L_downLidLow_CRV',
+									crtlShape = 'plainSphereB_ctrlShape',
+									ctrlSize = 0.01	)
 
 
 
@@ -256,8 +275,8 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 
 import pprint
 if len(part_dict['up']) >1:
-    mc.error('length must be not more than one.')
-    
+	mc.error('length must be not more than one.')
+	
 pprint.pprint(part_dict['up'][0])
 pprint.pprint(part_dict['down'])
 

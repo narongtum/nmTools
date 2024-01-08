@@ -39,11 +39,14 @@ def createControlEye(	group_name = 'group1',
 						crtlShape = 'plainSphereB_ctrlShape',
 						ctrlSize = 0.01 ,
 						upVec = 'L_eyeVec_LOC',
-						color = 'yellow'	):
+						color = 'yellow'	,
+						jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
+						):
 
 
-
+	#... find group name
 	objectsInGroup = mc.listRelatives(group_name, children=True)
+
 	# Select all objects in the list.
 	mc.select(objectsInGroup)
 	loc = mc.ls(sl=True, fl=True)[0]
@@ -51,24 +54,8 @@ def createControlEye(	group_name = 'group1',
 	#... ask part is upper or lower
 	PART = loc.split('_')[0]
 
-
-
-
-	#... The last 2 order is corner joint
-
-	if PART == 'up':
-		jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
-	elif PART == 'down':
-		jointCurve = ['L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
-
-	
-
-
 	#... select locator again
 	vtx = mc.ls(sl=True, fl=True)
-
-
-
 
 	mc.select(cl=True)
 	grp = mc.group(empty=True, name = '{}_{}EyeLid_Jnt_GRP'.format(SIDE,PART))
@@ -250,7 +237,9 @@ eye_up_dict = createControlEye(		group_name = 'group1',
 									crv_hi = 'L_upLidHigh_CRV',
 									crv_low = 'L_upLidLow_CRV',
 									crtlShape = 'plainSphereB_ctrlShape',
-									ctrlSize = 0.01	)
+									ctrlSize = 0.01,
+									jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
+										)
 
 
 eye_down_dict = createControlEye(		group_name = 'group2', 
@@ -259,7 +248,8 @@ eye_down_dict = createControlEye(		group_name = 'group2',
 									crv_hi = 'L_downLidHigh_CRV',
 									crv_low = 'L_downLidLow_CRV',
 									crtlShape = 'plainSphereB_ctrlShape',
-									ctrlSize = 0.01	)
+									ctrlSize = 0.01,
+									jointCurve = ['L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt']	)
 
 
 

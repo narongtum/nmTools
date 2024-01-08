@@ -30,12 +30,15 @@ reload(core)
 # ctrlSize = 0.01
 
 
-def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
+def createControlEye(	group_name = 'group1', 
+						CENTER = 'L_center', 
+						SIDE = 'L',
 						PART = 'up',
 						crv_hi = 'L_upLidHigh_CRV',
 						crv_low = 'L_upLidLow_CRV',
 						crtlShape = 'plainSphereB_ctrlShape',
 						ctrlSize = 0.01 ,
+						upVec = 'L_eyeVec_LOC',
 						color = 'yellow'	):
 
 
@@ -58,7 +61,7 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 	elif PART == 'down':
 		jointCurve = ['L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
 
-	upVec = 'L_eyeVec_LOC'
+	
 
 
 	#... select locator again
@@ -273,54 +276,188 @@ eye_down_dict = createControlEye(		group_name = 'group2',
 # Make inbetween controller move following both corner and middle 
 '''
 
-import pprint
-if len(part_dict['up']) >1:
-	mc.error('length must be not more than one.')
-	
-pprint.pprint(part_dict['up'][0])
-pprint.pprint(part_dict['down'])
+def makeInbetweener(eye_up_dict, eye_down_dict):
 
-# # # # # # # #
-#... up part
-# # # # # # # #
-L_up_between_zro = part_dict['up'][0][6] # L_eye03Zro_grp
-up_middle_ctrl = part_dict['up'][0][5] # L_eye02_gmbCtrl
-R_up_between_zro = part_dict['up'][0][0] # L_eye01Zro_grp
-L_corner_ctrl = part_dict['up'][0][-2] # L_eye08_ctrl
-R_corner_ctrl = part_dict['up'][0][-5] # L_eye07_ctrl
+	# # # # # # # #
+	#... up part
+	# # # # # # # #
 
-#... [pattern constraint] corner_ctrl and middle_ctrl ---> inbetween_zro
-constr_object = core.pointConstraint( L_corner_ctrl, up_middle_ctrl, L_up_between_zro, maintainOffset=True) 
-constr_object.name = L_up_between_zro + '_poiCon'
-constr_object = core.pointConstraint( R_corner_ctrl, up_middle_ctrl, R_up_between_zro, maintainOffset=True) 
-constr_object.name = R_up_between_zro + '_poiCon'
+	L_up_between_zro = eye_up_dict['up'][0][6] #... L_eye03Zro_grp
+	up_middle_ctrl = eye_up_dict['up'][0][5] #... L_eye02_gmbCtrl
+	R_up_between_zro = eye_up_dict['up'][0][0] #... L_eye01Zro_grp
+	L_corner_ctrl = eye_up_dict['up'][0][-2] #... L_eye08_ctrl
+	R_corner_ctrl = eye_up_dict['up'][0][-5] #... L_eye07_ctrl
+
+	#... [pattern constraint] corner_ctrl and middle_ctrl ---> inbetween_zro
+	constr_object = core.pointConstraint( L_corner_ctrl, up_middle_ctrl, L_up_between_zro, maintainOffset=True) 
+	constr_object.name = L_up_between_zro + '_poiCon'
+	constr_object = core.pointConstraint( R_corner_ctrl, up_middle_ctrl, R_up_between_zro, maintainOffset=True) 
+	constr_object.name = R_up_between_zro + '_poiCon'
 
 
 
-# # # # # # # #
-#... down part
-# # # # # # # #
+	# # # # # # # #
+	#... down part
+	# # # # # # # #
 
+	down_middle_ctrl = eye_down_dict['down'][1][1] #...L_eye05_ctrl
+	R_down_between_zro = eye_down_dict['down'][0][0] #... L_eye04Zro_grp
+	L_down_between_zro = eye_down_dict['down'][2][0] #.... L_eye06Zro_grp
 
-down_middle_ctrl = part_dict['down'][1][1]
-R_down_between_zro = part_dict['down'][0][0]
-L_down_between_zro = part_dict['down'][2][0]
+	constr_object = core.pointConstraint( L_corner_ctrl, down_middle_ctrl, L_down_between_zro, maintainOffset=True) 
+	constr_object.name = L_down_between_zro + '_poiCon'
+	constr_object = core.pointConstraint( R_corner_ctrl, down_middle_ctrl, R_down_between_zro, maintainOffset=True) 
+	constr_object.name = R_down_between_zro + '_poiCon'
 
-constr_object = core.pointConstraint( L_corner_ctrl, down_middle_ctrl, L_down_between_zro, maintainOffset=True) 
-constr_object.name = L_down_between_zro + '_poiCon'
-constr_object = core.pointConstraint( R_corner_ctrl, down_middle_ctrl, R_down_between_zro, maintainOffset=True) 
-constr_object.name = R_down_between_zro + '_poiCon'
+	print('DONE')
 
 
 
 
 
-
+makeInbetweener(eye_up_dict = eye_up_dict, eye_down_dict = eye_down_dict)
 
 
 
 
 
 # # # # # # # #
-#		Next step
+#		Next step make blink
 # # # # # # # #
+
+
+
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+
+def makeBlink(
+					SIDE = 'L'							,
+					CURVE = 'CRV'						,
+					up_low_crv = 'L_upLidLow_CRV'		,
+					down_low_crv = 'L_downLidLow_CRV'	,
+					up_hi_crv = 'L_upLidHigh_CRV'		,
+					down_hi_crv = 'L_downLidHigh_CRV'
+															):
+	#... duplicate for make smart blink
+	blendShape_upBlink_crv = core.duplicate(up_low_crv)
+	blendShape_upBlink_crv.name = 'L_lidBlink_master_CRV'
+
+
+	blendShape_upBlink_crv.color = 'red'
+
+
+	#... create attr at broad ctrl for control blendshape
+	middle_ctrl = core.Dag('L_eye02_ctrl')
+	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
+	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
+
+
+	middle_down_ctrl = core.Dag('L_eye05_ctrl')
+	# middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
+	middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
+
+
+	smartBlink_bsh = mc.blendShape(up_low_crv, down_low_crv, blendShape_upBlink_crv.name, origin = 'world', name =  'L_targetSmartBlink_BSH')[0]
+	mc.setAttr('{}.{}'.format(smartBlink_bsh,up_low_crv), 0)
+	mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 0)
+	#smartBlink_bsh = 	'L_targetSmartBlink_BSH'
+
+
+	# #... duplicate up and down (this is original version)
+	upBlink_crv = core.duplicate(up_hi_crv)
+	upBlink_crv.name = '{}_{}LidBlink_{}'.format(SIDE, 'Up', CURVE)
+	downBlink_crv = core.duplicate(down_hi_crv)
+	downBlink_crv.name = '{}_{}LidBlink_{}'.format(SIDE, 'Down', CURVE)
+
+	#... duplicate up and down
+	# upBlink_crv = core.duplicate(up_low_crv)
+	# upBlink_crv.name = '{}_{}LidBlink_follow_{}'.format(SIDE, 'Up', CURVE)
+	# downBlink_crv = core.duplicate(down_low_crv)
+	# downBlink_crv.name = '{}_{}LidBlink_follow_{}'.format(SIDE, 'Down', CURVE)
+
+
+	#... make it follow smart blink curve
+	#... [child][parent]
+	up_wire = mc.wire(upBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Up', 'WR'), groupWithBase = False)[0]
+	#mc.setAttr('L_UpLidBlink_WR.scale[0]', 0)
+
+	#... if down must fix value of BSH dow to 1 
+	mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 1)
+	mc.setAttr('{}.{}'.format(smartBlink_bsh,up_low_crv), 1)
+
+	down_wire = mc.wire(downBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Down', 'WR'), groupWithBase = False)[0]
+	mc.setAttr('{}.scale[0]'.format(down_wire), 0)
+	#mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 0)
+
+	#... if you want to make controller foller curve use another method below
+
+
+
+	#... now blendshape between 
+	upLidBlink_bsh = mc.blendShape(upBlink_crv.name, up_hi_crv, origin = 'local', before=True, name =  '{}_{}LidBlink_{}'.format(SIDE, 'Up', 'BSH'))[0]
+	mc.setAttr('{}.{}'.format(upLidBlink_bsh, upBlink_crv.name), 1)
+
+
+	downLidBlink_bsh = mc.blendShape(downBlink_crv.name, down_hi_crv, origin = 'local', before=True, name =  '{}_{}LidBlink_{}'.format(SIDE, 'Down', 'BSH'))[0]
+	mc.setAttr('{}.{}'.format(downLidBlink_bsh, downBlink_crv.name), 1)
+
+	#upLidBlink_bsh = 'blendShape1'
+	#downLidBlink_bsh = 'blendShape2'
+
+	#... link connnection
+	mc.connectAttr('{}.smart_Blink'.format(middle_ctrl), '{}.{}'.format(upLidBlink_bsh, upBlink_crv.name), f=True)
+	mc.connectAttr('{}.smart_Blink'.format(middle_down_ctrl), '{}.{}'.format(downLidBlink_bsh, downBlink_crv.name),f=True)
+
+	#... link smart blink heigh
+	rev_value = core.ReverseNam('{}_smartBlink_{}'.format(SIDE,'REV'))
+	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrl), '{}.{}'.format(smartBlink_bsh, down_low_crv), f=True)
+	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrl), '{}.inputX'.format(rev_value.name), f=True)
+	mc.connectAttr('{}.outputX'.format(rev_value.name), '{}.{}'.format(smartBlink_bsh, up_low_crv), f=True)
+
+	print('\nDONE')
+
+
+
+makeBlink(
+					SIDE = 'L'							,
+					CURVE = 'CRV'						,
+					up_low_crv = 'L_upLidLow_CRV'		,
+					down_low_crv = 'L_downLidLow_CRV'	,
+					up_hi_crv = 'L_upLidHigh_CRV'		,
+					down_hi_crv = 'L_downLidHigh_CRV'
+															)
+
+
+'''
+
+
+
+
+#... try to make controller follow eyelid still not work
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+
+
+sel = ['locator1','locator2', 'locator3' , 'locator4' , 'locator5']
+sel = ['locator11','locator12', 'locator13']
+crv_hi = 'L_DownLidBlink_follow_collective_CRV'
+pos = []
+
+for each in sel:	
+	pos = mc.xform(each, q=True, ws=True, t=True)
+	type(pos)
+	type(crv_hi)
+	uVal = core.getUParam(pos, crv_hi)
+	name = each.replace('LOC', 'PCI')
+	print(name)
+	pci=mc.createNode('pointOnCurveInfo', name = name)
+	mc.connectAttr(crv_hi + '.worldSpace', pci + '.inputCurve')
+	mc.setAttr(pci+'.parameter', uVal)
+	mc.connectAttr( pci + '.position', each + '.t')
+
+
+'''

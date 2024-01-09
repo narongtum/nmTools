@@ -74,16 +74,44 @@ else:
 # importlib.reload( ext )
 
 
-# # # # # # # # # # # # # # # #
-# ...  List hierarchy from selected in autodesk maya using python
-# # # # # # # # # # # # # # # #
+
 
 import maya.cmds as mc
 import re
 
 from function.rigging.util import generic_maya_dict as mnd
-
 reload(mnd)
+
+
+
+
+
+
+
+
+
+def _unparent_if_not_world(obj_name):
+	parent = mc.listRelatives(obj_name, parent=True)
+	if parent == None:
+		print('object has been unparented from its previous parent and is now a child of world')
+	else:
+		mc.parent(obj_name, world=True)
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# ... Make proper separater with new condition
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+def makeProperSeparater(string):
+	parts = string.split("_")
+	desired_part = "_".join(parts[:-1])
+	return desired_part
+
+
+
+
 
 
 def setRotateOrder(rotateOrder='yzx'):

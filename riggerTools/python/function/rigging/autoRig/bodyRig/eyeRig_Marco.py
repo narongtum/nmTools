@@ -1,10 +1,26 @@
 #... [EYE RIG Marco Fashion]
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
 from maya import OpenMaya
 
 from function.rigging.autoRig.base import core
 reload(core)
+
+from function.rigging.autoRig.base import rigTools
+reload(rigTools)
+
+#...  logging system 
+import logging
+from function.pipeline import logger 
+reload(logger)
+
+from function.rigging.util import misc
+reload(misc)
+
+#... create controller link to the joint
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
 
 #... [Must have]
 #... 1. eye center locator
@@ -29,6 +45,27 @@ reload(core)
 # crtlShape = 'plainSphereB_ctrlShape'
 # ctrlSize = 0.01
 
+class EyeRigMarco(logger.MayaLogger):
+	LOGGER_NAME = "eyeRig_Marco"
+
+
+
+
+
+
+
+
+
+
+def _unparent_if_not_world(obj_name):
+	parent = mc.listRelatives(obj_name, parent=True)
+	if parent == None:
+		print('object has been unparented from its previous parent and is now a child of world')
+	else:
+		mc.parent(obj_name, world=True)
+	
+
+
 
 def createControlEye(	group_name = 'group1', 
 						CENTER = 'L_center', 
@@ -40,14 +77,23 @@ def createControlEye(	group_name = 'group1',
 						ctrlSize = 0.01 ,
 						upVec = 'L_eyeVec_LOC',
 						color = 'yellow'	,
-						jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
+						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'),
+						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt')
 						):
 
 
-	#... find group name
+	_unparent_if_not_world(crv_hi)
+	_unparent_if_not_world(crv_low)
+	_unparent_if_not_world(crv_hi)
+	_unparent_if_not_world(CENTER)
+	_unparent_if_not_world(upVec)
+
+	part_dict = {}
+
+	#... find name and list member
 	objectsInGroup = mc.listRelatives(group_name, children=True)
 
-	# Select all objects in the list.
+	#... Select all objects in the list.
 	mc.select(objectsInGroup)
 	loc = mc.ls(sl=True, fl=True)[0]
 
@@ -58,7 +104,11 @@ def createControlEye(	group_name = 'group1',
 	vtx = mc.ls(sl=True, fl=True)
 
 	mc.select(cl=True)
-	grp = mc.group(empty=True, name = '{}_{}EyeLid_Jnt_GRP'.format(SIDE,PART))
+	# grp = mc.group(empty=True, name = '{}_{}EyeLid_Jnt_GRP'.format(SIDE,PART))
+	eyeLid_aimJnt_grp = core.Null('{0}_{1}EyeLid_AimJnt_GRP'.format(SIDE,PART))
+	eyeLid_aimJnt_grp.maSnap( CENTER , position = True , rotation = True , scale = True )
+
+
 	num = 1
 	tipJnt = []
 	for each in vtx:
@@ -68,16 +118,16 @@ def createControlEye(	group_name = 'group1',
 		mc.xform(jnt, ws=True, t=pos)
 		posC = mc.xform(CENTER, q=True, ws=True, t=True)
 		mc.select(cl=True)
-		jntC = mc.joint(name = '{}_{}EyeLid{:02d}_{}'.format(SIDE, PART, num, 'JNT'))
+		jntC = mc.joint(name = '{}_{}EyeLidAim{:02d}_{}'.format(SIDE, PART, num, 'JNT'))
 		mc.xform(jntC, ws=True, t=posC)
 		mc.parent(jnt, jntC)
 		mc.joint(jntC, e=True, oj = 'xyz' , secondaryAxisOrient='yup', ch=True, zso=True)
 		tipJnt.append(jnt)
 		num = num + 1
 
-		mc.parent(jntC, grp)
-
-
+		mc.parent(jntC, eyeLid_aimJnt_grp)
+	part_dict['top_grp'] = []
+	part_dict['top_grp'].append(eyeLid_aimJnt_grp.name)
 	mc.select(cl=True)
 
 
@@ -86,6 +136,9 @@ def createControlEye(	group_name = 'group1',
 
 
 
+	#...#...#...#...#...#...#...#...#...#...#...#...
+	#... Ppart 1/2: Make Eye Aim 
+	#...#...#...#...#...#...#...#...#...#...#...#...
 
 
 	#... select tip joint first
@@ -103,11 +156,14 @@ def createControlEye(	group_name = 'group1',
 		pos = mc.xform(each, q=True, ws=True, t=True)
 		mc.xform(loc.name, ws=True, t=pos)
 		par = mc.listRelatives(each, p=True)[0]
+
 		mc.aimConstraint(loc.name, par, mo=True, weight=1, aimVector=(1,0,0), upVector=(0,1,0), worldUpType='object', worldUpObject = upVec )
 		aimLoc.append(loc.name)
 		num = num + 1
 
 		mc.parent(loc.name, grp)
+
+	part_dict['top_grp'].append(grp)
 	mc.select(cl=True)
 
 	#... END OF PART 1
@@ -151,9 +207,10 @@ def createControlEye(	group_name = 'group1',
 		return oNodeList[0] if len(oNodeList) == 1 else oNodeList 
 
 
-	#...#...#...#...#...#...
-	#... start of part 2
-	#...#...#...#...#...#...
+
+	#...#...#...#...#...#...#...#...#...#...#...#...
+	#... start of part 1/2: Wire deformer 
+	#...#...#...#...#...#...#...#...#...#...#...#...
 
 	#... select aim locator
 	#... fill curve shape name
@@ -179,50 +236,114 @@ def createControlEye(	group_name = 'group1',
 			
 	#... making low resolution curve
 	#... make wire deformer
-	mc.wire(crv_hi, wire = crv_low , envelope=1, crossingEffect=0, localInfluence=0, name=crv_low + '_WR', groupWithBase = False)
+	wire_name = mc.wire(crv_hi, wire = crv_low , envelope=1, crossingEffect=0, localInfluence=0, name=crv_low + '_WR', groupWithBase = False)
+	 
 
+	mc.rename(crv_low + 'BaseWire', crv_low + '_baseWire')
+	base_wire_node = crv_low + '_baseWire'
 
-	#... skin joint to low curve
-	eyeCurve_skc = core.SkinCluster( jointCurve, crv_low, dropoffRate = 7 , maximumInfluences = 2 )
-	eyeCurve_skc.name =  crv_low + '_skc'
-
-
-	#... create controller link to the joint
-	from function.rigging.controllerBox import adjustController as adjust
-	from function.framework.reloadWrapper import reloadWrapper as reload
-	reload(adjust)
+	# mc.error()
+	# mc.select(base_wire_node, r=True)
+	
 
 
 
-	# if part_dict:
-	# 	up_dict = None
-	# 	down_dict = None
+
+	#...#...#...#...#...#...#...#...#...#...#...#...
+	#... Duplicate curve joint
+	#...#...#...#...#...#...#...#...#...#...#...#...
 
 
-	#... there are run two time first is up second is down
-	try: #... ask if part_dict is exists before
-		part_dict = {}
-	except NameError:
-		part_dict = {'up':[],'down':[]}
+
+	eyeLidZro_grp = core.Null('{0}_{1}EyeLid_broadWireZro_{2}'.format(SIDE, PART,  'grp'))
+	eyeLidZro_grp.maSnap( CENTER , position = True , rotation = True , scale = True )
+
+	joint_curve=[]
 
 	if PART == 'up':
-		part_dict[PART] = []
-		# part_dict = {PART:[]}
-		ctrl_name = adjust.creControllerFunc( jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
-		part_dict[PART].append(ctrl_name)
+		for each in proxy_jointCurve:
+			rawName = misc.makeProperSeparater(each)
+			joint = core.Dag( each )
+			each_joint = rigTools.jointAt( joint )
+			each_joint.name = rawName + '_pxyJnt'
+			joint_curve.append(each_joint.name)
+			each_joint.parent(eyeLidZro_grp)
+
+	elif PART == 'down':
+		for each in proxy_jointCurve:
+			if each.split('_')[-2] == 'corner':
+				continue
+			else:
+				rawName = misc.makeProperSeparater(each)
+				joint = core.Dag( each )
+				each_joint = rigTools.jointAt( joint )
+				each_joint.name = rawName + '_pxyJnt'
+				joint_curve.append(each_joint.name)
+				each_joint.parent(eyeLidZro_grp)
+
+
+	part_dict['top_grp'].append(eyeLidZro_grp.name)
+
+
+
+
+
+
+
+
+
+	#...#...#...#...#...#...#...#...#...#...#...#...
+	#... skin joint curve to low curve 
+	#...#...#...#...#...#...#...#...#...#...#...#...
+
+	#... Up and Down There must be both corner joint
+
+	if PART == 'up':
+		eyeCurve_skc = core.SkinCluster( joint_curve, crv_low, dropoffRate = 7 , maximumInfluences = 2 )
+		eyeCurve_skc.name =  crv_low + '_skc'
+
+	elif PART == 'down':
+		joint_curve_down = list(joint_curve)+list(corner_joint) #... add corner joint
+		eyeCurve_skc = core.SkinCluster( joint_curve_down, crv_low, dropoffRate = 7 , maximumInfluences = 2 )
+		eyeCurve_skc.name =  crv_low + '_skc'
+
+	
+	part_dict['ctrl_grp'] = []
+
+
+
+	if PART == 'up':
+		
+		ctrl_name = adjust.creControllerFunc( joint_curve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
+		part_dict['ctrl_grp'].append(ctrl_name)
+		
+		print(part_dict)
+			
 
 
 	elif PART == 'down':
-		part_dict[PART] = []
-		for each in jointCurve:
-			if mc.objExists('{}.isCorner'.format(each)):
-				continue
-			else:
-				ctrl_name = adjust.creControllerFunc( [each], scale = ctrlSize, ctrlShape = crtlShape, color = color )
-				part_dict[PART].append(ctrl_name)
+		
 
-	print('DONE')
+		filtered_proxy_jointCurve = [joint for joint in proxy_jointCurve if 'corner' not in joint]
 
+		ctrl_name = adjust.creControllerFunc( filtered_proxy_jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
+		part_dict['ctrl_grp'].append(ctrl_name)
+
+
+	
+
+
+	part_dict['curve_grp'] = []
+	part_dict['curve_grp'] = crv_hi, crv_low,CENTER, upVec,base_wire_node
+
+	#... Make group
+
+	mc.parent(crv_hi, eyeLid_aimJnt_grp.name)
+
+
+	misc.makeHeader('EyeRig DONE')
+
+	EyeRigMarco.info('\n...EyeRig DONE')
 	return part_dict
 
 	#...#...#...#...#...#...
@@ -231,6 +352,7 @@ def createControlEye(	group_name = 'group1',
 
 
 
+'''
 eye_up_dict = createControlEye(		group_name = 'group1', 
 									CENTER = 'L_center', SIDE = 'L',
 									PART = 'up',
@@ -238,7 +360,7 @@ eye_up_dict = createControlEye(		group_name = 'group1',
 									crv_low = 'L_upLidLow_CRV',
 									crtlShape = 'plainSphereB_ctrlShape',
 									ctrlSize = 0.01,
-									jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
+									proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt')
 										)
 
 
@@ -249,12 +371,13 @@ eye_down_dict = createControlEye(		group_name = 'group2',
 									crv_low = 'L_downLidLow_CRV',
 									crtlShape = 'plainSphereB_ctrlShape',
 									ctrlSize = 0.01,
-									jointCurve = ['L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt']	)
+									proxy_jointCurve = ('L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt')	
+									)
 
 
 
 
-
+'''
 
 
 
@@ -272,11 +395,11 @@ def makeInbetweener(eye_up_dict, eye_down_dict):
 	#... up part
 	# # # # # # # #
 
-	L_up_between_zro = eye_up_dict['up'][0][6] #... L_eye03Zro_grp
-	up_middle_ctrl = eye_up_dict['up'][0][5] #... L_eye02_gmbCtrl
-	R_up_between_zro = eye_up_dict['up'][0][0] #... L_eye01Zro_grp
-	L_corner_ctrl = eye_up_dict['up'][0][-2] #... L_eye08_ctrl
-	R_corner_ctrl = eye_up_dict['up'][0][-5] #... L_eye07_ctrl
+	L_up_between_zro = eye_up_dict['ctrl_grp'][0][6] #... L_eye03Zro_grp
+	up_middle_ctrl = eye_up_dict['ctrl_grp'][0][5] #... L_eye02_gmbCtrl
+	R_up_between_zro = eye_up_dict['ctrl_grp'][0][0] #... L_eye01Zro_grp
+	L_corner_ctrl = eye_up_dict['ctrl_grp'][0][-2] #... L_eye08_ctrl
+	R_corner_ctrl = eye_up_dict['ctrl_grp'][0][-5] #... L_eye07_ctrl
 
 	#... [pattern constraint] corner_ctrl and middle_ctrl ---> inbetween_zro
 	constr_object = core.pointConstraint( L_corner_ctrl, up_middle_ctrl, L_up_between_zro, maintainOffset=True) 
@@ -290,23 +413,23 @@ def makeInbetweener(eye_up_dict, eye_down_dict):
 	#... down part
 	# # # # # # # #
 
-	down_middle_ctrl = eye_down_dict['down'][1][1] #...L_eye05_ctrl
-	R_down_between_zro = eye_down_dict['down'][0][0] #... L_eye04Zro_grp
-	L_down_between_zro = eye_down_dict['down'][2][0] #.... L_eye06Zro_grp
+	down_middle_ctrl = eye_down_dict['ctrl_grp'][0][4] #...L_eye05_ctrl
+	R_down_between_zro = eye_down_dict['ctrl_grp'][0][0] #... L_eye04Zro_grp
+	L_down_between_zro = eye_down_dict['ctrl_grp'][0][6] #.... L_eye06Zro_grp
 
 	constr_object = core.pointConstraint( L_corner_ctrl, down_middle_ctrl, L_down_between_zro, maintainOffset=True) 
 	constr_object.name = L_down_between_zro + '_poiCon'
 	constr_object = core.pointConstraint( R_corner_ctrl, down_middle_ctrl, R_down_between_zro, maintainOffset=True) 
 	constr_object.name = R_down_between_zro + '_poiCon'
 
-	print('DONE')
+	EyeRigMarco.info('\n...EyeRig make Inbetweener DONE')
 
 
 
 
-
+'''
 makeInbetweener(eye_up_dict = eye_up_dict, eye_down_dict = eye_down_dict)
-
+'''
 
 
 
@@ -322,7 +445,7 @@ reload(core)
 
 
 
-def makeBlink(
+def makeSmartBlink(
 					SIDE = 'L'							,
 					CURVE = 'CRV'						,
 					up_low_crv = 'L_upLidLow_CRV'		,
@@ -361,6 +484,10 @@ def makeBlink(
 	downBlink_crv = core.duplicate(down_hi_crv)
 	downBlink_crv.name = '{}_{}LidBlink_{}'.format(SIDE, 'Down', CURVE)
 
+	#... updarent to the world
+	_unparent_if_not_world(upBlink_crv.name)
+	_unparent_if_not_world(downBlink_crv.name)
+
 	#... duplicate up and down
 	# upBlink_crv = core.duplicate(up_low_crv)
 	# upBlink_crv.name = '{}_{}LidBlink_follow_{}'.format(SIDE, 'Up', CURVE)
@@ -372,6 +499,10 @@ def makeBlink(
 	#... [child][parent]
 	up_wire = mc.wire(upBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Up', 'WR'), groupWithBase = False)[0]
 	#mc.setAttr('L_UpLidBlink_WR.scale[0]', 0)
+	newName = blendShape_upBlink_crv.name + '_Up_BaseWire'
+	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', newName)
+
+	
 
 	#... if down must fix value of BSH dow to 1 
 	mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 1)
@@ -379,6 +510,13 @@ def makeBlink(
 
 	down_wire = mc.wire(downBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Down', 'WR'), groupWithBase = False)[0]
 	mc.setAttr('{}.scale[0]'.format(down_wire), 0)
+	newName = blendShape_upBlink_crv.name + '_Down_BaseWire'
+	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', newName)
+	base_wire_Down_Blink_node = blendShape_upBlink_crv.name + '_BaseWire'
+
+
+
+
 	#mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 0)
 
 	#... if you want to make controller foller curve use another method below
@@ -406,10 +544,11 @@ def makeBlink(
 	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrl), '{}.inputX'.format(rev_value.name), f=True)
 	mc.connectAttr('{}.outputX'.format(rev_value.name), '{}.{}'.format(smartBlink_bsh, up_low_crv), f=True)
 
-	print('\nDONE')
+	EyeRigMarco.info('{0} is DONE'.format(__name__))
 
 
 
+'''
 makeBlink(
 					SIDE = 'L'							,
 					CURVE = 'CRV'						,
@@ -418,6 +557,11 @@ makeBlink(
 					up_hi_crv = 'L_upLidHigh_CRV'		,
 					down_hi_crv = 'L_downLidHigh_CRV'
 															)
+
+
+'''
+
+
 
 
 '''

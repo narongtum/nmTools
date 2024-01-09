@@ -79,6 +79,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 							locator_scale = 1,
 							creJnt = False , suffixJnt = '_pxyJnt',
 							creCtrl = False , ctrlShape = 'circle_ctrlShape'):
+
 	# need locator to guide flc
 
 
@@ -235,7 +236,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		
 
 		if creJnt:
-			child_joint = core.Joint()
+			child_joint = core.Joint(scaleCompensate=False)
 			child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
 			child_joint.maSnap( pName )
 			#... no need to parent
@@ -243,6 +244,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			child_joint.freeze()
 			# child_joint = mc.createNode('joint' , name =  )
 			# child_joint = pm.createNode( 'joint', name = '{}{:02d}{}_jnt'.format(region,num+1,side) )
+			child_joint.attr()
 
 		if creCtrl:
 			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = 1, ctrlShape = ctrlShape, color = 'yellow', 

@@ -80,7 +80,8 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 							creJnt = False , suffixJnt = 'bJnt',
 							creCtrl = False , ctrlShape = 'circle_ctrlShape',
 							snapAtEnd = False,
-							priorJnt = 'hip_bJnt'
+							priorJnt = 'hip_bJnt',
+							scale = 2
 							):
 
 	# need locator to guide flc
@@ -256,7 +257,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			print(jnt_list)
 
 			#... Create controller
-			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = 1, ctrlShape = ctrlShape, color = 'yellow', 
+			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = scale, ctrlShape = ctrlShape, color = 'yellow', 
 							constraint = False, matrixConst = False, mo = False, translate=True, 
 							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
 
@@ -281,7 +282,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 	# # # # # # # # # # # # # # # #
 
 	#... 1. Parent joint to hierarchy
-	if snapAtEnd:	
+	if creJnt and snapAtEnd:	
 		for num in range(len(jnt_list)):
 			if num  != 0:
 				mc.parent(jnt_list[num],jnt_list[num-1])
@@ -318,6 +319,17 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 
 
+def smoothFk(broad_jnt = [],nurbs = '',region = '',side = '',scale = 1,ctrlShape='circle_ctrlShape'):
+
+	broad_jnt_skc = core.SkinCluster( broad_jnt, nurbs, dropoffRate = 7, maximumInfluences = 2 )
+	broad_jnt_skc.name = region + side + '_skc'
+
+	createFkRig.createFkRig_direct(	nameSpace = ''  ,  name = region , parentTo = ''  ,
+					tmpJnt = 	broad_jnt	,
+					charScale = scale	, priorJnt = '' 			,
+					side = side ,ctrlShape = ctrlShape  , localWorld = False , 
+					color = 'red' , curlCtrl = True ,suffix = '_jnt',parentToPriorJnt = False,
+					parentMatrix = False, rotateOrder = 'xzy')
 
 
 

@@ -164,12 +164,15 @@ def createDynamicTail(
 	# activate hsir system
 	# !!! beware  if hair sys exists unname curve and follicle occur
 	mel.eval ('makeCurvesDynamic 2 { "0", "0", "1", "1", "0"};')
+	# mc.evalDeferred('mc.makeCurvesDynamic([0, 0, 1, 1, 0])')
 	## After executing this command,
 	## it created hairSystemShape itself
 	## is selected by default.
 	#... beware listHistory it will qury the old hairSystem by not intended
+	#... reload scene and it ok
 	dynItemsRaw = mc.listHistory()
 	print(dynItemsRaw)
+	# mc.error('WHAT')
 
 
 	# function organizeDynItems

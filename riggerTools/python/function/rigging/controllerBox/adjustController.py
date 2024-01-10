@@ -144,7 +144,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 				child_ctrl.nmCreateController(ctrlShape)
 				child_ctrl.editCtrlShape( axis = scale * 1.2 )
 				child_ctrl.color = color
-				child_ctrl.rotateOrder = 'xzy'
+				child_ctrl.rotateOrder = rotateOrder
 				child_ctrl.hideArnoldNode()
 
 				print ('create gimbal controller/n')
@@ -191,7 +191,8 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 					continue
 
 		if parentUnder:
-			print('YEAH')
+			print('\nHello')
+			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected[i]))
 
 			mc.parent(childZro_grp.name, selected[i])
 

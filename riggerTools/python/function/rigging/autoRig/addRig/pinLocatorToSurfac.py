@@ -66,9 +66,9 @@ reload(adjust)
 # TODO : create proxy joint follow locator that create
 # no need to specified UV
 
-# this is redundance with rigTools Use this instead
-# create locator at specified uv coordinate
-# from Chris Lesage (Rigmarole Studio)
+#... this is redundance with rigTools (Use this instead)
+#... create locator at specified uv coordinate
+#... from Chris Lesage (Rigmarole Studio)
 
 # NEED NURB ONLY
 def pin_locator_surface(	# need pxy nrb to drive locator
@@ -77,11 +77,16 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 							side = '',
 							source_loc = ('strapALFT_loc','strapARGT_loc'),
 							locator_scale = 1,
-							creJnt = False , suffixJnt = '_pxyJnt',
-							creCtrl = False , ctrlShape = 'circle_ctrlShape'):
+							creJnt = False , suffixJnt = 'bJnt',
+							creCtrl = False , ctrlShape = 'circle_ctrlShape',
+							snapAtEnd = False,
+							priorJnt = 'hip_bJnt'
+							):
 
 	# need locator to guide flc
 
+	jnt_list = []
+	ctrl_list = []
 
 	if not source_loc:
 		mc.error('Need locator to pinpoint location.')
@@ -236,7 +241,8 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		
 
 		if creJnt:
-			child_joint = core.Joint(scaleCompensate=False)
+			
+			child_joint = core.Joint(scaleCompensate=False) #... not work why?
 			child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
 			child_joint.maSnap( pName )
 			#... no need to parent
@@ -244,22 +250,67 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			child_joint.freeze()
 			# child_joint = mc.createNode('joint' , name =  )
 			# child_joint = pm.createNode( 'joint', name = '{}{:02d}{}_jnt'.format(region,num+1,side) )
-			child_joint.attr()
+			child_joint.attr('segmentScaleCompensate').value = 0 #... work why?
 
-		if creCtrl:
+			jnt_list.append(child_joint.name)
+			print(jnt_list)
+
+			#... Create controller
 			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = 1, ctrlShape = ctrlShape, color = 'yellow', 
 							constraint = False, matrixConst = False, mo = False, translate=True, 
 							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
 
+			ctrl_list.append(gmbl_ctrl)
+
+
+
+
 			
-			
+		
+
 			# child_joint = core.Joint()
 			# child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
 			# child_joint.maSnap( pName )
 			# child_joint.parent( gmbl_ctrl )
 			# child_joint.freeze()
 
+
+
+	# # # # # # # # # # # # # # # #
+	# update function make constraint to controller
+	# # # # # # # # # # # # # # # #
+
+	#... 1. Parent joint to hierarchy
+	if snapAtEnd:	
+		for num in range(len(jnt_list)):
+			if num  != 0:
+				mc.parent(jnt_list[num],jnt_list[num-1])
+			else:
+				continue
+
+	
+
+		#... 2. Parent it to prior joint that desinate
+		mc.parent(jnt_list[0], priorJnt)
+
+		#... 3. ParentConstraint from controller to joint
+		print('\n')
+		print(ctrl_list)
+		print(jnt_list)
+		print('\n')
+
 		
+
+		for num in range(len(jnt_list)):
+			ctrl_to_jnt_parCons = core.parentConstraint( ctrl_list[num] , jnt_list[num] )
+			ctrl_to_jnt_parCons.name = '{}{:02d}{}_parCons'.format(region,num+1,side)
+
+
+
+		# mc.error('Ma tum tor tomorrow')
+
+
+
 		
 
 	PinLogger.info('Create {0} Locator glue Complete'.format(each))

@@ -51,12 +51,6 @@ class EyeRigMarco(logger.MayaLogger):
 
 
 
-
-
-
-
-
-
 def _unparent_if_not_world(obj_name):
 	parent = mc.listRelatives(obj_name, parent=True)
 	if parent == None:
@@ -68,14 +62,14 @@ def _unparent_if_not_world(obj_name):
 
 
 def createControlEye(	group_name = 'group1', 
-						CENTER = 'L_center', 
+						CENTER = 'L_center_LOC', 
 						SIDE = 'L',
 						PART = 'up',
 						crv_hi = 'L_upLidHigh_CRV',
 						crv_low = 'L_upLidLow_CRV',
 						crtlShape = 'plainSphereB_ctrlShape',
 						ctrlSize = 0.01 ,
-						upVec = 'L_eyeVec_LOC',
+						upVec = 'L_eyeUpVec_LOC',
 						color = 'yellow'	,
 						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'),
 						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt')
@@ -332,23 +326,23 @@ def createControlEye(	group_name = 'group1',
 
 	
 
-
-	part_dict['curve_grp'] = []
-	part_dict['curve_grp'] = crv_hi, crv_low,CENTER, upVec,base_wire_node
-
 	#... Make group
-
+	part_dict['curve_grp'] = []
+	part_dict['curve_grp'] = crv_hi, crv_low ,base_wire_node
 	mc.parent(crv_hi, eyeLid_aimJnt_grp.name)
 
 
-	misc.makeHeader('EyeRig DONE')
+	part_dict['locator'] = []
+	part_dict['locator'] = CENTER, upVec
 
+
+	misc.makeHeader('{0} is complete'.format(__name__))
 	EyeRigMarco.info('\n...EyeRig DONE')
 	return part_dict
 
-	#...#...#...#...#...#...
+	#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...
 	#... End of part 2 (make this to function and run two time for up and down)
-	#...#...#...#...#...#...
+	#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...
 
 
 
@@ -451,23 +445,26 @@ def makeSmartBlink(
 					up_low_crv = 'L_upLidLow_CRV'		,
 					down_low_crv = 'L_downLidLow_CRV'	,
 					up_hi_crv = 'L_upLidHigh_CRV'		,
-					down_hi_crv = 'L_downLidHigh_CRV'
+					down_hi_crv = 'L_downLidHigh_CRV'	,
+					up_attrAt = 'L_eye02_ctrl'				,
+					down_attrAt = 'L_eye05_ctrl'				,
+					color = 'red'
 															):
 	#... duplicate for make smart blink
 	blendShape_upBlink_crv = core.duplicate(up_low_crv)
 	blendShape_upBlink_crv.name = 'L_lidBlink_master_CRV'
 
 
-	blendShape_upBlink_crv.color = 'red'
+	blendShape_upBlink_crv.color = color
 
 
 	#... create attr at broad ctrl for control blendshape
-	middle_ctrl = core.Dag('L_eye02_ctrl')
+	middle_ctrl = core.Dag(up_attrAt)
 	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
 	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
 
 
-	middle_down_ctrl = core.Dag('L_eye05_ctrl')
+	middle_down_ctrl = core.Dag(down_attrAt)
 	# middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
 	middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
 
@@ -499,8 +496,8 @@ def makeSmartBlink(
 	#... [child][parent]
 	up_wire = mc.wire(upBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Up', 'WR'), groupWithBase = False)[0]
 	#mc.setAttr('L_UpLidBlink_WR.scale[0]', 0)
-	newName = blendShape_upBlink_crv.name + '_Up_BaseWire'
-	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', newName)
+	new_upBlink_Name = blendShape_upBlink_crv.name + '_Up_BaseWire'
+	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', new_upBlink_Name)
 
 	
 
@@ -510,8 +507,8 @@ def makeSmartBlink(
 
 	down_wire = mc.wire(downBlink_crv.name, wire = blendShape_upBlink_crv.name , envelope=1, crossingEffect=0, localInfluence=0, name='{}_{}LidBlink_{}'.format(SIDE, 'Down', 'WR'), groupWithBase = False)[0]
 	mc.setAttr('{}.scale[0]'.format(down_wire), 0)
-	newName = blendShape_upBlink_crv.name + '_Down_BaseWire'
-	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', newName)
+	new_downBlink_Name = blendShape_upBlink_crv.name + '_Down_BaseWire'
+	mc.rename(blendShape_upBlink_crv.name + 'BaseWire', new_downBlink_Name)
 	base_wire_Down_Blink_node = blendShape_upBlink_crv.name + '_BaseWire'
 
 
@@ -545,6 +542,8 @@ def makeSmartBlink(
 	mc.connectAttr('{}.outputX'.format(rev_value.name), '{}.{}'.format(smartBlink_bsh, up_low_crv), f=True)
 
 	EyeRigMarco.info('{0} is DONE'.format(__name__))
+
+	return upBlink_crv.name, downBlink_crv.name, blendShape_upBlink_crv.name, new_upBlink_Name, new_downBlink_Name
 
 
 

@@ -84,6 +84,43 @@ reload(mnd)
 
 
 
+#####################################################
+#       Check Nameing Stlye     
+#####################################################
+def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
+	first_name = name.split('_')
+
+	#... 1. Capital Lead Style  'L_something_something_ext'
+	if len(first_name[0]) == 1:
+		print('\nThis is Capital Lead Style')
+		base_name = '_'.join(first_name[:-1])
+
+		#... check side condition
+		if first_name[0] == 'L':
+			side = 'LFT'
+		elif first_name[0] == 'R':
+			side = 'RGT'
+		elif first_name[0] == 'C':
+			side = 'CEN'
+
+		else:
+			side = None
+
+	#... 2. Side follow  'somethingLFT_ext'
+	else:
+		print('This is Site Follow Style')
+		base_name = name.split('_')[0]
+		if base_name[-3:] == 'LFT':
+			side = 'LFT'
+		elif base_name[-3:] == 'RGT':
+			side = 'RGT'
+		else:
+			side = None
+
+
+
+	print('Base name is: {}\nSide name is{}'.format(base_name, side))
+	return(base_name, side)
 
 
 

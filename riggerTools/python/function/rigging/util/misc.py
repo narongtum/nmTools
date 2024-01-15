@@ -92,7 +92,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	#... 1. Capital Lead Style  'L_something_something_ext'
 	if len(first_name[0]) == 1:
-		print('\nThis is Capital Lead Style')
+		print('\nThis is C_Capital_Lead Style')
 		base_name = '_'.join(first_name[:-1])
 
 		#... check side condition
@@ -108,7 +108,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
-		print('This is Site Follow Style')
+		print('This is SiteFollowLFT Style')
 		base_name = name.split('_')[0]
 		if base_name[-3:] == 'LFT':
 			side = 'LFT'

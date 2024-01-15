@@ -15,8 +15,8 @@ mtc.parentConMatrix( sel[0], sel[1], mo = True, translate = True, rotate = True,
 
 
 '''
-from function.rigging.constraint import matrixConstraint 
-reload(matrixConstraint)
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 
 '''
 
@@ -60,6 +60,52 @@ class Constraint(logger.MayaLogger):
 
 from function.rigging.util import misc
 reload(misc)
+
+
+
+
+#... Util for qury offset matrix
+
+
+#... Create mult matrix that contain offsetMatrix just create for demonstrate not connect anywhere
+def create_offset_matrix(source, target, mo = True, translate = True, rotate = True, scale = True):
+
+	# createMatrixAttr()
+
+	if not source:
+		print('source is not selected.')
+		return 0
+
+	#... rotate offset function
+	obj_target = core.Dag(target)
+	obj_source = core.Dag(source)
+
+	#...Got call maya API for get local offset position  
+	localOffset =  _getLocalOffset( source, target )
+	offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+
+	#... Create
+	decomposeMatrix = core.DecomposeMatrix(target)
+	multMatrix = core.MultMatrix(target)
+
+
+	#... Notice
+	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
+
+	#... Set and Connect
+	if mo == True:
+		attrNam = 'destination'
+		mc.addAttr(multMatrix.name, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
+		mc.setAttr('{0}.offsetMatrix_{1}'.format(multMatrix.name, attrNam), offMat, type = 'matrix')
+
+	Constraint.info('done')
+
+
+
+
+
+
+
 
 
 #... constraint parent suffix name to bind suffix name

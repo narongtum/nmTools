@@ -225,6 +225,13 @@ def countJnt(suffix = '*_bJnt'):
 
 
 
+def countJntExt(suffix = '*_bJnt'):
+	suffix = '*_bJnt'
+	bindJnt = mc.ls(suffix)
+	for each in bindJnt:
+		print('Joint name is: {0}\n'.format(each))
+
+	fileToolsLogger.info('The number of bind joint is : {0}\n'.format(len(bindJnt)))
 
 
 # hastag variable for decorate

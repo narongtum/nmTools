@@ -548,10 +548,13 @@ def headRig(	nameSpace = '' ,
 
 	headTopCtrl_parCons = core.parentConstraint( headTop_ctrl , headTop_bJnt )
 	headTopCtrl_parCons.name = part + '_Top' + 'Jnt_parCons'
+	headTopCtrl_scaleCons = core.scaleConstraint( headTop_ctrl , headTop_bJnt ) 	#	Add scale for make scalable eye	#
+	headTopCtrl_scaleCons.name = part + '_Top' + 'Jnt_scalCons'
 
 	headBottomCtrl_parCons = core.parentConstraint( headBottom_ctrl , headButtom_bJnt )
 	headBottomCtrl_parCons.name = part + '_Bottom' + 'Jnt_parCons'	
-
+	headBottomCtrl_scaleCons = core.scaleConstraint( headBottom_ctrl , headButtom_bJnt )#  Add scale for make scalable eye	#
+	headBottomCtrl_scaleCons.name = part + '_Bottom' + 'Jnt_scalCons'
 
 
 	# headTop_parCons = core.parentConstraint( head01_bJnt , headTopZro_grp, mo = True ) # <-- disable because change to under reverse

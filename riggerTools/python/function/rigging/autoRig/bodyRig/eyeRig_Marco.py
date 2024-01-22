@@ -61,7 +61,7 @@ def _unparent_if_not_world(obj_name):
 
 
 
-def createControlEye(	group_name = 'group1', 
+def createControlEye(	group_name = 'upLoc_grp', 
 						CENTER = 'L_center_LOC', 
 						SIDE = 'L',
 						PART = 'up',
@@ -123,7 +123,6 @@ def createControlEye(	group_name = 'group1',
 	part_dict['top_grp'] = []
 	part_dict['top_grp'].append(eyeLid_aimJnt_grp.name)
 	mc.select(cl=True)
-
 
 
 
@@ -317,11 +316,17 @@ def createControlEye(	group_name = 'group1',
 
 	elif PART == 'down':
 		
-
-		filtered_proxy_jointCurve = [joint for joint in proxy_jointCurve if 'corner' not in joint]
-
-		ctrl_name = adjust.creControllerFunc( filtered_proxy_jointCurve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
+		print('This is joint_curve >>> {0}'.format(joint_curve))
+		filtered_joint_curve = [joint for joint in joint_curve if 'corner' not in joint]
+		print('This is filtered_proxy_jointCurve >>> {0}'.format(filtered_joint_curve))
+		print(filtered_joint_curve)
+		
+		ctrl_name = adjust.creControllerFunc( filtered_joint_curve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
 		part_dict['ctrl_grp'].append(ctrl_name)
+		print(ctrl_name)
+
+
+		
 
 
 	
@@ -329,7 +334,9 @@ def createControlEye(	group_name = 'group1',
 	#... Make group
 	part_dict['curve_grp'] = []
 	part_dict['curve_grp'] = crv_hi, crv_low ,base_wire_node
-	mc.parent(crv_hi, eyeLid_aimJnt_grp.name)
+
+	#... Make this curve back to still grp
+	# mc.parent(crv_hi, eyeLid_aimJnt_grp.name)
 
 
 	part_dict['locator'] = []
@@ -337,7 +344,7 @@ def createControlEye(	group_name = 'group1',
 
 
 	misc.makeHeader('{0} is complete'.format(__name__))
-	EyeRigMarco.info('\n...EyeRig DONE')
+	EyeRigMarco.info('\n...EyeRig DONE Really')
 	return part_dict
 
 	#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...#...

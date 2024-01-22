@@ -2207,13 +2207,14 @@ class General():
 class SvnMaya:
 	def __init__(self):
 		pass
-	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False):
+	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False, logmsg = ''):
 
 		file_path = os.path.normpath(file_path)
 		# Create a variable to store the command line
 		# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{3}" /closeonend:{4}'.format(SVN_BIN_PATH, cmd_type, file_path, log_message, close_on_end)
 		if add_fixed_folder == False:
-			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+			# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{4}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end, logmsg )
 		else:
 			FileManagerLog.debug('Specific "Add" folder.')
 			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3} --depth=files /nodlg'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)

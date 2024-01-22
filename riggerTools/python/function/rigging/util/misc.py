@@ -984,6 +984,8 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 		mc.parentConstraint( each , childNam , maintainOffset = True)
 		mc.scaleConstraint( each , childNam , maintainOffset = True)
 
+	print('DONE')
+
 
 
 
@@ -991,7 +993,7 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
 	namLst = []
 	for each in namJntList:
-		fitstNam = splitName( each )[0]
+		fitstNam = check_name_style(each)[0]
 		namLst.append( fitstNam )
 
 	

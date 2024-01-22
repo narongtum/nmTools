@@ -32,7 +32,8 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 						crv_hi = 'L_upLidHigh_CRV',
 						crv_low = 'L_upLidLow_CRV',
 						crtlShape = 'plainSphereB_ctrlShape',
-						ctrlSize = 0.01	)
+						ctrlSize = 0.01	,
+						upVec = 'L_eyeVec_LOC')
 
 
 
@@ -47,14 +48,14 @@ def createControlEye(	group_name = 'group1', CENTER = 'L_center', SIDE = 'L',
 
 
 
-	#... The last 2 order is corner joint
+	#... The LAST 2 MEMBER is corner joint
 
 	if PART == 'up':
 		jointCurve = ['L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
 	elif PART == 'down':
 		jointCurve = ['L_eye04_jnt','L_eye05_jnt','L_eye06_jnt', 'L_eye07_jnt', 'L_eye08_jnt']
 
-	upVec = 'L_eyeVec_LOC'
+	
 
 
 	#... select locator again

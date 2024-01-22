@@ -60,7 +60,7 @@ def _unparent_if_not_world(obj_name):
 	
 
 
-
+#... Make eye rig with skin around Eye socket
 def createControlEye(	group_name = 'upLoc_grp', 
 						CENTER = 'L_center_LOC', 
 						SIDE = 'L',
@@ -71,12 +71,13 @@ def createControlEye(	group_name = 'upLoc_grp',
 						ctrlSize = 0.01 ,
 						upVec = 'L_eyeUpVec_LOC',
 						color = 'yellow'	,
-						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'),
-						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt')
+						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'), #... order left to right
+						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt') ,
+						orient_joint = 'xyz'
 						):
 
+	#... unparent obj to world outliner
 
-	_unparent_if_not_world(crv_hi)
 	_unparent_if_not_world(crv_low)
 	_unparent_if_not_world(crv_hi)
 	_unparent_if_not_world(CENTER)
@@ -92,7 +93,7 @@ def createControlEye(	group_name = 'upLoc_grp',
 	loc = mc.ls(sl=True, fl=True)[0]
 
 	#... ask part is upper or lower
-	PART = loc.split('_')[0]
+	PART = loc.split('_')[1]
 
 	#... select locator again
 	vtx = mc.ls(sl=True, fl=True)
@@ -115,7 +116,7 @@ def createControlEye(	group_name = 'upLoc_grp',
 		jntC = mc.joint(name = '{}_{}EyeLidAim{:02d}_{}'.format(SIDE, PART, num, 'JNT'))
 		mc.xform(jntC, ws=True, t=posC)
 		mc.parent(jnt, jntC)
-		mc.joint(jntC, e=True, oj = 'xyz' , secondaryAxisOrient='yup', ch=True, zso=True)
+		mc.joint(jntC, e=True, oj = orient_joint , secondaryAxisOrient='yup', ch=True, zso=True)
 		tipJnt.append(jnt)
 		num = num + 1
 
@@ -459,7 +460,7 @@ def makeSmartBlink(
 															):
 	#... duplicate for make smart blink
 	blendShape_upBlink_crv = core.duplicate(up_low_crv)
-	blendShape_upBlink_crv.name = 'L_lidBlink_master_CRV'
+	blendShape_upBlink_crv.name = '{0}_lidBlink_master_CRV'.format(SIDE)
 
 
 	blendShape_upBlink_crv.color = color
@@ -476,7 +477,7 @@ def makeSmartBlink(
 	middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
 
 
-	smartBlink_bsh = mc.blendShape(up_low_crv, down_low_crv, blendShape_upBlink_crv.name, origin = 'world', name =  'L_targetSmartBlink_BSH')[0]
+	smartBlink_bsh = mc.blendShape(up_low_crv, down_low_crv, blendShape_upBlink_crv.name, origin = 'world', name =  '{0}_targetSmartBlink_BSH'.format(SIDE))[0]
 	mc.setAttr('{}.{}'.format(smartBlink_bsh,up_low_crv), 0)
 	mc.setAttr('{}.{}'.format(smartBlink_bsh,down_low_crv), 0)
 	#smartBlink_bsh = 	'L_targetSmartBlink_BSH'

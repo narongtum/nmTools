@@ -18,6 +18,64 @@ class utilLogger(logger.MayaLogger):
 	LOGGER_NAME = "JointTools"
 
 import maya.cmds as mc
+import pymel.core as pm
+
+
+
+
+
+from function.rigging.util import misc
+reloader(misc)
+
+
+
+def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace = '_tipJnt'):
+	list_tip_joint_grp = list_tip_joints(root_joint)
+	misc.searchReplace( searchText=search, replaceText=replace )
+
+	
+
+
+
+
+
+
+
+
+def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt'):
+	root_obj = pm.PyNode(root_joint)
+
+	# Retrieve the joint chain
+	joint_chain = pm.listRelatives(root_joint, allDescendents=True, type='joint')
+
+	# Store original parent connections for later re-parenting
+	original_parents = {}
+	for joint in joint_chain:
+	   original_parents[joint] = joint.getParent()
+
+	# Unparent all joints to world
+	pm.parent(joint_chain, world=True)
+
+	# Set Y rotation to 180 for each joint
+	for joint in joint_chain:
+	   joint.rotateY.set(180)
+	   
+	root_obj.rotateY.set(180)
+
+	# Re-parent joints back to their original parents
+	for joint, parent in original_parents.items():
+	   pm.parent(joint, parent)
+
+	# Freeze at last
+	pm.makeIdentity(root_obj, apply=True)
+
+	mc.select(deselect=True)
+	utilLogger.info('End of the {0}.'.format(__name__))
+
+
+
+
+
 
 def list_tip_joints(root_joint):
 	if root_joint == None:

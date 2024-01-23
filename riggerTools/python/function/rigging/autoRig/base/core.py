@@ -1665,15 +1665,15 @@ class Dag( Node ) :
 	'''
 
 
+	def setLineWidth( self, lineWidth ):
+		#... check lineWidth is exists
+		if mc.objExists('{0}.lineWidth'.format(self.shape)):
+			mc.setAttr('{}.lineWidth'.format(self.shape), lineWidth)
+		else:
+			print('This object is not have lineWidth attribute.')
 
 
-
-
-
-
-
-
-
+		
 	# =================
 	# Color part
 	# =================
@@ -1853,13 +1853,17 @@ class Dag( Node ) :
 
 
 
-	def nmCreateController( self , shapeName = '' ):
+	def nmCreateController( self , shapeName = '', lineWidth = -1 ):
 		'''inside Class Dag create controller from lib'''
 		data = wcd.loadData ( path = SHAPE_LIBRARY_PATH + shapeName + '.json')
 		curveName = mc.curve ( name = self.name,  p = data["points"], k = data["knots"], d = data["degree"], per = bool(data["form"]))
 		
-		# Still error fix later
+		#... Still error fix later
 		curveShape = mc.listRelatives( self.name,  shapes = True )[ 0 ]
+
+		#... Add new attr
+		mc.setAttr('{}.lineWidth'.format(curveShape), lineWidth)
+
 		return mc.rename( curveShape , '%sShape' % self.name )
 
 

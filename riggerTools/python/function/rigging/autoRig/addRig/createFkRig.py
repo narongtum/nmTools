@@ -27,7 +27,12 @@ reload(mnd)
 
 
 
-def smoothFk(broad_jnt = [],nurbs = '',region = '',side = '',scale = 1,ctrlShape='circle_ctrlShape'):
+
+
+
+
+def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','frontSkirtBroad03_jnt','frontSkirtBroad04_jnt'],
+				nurbs = 'frontSkirt_nrb',region = 'front',side = '',scale = 1, ctrlShape='circle_ctrlShape'):
 
 	broad_jnt_skc = core.SkinCluster( broad_jnt, nurbs, dropoffRate = 7, maximumInfluences = 2 )
 	broad_jnt_skc.name = region + side + '_skc'

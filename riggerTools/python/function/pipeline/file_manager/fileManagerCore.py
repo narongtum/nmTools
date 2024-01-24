@@ -784,6 +784,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
 				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT)
 
+				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
+				# mc.error('WHAT')
+
 				#... update return logmsg for SVN
 				# 3. Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)

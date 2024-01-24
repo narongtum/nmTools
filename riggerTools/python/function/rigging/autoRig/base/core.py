@@ -319,7 +319,10 @@ metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
 metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
 metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
 
-
+#... Change controller line width
+curl_ctrl = core.Dag('hellohaa')
+curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
+curl_ctrl.setLineWidth(4)
 
 '''
 

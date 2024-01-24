@@ -26,6 +26,22 @@ from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 
+
+def smoothFk(broad_jnt = [],nurbs = '',region = '',side = '',scale = 1,ctrlShape='circle_ctrlShape'):
+
+	broad_jnt_skc = core.SkinCluster( broad_jnt, nurbs, dropoffRate = 7, maximumInfluences = 2 )
+	broad_jnt_skc.name = region + side + '_skc'
+
+	createFkRig_direct(	nameSpace = ''  ,  name = region , parentTo = ''  ,
+					tmpJnt = 	broad_jnt	,
+					charScale = scale	, priorJnt = '' 			,
+					side = side ,ctrlShape = ctrlShape  , localWorld = False , 
+					color = 'red' , curlCtrl = True ,suffix = '_jnt',parentToPriorJnt = False,
+					parentMatrix = False, rotateOrder = 'xzy')
+
+
+
+
 #... FK the attatch with joint in Arg directly
 #... connect direct with joint arg
 def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
@@ -227,7 +243,7 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 #... everything same but edit curl condition
 def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
-					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' ,
+					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' , parentOnly = False,
 					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
 					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	):
 
@@ -349,7 +365,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		curl_ctrl = core.Dag('%s%s%s%s_ctrl'  %(nameSpace, name,'Curl',side))
 		curl_ctrl.nmCreateController( ctrlShape )
 		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
-		curl_ctrl.color = 'white'
+		curl_ctrl.color = color
 		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
 
 		#... Do it later

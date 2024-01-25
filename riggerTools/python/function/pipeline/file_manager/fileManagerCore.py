@@ -251,7 +251,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		
 	def handle_double_click(self, item):
 		# Double click is mean open
-		file_path = self.get_deep_path()
+		file_path = self.get_deep_path() #... get path from selected in UI
 		FileManagerLog.debug('This is _get_full_path: {0}'.format(file_path))
 
 		# Check file extension
@@ -664,13 +664,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				save_full_path = self.maya_save(global_path, global_commit_name, MAYA_EXT)
+				#... update return logmsg for SVN
+				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT)
 
 				# 3.Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
 
 				# 4.Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
 
 				# 5.Update localWidget viewport
 				self.load_global_commit(global_path)
@@ -781,13 +782,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# 2. Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
 				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
-				self.maya_save(full_path, local_commit_name, MAYA_EXT)
+				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT)
 
+				#... update return logmsg for SVN
 				# 3. Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
 
 				# 4. Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0)
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
 
 				# 5. Update localWidget viewport
 				self.load_local_commit(full_path)
@@ -1246,11 +1248,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def maya_open(self, file_path):
 		file_name = file_path.split('\\')[-1]
+
+		#... find current maya file
+		maya = General()
+		current_scene_name = maya.get_scene_name()
+
 		if mc.file(query = True, anyModified=True):
 			reply = QMessageBox.question(			# Use self as the parent
 													self ,
 													'Save Chganges' ,
-													'Current file has unsaved changes. Do you want to save? {0}'.format(file_name) ,
+													'Current file has unsaved changes. Do you want to save? {0}'.format(current_scene_name) ,
 													QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No
 												)
 
@@ -1259,7 +1266,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			elif reply == QMessageBox.Cancel:
 				return
-
+		#... open maya file
 		mc.file(file_path, o=True, f=True)
 		# add recent file when open
 		# self.addRecenfile( file_path )
@@ -1280,13 +1287,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	#... this method is for publish saving only
 	#... change to return path for make it more dynamic
 	def maya_save(self, save_path, save_name, MAYA_EXT):
+		logmsg = ''
+
 
 		if MAYA_EXT == 'ma':
 			maya_type = 'mayaAscii'
 		elif MAYA_EXT == 'mb':
 			maya_type = 'mayaBinary'
 
-
+		#... get Specific name when publish
 		if mc.objExists("rig_grp.enable") == True:
 			if mc.getAttr("rig_grp.asset_name") != '':
 				FileManagerLog.debug('asset_name no data skipped')
@@ -1300,7 +1309,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		else:
 			FileManagerLog.debug('Not found naming specific. skipped')
 			pass
-		# mc.error('test error')
+
+		#... if having logmsg pass it to SVN
+		if mc.objExists("rig_grp.logmsg") == True:
+			if mc.getAttr("rig_grp.logmsg") != '':
+				logmsg = mc.getAttr("rig_grp.logmsg")
+				FileManagerLog.info('\nGet message.')
+				#... clear message after publish
+				mc.setAttr('rig_grp.logmsg', '', type='string')
+
+
 
 		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path, save_name))
 		save_full_path = os.path.join(save_path, save_name)
@@ -1308,7 +1326,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		mc.file(save=True, force=True, type=maya_type)
 		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
 		self.maya_add_recen_file(save_full_path, MAYA_EXT)
-		return save_full_path
+		return save_full_path, logmsg
 
 
 
@@ -2146,7 +2164,14 @@ class General():
 		pass
 
 	def get_scene_name(self):
-		self.Scene_Name = os.path.splitext( os.path.basename( pm.system.sceneName() ) )[0]
+		scene_path = pm.system.sceneName()
+		if scene_path:
+			# Get the file name with extension
+			self.Scene_Name = os.path.basename(scene_path)
+		else:
+			self.Scene_Name = None
+			
+		return self.Scene_Name  # Return the scene name
 
 	def get_workspace(self):
 		self.WorkSpace_RootDir = pm.workspace(q=1,rd=1)
@@ -2207,16 +2232,17 @@ class General():
 class SvnMaya:
 	def __init__(self):
 		pass
-	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False):
+	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False, logmsg = ''):
 
 		file_path = os.path.normpath(file_path)
 		# Create a variable to store the command line
 		# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{3}" /closeonend:{4}'.format(SVN_BIN_PATH, cmd_type, file_path, log_message, close_on_end)
 		if add_fixed_folder == False:
-			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+			# command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{4}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end, logmsg )
 		else:
 			FileManagerLog.debug('Specific "Add" folder.')
-			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3} --depth=files /nodlg'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end)
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3} --depth=files /nodlg'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end, logmsg)
 
 		# Execute the command line
 		subprocess.run(command_line, shell=True)

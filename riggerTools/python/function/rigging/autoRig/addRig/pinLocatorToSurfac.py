@@ -319,17 +319,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 
 
-def smoothFk(broad_jnt = [],nurbs = '',region = '',side = '',scale = 1,ctrlShape='circle_ctrlShape'):
 
-	broad_jnt_skc = core.SkinCluster( broad_jnt, nurbs, dropoffRate = 7, maximumInfluences = 2 )
-	broad_jnt_skc.name = region + side + '_skc'
-
-	createFkRig.createFkRig_direct(	nameSpace = ''  ,  name = region , parentTo = ''  ,
-					tmpJnt = 	broad_jnt	,
-					charScale = scale	, priorJnt = '' 			,
-					side = side ,ctrlShape = ctrlShape  , localWorld = False , 
-					color = 'red' , curlCtrl = True ,suffix = '_jnt',parentToPriorJnt = False,
-					parentMatrix = False, rotateOrder = 'xzy')
 
 
 

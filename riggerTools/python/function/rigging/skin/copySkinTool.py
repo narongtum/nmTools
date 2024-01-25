@@ -5,6 +5,12 @@
 
 ''' select skinned mesh, then select mesh to transfer to, and run '''
 
+'''
+from function.rigging.skin import copySkinTool as cst
+reload (cst)
+'''
+
+
 import maya.cmds as cmds
 import maya.mel as mm
 

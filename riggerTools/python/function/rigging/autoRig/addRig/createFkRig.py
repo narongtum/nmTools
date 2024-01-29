@@ -5,6 +5,23 @@ reload(createFkRig)
 
 
 '''
+#... detail import
+import sys
+import maya.utils
+import importlib
+import maya.cmds as mc
+sys.path.append('D:/sysTools/nmTools_github/riggerTools/python')
+from nmMenu import nmMenu2023
+importlib.reload(nmMenu2023)
+maya.utils.executeDeferred('nmMenu2023.runMenu()')
+from function.framework.reloadWrapper import reloadWrapper as reload
+'''
+
+
+
+
+
+'''
 [Latast] Collection of FK additional controller
 '''
 
@@ -49,6 +66,248 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 
 #... FK the attatch with joint in Arg directly
 #... connect direct with joint arg
+
+
+
+
+
+#... everything same but edit curl condition
+#... useHierarchy is mean parent to it 
+#... isTmpJnt is ask the arg is temp joint or not
+def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
+					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
+					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' ,
+					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
+					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True):
+
+	
+	''' priorJnt can be False then it will be parent to world instead '''
+	part = name + side
+	# Create main group
+	rigGrp = core.Null()
+	rigGrp.name = '%sRig%s_grp' % ( name , side )
+
+	# Creatre empyt for append name
+	ctrls = []
+	jnts = []
+	gmbls = []
+	zGrps = []
+	bJnts = []
+	ofGrps = []
+
+
+
+
+	# For loop in tmpJnt 
+	for  num  in range( 0 , ( len( tmpJnt )  ) ):
+		# print  num 
+		ctrl = core.Dag(     '%s%s%02d%s_ctrl'  %(nameSpace , name,( num +1),side)     )
+		ctrl.nmCreateController( ctrlShape )
+		ctrl.editCtrlShape( axis = charScale * 6.4 )
+
+		if not color:
+			if side:
+				if side == 'LFT':
+					ctrl.color = 'red'
+				elif side == 'RGT':
+					ctrl.color = 'blue'
+
+
+			ctrl.color = 'red'
+		else:
+			ctrl.color = color
+
+
+		
+		gimbal = core.createGimbal( ctrl )
+		tmp = core.Dag( tmpJnt[  num  ] )
+
+		if isTmpJnt:
+			bJnt = rigTools.jointAt( tmp )
+			bJnt.name =  '%s%s%02d%s%s'  %(nameSpace,	name,( num +1),side,suffix	)
+		else:
+			bJnt = core.Dag( tmpJnt[  num  ] )
+
+
+
+
+
+		
+		
+		
+		zroGrp,offsetGrp = rigTools.zroNewGrpWithOffset( ctrl )
+		zroGrp.snap( bJnt )
+		zroGrp.name = '%s%s%02d%sZro_grp'  %(nameSpace,	name,( num +1),side	)
+		offsetGrp.name = '%s%s%02d%sOffset_grp'  %(nameSpace,	name,( num +1),side	)
+
+
+		#... set Rotation Order
+		ctrl.rotateOrder = rotateOrder 
+		gimbal.rotateOrder = rotateOrder
+
+		ctrls.append( ctrl )
+		jnts.append( tmpJnt[ num ] )
+		gmbls.append( gimbal )
+		zGrps.append( zroGrp )
+		bJnts.append( bJnt )
+		ofGrps.append( offsetGrp )
+
+
+
+		if useHierarchy == True:
+			if not num == 0:
+				print('\nNo need to useHierarchy.\n')
+				zroGrp.parent( gmbls[ num -1] )
+
+				if isTmpJnt == True:
+					bJnt.parent( bJnts[ num -1] )
+				else:
+					pass
+			else:
+				print('\nUse Hierarchy.\n')
+				rigGrp.maSnap(bJnts[0])
+				zroGrp.parent( rigGrp )
+
+		elif useHierarchy == False:
+			if isTmpJnt == True:
+				print('This is useHierarchy == False')
+				bJnt.parent( priorJnt )
+			else:
+				pass
+			zroGrp.parent( rigGrp )
+
+
+
+	if mc.objExists(parentTo):
+
+		if useHierarchy == True:
+			
+			if priorJnt :
+				rigGrp.parent( parentTo )
+				
+				bJnts[0].parent( priorJnt )
+
+
+			elif isTmpJnt == False:
+				#... parent control grp under
+				rigGrp.parent( parentTo )
+
+
+
+			else:
+				print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
+				print ('There are no joint arg return blind joint name: %s' %bJnts[0])
+
+
+
+		elif useHierarchy == False:
+			rigGrp.parent( parentTo )
+
+
+
+
+	else:
+		if priorJnt == '':
+			pass
+		else:
+			print('\nERROROO_348\n')
+			bJnts[0].parent( priorJnt )
+
+
+
+
+
+
+	# create local / world follwer arg #
+	if localWorld:
+		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrls[0] , rigGrp.name , parentTo , zGrps[0] )
+		Loc_grp.name = part + 'Local_grp'
+		World_grp.name = part + 'World_grp'
+		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
+		ZroGrp_orientCons.name = part + 'ZroGrp_orientCons'
+		reverseNode_rev.name = part + 'ZroGrpOrientCons_rev'
+
+	# Make curl controller 
+	if curlCtrl:
+		curl_ctrl = core.Dag('%s%s%s%s_ctrl'  %(nameSpace, name,'Curl',side))
+		curl_ctrl.nmCreateController( ctrlShape )
+		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
+		curl_ctrl.color = color
+		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
+
+		#... Do it later
+		# curl_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )
+
+		#... Not use anymore
+		# curl_parCons = core.parentConstraint( bJnts[0],zroGrpCurl , mo = False )
+		# curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
+
+		#... snap position to root 
+		zroGrpCurl.maSnap(bJnts[0])
+		
+		first_offset_grp = core.Dag(ofGrps[0])
+
+		#... connect attr
+		curl_ctrl.attr('tx') >> first_offset_grp.attr('tx')
+		curl_ctrl.attr('ty') >> first_offset_grp.attr('ty')
+		curl_ctrl.attr('tz') >> first_offset_grp.attr('tz')
+
+		curl_ctrl.attr('sx') >> first_offset_grp.attr('sx')
+		curl_ctrl.attr('sy') >> first_offset_grp.attr('sy')
+		curl_ctrl.attr('sz') >> first_offset_grp.attr('sz')
+
+		
+		#... Make attr at curl ctrl
+		curlShape_ctrl = core.Dag(curl_ctrl.shape)
+		curlShape_ctrl.addAttribute(at = 'long', min = 0, max = 1, longName = 'Detail', keyable = True, defaultValue = 0)
+		mc.connectAttr('{0}.Detail'.format(curlShape_ctrl.name), '{0}.visibility'.format(zGrps[0]), f=True )
+
+		#... Next try to use MDV for make multiplier [Do it later]
+
+		# mc.error('ERROR_348')
+
+
+		
+		for eachObj in ofGrps:
+			print (type( eachObj ))
+			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
+
+		zroGrpCurl.parent( rigGrp )
+		if priorCtrl :
+			mc.parentConstraint( priorCtrl , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+			mc.scaleConstraint( priorCtrl , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+		elif priorJnt: #... this case if for spineFK rig make hip shake
+			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+
+
+
+	# If having priorJnt but disable curl then just paCon
+	if priorJnt :
+		if curlCtrl == False:
+			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )   ,mo = True)
+			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side )   ,mo = True)
+
+	# create another loop here because of bJnt will wrong orient when constraint and then parent
+	# parent joint to controller
+		
+	for  num  in range( 0 , ( len( tmpJnt )  ) ):
+		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
+		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num +1), side	)
+		print ('\nPARENT IT ...')
+
+
+	if curlCtrl:
+		# Add return all ctrl name at index 4
+		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
+	else:
+		return gmbls[0] ,rigGrp.name , bJnts  , ctrls
+	# End
+
+
+
+
+
 def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'ear01LFT_bJnt','ear02LFT_bJnt'  ,'ear03LFT_bJnt')	,
 					charScale = 1	, priorJnt = 'head01_bJnt' 			,
@@ -245,202 +504,7 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 		return gmbls[0] ,rigGrp.name , tmpJnt  , ctrls
 		
 
-#... everything same but edit curl condition
-def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
-					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
-					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' , parentOnly = False,
-					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
-					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	):
 
-	
-	''' priorJnt can be False then it will be parent to world instead '''
-	part = name + side
-	# Create main group
-	rigGrp = core.Null()
-	rigGrp.name = '%sRig%s_grp' % ( name , side )
-
-	# Creatre empyt for append name
-	ctrls = []
-	jnts = []
-	gmbls = []
-	zGrps = []
-	bJnts = []
-	ofGrps = []
-
-
-
-
-	# For loop in tmpJnt 
-	for  num  in range( 0 , ( len( tmpJnt )  ) ):
-		# print  num 
-		ctrl = core.Dag(     '%s%s%02d%s_ctrl'  %(nameSpace , name,( num +1),side)     )
-		ctrl.nmCreateController( ctrlShape )
-		ctrl.editCtrlShape( axis = charScale * 6.4 )
-
-		if not color:
-			if side:
-				if side == 'LFT':
-					ctrl.color = 'red'
-				elif side == 'RGT':
-					ctrl.color = 'blue'
-
-
-			ctrl.color = 'red'
-		else:
-			ctrl.color = color
-
-
-		
-		gimbal = core.createGimbal( ctrl )
-		tmp = core.Dag( tmpJnt[  num  ] )
-		bJnt = rigTools.jointAt( tmp )
-
-
-
-
-		
-		
-		bJnt.name =  '%s%s%02d%s%s'  %(nameSpace,	name,( num +1),side,suffix	)
-		zroGrp,offsetGrp = rigTools.zroNewGrpWithOffset( ctrl )
-		zroGrp.snap( bJnt )
-		zroGrp.name = '%s%s%02d%sZro_grp'  %(nameSpace,	name,( num +1),side	)
-		offsetGrp.name = '%s%s%02d%sOffset_grp'  %(nameSpace,	name,( num +1),side	)
-
-
-		#... set Rotation Order
-		ctrl.rotateOrder = rotateOrder 
-		gimbal.rotateOrder = rotateOrder
-
-		ctrls.append( ctrl )
-		jnts.append( tmpJnt[ num ] )
-		gmbls.append( gimbal )
-		zGrps.append( zroGrp )
-		bJnts.append( bJnt )
-		ofGrps.append( offsetGrp )
-
-
-
-		if useHierarchy == True:
-			if not num == 0:
-				print('\nNo need to useHierarchy.\n')
-				zroGrp.parent( gmbls[ num -1] )
-				bJnt.parent( bJnts[ num -1] )
-			else:
-				print('\nUse Hierarchy.\n')
-				rigGrp.maSnap(bJnts[0])
-				zroGrp.parent( rigGrp )
-
-		elif useHierarchy == False:
-			bJnt.parent( priorJnt )
-			zroGrp.parent( rigGrp )
-
-
-	if mc.objExists(parentTo):
-		if useHierarchy == True:	
-			if priorJnt :
-				rigGrp.parent( parentTo )
-				bJnts[0].parent( priorJnt )
-			else:
-				print ('There are no joint arg return blind joint name: %s' %rigGrp.name)
-				print ('There are no joint arg return blind joint name: %s' %bJnts[0])
-
-		elif useHierarchy == False:
-			rigGrp.parent( parentTo )
-	else:
-		if priorJnt == '':
-			pass
-		else:
-			print('\nERROROO_348\n')
-			bJnts[0].parent( priorJnt )
-
-
-		
-
-	# create local / world follwer arg #
-	if localWorld:
-		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrls[0] , rigGrp.name , parentTo , zGrps[0] )
-		Loc_grp.name = part + 'Local_grp'
-		World_grp.name = part + 'World_grp'
-		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
-		ZroGrp_orientCons.name = part + 'ZroGrp_orientCons'
-		reverseNode_rev.name = part + 'ZroGrpOrientCons_rev'
-
-	# Make curl controller 
-	if curlCtrl:
-		curl_ctrl = core.Dag('%s%s%s%s_ctrl'  %(nameSpace, name,'Curl',side))
-		curl_ctrl.nmCreateController( ctrlShape )
-		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
-		curl_ctrl.color = color
-		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
-
-		#... Do it later
-		# curl_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )
-
-		#... Not use anymore
-		# curl_parCons = core.parentConstraint( bJnts[0],zroGrpCurl , mo = False )
-		# curl_parCons.name = '%s%s%s%s_psCons'  %(nameSpace,	name , 'Curl',side	)
-
-		#... snap position to root 
-		zroGrpCurl.maSnap(bJnts[0])
-		
-		first_offset_grp = core.Dag(ofGrps[0])
-
-		#... connect attr
-		curl_ctrl.attr('tx') >> first_offset_grp.attr('tx')
-		curl_ctrl.attr('ty') >> first_offset_grp.attr('ty')
-		curl_ctrl.attr('tz') >> first_offset_grp.attr('tz')
-
-		curl_ctrl.attr('sx') >> first_offset_grp.attr('sx')
-		curl_ctrl.attr('sy') >> first_offset_grp.attr('sy')
-		curl_ctrl.attr('sz') >> first_offset_grp.attr('sz')
-
-		
-		#... Make attr at curl ctrl
-		curlShape_ctrl = core.Dag(curl_ctrl.shape)
-		curlShape_ctrl.addAttribute(at = 'long', min = 0, max = 1, longName = 'Detail', keyable = True, defaultValue = 0)
-		mc.connectAttr('{0}.Detail'.format(curlShape_ctrl.name), '{0}.visibility'.format(zGrps[0]), f=True )
-
-		#... Next try to use MDV for make multiplier [Do it later]
-
-		# mc.error('ERROR_348')
-
-
-		
-		for eachObj in ofGrps:
-			print (type( eachObj ))
-			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
-
-		zroGrpCurl.parent( rigGrp )
-		if priorCtrl :
-			mc.parentConstraint( priorCtrl , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
-			mc.scaleConstraint( priorCtrl , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
-		elif priorJnt: #... this case if for spineFK rig make hip shake
-			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
-			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
-
-
-
-	# If having priorJnt but disable curl then just paCon
-	if priorJnt :
-		if curlCtrl == False:
-			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )   ,mo = True)
-			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side )   ,mo = True)
-
-	# create another loop here because of bJnt will wrong orient when constraint and then parent
-	# parent joint to controller
-		
-	for  num  in range( 0 , ( len( tmpJnt )  ) ):
-		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
-		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num +1), side	)
-		print ('\nPARENT IT ...')
-
-
-	if curlCtrl:
-		# Add return all ctrl name at index 4
-		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
-	else:
-		return gmbls[0] ,rigGrp.name , bJnts  , ctrls
-	# End
 
 
 

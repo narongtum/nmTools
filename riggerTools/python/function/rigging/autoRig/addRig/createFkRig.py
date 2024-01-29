@@ -74,6 +74,7 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 #... everything same but edit curl condition
 #... useHierarchy is mean parent to it 
 #... isTmpJnt is ask the arg is temp joint or not
+
 def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
 					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' ,
@@ -210,7 +211,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		if priorJnt == '':
 			pass
 		else:
-			print('\nERROROO_348\n')
+			print('\nERROROO_214\n')
 			bJnts[0].parent( priorJnt )
 
 
@@ -262,15 +263,37 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		curlShape_ctrl.addAttribute(at = 'long', min = 0, max = 1, longName = 'Detail', keyable = True, defaultValue = 0)
 		mc.connectAttr('{0}.Detail'.format(curlShape_ctrl.name), '{0}.visibility'.format(zGrps[0]), f=True )
 
-		#... Next try to use MDV for make multiplier [Do it later]
+		#... Next try to use MDV for make multiplier [Do it now]
 
-		# mc.error('ERROR_348')
+		#... Create PMA
+		passValue_pma = core.PlusMinusAverage( nameSpace+name+'Curl'+side+'_pma' )
+
+		#... Create MDV
+		multiplyValue_mdv = core.MultiplyDivine( nameSpace+name+'_storeCurl'+side+'_mdv' )
+
+
+		curl_ctrl.attr('rotate') >> passValue_pma.attr('input3D[0]')
+		passValue_pma.attr('output3D') >> multiplyValue_mdv.attr('input1')
+
+		#... Create meta node
+
+		# metaNode = core.MetaRoot('fkRig_newCurl_meta')
+		fkRig_newCurl_meta = core.MetaGeneric( name + side + '_meta')
+		fkRig_newCurl_meta.addAttribute( attributeType = 'message' , longName =  name+side)
+
+		passValue_pma.attr('message') >> fkRig_newCurl_meta.attr(name+side)
+		curl_ctrl.attr('message') >> fkRig_newCurl_meta.attr('Rig_Prior')
+
+		fkRig_newCurl_meta.setAttribute('Color', color, type = 'string')
+		fkRig_newCurl_meta.setAttribute('Side', side, type = 'string')
+		fkRig_newCurl_meta.setAttribute('Base_Name', rigGrp.name, type = 'string')
 
 
 		
 		for eachObj in ofGrps:
-			print (type( eachObj ))
-			curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
+			# curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
+			multiplyValue_mdv.attr('output') >> eachObj.attr( 'rotate' ) #... change line to use multiplt divide instead
+
 
 		zroGrpCurl.parent( rigGrp )
 		if priorCtrl :

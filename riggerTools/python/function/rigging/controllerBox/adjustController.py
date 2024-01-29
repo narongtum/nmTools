@@ -64,6 +64,8 @@ reload(rigTools)
 # =================================
 # - Create Controller fix for use both as assign parameter and selected
 # =================================
+
+#... outdate using fkRig instead
 def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
 							constraint = True, matrixConst = False, mo = False, translate=True, 
 							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False):
@@ -191,7 +193,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 					continue
 
 		if parentUnder:
-			print('\nHello')
+			print('\nHello {}')
 			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected[i]))
 
 			mc.parent(childZro_grp.name, selected[i])

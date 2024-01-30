@@ -84,15 +84,43 @@ reload(mnd)
 
 
 
+
+def select_tip_joint():
+	# Get the selected joint(s)
+	selected_joints = mc.ls(sl=True, type='joint')
+
+	# Iterate through the selected joints
+	for selected_joint in selected_joints:
+		 # Find the tip joint(s) in the hierarchy
+		 tip_joints = mc.listRelatives(selected_joint, allDescendents=True, type='joint')
+		 tip_joints = [joint for joint in tip_joints if not mc.listRelatives(joint, c=True, type='joint')]
+
+		 # Print the tip joint(s)
+		 if tip_joints:
+			  print("Tip joint(s) of", selected_joint, ":", tip_joints)
+			  mc.select(tip_joints, r=True )
+		 else:
+			  print("No tip joints found for", selected_joint)
+
+
+
+
+
+
+
+
 #####################################################
 #       Check Nameing Stlye     
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	first_name = name.split('_')
 
+	isLFT = False
+
 	#... 1. Capital Lead Style  'L_something_something_ext'
+
 	if len(first_name[0]) == 1:
-		print('\nThis is C_Capital_Lead Style')
+		print('\nThis is naming C_Capital_Lead Style')
 		base_name = '_'.join(first_name[:-1])
 
 		#... check side condition
@@ -108,7 +136,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
-		print('This is SiteFollowLFT Style')
+		print('This is naming Site Follow Style')
 		base_name = name.split('_')[0]
 		if base_name[-3:] == 'LFT':
 			side = 'LFT'
@@ -116,11 +144,12 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 			side = 'RGT'
 		else:
 			side = None
+		isLFT = True
 
 
 
-	print('Base name is: {}\nSide name is{}'.format(base_name, side))
-	return(base_name, side)
+	print('Base name is: {0}\nSide name is: {1}'.format(base_name, side))
+	return(base_name, side, isLFT)
 
 
 

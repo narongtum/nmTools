@@ -1,8 +1,10 @@
 # latest Use this (not in Rig tools)
 
-
+from function.rigging.util import misc
 
 from function.framework.reloadWrapper import reloadWrapper as reload
+reload(misc)
+
 
 import pymel.core as pm
 
@@ -91,6 +93,10 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 	if not source_loc:
 		mc.error('Need locator to pinpoint location.')
+	else:
+		#... check naming style
+		got_naming = misc.check_name_style(name = source_loc[0])
+	
 
 	# make nrb to object
 	oNurbs = pm.PyNode(nurbs) 

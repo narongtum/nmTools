@@ -424,7 +424,8 @@ def makeInbetweener(eye_up_dict, eye_down_dict):
 	constr_object = core.pointConstraint( R_corner_ctrl, down_middle_ctrl, R_down_between_zro, maintainOffset=True) 
 	constr_object.name = R_down_between_zro + '_poiCon'
 
-	EyeRigMarco.info('\n...EyeRig make Inbetweener DONE')
+	# EyeRigMarco.info('\n...EyeRig make Inbetweener DONE')
+	misc.makeHeader('{0} is complete'.format(__name__))
 
 
 
@@ -550,6 +551,8 @@ def makeSmartBlink(
 	mc.connectAttr('{}.outputX'.format(rev_value.name), '{}.{}'.format(smartBlink_bsh, up_low_crv), f=True)
 
 	EyeRigMarco.info('{0} is DONE'.format(__name__))
+
+	misc.makeHeader('{0} is complete'.format(__name__))
 
 	return upBlink_crv.name, downBlink_crv.name, blendShape_upBlink_crv.name, new_upBlink_Name, new_downBlink_Name
 

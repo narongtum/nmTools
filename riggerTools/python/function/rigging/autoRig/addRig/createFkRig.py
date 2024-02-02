@@ -72,14 +72,14 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 
 
 #... everything same but edit curl condition
-#... useHierarchy is mean parent to it 
-#... isTmpJnt is ask the arg is temp joint or not
+#... [useHierarchy] is mean joint that create will be parent to priorJnt by not parent old useHierarchy
+#... [isTmpJnt] is ask the arg is temp joint or not
 
 def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
 					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' ,
 					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
-					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True):
+					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True, useParentInstead = False):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -112,11 +112,10 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					ctrl.color = 'red'
 				elif side == 'RGT':
 					ctrl.color = 'blue'
-
-
 			ctrl.color = 'red'
+
 		else:
-			ctrl.color = color
+			ctrl.color = 'white'
 
 
 		
@@ -154,14 +153,15 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		ofGrps.append( offsetGrp )
 
 
-
+		#...  useHierarchy is mean not parent same Hierarchy to it.
 		if useHierarchy == True:
 			if not num == 0:
 				print('\nNo need to useHierarchy.\n')
 				zroGrp.parent( gmbls[ num -1] )
 
 				if isTmpJnt == True:
-					bJnt.parent( bJnts[ num -1] )
+					bJnt.parent( bJnts[num -1] )
+					# mc.error('WHAT165')
 				else:
 					pass
 			else:
@@ -169,13 +169,14 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 				rigGrp.maSnap(bJnts[0])
 				zroGrp.parent( rigGrp )
 
-		elif useHierarchy == False:
+		elif useHierarchy == False: #... if not mean not parent same Hierarchy to it.
 			if isTmpJnt == True:
 				print('This is useHierarchy == False')
 				bJnt.parent( priorJnt )
 			else:
 				pass
 			zroGrp.parent( rigGrp )
+			
 
 
 
@@ -203,6 +204,8 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 		elif useHierarchy == False:
 			rigGrp.parent( parentTo )
+			print(rigGrp.name)
+			
 
 
 
@@ -235,6 +238,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
 		curl_ctrl.color = color
 		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)
+		curl_ctrl.rotateOrder = rotateOrder 
 
 		#... Do it later
 		# curl_ctrl.lockHideAttrLst( 'tx' , 'ty' , 'tz' , 'sx', 'sy' , 'sz' , 'v' )
@@ -287,21 +291,35 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		fkRig_newCurl_meta.setAttribute('Color', color, type = 'string')
 		fkRig_newCurl_meta.setAttribute('Side', side, type = 'string')
 		fkRig_newCurl_meta.setAttribute('Base_Name', rigGrp.name, type = 'string')
-
-
 		
 		for eachObj in ofGrps:
 			# curl_ctrl.attr('rotate') >> eachObj.attr( 'rotate' )
 			multiplyValue_mdv.attr('output') >> eachObj.attr( 'rotate' ) #... change line to use multiplt divide instead
 
-
 		zroGrpCurl.parent( rigGrp )
-		if priorCtrl :
-			mc.parentConstraint( priorCtrl , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
-			mc.scaleConstraint( priorCtrl , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
-		elif priorJnt: #... this case if for spineFK rig make hip shake
-			mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
-			mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+
+		if useParentInstead == False:
+
+			if priorCtrl :
+				mc.parentConstraint( priorCtrl , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+				mc.scaleConstraint( priorCtrl , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+			elif priorJnt: #... this case if for spineFK rig make hip shake
+				mc.parentConstraint( priorJnt , rigGrp , name = '%sRig%s_psCons' % ( name,side )  ,mo = True )
+				mc.scaleConstraint( priorJnt , rigGrp , name = '%sRig%s_scaleCons' % ( name,side ) ,mo = True)
+
+		elif useParentInstead == True:
+			#... just parent under to it
+			pass
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -903,8 +921,8 @@ def checkUnerScore(name):
 
 
 
-# new function for create fk chain rig with multiple child 
-# use with temp joint
+#... new function for create fk chain rig with multiple child 
+#... use with temp joint
 def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 						tmpJnt = (  'hairRoot_tmpJnt' , ['hairA1_tmpJnt','hairA2_tmpJnt','hairA3_tmpJnt'] , ['hairB1_tmpJnt','hairB2_tmpJnt','hairB3_tmpJnt'] 	)		,
 						charScale = 1	, 

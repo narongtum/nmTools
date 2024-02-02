@@ -491,8 +491,10 @@ def doDeleteSuffixExt(suffix='_bak'):
 	else:
 		print('No objects with suffix "{}" found.'.format(suffix))
 
-
-
+def doDeleteMisc(name = 'BaseAnimation'):
+	if mc.objExists(name):
+		mc.delete(name)
+		print("\n %s has been deleted." %name)
 
 
 

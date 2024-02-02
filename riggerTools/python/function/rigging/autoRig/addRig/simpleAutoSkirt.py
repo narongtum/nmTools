@@ -10,14 +10,16 @@ reload(core)
 
 
 
-source = 'upperLegLFT_bJnt'
-side = 'LFT'
+source = 'upperLegRGT_bJnt'
+side = 'RGT'
 destination_grp = 'back1Offset_grp'
 
 
 
 sensitive = (0,1,0,90)
+
 direction = ('forward','rear','backward')
+#... choose direction here
 direction =  direction[2]
 baseName = 'along' + direction.capitalize()
 

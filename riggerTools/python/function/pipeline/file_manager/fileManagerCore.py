@@ -22,7 +22,7 @@ reload(logger)
 import re
 import pymel.core as pm
 
-from function.pipeline import fileTools as fileTools 
+from function.pipeline import fileTools
 reload(fileTools)
 
 
@@ -2292,6 +2292,9 @@ def do_local_commit():
 	# fileTools.delete_unused_skin_suffix()
 
 	# fileTools.delete_unused_material() 
+
+
+	fileTools.doDeleteMisc(name = 'BaseAnimation')
 
 	mc.select(deselect = True)
 

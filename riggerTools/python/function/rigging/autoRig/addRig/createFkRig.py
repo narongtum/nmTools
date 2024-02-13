@@ -314,15 +314,6 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 
 
-
-
-
-
-
-
-
-
-
 	# If having priorJnt but disable curl then just paCon
 	if priorJnt :
 		if curlCtrl == False:
@@ -335,7 +326,9 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):
 		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
 		parCons.name = '%s%s%02d%s_psCons'  %(nameSpace, name, ( num +1), side	)
-		print ('\nPARENT IT ...')
+		print ('\nPARENT IT DONE...')
+
+	misc.makeHeader('End of {0}'.format(__name__))
 
 
 	if curlCtrl:
@@ -343,7 +336,9 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
 	else:
 		return gmbls[0] ,rigGrp.name , bJnts  , ctrls
-	# End
+
+	
+	
 
 
 

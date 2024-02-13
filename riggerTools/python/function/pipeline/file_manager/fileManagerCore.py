@@ -562,8 +562,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				if len(replace_name) == 3:
 					name = replace_name[0]	
-					print(replace_name[0])
 
+					FileManagerLog.debug('\nGot replace_name: {0}'.format(replace_name[0]))
+					FileManagerLog.debug('Got element: {0}\n'.format(element))
 					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
 					if name not in result or version > int(result[name][1]):
 						result[name] = [element, version]

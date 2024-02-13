@@ -85,9 +85,12 @@ reload(mnd)
 
 
 
-def select_tip_joint():
+
+
+
+def select_tip_joint(selected_joints):
 	# Get the selected joint(s)
-	selected_joints = mc.ls(sl=True, type='joint')
+	# selected_joints = mc.ls(sl=True, type='joint')
 
 	# Iterate through the selected joints
 	for selected_joint in selected_joints:

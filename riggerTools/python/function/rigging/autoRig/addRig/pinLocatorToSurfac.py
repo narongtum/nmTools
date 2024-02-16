@@ -289,6 +289,10 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 	#... 1. Parent joint to hierarchy
 	if creJnt and snapAtEnd:	
+		if priorJnt == False:
+			PinLogger.warning('Snap and parent joint must having prior joint.')
+			return False
+
 		for num in range(len(jnt_list)):
 			if num  != 0:
 				mc.parent(jnt_list[num],jnt_list[num-1])

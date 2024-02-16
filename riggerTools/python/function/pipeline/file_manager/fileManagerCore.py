@@ -137,9 +137,11 @@ class FilterProxyModel(QtCore.QSortFilterProxyModel):
 
 
 class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
-	# Class variable to keep track of open windows
-	open_windows = []
+	_instance = None
+
+	# Initialize the parent class and set up the UI
 	def __init__(self):
+		
 		parent = getMayaMainWindow()
 		super(FileManager, self).__init__(parent=parent)
 		self.setupUi(self)
@@ -1971,7 +1973,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.dir_scene_TREEVIEW.header().setSortIndicatorShown(True)
 
 		#... Hide the second, third and fourth columns
-		# self.dir_scene_TREEVIEW.setColumnHidden(1, True) # size
+		self.dir_scene_TREEVIEW.setColumnHidden(1, True) # size
 		self.dir_scene_TREEVIEW.setColumnHidden(2, True) # type
 		# self.dir_scene_TREEVIEW.setColumnHidden(3, True) # date modified
 

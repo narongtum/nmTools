@@ -467,7 +467,7 @@ class Ui_MainWindow(object):
         self.scene_filter_text_LABEL.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.scene_thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
         self.scene_thumbnail_IMAGE_LABEL.setText(QCoreApplication.translate("MainWindow", u"no image show", None))
-        self.scene_AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"Asset Info", None))
+        self.scene_AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"Shot Info", None))
         self.scene_global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
         self.scene_commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
         self.scene_department_label.setText(QCoreApplication.translate("MainWindow", u"Department", None))

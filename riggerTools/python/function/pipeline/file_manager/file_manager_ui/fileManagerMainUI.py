@@ -313,8 +313,8 @@ class Ui_MainWindow(object):
         self.scene_thumbnail_IMAGE_LABEL.setObjectName(u"scene_thumbnail_IMAGE_LABEL")
         sizePolicy4.setHeightForWidth(self.scene_thumbnail_IMAGE_LABEL.sizePolicy().hasHeightForWidth())
         self.scene_thumbnail_IMAGE_LABEL.setSizePolicy(sizePolicy4)
-        self.scene_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 128))
-        self.scene_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 128))
+        self.scene_thumbnail_IMAGE_LABEL.setMinimumSize(QSize(168, 168))
+        self.scene_thumbnail_IMAGE_LABEL.setMaximumSize(QSize(168, 168))
         self.scene_thumbnail_IMAGE_LABEL.setLayoutDirection(Qt.LeftToRight)
         self.scene_thumbnail_IMAGE_LABEL.setFrameShape(QFrame.WinPanel)
         self.scene_thumbnail_IMAGE_LABEL.setFrameShadow(QFrame.Sunken)
@@ -450,7 +450,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"FileManager 1.0", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"FileManager", None))
         self.drive_label.setText(QCoreApplication.translate("MainWindow", u"Drive", None))
         self.project_label.setText(QCoreApplication.translate("MainWindow", u"Project", None))
         self.asset_filter_text_label.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
@@ -467,7 +467,7 @@ class Ui_MainWindow(object):
         self.scene_filter_text_LABEL.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.scene_thumbnail_label.setText(QCoreApplication.translate("MainWindow", u"Thumbnail", None))
         self.scene_thumbnail_IMAGE_LABEL.setText(QCoreApplication.translate("MainWindow", u"no image show", None))
-        self.scene_AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"AssetInfo", None))
+        self.scene_AssetInfo_label.setText(QCoreApplication.translate("MainWindow", u"Asset Info", None))
         self.scene_global_label.setText(QCoreApplication.translate("MainWindow", u"Global", None))
         self.scene_commit_BTN.setText(QCoreApplication.translate("MainWindow", u"Commit", None))
         self.scene_department_label.setText(QCoreApplication.translate("MainWindow", u"Department", None))

@@ -65,6 +65,9 @@ DICTIONARY_TEMPLATE = {
 
 							}
 
+BASE_FOLDER = "svn_true"
+ASSET_TOP_FOLDER = "Content"
+SCENE_TOP_FOLDER = "Sequence"
 
 THUMBNAIL_NAME		= 	'thumb.png'
 # DEPT_NAME 		= 	['Model', 'Rig']
@@ -73,14 +76,13 @@ DEPT_NAME 			= 	['Model', 'Rig', 'Anim']
 DEPT_EMPTY 			= 	['Commit','Texture', 'ConceptArt','FBX']
 JOB_TEMPLATE 		= 	['Version', 'Data', 'Output', 'Commit', 'FBX']
 EXCLUDE_VIEW_ITEM 	= 	['data.json', THUMBNAIL_NAME, 'Commit']
-STATIC_FOLDER 		= 	['Content','Version','Commit']
+STATIC_FOLDER 		= 	[ASSET_TOP_FOLDER, 'Version', 'Commit']
 DEFAULT_PROJECT 	= 	'P_Regulus'
 PADDING 			= 	4
 MAYA_EXT 			= 	'ma'
 USE_VARIATION 		= 	('P_Regulus')
 SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
-
-
+HIDE_FORMAT = ['*.pyc', '*.o']
 
 
 
@@ -175,16 +177,21 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... Connect project signals
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
 		#... Connect project
-		self.project_comboBox.currentIndexChanged.connect(self.populate_treeView)	
+		self.project_comboBox.currentIndexChanged.connect(self.populate_ASSET_treeView)	
 
 		# Called whenever a new item is clicked
-		self.populate_treeView()
+		self.populate_ASSET_treeView()
 
 		# Connect the on_treeview_clicked method to the clicked signal
 		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
 
 		# Connect The 'on_department_clicked' method to the clicked signal
 		self.asset_department_listWidget.itemClicked.connect(self.on_department_clicked)
+
+		#... Connect entity scene to treeview
+		self.populate_SCENE_treeView()
+		self.dir_scene_TREEVIEW.clicked.connect(self.on_treeview_SCENE_clicked)
+
 
 		# # Connect the on_version_clicked method to the left clicked signal
 		# # No need to use anymore disable for now
@@ -1510,10 +1517,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.info("\nThis is Run When start")
 		# Set selected drive and project as root path
 		try:
-			self.path = os.path.join(selected_drive, "svn_true", DEFAULT_PROJECT, "Content")
+			self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
 		except FileNotFoundError:
 			FileManagerLog.error("Invalid project name!")
-			self.path = os.path.join(selected_drive, "svn_true", PROJECT_NAME[0], "Content")
+			self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0], ASSET_TOP_FOLDER)
 
 		FileManagerLog.info("Show project path:...\t\t\t", self.path)
 
@@ -1639,7 +1646,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				
 
 
-			
+	def on_treeview_SCENE_clicked(self, index):
+		file_path = self.model.filePath(index)
+		FileManagerLog.debug('This is scene file path {0}'.format(file_path))			
 
 
 
@@ -1868,7 +1877,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-	def populate_treeView(self):
+	def populate_ASSET_treeView(self):
 
 		# # initializing model and populate the tree view
 		self.model = QtWidgets.QFileSystemModel()
@@ -1877,7 +1886,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
 		# Update the `self.path` variable whenever the user selects a new project
-		self.path = os.path.join(self.drive_comboBox.currentText(), "svn_true", self.project_comboBox.currentText(), "Content")
+		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), ASSET_TOP_FOLDER)
 
 		self.check_exists_maya()
 
@@ -1930,6 +1939,60 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
 		# print("\nShow department...")
 	
+
+
+	def populate_SCENE_treeView(self):
+
+		# # initializing model and populate the tree view
+		self.model = QtWidgets.QFileSystemModel()
+		self.model.setRootPath(self.path)
+		self.dir_scene_TREEVIEW.setModel(self.model)
+
+		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
+		# Update the `self.path` variable whenever the user selects a new project
+		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), SCENE_TOP_FOLDER)
+
+		self.check_exists_maya()
+
+
+		# Hide some file formats, such as ".pyc" and ".o" files
+		self.model.setNameFilters(HIDE_FORMAT)
+		self.model.setNameFilterDisables(False)
+
+		# Set the model on the tree view
+		self.dir_scene_TREEVIEW.setModel(self.model)
+		self.dir_scene_TREEVIEW.setRootIndex(self.model.index(self.path))
+		print("Model root path:...\t\t\t", self.model.rootPath())
+
+		# Sort the items alphabetically from A to Z and allow sorting in both directions
+		self.dir_scene_TREEVIEW.setSortingEnabled(True)
+		self.dir_scene_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
+		self.dir_scene_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+		self.dir_scene_TREEVIEW.header().setSortIndicatorShown(True)
+
+		#... Hide the second, third and fourth columns
+		# self.dir_scene_TREEVIEW.setColumnHidden(1, True) # size
+		self.dir_scene_TREEVIEW.setColumnHidden(2, True) # type
+		# self.dir_scene_TREEVIEW.setColumnHidden(3, True) # date modified
+
+
+		#... Set up context menu
+		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
+		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+
+		#... Print some information for debugging purposes
+
+		FileManagerLog.info("Populating tree view with file system model...")
+		FileManagerLog.info("populate_treeView project path:...\t\t\t{0}".format(self.path))
+		FileManagerLog.info("Model root path:...\t\t\t{0}".format(self.model.rootPath()	))
+
+		# Show department listWidget when selected asset
+		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
+		# print("\nShow department...")
+
+
+
+
 
 	def show_context_menu(self, point):
 		# Disconnect the asset_dir_TREEVIEW signal
@@ -2011,7 +2074,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		directories = base_path.split("/")
 
 		# find suffix
-		content_index = directories.index("Content")
+		content_index = directories.index(ASSET_TOP_FOLDER)
 
 		for i in range (0,content_index+1):
 			del directories[0]

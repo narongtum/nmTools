@@ -51,15 +51,27 @@ else:
 	from cStringIO import StringIO
 
 
+def show():
+    global skinWranglerWindow
+    try:
+        skinWranglerWindow.close()
+    except:
+        pass
+
+    skinWranglerWindow = skinWrangler()
+    skinWranglerWindow.show()
+    return skinWranglerWindow
 
 
-'''def load_ui_file(uiFile):
+
+
+def load_ui_file(uiFile):
 	loader = QUiLoader()
 	ui_file = QFile(uiFile)
 	ui_file.open(QFile.ReadOnly)
 	ui = loader.load(ui_file)
 	ui_file.close()
-	return ui'''
+	return ui
 
 
 
@@ -76,7 +88,7 @@ def loadUiType(uiFile):
 	return skinWranglerWindow
 
 
-'''
+
 def loadUiType(uiFile):
 	"""
 	Pyside lacks the "loadUiType" command, so we have to convert the ui file to py code in-memory first
@@ -101,7 +113,7 @@ def loadUiType(uiFile):
 		base_class = eval('QtWidgets.%s'%widget_class)
 
 	return form_class, base_class
-'''
+
 
 def loadUiType(uiFile):
 	parsed = xml.parse(uiFile)
@@ -147,17 +159,27 @@ def getMayaWindow():
 		return shiboken.wrapInstance(int(ptr), QtWidgets.QWidget)
 
 uiFile = None 
+
 try:
 	selfDirectory = os.path.dirname(__file__)
-	uiFile = selfDirectory + '/skinWrangler.ui'
+	uiFile = selfDirectory + '/skinWrangler_2023.ui'
+	print('uiFileA')
 except:
-	uiFile = 'D:\\Build\\usr\\jeremy_ernst\\MayaTools\\General\\Scripts\\epic\\rigging\\skinWrangler\\skinWrangler.ui'
+	selfDirectory = os.path.dirname(__file__)
+	uiFile = selfDirectory + '/skinWrangler_2023.ui'
+	print('uiFileB')
+	uiFile = 'D:\\Build\\usr\\jeremy_ernst\\MayaTools\\General\\Scripts\\epic\\rigging\\skinWrangler\\skinWrangler_2023.ui'
 if os.path.isfile(uiFile):
 	form_class, base_class = loadUiType(uiFile)
 else:
 	cmds.error('Cannot find UI file: ' + uiFile)
 
 
+
+# selfDirectory = os.path.dirname(__file__)
+# uiFile = selfDirectory + '/skinWrangler_2023.ui'
+# print('uiFileA')
+# cmds.error(uiFile)
 
 ########################################################################
 ## SKIN WRANGLER

@@ -72,14 +72,15 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 
 
 #... everything same but edit curl condition
-#... [useHierarchy] is mean joint that create will be parent to priorJnt by not parent old useHierarchy
+#... [useHierarchy] is mean joint that create will moved to under priorJnt by not parent old useHierarchy
 #... [isTmpJnt] is ask the arg is temp joint or not
 
 def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,
 					charScale = 1, priorJnt = 'head01_bJnt' , priorCtrl = '' ,
 					side = 'LFT', ctrlShape = 'circle_ctrlShape', localWorld = False , 
-					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True, useParentInstead = False):
+					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True, useParentInstead = False,
+					curlCtrlShape = 'stick_ctrlShape'):
 
 	
 	''' priorJnt can be False then it will be parent to world instead '''
@@ -234,7 +235,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 	# Make curl controller 
 	if curlCtrl:
 		curl_ctrl = core.Dag('%s%s%s%s_ctrl'  %(nameSpace, name,'Curl',side))
-		curl_ctrl.nmCreateController( ctrlShape )
+		curl_ctrl.nmCreateController( curlCtrlShape )
 		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
 		curl_ctrl.color = color
 		zroGrpCurl = rigTools.zeroGroupNam(curl_ctrl)

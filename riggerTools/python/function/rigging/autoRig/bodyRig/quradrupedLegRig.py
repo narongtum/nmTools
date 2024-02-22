@@ -71,7 +71,8 @@ def quradrupedLegRig(		nameSpace = '' 	,
 							ribbonName = ('upLeg', 'lwrLeg'),	
 							charScale = 1,
 							region = 'backLeg',
-							alongAxis = 'y'):
+							alongAxis = 'y',
+							povShape = 'sphereAxis' ):
 
 	core.makeHeader(	'Start of %s%s Rig' %('quradrupedLegRig',side)	)
 

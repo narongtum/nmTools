@@ -687,6 +687,7 @@ class skinWrangler(base_class, form_class):
         s = self.getSelected()
         if s:
             sel, msh, vtx, skin = s
+            print(self.vtxLBL)
             self.vtxLBL.setText(str(vtx))
         else:
             wid = QtWidgets.QTreeWidgetItem()

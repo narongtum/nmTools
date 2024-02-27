@@ -1023,7 +1023,11 @@ class MetaRoot ( Node ):
 
 
 
-
+class MetaBlank( Node ):
+	def __init__( self, name ):
+		Node.__init__(self, mc.createNode('network', name = name))
+		self.suffix
+		self.addAttribute( attributeType = 'message' , longName = 'Rig_Prior')
 
 
 class MetaGeneric( Node ):

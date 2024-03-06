@@ -235,6 +235,7 @@ for i in range(pCount):
 	t = i / (float(pCount) - 1)
 	print('\nThis is "T" {0} at loop of {1}'.format(t,i))
 	pNode = _testCube(pRadius, color=(0,0.5,1), name='p%s' % i)
+	# pNode = _creParentCtrl(size=2, color='white', name = '{0}_ChildCv{1:02d}'.format(side, num), ctrlShape = 'square_ctrlShape')
 
 	#... Create the position matrix
 	#... Give 1. cvMatrices, 2. t value 3. degree

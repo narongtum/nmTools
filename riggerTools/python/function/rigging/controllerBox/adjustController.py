@@ -260,6 +260,36 @@ def createController():
 
 
 
+
+
+
+
+
+def createZroGrpWithFlexName(selected):
+
+	selected = mc.ls( sl = True )
+
+	for each in selected:
+
+		rawName = misc.check_name_style(name = each)
+
+		zroGrpName = rawName[0] + 'Zro_grp'
+		offsetGrpName = rawName[0] + 'Offset_grp'
+
+		print (zroGrpName)
+		print (offsetGrpName)
+
+		mc.group(empty = True, name = zroGrpName)
+		mc.group(empty = True, name = offsetGrpName)
+
+		misc.snapParentCon( each, zroGrpName )
+		misc.snapParentCon( each, offsetGrpName )
+
+		mc.parent( each , offsetGrpName )
+		mc.parent( offsetGrpName , zroGrpName )
+
+
+
 # create zero group
 def createZroGrp(offset = False):
 
@@ -305,6 +335,8 @@ def createZroGrp(offset = False):
 			return zroGrpName, offsetGrpName
 	else:
 		mc.warning('Please select something.')
+
+
 
 
 

@@ -394,7 +394,7 @@ def runMenu():
 
 	mc.menuItem( label = "Create Master Group", 	command = "from function.rigging.autoRig.bodyRig import rootRig\nimportlib.reload(rootRig)\nrootRig.createMasterGrp(charScale=1)" )
 
-	mc.menuItem( label = "Create ZroGrp", 	command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nccr.createZroGrp()" )
+	mc.menuItem( label = "Create ZroGrp", 	command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nselected = mc.ls(sl=True)\nccr.createZroGrpWithFlexName(selected)" )
 
 	mc.menuItem( label = "Create Controller at Selected" , command = "from function.rigging.controllerBox import adjustController as ccr\nimportlib.reload(ccr)\nselected = mc.ls(sl=True)\nccr.creControllerFunc(selected)", ann = "create Controller selected.")
 

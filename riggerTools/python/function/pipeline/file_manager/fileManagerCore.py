@@ -2366,6 +2366,9 @@ def do_local_commit():
 
 
 def do_global_commit():
+	#... Assign old name to rig_grp
+	fileTools.assign_pre_job_step()
+
 	# Remove unused ref
 	fileTools.remUnRef()
 

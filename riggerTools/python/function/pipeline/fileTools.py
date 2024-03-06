@@ -54,6 +54,18 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
+# ========== # 
+# Add previous job step to rig grp
+# ========== # 
+
+def assign_pre_job_step():
+	myFile = Scene()
+	fileName = myFile.get_scene_name()
+
+	if mc.objExists("rig_grp.preJobStep") == True:
+		mc.setAttr("rig_grp.preJobStep", fileName , type="string")
+	else:
+		pass
 
 
 

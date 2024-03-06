@@ -1,3 +1,5 @@
+#... using wtAddMatrix for make something like rivet
+
 import maya.OpenMaya as om
 
 
@@ -8,8 +10,12 @@ import maya.OpenMaya as om
 skinCluster='skinCluster16_ACK'
 vtx = 'hero_body01.vtx[1731]'
 thresholdValue = 0.001
+
 tgt = 'ctrl_default_space'
-src = 'chest_space'
+src = 'body_space'
+baseName = 'upperBody'
+tranform_joint = 'upperBody_bJnt'
+
 # influenceVals   = mc.skinPercent(skinCluster, vtx, q=True, v = True, ib = thresholdValue )
 influenceJoint  = mc.skinPercent(skinCluster, vtx, q=True, t=None)
 influenceData   = mc.skinPercent(skinCluster, vtx, q=True, v=True)
@@ -72,8 +78,7 @@ def getLocalOffset(parent, child):
 
 
 	
-mulMtx = '{0}_mulMtx'.format(tgt)
-dmpMtx = '{0}_dmpMtx'.format(tgt)
+mulMtx = '{0}_{1}_mulMtx'.format(tgt,baseName)
 
 
 
@@ -83,7 +88,7 @@ offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
 
 # Create
 mc.createNode( 'multMatrix', n = mulMtx )
-mc.createNode( 'decomposeMatrix', n = dmpMtx )
+#mc.createNode( 'decomposeMatrix', n = dmpMtx )
 #  Set and Connect
 mc.setAttr( mulMtx + '.matrixIn[0]', offMat , type = 'matrix')
 
@@ -91,10 +96,20 @@ mc.setAttr( mulMtx + '.matrixIn[0]', offMat , type = 'matrix')
 
 #... Next create xform for collect value 
 
-tranform_joint = 'chest_bJnt'
 
-mc.connectAttr('{0}.matrixSum'.format(mulMtx),'{0}.matrixIn[0]'.format(tranform_joint))
+
+
 
 xform_mulMtx = mc.createNode( 'multMatrix', name = '{0}_xform_mulMtx'.format(tranform_joint))
+mc.connectAttr('{0}.matrixSum'.format(mulMtx),'{0}.matrixIn[0]'.format(xform_mulMtx))
 mc.connectAttr('{0}.worldMatrix[0]'.format(tranform_joint),'{0}.matrixIn[1]'.format(xform_mulMtx))
+
+
+
+
+
+
+#... Create wtAddMatrix
+weight_matrix = core.WtAddMatrix(src)
+
 

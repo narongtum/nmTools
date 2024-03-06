@@ -1220,6 +1220,15 @@ class MultMatrix( Node ):
 		Node.__init__(self, mc.createNode('multMatrix', name = name))
 		self.suffix
 
+class MultMatrixWithValue( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('multMatrix', name = name))
+		# self.addAttribute(name, ln='offsetMatrixVal', at = 'matrix')
+		mc.addAttr( name, ln='offsetMatrixVal', at = 'matrix')
+		mc.connectAttr('{0}.offsetMatrixVal'.format(name), '{0}.matrixIn[0]'.format(name))
+
+		self.suffix
+
 class ComposeMatrix( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('composeMatrix', name = name))	
@@ -1248,6 +1257,20 @@ class WtAddMatrix( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
 		self.autoSuffix()
+
+
+class WtAddMatrixWithVal( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
+		self.addAttribute( at = 'float', keyable = True, ln = 'wt_0'  )
+		self.addAttribute( at = 'float', keyable = True, ln = 'wt_1'  )
+		self.addAttribute( at = 'float', keyable = True, ln = 'wt_2'  )
+		self.attr('wt_0') >> self.attr('wtMatrix[0].weightIn')
+		self.attr('wt_1') >> self.attr('wtMatrix[1].weightIn')
+		self.attr('wt_2') >> self.attr('wtMatrix[1].weightIn')
+		self.autoSuffix()
+
+
 
 class EulerToQuat( Node ):
 	def __init__(self, name):

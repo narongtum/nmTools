@@ -1265,9 +1265,9 @@ class WtAddMatrixWithVal( Node ):
 		self.addAttribute( at = 'float', keyable = True, ln = 'wt_0'  )
 		self.addAttribute( at = 'float', keyable = True, ln = 'wt_1'  )
 		self.addAttribute( at = 'float', keyable = True, ln = 'wt_2'  )
-		self.attr('wt_0') >> self.attr('wtMatrix[0].weightIn')
-		self.attr('wt_1') >> self.attr('wtMatrix[1].weightIn')
-		self.attr('wt_2') >> self.attr('wtMatrix[1].weightIn')
+		# self.attr('wt_0') >> self.attr('wtMatrix[0].weightIn')
+		# self.attr('wt_1') >> self.attr('wtMatrix[1].weightIn')
+		# self.attr('wt_2') >> self.attr('wtMatrix[1].weightIn')
 		self.autoSuffix()
 
 

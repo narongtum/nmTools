@@ -47,7 +47,7 @@ reload(mnd)
 
 
 
-
+#.... Make [broad joint] >>> control >>> nurb >>> [locator] >>> constraint >>> [controller] >>> [bind joint]
 def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','frontSkirtBroad03_jnt','frontSkirtBroad04_jnt'],
 				nurbs = 'frontSkirt_nrb',region = 'front',side = '',scale = 1, ctrlShape='circle_ctrlShape'):
 
@@ -60,6 +60,8 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 					side = side ,ctrlShape = ctrlShape  , localWorld = False , 
 					color = 'red' , curlCtrl = True ,suffix = '_jnt',parentToPriorJnt = False,
 					parentMatrix = False, rotateOrder = 'xzy')
+	#... is not finish yet
+	#... next make the bind joint and the locator
 
 
 

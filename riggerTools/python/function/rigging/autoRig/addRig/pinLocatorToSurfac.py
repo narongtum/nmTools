@@ -41,8 +41,13 @@ reload(pls)
 							region = 'ribCage',
 							side = '',
 							source_loc = ('strapALFT_loc','strapARGT_loc'),
-							locator_scale = 1
-						)
+							locator_scale = 1,
+							creJnt = False , suffixJnt = 'bJnt',
+							creCtrl = False , ctrlShape = 'circle_ctrlShape',
+							snapAtEnd = False,
+							priorJnt = 'hip_bJnt',
+							scale = 2
+							)
 
 """
 

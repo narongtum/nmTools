@@ -86,7 +86,7 @@ reload(mnd)
 
 
 
-
+#... using skelenton in rigging instead
 
 def select_tip_joint(selected_joints):
 	# Get the selected joint(s)
@@ -105,8 +105,8 @@ def select_tip_joint(selected_joints):
 		 else:
 			  print("No tip joints found for", selected_joint)
 
-
-
+def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
+	searchReplace( searchText, replaceText )
 
 
 

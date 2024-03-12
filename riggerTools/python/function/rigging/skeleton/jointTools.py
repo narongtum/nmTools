@@ -29,18 +29,45 @@ reloader(misc)
 
 
 
+
+
+
+def select_tip_joint(selected_joints): # using list
+	# Get the selected joint(s)
+	# selected_joints = mc.ls(sl=True, type='joint')
+
+	# Iterate through the selected joints
+	for selected_joint in selected_joints:
+		 # Find the tip joint(s) in the hierarchy
+		 tip_joints = mc.listRelatives(selected_joint, allDescendents=True, type='joint')
+		 tip_joints = [joint for joint in tip_joints if not mc.listRelatives(joint, c=True, type='joint')]
+
+		 # Print the tip joint(s)
+		 if tip_joints:
+			  print("Tip joint(s) of", selected_joint, ":", tip_joints)
+			  mc.select(tip_joints, r=True )
+		 else:
+			  print("No tip joints found for", selected_joint)
+
+def replace_change_gray(selected_joints_list,searchText , replaceText):
+	select_tip_joint(selected_joints_list)
+	selected = mc.ls(sl=True)
+	misc.searchReplace(searchText, replaceText)
+	
+
+	for each in selected:
+		mc.setAttr('{0}.overrideEnabled'.format(each), 1)
+		mc.setAttr('{0}.overrideColor'.format(each), 3)
+
+
+
+
+
 def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace = '_tipJnt'):
 	list_tip_joint_grp = list_tip_joints(root_joint)
 	misc.searchReplace( searchText=search, replaceText=replace )
 
 	
-
-
-
-
-
-
-
 
 def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt'):
 	root_obj = pm.PyNode(root_joint)
@@ -70,7 +97,7 @@ def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt'):
 	pm.makeIdentity(root_obj, apply=True)
 
 	mc.select(deselect=True)
-	utilLogger.info('End of the {0}.'.format(__name__))
+	utilLogger.info(' End of the {0}.'.format(__name__))
 
 
 

@@ -3,6 +3,24 @@ import importlib
 from function.pipeline.file_manager import fileManagerCore
 import sys
 
+# def isWindowOpen(window_title):
+# 	app = QtWidgets.QApplication.instance()
+# 	if not app:
+# 		return False
+
+# 	for widget in app.topLevelWidgets():
+# 		if isinstance(widget, QtWidgets.QMainWindow) and widget.windowTitle() == window_title:
+# 			if widget.isVisible():
+# 				print('If the window visible')
+# 				return True
+# 			else:
+# 				print('If the window exists but is not visible, close it')
+# 				widget.close()
+# 				return False
+
+# 	return False
+
+
 def isWindowOpen(window_title):
 	app = QtWidgets.QApplication.instance()
 	if not app:
@@ -13,12 +31,15 @@ def isWindowOpen(window_title):
 			if widget.isVisible():
 				return True
 			else:
-				# If the window exists but is not visible, close it
 				widget.close()
 				return False
 
 	return False
 
+
+for widget in QtWidgets.QApplication.topLevelWidgets():
+    if isinstance(widget, QtWidgets.QMainWindow) and widget.windowTitle() == "FileManager":
+        print (widget)
 
 
 def run_file_manager():

@@ -61,7 +61,7 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 					color = 'red' , curlCtrl = True ,suffix = '_jnt',parentToPriorJnt = False,
 					parentMatrix = False, rotateOrder = 'xzy')
 	#... is not finish yet
-	#... next make the bind joint and the locator
+	#... next make the slave bind joint and the locator
 
 
 
@@ -312,7 +312,11 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 		elif useParentInstead == True:
 			#... just parent under to it
-			pass
+			print('#... just parent under to it')
+			print(rigGrp.name)
+
+			mc.parent(rigGrp.name, priorCtrl)
+			
 
 
 

@@ -47,42 +47,103 @@ MAYA_VERSION = int(mc.about(v=True))
 
 
 
+#.... Check there is config file in document
 
-DRIVES = [		"D:\\",
-				"E:\\"		]
+# Get the user's home directory
+user_home = os.path.expanduser("~")
 
-PROJECT_NAME = ['P_sample','P_jobby','P_Regulus']
+# Define the directory path relative to the user's home directory
+directory = os.path.join(user_home, 'Documents', 'maya', 'scripts')
 
-DICTIONARY_TEMPLATE = {		
+# Define the file name
+fileName = 'fileManager_config.py'
 
-							"base_path":""				,
-							"entitie_type":""			,
-							"entitie_name":""			,
-							"full_entity_name":""		,
-							"comment":""				,
-							"department_name":""		,
-							"add_path_SVN":""
+# Create the full file path
+file_path = os.path.join(directory, fileName)
 
-							}
 
-BASE_FOLDER = "svn_true"
-ASSET_TOP_FOLDER = "Content"
-SCENE_TOP_FOLDER = "Sequence"
 
+
+#... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
-# DEPT_NAME 		= 	['Model', 'Rig']
-DEPT_NAME 			= 	['Model', 'Rig', 'Anim']
-# DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
-DEPT_EMPTY 			= 	['Commit','Texture', 'ConceptArt','FBX']
-JOB_TEMPLATE 		= 	['Version', 'Data', 'Output', 'Commit', 'FBX']
-EXCLUDE_VIEW_ITEM 	= 	['data.json', THUMBNAIL_NAME, 'Commit']
-STATIC_FOLDER 		= 	[ASSET_TOP_FOLDER, 'Version', 'Commit']
-DEFAULT_PROJECT 	= 	'P_Regulus'
 PADDING 			= 	4
-MAYA_EXT 			= 	'ma'
-USE_VARIATION 		= 	('P_Regulus')
-SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
 HIDE_FORMAT = ['*.pyc', '*.o']
+
+
+
+
+# Check if the file exists
+if os.path.exists(file_path):
+	FileManagerLog.debug("File exists.")
+	import fileManager_config as config
+
+	DRIVES = config.DRIVES
+	PROJECT_NAME = config.PROJECT_NAME
+	DICTIONARY_TEMPLATE = config.DICTIONARY_TEMPLATE
+	#... Top folder name
+	BASE_FOLDER = config.BASE_FOLDER
+	ASSET_TOP_FOLDER = config.ASSET_TOP_FOLDER
+	SCENE_TOP_FOLDER = config.ASSET_TOP_FOLDER
+	#... Directory name
+	DEPT_NAME = config.DEPT_NAME
+	DEPT_EMPTY = config.DEPT_EMPTY
+	JOB_TEMPLATE = config.JOB_TEMPLATE
+	EXCLUDE_VIEW_ITEM = config.EXCLUDE_VIEW_ITEM
+	STATIC_FOLDER = config.STATIC_FOLDER
+	DEFAULT_PROJECT = config.DEFAULT_PROJECT
+	MAYA_EXT = config.MAYA_EXT
+	USE_VARIATION = config.USE_VARIATION
+	SVN_BIN_PATH = config.SVN_BIN_PATH
+	FileManagerLog.debug("using {0} as a default project.".format(DEFAULT_PROJECT))
+
+else:
+	FileManagerLog.debug("File does not exist using default config.")
+
+
+
+
+	#... Using default config
+	DRIVES = [		"D:\\",
+					"E:\\"		]
+
+	PROJECT_NAME = ['P_sample','P_jobby','P_Regulus']
+
+	DICTIONARY_TEMPLATE = {		
+
+								"base_path":""				,
+								"entitie_type":""			,
+								"entitie_name":""			,
+								"full_entity_name":""		,
+								"comment":""				,
+								"department_name":""		,
+								"add_path_SVN":""
+
+								}
+
+	BASE_FOLDER = "svn_true"
+	ASSET_TOP_FOLDER = "Content"
+	SCENE_TOP_FOLDER = "Sequence"
+
+	
+	# DEPT_NAME 		= 	['Model', 'Rig']
+	DEPT_NAME 			= 	['Model', 'Rig', 'Anim']
+	# DEPT_EMPTY 		= 	['ConceptArt', 'ConceptArt', 'Texture', 'VFX', 'Anim']
+	DEPT_EMPTY 			= 	['Commit','Texture', 'ConceptArt','FBX']
+	JOB_TEMPLATE 		= 	['Version', 'Data', 'Output', 'Commit', 'FBX']
+	EXCLUDE_VIEW_ITEM 	= 	['data.json', THUMBNAIL_NAME, 'Commit']
+	STATIC_FOLDER 		= 	[ASSET_TOP_FOLDER, 'Version', 'Commit']
+	DEFAULT_PROJECT 	= 	'P_Regulus'
+	
+	MAYA_EXT 			= 	'ma'
+	USE_VARIATION 		= 	('P_Regulus')
+	SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
+	
+
+
+
+
+
+
 
 
 

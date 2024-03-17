@@ -75,7 +75,7 @@ reload(adjust)
 
 #... this is redundance with rigTools (Use this instead)
 #... create locator at specified uv coordinate
-#... from Chris Lesage (Rigmarole Studio)
+#... from Chris Lesage (Rigmarole Studio) https://rigmarolestudio.com/author/chrislesage/
 
 # NEED NURB ONLY
 def pin_locator_surface(	# need pxy nrb to drive locator

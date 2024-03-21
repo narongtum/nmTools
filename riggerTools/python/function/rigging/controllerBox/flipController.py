@@ -35,6 +35,7 @@ class buildUI():
 		mc.window( self.win, width = self.widt , widthHeight=(200, 110) )
 		mc.columnLayout( adjustableColumn = True )
 		mc.button( label = 'Copy ControllerShape ' , command = self.copyCtrlShape , ann = "Select source and destination.")
+		mc.button( label = 'Flip ControllerX'   	,	command = self.flipCtrlShapeX , ann = "click object and click the button")
 		mc.button( label = 'Flip ControllerY'   	,	command = self.flipCtrlShapeY , ann = "click object and click the button")
 		mc.button( label = 'Flip ControllerZ'   	,	command = self.flipCtrlShapeZ , ann = "click object and click the button")
 
@@ -44,6 +45,18 @@ class buildUI():
 
 
 
+
+	def flipCtrlShapeX( self , sel , axis = [ 1, -1, -1 ] ):
+		sel = mc.ls(sl=True)
+		print ('flip axis is %s' %axis)
+		shapes = wcd.getShape(sel[0])	
+		newShapes = []
+
+		for i, each in enumerate(shapes["points"]):
+			shapes["points"][i] = [each[0] * axis[0], each[1] * axis[1], each[2] * axis[2]]
+		newShapes.append(shapes)
+
+		mc.curve( sel , replace = True,p=newShapes[0]["points"], k=newShapes[0]["knots"], d=newShapes[0]["degree"], per=bool(newShapes[0]["form"]) )
 
 
 
@@ -89,7 +102,7 @@ class buildUI():
 
 		# try to use cleaner metod
 		mc.curve( sel , replace = True,p=newShapes[0]["points"], k=newShapes[0]["knots"], d=newShapes[0]["degree"], per=bool(newShapes[0]["form"]) )
-		print ('Why whyyyyyy')
+
 
 
 	# copy controller

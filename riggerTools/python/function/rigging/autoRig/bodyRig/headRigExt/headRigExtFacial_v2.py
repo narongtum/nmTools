@@ -1,6 +1,8 @@
+#... Use with for GNM mounth and Marco eye rig 
 #... Neck rig module
 #... add top, bottom head joint
 #... add reverse jaw for jaw rig
+
 
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload

@@ -176,30 +176,27 @@ class Scene(object):
 		self.file_ext = os.path.splitext( self.fileName )[1]
 		return self.fileName_fullPath,self.fileName,self.file_ext
 
-
-
-
-
-
-
 def getExt(splitwith = '.'):
 	path = currentPath()
 	ext = path.split( splitwith )[-1]
 	return ext
 
-def createThumbnail(fileType = 'jpg'):
+
+def createThumbnail(fileType='jpg', width=256, height=256):
 	# Create Thumbnail at current maya file
 	currentPath = findCurrentPath()
-	# date = datetime.datetime.now()
-	# currentDate = date.strftime('%d%m%Y_%H%M')
-
 	fileName = getFileName()[0]
-	imageFile = '{0}{1}.{2}'.format(currentPath,fileName,fileType)
+	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, fileType)
+	
 	mimage = om.MImage()
 	view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
+
+	# Resize the image to the specified width and height
+	mimage.resize(width, height)
+
 	mimage.writeToFile(imageFile, fileType)
-	print ('Thumbnail has been create at : {0}'.format(imageFile))
+	print('Thumbnail has been created at: {0}'.format(imageFile))
 
 
 # find current maya path

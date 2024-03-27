@@ -149,10 +149,24 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 			side = None
 		isLFT = True
 
+	#... return reverse side
+	reverse_side = ''
+	if side == 'LFT':
+		reverse_side = 'RGT'
+	elif side == 'RGT':
+		reverse_side = 'LFT'
+	elif side == 'L':
+		reverse_side = 'R'
+	elif side == 'R':
+		reverse_side = 'L'
+	elif side == 'C':
+		reverse_side = 'C'
+	else:
+		reverse_side = None
 
 
 	print('Base name is: {0}\nSide name is: {1}'.format(base_name, side))
-	return(base_name, side, isLFT)
+	return(base_name, side, isLFT, reverse_side)
 
 
 

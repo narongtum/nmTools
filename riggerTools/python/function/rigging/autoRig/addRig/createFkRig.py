@@ -681,7 +681,8 @@ def newCreateFkRig(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 	# create local / world follwer arg #
 	if localWorld:
-		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrls[0] , rigGrp.name , parentTo , zGrps[0] )
+		first_ctrl = core.Dag(ctrls[0])
+		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( first_ctrl.shape , rigGrp.name , parentTo , zGrps[0] )
 		Loc_grp.name = part + 'Local_grp'
 		World_grp.name = part + 'World_grp'
 		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'

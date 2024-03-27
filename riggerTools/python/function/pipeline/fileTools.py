@@ -34,7 +34,7 @@ import maya.OpenMaya as om
 import maya.OpenMayaUI as omui
 import datetime
 import maya.mel as mel
-
+import os.path
 
 # import logging
 # logger = logging.getLogger('debug_text')
@@ -49,6 +49,46 @@ class fileToolsLogger(logger.MayaLogger):
 	LOGGER_NAME = "FileToolsLogger"
 
 MAYA_VERSION = mc.about(v=True)	
+
+
+
+
+
+
+# ========== # 
+# Export selection at data folder
+
+# ========== # 
+
+def exportSel( addPath = '\\data\\export\\' ):
+
+	currentPath = currentFolder()
+
+
+	name = mc.ls(sl = True)[0]
+
+	if ':' in name:
+		finalName = name.split(':')[-1]
+	else:
+		finalName = name
+		
+	#... check file already exists
+	checkPath = currentPath + addPath
+	checkPath_normPath = os.path.normpath(checkPath)
+
+	if os.path.exists(checkPath_normPath):
+		print('There are already exists.')
+	else:
+		print('Folder not found. Creating it now.')
+		os.makedirs(checkPath_normPath)
+
+
+	finalPath = currentPath + addPath + finalName + '.ma'
+
+	final_normPath = os.path.normpath(finalPath)
+	mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
+	print ('asset has been export at: %s' %final_normPath)
+
 
 
 
@@ -199,7 +239,7 @@ def createThumbnail(fileType='jpg', width=256, height=256):
 	print('Thumbnail has been created at: {0}'.format(imageFile))
 
 
-# find current maya path
+#... find current maya path
 def currentPath():
 	path = pm.system.sceneName()
 	if path:

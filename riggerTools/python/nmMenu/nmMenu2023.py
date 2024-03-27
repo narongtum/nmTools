@@ -158,7 +158,7 @@ def runMenu():
 	
 	mc.menuItem( label = "Open Containing Folder",	command = "from function.pipeline import fileTools\nimportlib.reload(fileTools)\nfolder = fileTools.currentBackFolder()\nfileTools.openContainerFile(path = folder)", ann = "Open Containing Folder.")
 
-	
+	mc.menuItem( label = "Export Selection",	command = "from function.pipeline import fileTools\nreload(fileTools)\nfileTools.exportSel()", ann = "Export selected to Maya file.")
 
 
 

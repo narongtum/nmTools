@@ -20,6 +20,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def _eyeCtrl( nameSpace = ''  , eyeJntNam = '' , side = ''  , headJnt = '' , charScale = '' , parentTo = '', eyeCenCtrl = '', eyeTarget = '' ):
+
 	# = = = = = = = = = = = = = #
 	# Right Eye
 	# = = = = = = = = = = = = = #
@@ -105,6 +106,10 @@ def _eyeCtrl( nameSpace = ''  , eyeJntNam = '' , side = ''  , headJnt = '' , cha
 	eyeSide_parCons = core.parentConstraint( eyeSideGmbl_ctrl , eyeSide_bJnt , mo = True)
 	eyeSide_parCons.name =  part + 'Jnt_parCons'
 
+	#... Add scale constraint for marco eye rig
+	eyeSide_scaleCons = core.scaleConstraint( eyeSideGmbl_ctrl , eyeSide_bJnt , mo = True)
+	eyeSide_scaleCons.name =  part + 'Jnt_scaleCons'
+
 	# = = = = = = = = = = = = = #
 	#... Additional joint for facial End
 	# = = = = = = = = = = = = = #
@@ -112,21 +117,47 @@ def _eyeCtrl( nameSpace = ''  , eyeJntNam = '' , side = ''  , headJnt = '' , cha
 	# eyeSideZro_grp.parent( parentTo )
 	eye_loc.parent( eyeSideZro_grp )
 	eyeAimSide_grp.parent( eye_loc )
-	eyeSideZro_grp.parent( parentTo )
-
-
+	# eyeSideZro_grp.parent( parentTo )
 
 
 	# Lock and hide attr
 	for attr in ('rx','ry','rz','sx','sy','sz','v') :
 		eyeTargetSide_ctrl.attr( attr ).lockHide()
 
+
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+	#  Create L_eyeMover_ctrl for parent eye group instead    #
+	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
+
+	eyeMover_part = nameSpace + 'eyeMover' + side + '_ctrl'
+
+	eyeMover_ctrl = core.Dag(eyeMover_part)
+	eyeMover_ctrl.nmCreateController('circle_ctrlShape')
+	eyeMover_ctrl.editCtrlShape( axis = charScale * 0.8 )
+	eyeMover_ctrl.color = 'yellow'
+	eyeMover_ctrl.rotateOrder = 'zxy'
+	eyeMoverZro_grp = rigTools.zeroGroup( eyeMover_ctrl )
+	eyeMoverZro_grp.name =   part  + 'Zro_grp'
+	eyeMoverZro_grp.snap(eyeSide_bJnt)
+	#... rotate ctrl 
+	eyeMover_ctrl.rotateShape(rotate = ( 90 , 0 , 0))
+
+	if side == 'LFT':
+		#... make a bit forword
+		eyeMover_ctrl.moveShape(move = ( 0 , 0 , charScale * 1.6 ) )
+	elif side == 'RGT':
+		eyeMover_ctrl.moveShape(move = ( 0 , 0 , charScale * -1.6 ) )
+
+
+	eyeSideZro_grp.parent( eyeMover_ctrl )
+	eyeMoverZro_grp.parent( parentTo )
+
+
 	return eyeSideZro_grp
 
 
 
 
-# add 'headTop_tmpJnt',	'headBottom_tmpJnt', 'reverseJaw' for suit facial JH rig
 
 def headRig(	nameSpace = '' ,
 				parentTo = 'ctrl_grp'  ,
@@ -270,7 +301,7 @@ def headRig(	nameSpace = '' ,
 	# Head Local / World setup
 	# = = = = = = = = = = = = = #
 	partName = nameSpace + 'head'
-	Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( head_ctrl , headRig_grp , parentTo , headZro_grp.name , partName )
+	Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( head_ctrl.shape , headRig_grp , parentTo , headZro_grp.name , partName )
 	Loc_grp.name = part + 'Local_grp'
 	World_grp.name = part + 'World_grp'
 	WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
@@ -515,8 +546,9 @@ def headRig(	nameSpace = '' ,
 
 
 		# = = = = = = = = = = = = = #
-		#  Local / World setup      #
+		#  eye line Local / World setup      #
 		# = = = = = = = = = = = = = #
+		# ( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = '' , bodyPart = None ,value = 0)
 		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.parentLocalWorldCtrl( eyeCenter_ctrl , headGmbl_ctrl , parentTo , eyeCenterZro_grp.name )
 		# rename group after exec the function
 		Loc_grp.name = part + 'Local_grp'
@@ -529,9 +561,13 @@ def headRig(	nameSpace = '' ,
 
 
 
+
+
+
+
 		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeLFT.name , side = 'LFT' , headJnt = headTop_bJnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetLFT.name  )
 		_eyeCtrl( nameSpace =  nameSpace, eyeJntNam = eyeRGT.name , side = 'RGT' , headJnt = headTop_bJnt.name , charScale = charScale , parentTo = headTop_ctrl.name , eyeCenCtrl = eyeCenter_ctrl.name , eyeTarget = eyeTargetRGT.name  )
-
+		
 
 
 
@@ -570,7 +606,7 @@ def headRig(	nameSpace = '' ,
 
 
 	head_loc.maSnap( head01_bJnt )
-	head_loc.parent( headRig_grp )
+	head_loc.parent( headZro_grp )
 	head_ctrl.parent( head_loc )
 
 

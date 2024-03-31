@@ -69,7 +69,7 @@ def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace =
 
 	
 
-def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt'):
+def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'y'):
 	root_obj = pm.PyNode(root_joint)
 
 	# Retrieve the joint chain
@@ -85,9 +85,22 @@ def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt'):
 
 	# Set Y rotation to 180 for each joint
 	for joint in joint_chain:
-	   joint.rotateY.set(180)
-	   
-	root_obj.rotateY.set(180)
+		if axis == 'y':
+			joint.rotateY.set(180)
+		elif axis == 'x':
+			joint.rotateX.set(180)
+		elif axis == 'z':
+			joint.rotateZ.set(180)
+		else:
+			mc.error('There are wrong axis argument.')
+
+ 	if axis == 'y':
+		root_obj.rotateY.set(180)
+	elif axis == 'x':
+		root_obj.rotateX.set(180)
+	elif axis == 'z':
+		root_obj.rotateZ.set(180) 
+	
 
 	# Re-parent joints back to their original parents
 	for joint, parent in original_parents.items():

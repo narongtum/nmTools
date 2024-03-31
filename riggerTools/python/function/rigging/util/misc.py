@@ -86,6 +86,7 @@ reload(mnd)
 
 
 
+#... Do not use this 
 #... using skelenton in rigging instead
 
 def select_tip_joint(selected_joints):

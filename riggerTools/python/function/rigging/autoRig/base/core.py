@@ -427,6 +427,7 @@ def createGimbal( obj = '' ):
 
 	# hide attr
 	gmblCtrl.attr( 'v' ).lockHide()
+	#... can't use gmblCtrl.setColor('white') I donno why
 	gmblCtrl.color = 'white'
 	'''
 	attrs = ( 'sx' , 'sy' , 'sz' , 'v' )
@@ -1728,33 +1729,36 @@ class Dag( Node ) :
 						'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
 						'green'     : 14 ,          'none'          : 0     }
 		
+		try:
+			if color in colorDict.keys():
+				# if color is string Ex. 'green'
+				if type (color) == type( str() ):
+					print ('This is string.')
+					colorId = colorDict[color]
+					print ('Change color to %s.' %color)
+					''' 
+					elif type (color) == type( int() ):
+					print 'This is int.'
+					colorId = color
+					print colorId
+					'''
+				else:
+					colorId = 0
 
-		if color in colorDict.keys():
-			# if color is string Ex. 'green'
-			if type (color) == type( str() ):
-				print ('This is string.')
-				colorId = colorDict[color]
-				print ('Change color to %s.' %color)
-				''' 
-				elif type (color) == type( int() ):
-				print 'This is int.'
-				colorId = color
-				print colorId
-				'''
-			else:
-				colorId = 0
 
 
+			if type( shape ) is type( [] ) :
+				mc.setAttr( '%s.overrideEnabled'    % shape[0] , 1 )
+				mc.setAttr( '%s.overrideColor'      % shape[0] , colorId )
 
-		if type( shape ) is type( [] ) :
-			mc.setAttr( '%s.overrideEnabled'    % shape[0] , 1 )
-			mc.setAttr( '%s.overrideColor'      % shape[0] , colorId )
+			else :  
+				print('what is is ')
+				mc.setAttr( '%s.overrideEnabled'    % shape , 1 )
+				mc.setAttr( '%s.overrideColor'      % shape , colorId )
 
-		else :  
-			mc.setAttr( '%s.overrideEnabled'    % shape , 1 )
-			mc.setAttr( '%s.overrideColor'      % shape , colorId )
-
-		print('set color')
+			print('set color')
+		except:
+			mc.error('Please check clashed name.')
 	
 
 

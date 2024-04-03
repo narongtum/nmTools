@@ -116,7 +116,8 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 				elif side == 'RGT':
 					ctrl.color = 'blue'
 			ctrl.color = 'red'
-
+		elif color:
+			ctrl.color = color
 		else:
 			ctrl.color = 'white'
 
@@ -314,6 +315,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 			#... just parent under to it
 			print('#... just parent under to it')
 			print(rigGrp.name)
+			print(priorCtrl)
 
 			mc.parent(rigGrp.name, priorCtrl)
 			

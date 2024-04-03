@@ -583,25 +583,29 @@ def fkIkTwistGenRig(
 
 
 
-	# No need anymore
+	#... No need anymore
 	# lowerIk_ctrl.editCtrlShape( axis = charScale * 5 )
+	# print('This is error for sure')
+	logger.debug('589')
 	lowerIk_ctrl.setColor( colorSide )
-
+	
+	logger.debug('591')
 	# Create Attr
 	lowerIk_ctrl.addAttribute(  attributeType = 'long' ,ln = 'autoStretch' 	, k = True , minValue = 0 , maxValue = 1 ,dv = 0 )
 	lowerIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'upStretch' 	, k = True  ,dv = 0 )
 	lowerIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'lowStretch' 	, k = True  ,dv = 0 )
 	lowerIk_ctrl.hideArnoldNode()
 
-
+	logger.debug('598')
 	ikGmbl_ctrl = core.createGimbal( lowerIk_ctrl )
-
+	logger.debug('601')
 	# Create zero grp
 	ikZro_grp = rigTools.zeroGroup( lowerIk_ctrl )
+	logger.debug('604')
 	ikZro_grp.name = ( name +'Ik'+ side + 'Zro_grp' )
 
 
-
+	logger.debug('606')
 
 	# Actually ik should be act to world orientation but this is requirement from animator
 	if region == 'arm':# if hand make it along hand orient
@@ -612,7 +616,7 @@ def fkIkTwistGenRig(
 		misc.snapPointConst( ikJntLst[2]  , ikZro_grp.name )
 
 
-
+	
 
 
 	# Make ankle or wrist rotate freely
@@ -672,6 +676,7 @@ def fkIkTwistGenRig(
 
 	pov_ctrl.editCtrlShape( axis = charScale * 1.4 )
 	pov_ctrl.setColor( colorSide )
+
 
 	mc.parent( pov_ctrl.name , povZro_grp  )
 

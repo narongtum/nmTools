@@ -193,7 +193,6 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 					continue
 
 		if parentUnder:
-			print('\nHello {}')
 			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected[i]))
 
 			mc.parent(childZro_grp.name, selected[i])

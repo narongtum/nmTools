@@ -655,6 +655,8 @@ def orientLocalWorldCtrl( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = 
 	worGrp.name = oldWor
 
 	controller = core.Dag( ctrl )
+	print('This is CTRL:{0}'.format(ctrl))
+	
 
 	attr = 'localWorld'
 	controller.addAttribute( ln = attr , k = True , min = 0 , max = 1 )

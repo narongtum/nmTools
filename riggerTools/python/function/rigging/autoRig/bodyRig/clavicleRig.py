@@ -1,3 +1,6 @@
+#... change local/world attatch to shape node
+
+
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload
 
@@ -107,7 +110,9 @@ def clavicleRig(		nameSpace = ''  ,
 	# = = = = = = = = = = = = = #
 	#  Local / World setup 
 	# = = = = = = = = = = = = = #
-	Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( clav_ctrl , clavRig_grp , parentTo , clavZro_grp.name ,part )
+
+	#.... Chance ctrl to ctrlShape
+	Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( clav_ctrl.shape , clavRig_grp , parentTo , clavZro_grp.name ,part )
 	Loc_grp.name = part + side + 'Local_grp'
 	World_grp.name = part + side + 'World_grp'
 	WorldGrp_orientCons.name = part + side + 'WorldGrp_orientCons'

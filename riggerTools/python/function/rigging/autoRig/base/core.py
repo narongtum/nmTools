@@ -330,6 +330,14 @@ curl_ctrl.setLineWidth(4)
 
 
 
+#..... Return shapeName 
+def shapeName(ctrl):
+	try:
+		ctrlShape = mc.listRelatives( ctrl , s = True )[ 0 ]
+		return ctrlShape
+	except:
+		print('There are no shape name to return.')
+		pass
 
 
 

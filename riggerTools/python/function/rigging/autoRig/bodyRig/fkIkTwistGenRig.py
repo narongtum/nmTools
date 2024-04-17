@@ -184,17 +184,22 @@ def fkIkTwistGenRig(
 
 
 
-	# Adjust rotate order
+	#... Adjust rotate order
 	upper_bJnt.rotateOrder = rotOrder
 	middle_bJnt.rotateOrder = rotOrder
 	lower_bJnt.rotateOrder = rotOrder
 
+	#... Parent joint
 	middle_bJnt.parent( upper_bJnt )
 	lower_bJnt.parent( middle_bJnt )
-	lower_bJnt.attr('segmentScaleCompensate').value = 0
+
+
 
 	# Parent it to prior joint
 	upper_bJnt.parent( priorJnt )
+
+
+
 
 
 
@@ -304,10 +309,18 @@ def fkIkTwistGenRig(
 
 
 
-	#... freeze bind joint
+	#... freeze bind joint (Why freeze scale seqment is turn on again)
 	upper_bJnt.freeze()
 	middle_bJnt.freeze()
 	lower_bJnt.freeze()
+
+	#... Disable Segment scale conpensate
+	upper_bJnt.attr('segmentScaleCompensate').value = 0
+	middle_bJnt.attr('segmentScaleCompensate').value = 0
+	lower_bJnt.attr('segmentScaleCompensate').value = 0
+
+
+
 
 
 
@@ -358,6 +371,7 @@ def fkIkTwistGenRig(
 	upper_fkJnt.rotateOrder = rotOrder
 	middle_fkJnt.rotateOrder = rotOrder
 	lower_fkJnt.rotateOrder = rotOrder
+
 
 
 
@@ -484,7 +498,6 @@ def fkIkTwistGenRig(
 	WorldGrp_orientCons.name = part  + type + side+ 'WorldGrp_orientCons'
 	ZroGrp_orientCons.name = part  + type + side+ 'ZroGrp_orientCons'
 	reverseNode_rev.name = part  + type + side+ 'ZroGrpOrientCons_rev'
-
 
 
 
@@ -1142,27 +1155,33 @@ def fkIkTwistGenRig(
 	# misc.parentMatrix( lower_buffJnt.name , lower_bJnt.name , mo = True, t = True, r = True, s = True)
 
 
+
 	# # # # # # # # # # # # # # # #
 	# START Parent and Scale Cons buffer joint >>> bind joint
 	# # # # # # # # # # # # # # # # # # # #
 	region = region.capitalize()
 
-	upperTwist_parCons = core.parentConstraint( follow_grp[1] , upper_bJnt.name   )
+	upperTwist_parCons = core.parentConstraint( follow_grp[1] , upper_bJnt.name, mo = True   )
 	upperTwist_parCons.name = nameSpace + 'upper' + region +'Twist'+ side + '_parCons'
 	
-	upperTwist_scalCons = core.scaleConstraint( follow_grp[1] , upper_bJnt.name   )
+	#... for debug
+	# mc.select(follow_grp[1] ,r=1)
+	# mc.error('WHAT')
+
+	#... Add mo for make bind joint not have rotate value
+	upperTwist_scalCons = core.scaleConstraint( follow_grp[1] , upper_bJnt.name, mo = True   )
 	upperTwist_scalCons.name = nameSpace + 'upper' + region +'Twist'+ side 
 	upperTwist_scalCons.suffix
 
-	midTwist_parCons = core.parentConstraint( middle_buffJnt.name , middle_bJnt.name   )
+	midTwist_parCons = core.parentConstraint( middle_buffJnt.name , middle_bJnt.name, mo = True   )
 	midTwist_parCons.name = nameSpace + 'mid' + region +'Twist'+ side + '_parCons'
-	midTwist_scalCons = core.scaleConstraint( middle_buffJnt.name , middle_bJnt.name   )
+	midTwist_scalCons = core.scaleConstraint( middle_buffJnt.name , middle_bJnt.name, mo = True   )
 	midTwist_scalCons.name = nameSpace + 'mid' + region +'Twist'+ side 
 	midTwist_scalCons.suffix
 
-	lwrTwist_parCons = core.parentConstraint( lower_buffJnt.name , lower_bJnt.name   )
+	lwrTwist_parCons = core.parentConstraint( lower_buffJnt.name , lower_bJnt.name, mo = True   )
 	lwrTwist_parCons.name = nameSpace + 'lwr' + region +'Twist'+ side + '_parCons'
-	lwrTwist_scalCons = core.scaleConstraint( lower_buffJnt.name , lower_bJnt.name   )
+	lwrTwist_scalCons = core.scaleConstraint( lower_buffJnt.name , lower_bJnt.name, mo = True   )
 	lwrTwist_scalCons.name = nameSpace + 'lwr' + region +'Twist'+ side 
 	lwrTwist_scalCons.suffix
 
@@ -1217,4 +1236,5 @@ def fkIkTwistGenRig(
 	#... Add ikhZro_grp for SoftIK
 	ikhAll_name = ikhNam, povZro_grp, Loc_grp.name, World_grp.name, ikhZro_grp
 	softIk_name = [lowerIk_ctrl.name]
+
 	return stick_ctrl.name , lower_bJnt.name , middle_bJnt.name , upper_bJnt.name , ikhAll_name ,psStreEndName, softIk_name, fkIkTwistRig_meta

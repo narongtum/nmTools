@@ -214,19 +214,19 @@ class function:
 			mc.parent(rootJnt, w=True)
 
 		ExportLogger.debug('Deleteing skin and bake key to mesh visibility.')
-		if del_mesh:
-			mc.delete(del_mesh)	
+		# if del_mesh:
+		# 	mc.delete(del_mesh)	
 
 
 		try:
 			# Delete Rig GRP
 			mc.delete('rig_grp')
 
-			# Delete geo GRP
-			if mc.objExists('geo_grp'):
-				mc.delete('geo_grp')
-			else:
-				ExportLogger.debug('There are no geo_grp to delete.')
+			# # Delete geo GRP
+			# if mc.objExists('geo_grp'):
+			# 	mc.delete('geo_grp')
+			# else:
+			# 	ExportLogger.debug('There are no geo_grp to delete.')
 
 			
 		except RuntimeError:

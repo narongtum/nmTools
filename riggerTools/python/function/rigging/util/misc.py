@@ -141,14 +141,14 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
 		print('This is naming Site Follow Style')
-		base_name = name.split('_')[0]
-		if base_name[-3:] == 'LFT':
-			side = 'LFT'
-		elif base_name[-3:] == 'RGT':
-			side = 'RGT'
-		else:
-			side = None
-		isLFT = True
+		for_base_name = name.split('_')
+		base_name = '_'.join(first_name[:-1])
+		
+		for each in for_base_name:
+		    if each.endswith('LFT'):
+		        side = 'LFT'
+		    elif each.endswith('RGT'):
+		        side = 'RGT'
 
 	#... return reverse side
 	reverse_side = ''

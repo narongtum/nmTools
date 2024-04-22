@@ -83,74 +83,59 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 
 	if selected:
 		for each in selected:
+			print(selected)
 			
 			each_sel = misc.check_name_style(name = each)
 
 			rawName = each_sel[0]
-			storeNamLst.append( rawName )
-			rawNamLst.append( each )
 
-			for i in range(len(storeNamLst)):
+			# Create  controller
+			child_ctrl = core.Dag( rawName + '_ctrl' )
+			child_ctrl.nmCreateController(ctrlShape)
+			child_ctrl.editCtrlShape( axis = scale * 1.2 )
+			child_ctrl.color = color
+			child_ctrl.rotateOrder = rotateOrder
+			child_ctrl.hideArnoldNode()
 
+			print ('create gimbal controller/n')
+			print (child_ctrl.name)
+			gimbal_ctrl = core.createGimbal( child_ctrl )
+			gimbal_ctrl.hideArnoldNode()
 
-					# Create  controller
-					child_ctrl = core.Dag( storeNamLst[i] + '_ctrl' )
-					child_ctrl.nmCreateController(ctrlShape)
-					child_ctrl.editCtrlShape( axis = scale * 1.2 )
-					child_ctrl.color = color
-					child_ctrl.rotateOrder = rotateOrder
-					child_ctrl.hideArnoldNode()
-
-					print ('create gimbal controller/n')
-					print (child_ctrl.name)
-					gimbal_ctrl = core.createGimbal( child_ctrl )
-					gimbal_ctrl.hideArnoldNode()
-
-					# Create zero group
-					# mc.error(child_ctrl.name)
-					childZro_grp = rigTools.zroGrpWithOffset( child_ctrl )
+			# Create zero group
+			childZro_grp = rigTools.zroGrpWithOffset( child_ctrl )
 
 
-					childZro_grp.matchPosition( rawNamLst[i] )
-					childZro_grp.matchRotation( rawNamLst[i] )
+			childZro_grp.matchPosition( each )
+			childZro_grp.matchRotation( each )
 
-					return_list.append(childZro_grp.name)
-					return_list.append(child_ctrl.name)
-					return_list.append(gimbal_ctrl.name)
-					
-					#... set RotationOrder
-					child_ctrl.rotateOrder = rotateOrder 
-					gimbal_ctrl.rotateOrder = rotateOrder
-					
-					if constraint == True:
-						if matrixConst == False:
-							# Making joint parent of controller
-							joint_parCons = core.parentConstraint( gimbal_ctrl , rawNamLst[i] )
-							joint_parCons.name = storeNamLst[i] + '_parCons'
+			return_list.append(childZro_grp.name)
+			return_list.append(child_ctrl.name)
+			return_list.append(gimbal_ctrl.name)
+			
+			#... set RotationOrder
+			child_ctrl.rotateOrder = rotateOrder 
+			gimbal_ctrl.rotateOrder = rotateOrder
+			
+			if constraint == True:
+				if matrixConst == False:
+					# Making joint parent of controller
+					joint_parCons = core.parentConstraint( gimbal_ctrl , each )
+					joint_parCons.name = rawName + '_parCons'
 
-							joint_ScalCons = core.scaleConstraint( gimbal_ctrl , rawNamLst[i] )
-							joint_ScalCons.name = storeNamLst[i] + '_scalCons'
-						else:
-							print ('type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])type(rawNamLst[i])')
-							print (type(rawNamLst[i]))
-
-							print(gimbal_ctrl)
-							print(rawNamLst[i])
+					joint_ScalCons = core.scaleConstraint( gimbal_ctrl , each )
+					joint_ScalCons.name = rawName + '_scalCons'
+				else:
 
 
-							mtc.parentConMatrix( gimbal_ctrl, rawNamLst[i], mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
-							# misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scaleConstraint)
-
-					else:
-						continue
+					mtc.parentConMatrix( gimbal_ctrl, each, mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
+					# misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scaleConstraint)
 
 		if parentUnder:
-			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected[i]))
-			mc.parent(childZro_grp.name, selected[i])
+			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected))
+			mc.parent(childZro_grp.name, selected)
 
-
-
-
+		
 		return return_list
 	else:
 		mc.warning('Please select something.')
@@ -240,7 +225,7 @@ def createZroGrpWithFlexName(selected):
 
 
 
-# create zero group
+#... create zero group
 def createZroGrp(offset = False):
 
 	if offset == False:

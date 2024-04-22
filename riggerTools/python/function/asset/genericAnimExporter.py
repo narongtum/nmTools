@@ -266,10 +266,11 @@ class function:
 		# MovingJellyLogger.info(fileName)
 
 		# condition of jelly visibility
-		try:
-			mc.select( '*_ply', r = True )
-		except:
-			ExportLogger.info('There are no suffix {0}'.format("*_ply"))
+		
+		# try:
+		# 	mc.select( '*_ply', r = True )
+		# except:
+		# 	ExportLogger.info('There are no suffix {0}'.format("*_ply"))
 				
 		mc.select( rootJnt, add = True)
 

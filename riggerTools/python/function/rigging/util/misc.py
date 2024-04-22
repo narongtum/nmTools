@@ -118,6 +118,7 @@ def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	first_name = name.split('_')
+	side = None
 
 	isLFT = False
 

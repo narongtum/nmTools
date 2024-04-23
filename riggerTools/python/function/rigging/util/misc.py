@@ -86,6 +86,14 @@ reload(mnd)
 
 
 
+def rename_locator():
+	if mc.objExists('locator1'):
+		mc.rename('locator1','rename_something1')
+	if mc.objExists('locator2'):
+		mc.rename('locator2','rename_something2')		
+
+
+
 #... Do not use this 
 #... using skelenton in rigging instead
 

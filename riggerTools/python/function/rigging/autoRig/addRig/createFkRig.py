@@ -228,7 +228,15 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 	# create local / world follwer arg #
 	if localWorld:
-		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrls[0] , rigGrp.name , parentTo , zGrps[0] )
+
+		#... find shape name
+		from function.rigging.util import misc
+		reload(misc)
+
+		ctrl_shape = misc.shapeName(ctrls[0])
+
+																											# where attr occur	[rig_grp_name]	[]
+		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrl_shape , rigGrp.name , parentTo , zGrps[0] )
 		Loc_grp.name = part + 'Local_grp'
 		World_grp.name = part + 'World_grp'
 		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
@@ -313,11 +321,14 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 		elif useParentInstead == True:
 			#... just parent under to it
-			print('#... just parent under to it')
-			print(rigGrp.name)
-			print(priorCtrl)
+			if mc.objExists(priorCtrl):
+				print('#... just parent under to it')
+				print(rigGrp.name)
+				print(priorCtrl)
 
-			mc.parent(rigGrp.name, priorCtrl)
+				mc.parent(rigGrp.name, priorCtrl)
+			else:
+				print('#... do noting pass it.')
 			
 
 
@@ -923,9 +934,6 @@ def checkUnerScore(name):
 
 
 
-
-
-
 #... new function for create fk chain rig with multiple child 
 #... use with temp joint
 def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
@@ -934,9 +942,13 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 						priorJnt = '' 							,
 						side = '' ,ctrlShape = 'circle_ctrlShape' 	 	, 
 						color = 'red' , 
-						curlCtrl = False	):
+						curlCtrl = False,
+						scaleCons = False,
+						#... if useParentInstead priorJnt will be ignore
+						useParentInstead = False,
+						priorCtrl = ''	):
 
-
+	#... priorCtrl will active if 'priorJnt' is None
 	# rigGrp = core.Null()
 	# rigGrp.name = '%sRig%s_grp' % ( name , side )
 
@@ -986,7 +998,7 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 			print ('---------------------------')
 			print ('%s is child for sure' %tmpJnt[num])
 			print ('---------------------------')
-			jnts , zros , gmbls =  _createFkChild( tmpJnt=tmpJnt[num] , nameSpace=nameSpace, ctrlShape=ctrlShape, charScale=charScale, color=color,curlCtrl=curlCtrl ,parentTo = parentTo)
+			jnts , zros , gmbls =  _createFkChild( tmpJnt=tmpJnt[num] , nameSpace=nameSpace, ctrlShape=ctrlShape, charScale=charScale, color=color, curlCtrl=curlCtrl, parentTo = parentTo, scaleCons = True)
 			child_bJnt = jnts[0]
 			zro_grp = zros[0]
 
@@ -996,26 +1008,34 @@ def fkMulChild(	nameSpace = ''  ,  name = 'hair' , parentTo = 'ctrl_grp'  ,
 
 
 
+	if useParentInstead == False:
+		if priorJnt :
+			# Parent root grp of this child
+			print ('---------------------------')
+			print (zroGrp.name)
+			print ('---------------------------')
 
-	if priorJnt :
-		# Parent root grp of this child
-		print ('---------------------------')
-		print (zroGrp.name)
-		print ('---------------------------')
+			
+			zroGrp.parent( parentTo )
+			bJnt.parent( priorJnt )
+			mc.parentConstraint( priorJnt , zroGrp , name = '%sRig%s_psCons' % ( tmpName,side )  ,mo = True )
+			mc.scaleConstraint( priorJnt , zroGrp , name = '%sRig%s_scaleCons' % ( tmpName,side ) ,mo = True)
+
+	else:
+		print ('There are no prior joint using useParentInstead')
+		bJnt.parent( priorJnt )
+		zroGrp.parent( priorCtrl )
+
 
 		
-		zroGrp.parent( parentTo )
-		bJnt.parent( priorJnt )
-		mc.parentConstraint( priorJnt , zroGrp , name = '%sRig%s_psCons' % ( tmpName,side )  ,mo = True )
-		mc.scaleConstraint( priorJnt , zroGrp , name = '%sRig%s_scaleCons' % ( tmpName,side ) ,mo = True)
-	else:
-		pass
+
+
 		
 
 
 
 #... subfunction for fkMulChild
-def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, parentTo ):
+def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, parentTo, scaleCons ):
 	# 7 arg
 	# store var 
 	tmpGrps =[]
@@ -1113,6 +1133,10 @@ def _createFkChild( tmpJnt, nameSpace, ctrlShape, charScale, color, curlCtrl, pa
 		parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
 		parCons.name = '%s%s_psCons'  %(nameSpace, tmpName	)
 		print ('\nParentConstraint ...')
+
+		if scaleCons:
+			scaleCons = core.scaleConstraint( gmbls[num] , bJnts[num]  )
+			scaleCons.name = '%s%s_scaleCons'  %(nameSpace, tmpName	)
 
 	return bJnts , zGrps ,gmbls
 

@@ -224,25 +224,6 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 
 
 
-
-
-	# create local / world follwer arg #
-	if localWorld:
-
-		#... find shape name
-		from function.rigging.util import misc
-		reload(misc)
-
-		ctrl_shape = misc.shapeName(ctrls[0])
-
-																											# where attr occur	[rig_grp_name]	[]
-		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( ctrl_shape , rigGrp.name , parentTo , zGrps[0] )
-		Loc_grp.name = part + 'Local_grp'
-		World_grp.name = part + 'World_grp'
-		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
-		ZroGrp_orientCons.name = part + 'ZroGrp_orientCons'
-		reverseNode_rev.name = part + 'ZroGrpOrientCons_rev'
-
 	# Make curl controller 
 	if curlCtrl:
 		curl_ctrl = core.Dag('%s%s%s%s_ctrl'  %(nameSpace, name,'Curl',side))
@@ -329,6 +310,32 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 				mc.parent(rigGrp.name, priorCtrl)
 			else:
 				print('#... do noting pass it.')
+
+
+	if curlCtrl:
+		localWorld_attr = curlShape_ctrl.name
+	else:
+		#... find shape name
+		
+
+		ctrl_shape = misc.shapeName(ctrls[0])
+
+		localWorld_attr = ctrl_shape
+
+
+	# create local / world follwer arg #
+	if localWorld:
+
+
+
+																										# where attr occur	[rig_grp_name]	[]
+		Loc_grp , World_grp , WorldGrp_orientCons , ZroGrp_orientCons , reverseNode_rev = rigTools.orientLocalWorldCtrl( localWorld_attr , rigGrp.name , parentTo , zGrps[0] )
+		Loc_grp.name = part + 'Local_grp'
+		World_grp.name = part + 'World_grp'
+		WorldGrp_orientCons.name = part + 'WorldGrp_orientCons'
+		ZroGrp_orientCons.name = part + 'ZroGrp_orientCons'
+		reverseNode_rev.name = part + 'ZroGrpOrientCons_rev'
+
 			
 
 

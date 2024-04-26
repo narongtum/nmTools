@@ -10,7 +10,8 @@ from function.rigging.readWriteCtrlSizeData import writeCtrlData as wcd
 reload(wcd)
 
 
-
+from function.rigging.util import misc
+reload(misc)
 
 
 
@@ -32,12 +33,14 @@ class buildUI():
 		if mc.window(self.win, exists=True):
 			mc.deleteUI(self.win)
 		  
-		mc.window( self.win, width = self.widt , widthHeight=(200, 110) )
+		mc.window( self.win, width = self.widt , widthHeight=(200, 140) )
 		mc.columnLayout( adjustableColumn = True )
 		mc.button( label = 'Copy ControllerShape ' , command = self.copyCtrlShape , ann = "Select source and destination.")
 		mc.button( label = 'Flip ControllerX'   	,	command = self.flipCtrlShapeX , ann = "click object and click the button")
 		mc.button( label = 'Flip ControllerY'   	,	command = self.flipCtrlShapeY , ann = "click object and click the button")
 		mc.button( label = 'Flip ControllerZ'   	,	command = self.flipCtrlShapeZ , ann = "click object and click the button")
+		mc.button( label = 'Copy to Opposite'   	,	command = self.copyShapeToOpposite , ann = "click object and click the button")
+
 
 
 		mc.showWindow()
@@ -118,7 +121,23 @@ class buildUI():
 
 
 
-#run()
+	def copyShapeToOpposite(self, sel = None):
+		#.... copy shape control
+		sel = mc.ls(sl=True)[0]
+
+		if sel:
+
+			check = misc.check_name_style(sel)
+
+			#... get another side
+			opposite = sel.replace(check[1],check[-1])
+			try:
+				data = wcd.getShape(sel)	
+				mc.curve( opposite, replace = True,p=data["points"], k=data["knots"], d=data["degree"], per=bool(data["form"]) )
+			except:
+				print ('Error occured: Maybe you should delete curve history.')
+		else:
+			print('There are no selection.')
 
 
 

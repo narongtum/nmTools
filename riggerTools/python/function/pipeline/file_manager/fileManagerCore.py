@@ -297,11 +297,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
 
-	def closeEvent(self, event):
-		# Remove the window instance from the list of open windows
-		self.open_windows.remove(self)
-		# Call the base class closeEvent to ensure proper cleanup
-		super(FileManager, self).closeEvent(event)
+	# def closeEvent(self, event):
+	# 	# Remove the window instance from the list of open windows
+	# 	self.open_windows.remove(self)
+	# 	# Call the base class closeEvent to ensure proper cleanup
+	# 	super(FileManager, self).closeEvent(event)
 		
 	def setupMenuBar(self):
 		file_menu = self.menuFile

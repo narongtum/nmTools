@@ -104,7 +104,8 @@ def neckRig( 	nameSpace = '' ,
 	neckRig_grp.parent( parentTo )
 
 	partName = nameSpace + 'neck'
-	neckLoc_grp , neckWor_grp , neckWorGrp_oriCons , neckZroGrp_oriCons , neckZroGrpOriCons_rev = rigTools.orientLocalWorldCtrl( neck_ctrl , neckRig_grp , parentTo , neckZro_grp , partName )
+	#.... Change ctrl to ctrlShape instead
+	neckLoc_grp , neckWor_grp , neckWorGrp_oriCons , neckZroGrp_oriCons , neckZroGrpOriCons_rev = rigTools.orientLocalWorldCtrl( neck_ctrl.shape , neckRig_grp , parentTo , neckZro_grp , partName )
 	neckLoc_grp.name = nameSpace + 'neckLoc_grp'
 	neckWor_grp.name = nameSpace + 'neckWor_grp'
 	neckWorGrp_oriCons.name = nameSpace + 'neckWorGrp_orientCons'

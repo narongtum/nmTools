@@ -64,7 +64,6 @@ def exportSel( addPath = '\\data\\export\\' ):
 
 	currentPath = currentFolder()
 
-
 	name = mc.ls(sl = True)[0]
 
 	if ':' in name:
@@ -72,22 +71,41 @@ def exportSel( addPath = '\\data\\export\\' ):
 	else:
 		finalName = name
 		
-	#... check file already exists
-	checkPath = currentPath + addPath
-	checkPath_normPath = os.path.normpath(checkPath)
 
-	if os.path.exists(checkPath_normPath):
-		print('There are already exists.')
+	if ifHero() == True:
+		print('\nThis is Hero file.')
+		currentPath = findCurrentPath(step = 'current')
+		checkPath_normPath = os.path.normpath(currentPath)
+
+		if os.path.exists(checkPath_normPath):
+			print('There are already exists.')
+		else:
+			print('Folder not found. Creating it now.')
+			os.makedirs(checkPath_normPath)
+
+		finalPath = currentPath + finalName + '.ma'
+		final_normPath = os.path.normpath(finalPath)
+		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
+		print ('asset has been export at: %s' %final_normPath)
+
 	else:
-		print('Folder not found. Creating it now.')
-		os.makedirs(checkPath_normPath)
+
+		#... check file already exists
+		checkPath = currentPath + addPath
+		checkPath_normPath = os.path.normpath(checkPath)
+
+		if os.path.exists(checkPath_normPath):
+			print('There are already exists.')
+		else:
+			print('Folder not found. Creating it now.')
+			os.makedirs(checkPath_normPath)
 
 
-	finalPath = currentPath + addPath + finalName + '.ma'
+		finalPath = currentPath + addPath + finalName + '.ma'
 
-	final_normPath = os.path.normpath(finalPath)
-	mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
-	print ('asset has been export at: %s' %final_normPath)
+		final_normPath = os.path.normpath(finalPath)
+		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
+		print ('asset has been export at: %s' %final_normPath)
 
 
 
@@ -299,7 +317,7 @@ def ifHero():
 
 	print (splitFolderNam)
 
-	if splitFolderNam == 'hero':
+	if splitFolderNam == 'hero' or splitFolderNam == 'Commit':
 		print ('This is hero file.')
 		return True
 		

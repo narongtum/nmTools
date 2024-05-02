@@ -297,11 +297,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
 
-	def closeEvent(self, event):
-		# Remove the window instance from the list of open windows
-		self.open_windows.remove(self)
-		# Call the base class closeEvent to ensure proper cleanup
-		super(FileManager, self).closeEvent(event)
+	# def closeEvent(self, event):
+	# 	# Remove the window instance from the list of open windows
+	# 	self.open_windows.remove(self)
+	# 	# Call the base class closeEvent to ensure proper cleanup
+	# 	super(FileManager, self).closeEvent(event)
 		
 	def setupMenuBar(self):
 		file_menu = self.menuFile
@@ -2388,9 +2388,9 @@ class SvnMaya:
 def do_local_commit():
 	ngSkin = mc.ls('ngSkinToolsData_*')
 	if ngSkin:
-		from ngSkinTools2.operations import removeLayerData
+		import ngSkinTools2
 		# remove all ngSkinTools custom nodes in a scene
-		removeLayerData.removeCustomNodes()
+		ngSkinTools2.operations.removeLayerData.remove_custom_nodes()
 		FileManagerLog.info('Delete ngSkinTools2...\n')
 	else:
 		FileManagerLog.info('There are no ngSkinTools skipped...\n')

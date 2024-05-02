@@ -1,21 +1,39 @@
 #... using wtAddMatrix for make something like rivet
+#... this is latest file
 
 import maya.OpenMaya as om
 
+from function.rigging.autoRig.base import core
+reload(core)
 
-#... I can't find the old function so write the new one
 
+# # # # # # # # 
+# Gether argument
+# # # # # # # # 
+
+#... I can't find the old function so write the new one number3 
 #... find joint in skinCluster
-#... find weight
-skinCluster='skinCluster16_ACK'
-vtx = 'hero_body01.vtx[1731]'
+skinCluster='sphere_skc'
+vtx = 'body_ply.vtx[899] '
 thresholdValue = 0.001
 
-tgt = 'ctrl_default_space'
-src = 'body_space'
-baseName = 'upperBody'
-tranform_joint = 'upperBody_bJnt'
+#... driven slave child follower or whatever object
+target = 'rivet01_jnt'
+#... Influence object there have a lot of joint in one VTX
+#influence_obj = 'breast01RGT_bJnt'
 
+#.... name for main function
+targetName = core.findBaseName(target)
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # 
+# find vtx influence joint and weight value
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+#... find joint weight
 # influenceVals   = mc.skinPercent(skinCluster, vtx, q=True, v = True, ib = thresholdValue )
 influenceJoint  = mc.skinPercent(skinCluster, vtx, q=True, t=None)
 influenceData   = mc.skinPercent(skinCluster, vtx, q=True, v=True)
@@ -34,32 +52,37 @@ for joint, value in zip(influenceJoint, influenceData):
 		pass
 
 
-#.... Next Create MetaNode for store weight
 
+
+#.... Assign influence joint 
+print( joint_influence_dict.keys() )
+influence_obj = list(joint_influence_dict.keys())
+
+
+
+#.... Next Create MetaNode for store weight
 from function.rigging.autoRig.base import core
 reload(core)
 
-
-meta = core.MetaBlank(src)
-
+#... Store value to meta
+meta = core.MetaBlank(targetName)
 joint_influence_dict
 
 for index, (key, value) in enumerate(joint_influence_dict.items()):
-    print(key)
-    print(value)
-    rIndex = index + 1
-    meta.addAttribute(longName = '{0}_{1}'.format(key,rIndex), dv = value)
-    
+	print(key)
+	print(value)
+	#rIndex = index + 1
+	#meta.addAttribute(longName = '{0}_{1}'.format(key,rIndex), dv = value)
+	meta.addAttribute(longName = '{0}'.format(key), dv = value)
 
 
 
 
+# # # # # # # # 
+# Find offset vector
+# # # # # # # # 
 
-
-
-
-#.... Next find offset vector you can use manual method 
-
+#... Useful function
 def getDagPath(node=None):
 	sel = om.MSelectionList()
 	sel.add(node)
@@ -77,39 +100,119 @@ def getLocalOffset(parent, child):
 
 
 
-	
-mulMtx = '{0}_{1}_mulMtx'.format(tgt,baseName)
+
+for each in influence_obj:
+
+	#... find base name
+	influName = core.findBaseName(each)
+	baseName = influName 
+
+	#... Create offset mult matrix
+
+	#... CreateNode
+	mulMtx = '{0}_offset_mulMtx'.format(baseName)
+	mc.createNode( 'multMatrix', n = mulMtx )
+
+
+	#... get world matrix to [0]
+	parentWorldMatrix = getDagPath(target).inclusiveMatrix()
+	parentWorldMatrix_val = [parentWorldMatrix(i,j) for i in range(4) for j in range(4)]
+	mc.setAttr( mulMtx + '.matrixIn[0]', parentWorldMatrix_val , type = 'matrix')
+
+
+	#... get world matrix to [1]
+	invert_Matrix = getDagPath(each).inclusiveMatrix()
+	invert_Matrix_val = [invert_Matrix.inverse()(i,j) for i in range(4) for j in range(4)]
+	mc.setAttr( mulMtx + '.matrixIn[1]', invert_Matrix_val , type = 'matrix')
+
+
+	#... Next create XFORM for collect value 
+	xform_mulMtx = mc.createNode( 'multMatrix', name = '{0}_xform_mulMtx'.format(baseName))
+	mc.connectAttr('{0}.matrixSum'.format(mulMtx),'{0}.matrixIn[0]'.format(xform_mulMtx))
+	mc.connectAttr('{0}.worldMatrix[0]'.format(each),'{0}.matrixIn[1]'.format(xform_mulMtx))
 
 
 
-localOffset =  getLocalOffset( src, tgt )
-
-offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
-
-# Create
-mc.createNode( 'multMatrix', n = mulMtx )
-#mc.createNode( 'decomposeMatrix', n = dmpMtx )
-#  Set and Connect
-mc.setAttr( mulMtx + '.matrixIn[0]', offMat , type = 'matrix')
-
-
-
-#... Next create xform for collect value 
 
 
 
 
 
-xform_mulMtx = mc.createNode( 'multMatrix', name = '{0}_xform_mulMtx'.format(tranform_joint))
-mc.connectAttr('{0}.matrixSum'.format(mulMtx),'{0}.matrixIn[0]'.format(xform_mulMtx))
-mc.connectAttr('{0}.worldMatrix[0]'.format(tranform_joint),'{0}.matrixIn[1]'.format(xform_mulMtx))
-
-
-
+# # # # # # # # 
+# wtAddMatrix
+# # # # # # # # 
 
 
 
 #... Create wtAddMatrix
-weight_matrix = core.WtAddMatrix(src)
+weight_matrix = core.WtAddMatrix(targetName)
 
 
+
+
+#...Create Invert space for make it static
+#... CreateNode
+invert_name = '{0}_invert'.format(targetName)
+invert_mulMtx = core.MultMatrix(invert_name)
+
+#mc.createNode( 'multMatrix', name = invert_mulMtx )
+
+
+
+
+mc.connectAttr('{0}.matrixSum'.format(weight_matrix),'{0}.matrixIn[0]'.format(invert_mulMtx.name))
+decompost = core.DecomposeMatrix('{0}'.format(targetName))
+invert_mulMtx.attr('matrixSum') >> decompost.attr('inputMatrix')
+
+
+
+
+#... create null grp
+offset_grp = '{0}_offsetGrp'.format(targetName)
+offset_grp = core.Null(offset_grp)
+
+
+#... optional
+# invert_mulMtx.attr('matrixSum') >> offset_grp.attr('offsetParentMatrix')
+
+
+
+
+
+
+
+
+
+#... Assign value from meta to weight node
+#... For each index and key-value pair in the dictionary
+for num, (key, value) in enumerate(joint_influence_dict.items()):
+	print(f"Index: {num}, Key: {key}, Value: {value}")
+	
+	baseName = core.findBaseName(key)
+ 
+	mc.connectAttr('{0}_xform_mulMtx.matrixSum'.format(baseName), '{0}.wtMatrix[{1}].matrixIn'.format(weight_matrix,num))
+	mc.connectAttr('{0}.{1}'.format(meta.name,key), '{0}.wtMatrix[{1}].weightIn'.format(weight_matrix,num))
+	
+	#mc.setAttr('{0}.wtMatrix[0].matrixIn'.format(weight_matrix)
+
+
+
+
+
+#... connect to offset grp
+decompost.attr('outputTranslate') >> offset_grp.attr('translate')
+decompost.attr('outputRotate') >> offset_grp.attr('rotate')
+decompost.attr('outputScale') >> offset_grp.attr('scale')
+
+
+
+
+#.... parent invert to mult matrix just in case
+offset_grp.attr('parentInverseMatrix[0]') >> invert_mulMtx.attr('matrixIn[1]')
+
+
+
+
+
+#... TODO
+# merge matrix * invert parent matrix in one node

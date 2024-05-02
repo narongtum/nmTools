@@ -86,6 +86,14 @@ reload(mnd)
 
 
 
+def rename_locator():
+	if mc.objExists('locator1'):
+		mc.rename('locator1','rename_something1')
+	if mc.objExists('locator2'):
+		mc.rename('locator2','rename_something2')		
+
+
+
 #... Do not use this 
 #... using skelenton in rigging instead
 
@@ -118,6 +126,7 @@ def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	first_name = name.split('_')
+	side = None
 
 	isLFT = False
 
@@ -141,14 +150,14 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
 		print('This is naming Site Follow Style')
-		base_name = name.split('_')[0]
-		if base_name[-3:] == 'LFT':
-			side = 'LFT'
-		elif base_name[-3:] == 'RGT':
-			side = 'RGT'
-		else:
-			side = None
-		isLFT = True
+		for_base_name = name.split('_')
+		base_name = '_'.join(first_name[:-1])
+		
+		for each in for_base_name:
+		    if each.endswith('LFT'):
+		        side = 'LFT'
+		    elif each.endswith('RGT'):
+		        side = 'RGT'
 
 	#... return reverse side
 	reverse_side = ''
@@ -587,12 +596,13 @@ def hideArnoldNode( attr = ['rcurve' ,' cwdth' , 'srate' , 'ai_curve_shaderr' ,'
 
 
 
-# Return shapeName 
+#..... Return shapeName 
 def shapeName(ctrl):
 	try:
 		ctrlShape = mc.listRelatives( ctrl , s = True )[ 0 ]
 		return ctrlShape
 	except:
+		print('There are no shape name to return.')
 		pass
 
 		

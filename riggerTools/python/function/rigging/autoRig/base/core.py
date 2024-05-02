@@ -330,6 +330,30 @@ curl_ctrl.setLineWidth(4)
 
 
 
+#... find base name
+def findBaseName(name):
+    if '_' not in name:
+        return None
+    parts = name.split('_')
+    rawName = '_'.join(parts[:-1])
+    return rawName
+
+
+
+
+
+
+
+
+
+#..... Return shapeName 
+def shapeName(ctrl):
+	try:
+		ctrlShape = mc.listRelatives( ctrl , s = True )[ 0 ]
+		return ctrlShape
+	except:
+		print('There are no shape name to return.')
+		pass
 
 
 

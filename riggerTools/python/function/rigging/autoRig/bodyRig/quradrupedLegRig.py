@@ -503,7 +503,7 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	# Create POV Controller
 	name = nameSpace + tmpPov + legType.capitalize() + side
 	pov_ctrl = core.Dag( name + '_ctrl' )
-	pov_ctrl.nmCreateController('legLFT_pov_ctrlShape')
+	pov_ctrl.nmCreateController(povShape)
 	pov_ctrl.editCtrlShape( axis = charScale * 0.8 )
 	pov_ctrl.setColor('yellow')
 

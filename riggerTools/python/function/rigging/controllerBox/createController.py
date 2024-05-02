@@ -12,7 +12,7 @@ from functools import partial
 from function.rigging.readWriteCtrlSizeData import writeCtrlData as wcd
 reload(wcd)
 # define ctrl LIBRARY path
-SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
+SHAPE_LIBRARY_PATH = 'D:\\sysTools\\nmTools_github\\riggerTools\\python\\function\\rigging\\ctrlSizeLibrary\\'
 
 
 

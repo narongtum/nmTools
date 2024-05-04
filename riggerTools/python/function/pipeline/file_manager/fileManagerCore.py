@@ -1058,6 +1058,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def populate_version_from_open_scene(self, file_path):
+		FileManagerLog.debug('# # # # # # # # # # # # # # # #')
 		#... Mimic the behavior of a user manually clicking on an item in the UI
 		
 		FileManagerLog.debug('	This is file_path >>> {0}'.format(file_path))
@@ -1076,6 +1077,20 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			# Extract the asset and department names
 			asset_name = path_elements[-4]
 			department_name = path_elements[-3]
+
+			#... Extract Project names (updated)
+			project_name = path_elements[2]
+			FileManagerLog.debug('	This is project_name >>> {0}'.format(project_name))
+			FileManagerLog.debug('	[{0}] <<<   >>> [{1}]'.format(project_name,self.project_comboBox.currentText()))
+
+			if project_name != self.project_comboBox.currentText(): #... in case for make can change project with already open scene other project
+				FileManagerLog.debug('	[{0}] <<< is not equal set project to  >>> [{1}]'.format(project_name,self.project_comboBox.currentText()))
+				self.project_comboBox.setCurrentText(self.project_comboBox.currentText())
+			else:
+				FileManagerLog.debug('{0} is same as {1}'.format(project_name,self.project_comboBox.currentText()))
+				pass
+			FileManagerLog.debug('# # # # # # # # # # # # # # # #')
+
 
 			# Convert the desired directory path to a model index
 			FileManagerLog.debug('	922 - This is file_path >>> {0}'.format(file_path))

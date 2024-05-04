@@ -55,6 +55,19 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
+def delete_anim_layer():
+	# Get a list of all animation layers
+	anim_layers = cmds.ls(type='animLayer')
+
+	# Delete each animation layer
+	for anim_layer in anim_layers:
+		if mc.objExists(anim_layer):
+			mc.delete(anim_layer)
+
+
+
+
+
 # ========== # 
 # Export selection at data folder
 

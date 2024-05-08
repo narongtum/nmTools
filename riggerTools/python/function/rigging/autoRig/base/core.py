@@ -332,11 +332,11 @@ curl_ctrl.setLineWidth(4)
 
 #... find base name
 def findBaseName(name):
-    if '_' not in name:
-        return None
-    parts = name.split('_')
-    rawName = '_'.join(parts[:-1])
-    return rawName
+	if '_' not in name:
+		return None
+	parts = name.split('_')
+	rawName = '_'.join(parts[:-1])
+	return rawName
 
 
 
@@ -1283,7 +1283,7 @@ class WtAddMatrix( Node ):
 		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
 		self.autoSuffix()
 
-
+#... Obselet using WtAddMatrixWithChannal instead
 class WtAddMatrixWithVal( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
@@ -1294,6 +1294,16 @@ class WtAddMatrixWithVal( Node ):
 		# self.attr('wt_1') >> self.attr('wtMatrix[1].weightIn')
 		# self.attr('wt_2') >> self.attr('wtMatrix[1].weightIn')
 		self.autoSuffix()
+
+
+class WtAddMatrixWithChannal( Node ):
+	def __init__(self, name, num_cv ):
+		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
+		for num in range(num_cv):
+			self.addAttribute( at = 'float', keyable = True, ln = 'wt_{0}'.format(num)  )
+			print (num)
+		self.autoSuffix()
+		
 
 
 

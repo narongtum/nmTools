@@ -723,11 +723,11 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 		toesTip_ikh.parent(toeRise_ctrl)
 	
 
-
-	
-
-
 	#... End Create wiggling toes  # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+
+
 
 
 
@@ -840,8 +840,7 @@ def bipedLegRigExt(
 						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
 						inputMax = 40, outputMax = 4  )
 
-			print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
-			print ('\n\n\n\n\n')
+
 
 
 	elif creTwistJnt == False:
@@ -877,5 +876,22 @@ def bipedLegRigExt(
 						ikPosi, jnt_grp, footAttr, productionType,ctrlShape,
 						stickNam, lower_bJnt ,middle_bJnt , upper_bJnt , ikhAll_name , stretchEndName_psCon)
 
-		print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
-		print('\n\n\n\n\n')
+
+
+
+	print ('rename _ctrl that not use when use link attr')
+
+	if footAttr:
+		rename_list = ['footOutlegIK{0}_ctrl'.format(side),
+		  'footInlegIK{0}_ctrl'.format(side),
+		  'heelRolllegIK{0}_ctrl'.format(side),
+		  'toeRolllegIK{0}_ctrl'.format(side),
+		  'ballRolllegIk{0}_ctrl'.format(side)]
+
+
+		for each in rename_list:
+			newName = each.replace('_ctrl','_buffCtrl')
+			mc.rename(each, newName)
+
+	print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
+	print('\n\n\n\n\n')

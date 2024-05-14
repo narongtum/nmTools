@@ -1792,7 +1792,8 @@ class Dag( Node ) :
 
 			print('set color')
 		except:
-			mc.error('Please check clashed name.')
+			mc.warning('Please check clashed name.')
+			pass
 	
 
 

@@ -340,6 +340,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			FileManagerLog.debug('There are no extension ?.')
 			os.startfile(file_path)
 
+
+	#... Check open file is version or commit
+	def check_file_status(self):
+		pass
+
 	#... Handle right click for global widget
 	def show_global_widget_explorer(self):
 		asset_path_text = self._get_full_path()		

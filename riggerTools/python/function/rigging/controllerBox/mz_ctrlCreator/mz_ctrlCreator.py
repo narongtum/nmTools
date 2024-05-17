@@ -31,7 +31,7 @@ mz_ccWin = 'mz_ctrlCreatorWin'
 mz_ctrlColor = 'ctrlColor'
 mz_groupsNum = 'groupsNum'
 
-iconPath = r'D:\True_Axion\Tools\riggerTools\image\mz_icons'
+iconPath = r'D:\True_Axion\Tools\mayaTools\image\mz_icons'
 
 # image = iconPath + '\\bullet_interactivePlayback.png'
 #create the window

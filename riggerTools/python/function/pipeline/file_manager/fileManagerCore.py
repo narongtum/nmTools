@@ -10,6 +10,9 @@ from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtCore import QDir, QSortFilterProxyModel
 
+import maya.OpenMaya as om
+import maya.OpenMayaUI as omui
+
 import subprocess
 import sys
 from function.framework.reloadWrapper import reloadWrapper as reload
@@ -308,8 +311,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		toos_menu = self.menuTools
 
 		# Create 'Print A' action and add it to the 'File' menu
-		print_a_action = FileManagerActions.createPrintAAction(self, self.printA)
-		file_menu.addAction(print_a_action)
+		create_thumbnail_action = FileManagerActions.createThumbnailAction(self, self.create_thumbnail)
+		file_menu.addAction(create_thumbnail_action)
 
 		# Create 'Print A' action and add it to the 'File' menu
 		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
@@ -341,9 +344,69 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			os.startfile(file_path)
 
 
-	#... Check open file is version or commit
-	def check_file_status(self):
-		pass
+
+	def create_thumbnail(self, fileType='png', width=256, height=256, fileName = 'thumb'):
+		maya_file_path = mc.file( query=True , sn=True )
+
+		if maya_file_path:
+
+			folder_path = os.path.dirname(maya_file_path)
+
+			parent_folder = os.path.basename(folder_path)
+
+		#... There is in 'VERSION' folder
+		if parent_folder == STATIC_FOLDER[1]:
+			FileManagerLog.debug("The folder containing named 'Version'.")
+
+			folder_path = os.path.dirname(folder_path)
+			asset_path = os.path.dirname(folder_path)
+
+			# Department path
+			asset_name = os.path.basename(asset_path)
+
+			if os.path.exists(os.path.join(asset_path, 'data.json')):
+				FileManagerLog.debug('This file is valid Go on ')
+				save_path = asset_path
+
+
+		#... There is in 'COMMIT' folder
+		elif parent_folder == STATIC_FOLDER[2]:
+			FileManagerLog.debug("	Their is Commit file.")
+
+			#... check is global or local commit file
+			back_folder_path = os.path.dirname(folder_path)
+			FileManagerLog.debug("	back_folder_path path is >>> {0}".format(back_folder_path))
+
+			asset_name = os.path.dirname(back_folder_path)
+
+
+			#... Check valid data
+			if os.path.exists(os.path.join(back_folder_path, 'data.json')):
+
+
+				#... This is global commit
+				FileManagerLog.debug('	855-This file is Global Commit >>> {0}'.format(back_folder_path))
+				save_path = back_folder_path
+
+
+		# Create Thumbnail at current maya file
+		# final_save_path = '{0}{1}.{2}'.format(save_path, fileName, fileType)
+
+		save_path = os.path.normpath(os.path.join(save_path,'{0}.{1}'.format(fileName, fileType)))
+		import maya.OpenMaya as om
+		import maya.OpenMayaUI as omui
+		mimage = om.MImage()
+		view = omui.M3dView.active3dView()
+		view.readColorBuffer(mimage, True)
+
+		# Resize the image to the specified width and height
+		mimage.resize(width, height)
+
+		mimage.writeToFile(save_path, fileType)
+		print('Thumbnail has been created at: {0}'.format(save_path))
+
+
+		
 
 	#... Handle right click for global widget
 	def show_global_widget_explorer(self):
@@ -488,7 +551,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			
 
-	# Show Context manu for Version widget
+	# Show Context menu for Version widget
 	def show_local_version_explorer(self):
 
 		asset_path_text = self._get_full_path()
@@ -2405,6 +2468,33 @@ class SvnMaya:
 
 
 
+
+
+
+
+def createThumbnail(fileType='png', width=256, height=256 ,currentPath='',fileName = 'thumb'):
+	# Create Thumbnail at current maya file
+	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, fileType)
+	
+	mimage = om.MImage()
+	view = omui.M3dView.active3dView()
+	view.readColorBuffer(mimage, True)
+
+	# Resize the image to the specified width and height
+	mimage.resize(width, height)
+
+	mimage.writeToFile(imageFile, fileType)
+	print('Thumbnail has been created at: {0}'.format(imageFile))
+
+
+
+
+
+
+
+
+
+
 def do_local_commit():
 	ngSkin = mc.ls('ngSkinToolsData_*')
 	if ngSkin:
@@ -2477,8 +2567,8 @@ def do_global_commit():
 
 class FileManagerActions:
 	@staticmethod
-	def createPrintAAction(parent, callback):
-		print_a_action = QtWidgets.QAction("Print A", parent)
+	def createThumbnailAction(parent, callback):
+		print_a_action = QtWidgets.QAction("Create thumbnail", parent)
 		print_a_action.triggered.connect(callback)
 		return print_a_action
 

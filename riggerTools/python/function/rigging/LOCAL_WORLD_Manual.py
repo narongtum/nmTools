@@ -2,13 +2,13 @@ from function.rigging.autoRig.base import core
 reload(core)
 
 
-zroGrp = 'spine03Zro_grp'
-ctrl = 'spine03_ctrl' 
-localObj = 'spine02_gmbCtrl' 
-worldObj = 'ctrl_grp'  
-baseGrp = 'spine03Offset_grp' 
-bodyPart = 'spine03' 
-attrOccur = 'spine03_ctrlShape'
+zroGrp = 'hairRear01RGTZro_grp'
+ctrl = 'hairRear01RGT_ctrl' 
+localObj = 'head01_gmbCtrl' #... parent thing that want to assign in local space
+worldObj = 'ctrl_grp'   #... parent thing that want to assign in world space
+baseGrp = 'hairRear01RGTWorld_grp' 
+bodyPart = 'hairRear01RGT' 
+attrOccur = 'hairRearCurlRGT_ctrlShape'
 
 
 
@@ -76,5 +76,5 @@ worGrp.parent( localObj )
 
 
 core.clearSel()
-
+print('\n# # #DONE')
 #return locGrp , worGrp , worldGrpCons , baseGrpBaseCons , reverseNode_rev

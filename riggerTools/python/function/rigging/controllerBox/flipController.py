@@ -130,7 +130,7 @@ class buildUI():
 			check = misc.check_name_style(sel)
 
 			#... get another side
-			opposite = sel.replace(check[1],check[-1])
+			opposite = sel.replace(check[1],check[2])
 			try:
 				data = wcd.getShape(sel)	
 				mc.curve( opposite, replace = True,p=data["points"], k=data["knots"], d=data["degree"], per=bool(data["form"]) )

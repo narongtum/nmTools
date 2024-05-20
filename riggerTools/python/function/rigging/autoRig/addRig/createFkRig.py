@@ -378,12 +378,22 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 					color = 'red' , curlCtrl = False ,suffix = '_bJnt',parentToPriorJnt = False,
 					parentMatrix = False, rotateOrder = 'zxy'):
 
-	
-	''' priorJnt can be False then it will be parent to world instead '''
-	part = name + side
 	# Create main group
 	rigGrp = core.Null()
-	rigGrp.name = '%sRig%s_grp' % ( name , side )
+	
+	''' priorJnt can be False then it will be parent to world instead '''
+
+	#... check name stype
+	style_isDefault = misc.check_name_style(tmpJnt[0])[3]
+
+	if style_isDefault == True:
+		part = name + side
+		rigGrp.name = '%sRig%s_grp' % ( name , side )
+
+	
+
+
+
 
 	# Creatre empyt for append name
 	ctrls = []
@@ -392,6 +402,8 @@ def createFkRig_direct(	nameSpace = ''  ,  name = 'ear' , parentTo = 'ctrl_grp' 
 	zGrps = []
 	bJnts = []
 	ofGrps = []
+
+
 
 	# For loop in tmpJnt 
 	for  num  in range( 0 , ( len( tmpJnt )  ) ):

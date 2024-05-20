@@ -20,16 +20,16 @@ How to run:
 
 import pymel.core as pm
 
-import rr_sub_curves_addAttributes
-import rr_sub_curves_colorOptions
-import rr_sub_curves_curveCreation
-import rr_sub_curves_lockHide
+# import rr_sub_curves_addAttributes
+# import rr_sub_curves_colorOptions
+# import rr_sub_curves_curveCreation
+# import rr_sub_curves_lockHide
 
 
-# from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_addAttributes
-# from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_colorOptions
-# from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_curveCreation
-# from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_lockHide
+from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_addAttributes
+from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_colorOptions
+from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_curveCreation
+from function.rigging.Rigbox_Reborn_Curves_Tool import rr_sub_curves_lockHide
 
 
 window_name = 'rr_control_window'

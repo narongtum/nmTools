@@ -126,30 +126,33 @@ def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	first_name = name.split('_')
-	side = None
+	if len(first_name) == 1:
+		mc.error('Naming is not have underscore.')
 
-	isLFT = False
+	side = None
+	isDefault = True
 
 	#... 1. Capital Lead Style  'L_something_something_ext'
 
 	if len(first_name[0]) == 1:
-		print('\nThis is naming C_Capital_Lead Style')
+		print('\nThis is naming C_R_L_ style')
 		base_name = '_'.join(first_name[:-1])
 
 		#... check side condition
 		if first_name[0] == 'L':
-			side = 'LFT'
+			side = 'L'
 		elif first_name[0] == 'R':
-			side = 'RGT'
+			side = 'R'
 		elif first_name[0] == 'C':
-			side = 'CEN'
-
+			side = 'C'
 		else:
 			side = None
 
+
+
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
-		print('This is naming Site Follow Style')
+		print('This is naming LFT RGT Style')
 		for_base_name = name.split('_')
 		base_name = '_'.join(first_name[:-1])
 		
@@ -174,9 +177,11 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	else:
 		reverse_side = None
 
+	isDefault = False
+
 
 	print('Base name is: {0}\nSide name is: {1}'.format(base_name, side))
-	return(base_name, side, isLFT, reverse_side)
+	return(base_name, side, reverse_side, isDefault)
 
 
 
@@ -1011,15 +1016,15 @@ def snapPointCon(source ,target):
 #####################################################
 #      constraint pair between proxy joint and bind joint old(naming)               
 #####################################################
-def constraintProxyJnt( child = 'bind_jnt', parent = 'proxy_jnt' ):
-	naming = '*_' + parent
-	proxyList = mc.ls( naming )
+# def constraintProxyJnt( child = 'bind_jnt', parent = 'proxy_jnt' ):
+# 	naming = '*_' + parent
+# 	proxyList = mc.ls( naming )
 	
-	for each in proxyList:
-		spEach = each.split('_')
-		childNam = spEach[0] + '_' + child
-		mc.parentConstraint( each , childNam , maintainOffset = True)
-		mc.scaleConstraint( each , childNam , maintainOffset = True)
+# 	for each in proxyList:
+# 		spEach = each.split('_')
+# 		childNam = spEach[0] + '_' + child
+# 		mc.parentConstraint( each , childNam , maintainOffset = True)
+# 		mc.scaleConstraint( each , childNam , maintainOffset = True)
 
 
 
@@ -1031,36 +1036,40 @@ def constraintProxyJnt( child = 'bind_jnt', parent = 'proxy_jnt' ):
 #####################################################
 #      multiple constraint new condition           
 #####################################################
-def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
-	naming = '*_' + parent
-	proxyList = mc.ls( naming )
+# def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
+# 	naming = '*_' + parent
+# 	proxyList = mc.ls( naming )
 	
-	for each in proxyList:
-		spEach = each.split('_')
-		childNam = spEach[0] + '_' + child
-		mc.parentConstraint( each , childNam , maintainOffset = True)
-		mc.scaleConstraint( each , childNam , maintainOffset = True)
+# 	for each in proxyList:
+# 		spEach = each.split('_')
+# 		childNam = spEach[0] + '_' + child
+# 		mc.parentConstraint( each , childNam , maintainOffset = True)
+# 		mc.scaleConstraint( each , childNam , maintainOffset = True)
 
-	print('DONE')
+# 	print('DONE')
 
 
 
+# ========== # 
+# move to constraint module
+# ========== #
 
 #... constraint parent suffix name to bind suffix name
-def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
-	namLst = []
-	for each in namJntList:
-		fitstNam = check_name_style(each)[0]
-		namLst.append( fitstNam )
+
+# def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
+# 	namLst = []
+# 	for each in namJntList:
+# 		fitstNam = check_name_style(each)[0]
+# 		namLst.append( fitstNam )
 
 	
-	for each in namLst:
-		parentNam = each + '_' + parent
-		childNam = each + '_' + child
-		mc.parentConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_psCon')
-		mc.scaleConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_scCon')
+# 	for each in namLst:
+# 		parentNam = each + '_' + parent
+# 		childNam = each + '_' + child
+# 		mc.parentConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_psCon')
+# 		mc.scaleConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_scCon')
 
-		print ('%s object has been create.' %each)
+# 		print ('%s object has been create.' %each)
 
 
 
@@ -1357,7 +1366,10 @@ def parentMatrix( src, tgt, mo = True, translate = True, rotate = True, scale = 
 	print (' # # # # # # # # #  Matrix parent complete # # # # # # # # # # # #  \n')
 
 
-def del_sel_matrix(selected = []):
+
+#.... Cut To Matrix Constraint
+
+def del_selected_matrix(selected = []):
 	#... Get short name
 	mulMtx = mnd.get_short_name('multMatrix')
 	quat = mnd.get_short_name('quatToEuler')

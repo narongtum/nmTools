@@ -4,7 +4,7 @@ Title				: adjust all about controller
 Description			: do all about controller
 Author				: narongtum
 Date				: 19 aug 2018
-Notes				: strange controller is fine base ctrl like 'circle' is maya error
+Notes				: This is OUTDATE module merge with createFkRig
 
 createController()
 createZroGrp()

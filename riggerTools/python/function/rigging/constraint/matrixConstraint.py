@@ -64,6 +64,163 @@ reload(misc)
 
 
 
+
+
+
+#.... Cut from Util.Misc
+
+def del_selected_matrix(selected = []):
+	#... Get short name
+	mulMtx = mnd.get_short_name('multMatrix')
+	quat = mnd.get_short_name('quatToEuler')
+	deComp = mnd.get_short_name('decomposeMatrix')
+
+	for each in selected:
+		list_sel = mc.listConnections(each, destination=True)
+
+		for each in list_sel:
+			try:
+				# .. because after delete it will can't find the rest
+				# if each.endswith('_dmpMtx'):
+					# logger.MayaLogger.info('Delete %s' %each)
+					# mc.delete(each)
+				if each.endswith(mulMtx):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+				if each.endswith(quat):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+				if each.endswith(deComp):
+					logger.MayaLogger.info('Delete %s' %each)
+					mc.delete(each)
+
+			except:
+				print('There are no matrix node to delete.')
+	print('Delete Done...')
+
+
+def delMatrixConst(selected):
+	name = rawName(selected)
+	mc.delete('{0}_bJnt_mulMtx'.format(name[0]))
+	print (' # # # # # # # # #  Delete matrix parent complete # # # # # # # # # # # #  \n')
+
+
+
+
+
+
+# misc.parentSufficMatrix( child = 'bJnt' , parent = 'pxyJnt' , mo = True, w = 1, t = True, r = True, s = True )
+def parentSufficMatrix( child = '' , parent = '' , mo = True, w = 1, t = True, r = True, s = True):
+	logger.MayaLogger.info('Start of %s module' %__name__)
+	# constraint use prefix suffix only #
+	naming = '*_' + parent
+	proxyList = mc.ls( naming )
+
+	for each in proxyList:
+		spEach = each.split('_')
+		childNam = spEach[0] + '_' + child
+		parentMatrix( each , childNam, mo = mo, translate = t, rotate = r, scale = s)
+		print ('parent %s >>> %s' %(each , childNam))
+
+	print ('\t\t\t### constraint matrix complete ###')
+
+# parent multi martix
+def parentMulMatrix( src, tgt, mo = True, t = True, r = True, s = True):
+	''' parent constraint one source but multiple target matrix'''
+	
+	# Name
+	mulMtx = tgt + '_mulMtx'
+	dmpMtx = tgt + '_dmpMtx'
+	wtMtx = tgt + '_wtMtx'
+
+	# Create
+	mc.createNode( 'multMatrix', n = mulMtx )
+	mc.createNode( 'decomposeMatrix', n = dmpMtx )
+	mc.createNode( 'wtAddMatrix', n = wtMtx )
+
+	# For many parent
+	for p in range(len(src)):
+		parent = src[p]
+		#parentName = parent.split('_')[0]
+		offsetMtx = tgt + '_' + parent + 'Offset_mulMtx'
+
+		# Create
+		mc.createNode( 'multMatrix', n = offsetMtx )
+
+		# preFUNC
+		localOffset =  getLocalOffset( parent, tgt )
+		offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+
+		#  Set and Connect
+		if mo == True:
+
+			mc.setAttr( offsetMtx + '.matrixIn[0]', offMat , type = 'matrix')
+
+		mc.connectAttr( parent + '.worldMatrix[0]', offsetMtx + '.matrixIn[1]' )
+		mc.connectAttr( offsetMtx + '.matrixSum', wtMtx + '.wtMatrix[%d].matrixIn'%(p))
+		if p == 0:
+			mc.setAttr( wtMtx + '.wtMatrix[%d].weightIn'%(p), 1)
+
+
+	# Main wt connect
+	mc.connectAttr( wtMtx + '.matrixSum',  mulMtx + '.matrixIn[0]' )
+
+	# Find out Origin Parent
+	if mc.pickWalk( tgt , d = 'up')[0] == tgt:
+		print ("I'm World Already")
+	elif mc.pickWalk( tgt, d = 'up')[0] != tgt:
+		world = mc.pickWalk( tgt, d = 'up')[0]
+		mc.connectAttr( world + '.worldInverseMatrix[0]', mulMtx + '.matrixIn[1]' )
+
+	# Final Connect
+	mc.connectAttr( mulMtx + '.matrixSum', dmpMtx + '.inputMatrix' )
+	# 
+	if r == True:
+		rotateOffset(tgt, dmpMtx, mulMtx)
+	if t == True:
+		mc.connectAttr( dmpMtx + '.outputTranslate', tgt + '.translate')
+	if s == True:
+		mc.connectAttr( dmpMtx + '.outputScale', tgt + '.scale') 
+	
+	return wtMtx
+
+
+# ex: parentThis()
+def parentThis( mo = True, t = True, r = True, s = True):
+	''' select source and targer '''
+	sel = mc.ls(sl=1)
+	if len(sel) > 2:
+		child = sel[-1]        
+		del sel[-1]
+		parentMulMatrix( src = sel , tgt = child,  mo = mo, t = t, r = r, s = s)
+		print (sel)
+	elif len(sel) == 2:
+		print (sel)
+		parentMatrix( sel[0] , sel[-1],  mo = mo, t = t, r = r, s = s)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #... Util for qury offset matrix
 
 

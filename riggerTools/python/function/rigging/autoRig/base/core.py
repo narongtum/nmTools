@@ -333,7 +333,7 @@ curl_ctrl.setLineWidth(4)
 #... find base name
 def findBaseName(name):
 	if '_' not in name:
-		return None
+		return name
 	parts = name.split('_')
 	rawName = '_'.join(parts[:-1])
 	return rawName

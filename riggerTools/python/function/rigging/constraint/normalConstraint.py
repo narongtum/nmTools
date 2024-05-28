@@ -2,22 +2,49 @@
 # move from rigging.misc
 # ========== #
 
+'''
+
 from function.rigging.constraint import normalConstraint as nmCon
 reload(nmCon)
 
+'''
+
+import maya.cmds as mc
+
+from function.rigging.util import misc
+from function.framework.reloadWrapper import reloadWrapper as reload
+reload(misc)
 
 #####################################################
 #      constraint pair between proxy joint and bind joint old(naming)               
 #####################################################
-def constraintProxyJnt( child = 'bind_jnt', parent = 'proxy_jnt' ):
+def constraintProxyJnt( child = 'bJnt', parent = 'pxyJnt' ):
 	naming = '*_' + parent
 	proxyList = mc.ls( naming )
 	
 	for each in proxyList:
-		spEach = each.split('_')
-		childNam = spEach[0] + '_' + child
+		# spEach = each.split('_')
+		baseName = misc.check_name_style(each)[0]
+		childNam = baseName + '_' + child
 		mc.parentConstraint( each , childNam , maintainOffset = True)
 		mc.scaleConstraint( each , childNam , maintainOffset = True)
+	print('DONE')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

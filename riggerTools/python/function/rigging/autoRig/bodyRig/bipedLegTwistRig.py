@@ -638,11 +638,15 @@ def bipedLegRigTws(
 		print '# Connect'
 		# footBehav = ['footOut','footIn','heelRoll','toeRoll','ballRoll','ankle']	
 
-
-		pos_cnd = core.Condition(rawName[3] + footBehav[0] + 'PosVal_cnd')
-		neg_cnd = core.Condition(rawName[3] + footBehav[1] + 'NegVal_cnd')
+		pos_cnd = core.Condition('{0}{1}PosVal{2}_cnd'.format(rawName[3],footBehav[0],side))
+		# pos_cnd = core.Condition(rawName[3] + footBehav[0]+'PosVal{0}_cnd'.format(side))
+		neg_cnd = core.Condition('{0}{1}NegVal{2}_cnd'.format(rawName[3],footBehav[0],side))
+		# neg_cnd = core.Condition(rawName[3] + footBehav[1]+'NegVal{0}_cnd'.format(side))
 		minus_mdl = core.MultiDoubleLinear(rawName[3] + footBehav[1] + 'MinusVal')
 
+		#... set if false to zero
+		pos_cnd.attr('colorIfFalseR').value = 0
+		neg_cnd.attr('colorIfFalseR').value = 0
 
 
 		# footout case

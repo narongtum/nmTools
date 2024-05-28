@@ -83,11 +83,11 @@ COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 				'green'     : 14 ,          'none'          : 0     }
 
 
-# for arg message in arm and leg function
+#... For arg message in arm and leg function
 MESSAGE_dict = { 	'listString': ('region' , 'location'), # location get foot or angle only
 					'listbJnt' :  ('stick' , 'upJnt' , 'midJnt' , 'lowJnt'), 
 					'listCtrl' :  ('upFkCtrl' , 'midFkCtrl' , 'lowFkCtrl' , 'offset'), 
-					'listPov'  :  ('pov' , 'ikCtrl' )							}
+					'listPov'  :  ('pov' , 'ikCtrl', 'ikRootCtrl' )							}
 
 
 rotOrder_dict = {		'xyz'  : 0   ,

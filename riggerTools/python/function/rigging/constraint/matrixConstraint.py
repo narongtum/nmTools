@@ -117,9 +117,12 @@ def parentSufficMatrix( child = '' , parent = '' , mo = True, w = 1, t = True, r
 	proxyList = mc.ls( naming )
 
 	for each in proxyList:
-		spEach = each.split('_')
-		childNam = spEach[0] + '_' + child
-		parentMatrix( each , childNam, mo = mo, translate = t, rotate = r, scale = s)
+		#... using condition
+		baseName = misc.check_name_style(each)[0]
+		# spEach = each.split('_')
+		
+		childNam = baseName + '_' + child
+		parentConMatrix( each , childNam, mo = mo, translate = t, rotate = r, scale = s)
 		print ('parent %s >>> %s' %(each , childNam))
 
 	print ('\t\t\t### constraint matrix complete ###')

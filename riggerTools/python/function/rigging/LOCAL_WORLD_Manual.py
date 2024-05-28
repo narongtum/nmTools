@@ -1,80 +1,82 @@
 from function.rigging.autoRig.base import core
 reload(core)
 
+# Define the necessary variables
+zro_grp = 'hairRear01RGTZro_grp'  # Zero out group
+ctrl = 'hairRear01RGT_ctrl'
+local_obj = 'head01_gmbCtrl'  # Parent object to assign in local space
+world_obj = 'ctrl_grp'  # Parent object to assign in world space
+base_grp = 'hairRear01RGTOffset_grp'  # Offset group
+body_part = 'hairRear01RGT'
+attr_occur = 'hairRearCurlRGT_ctrlShape'
 
-zroGrp = 'hairRear01RGTZro_grp'
-ctrl = 'hairRear01RGT_ctrl' 
-localObj = 'head01_gmbCtrl' #... parent thing that want to assign in local space
-worldObj = 'ctrl_grp'   #... parent thing that want to assign in world space
-baseGrp = 'hairRear01RGTWorld_grp' 
-bodyPart = 'hairRear01RGT' 
-attrOccur = 'hairRearCurlRGT_ctrlShape'
+# Function to check if an object exists
+def check_obj_exists(obj_name):
+    if not core.objExists(obj_name):
+        raise ValueError(f"Object '{obj_name}' does not exist.")
 
+# Check if all necessary objects exist
+try:
+    check_obj_exists(zro_grp)
+    check_obj_exists(local_obj)
+    check_obj_exists(world_obj)
+    check_obj_exists(base_grp)
+    check_obj_exists(attr_occur)
+except ValueError as e:
+    print(e)
+    raise SystemExit(f"Error: {e}")
 
+try:
+    # Create a null group under zero group
+    local_world_grp = core.Null(body_part + 'LocalWorld_grp')
+    local_world_grp.snap(base_grp)
+    local_world_grp.parent(zro_grp)
 
+    # Parent control under it
+    base_grp = core.Dag(base_grp)
+    base_grp.parent(local_world_grp)
 
-#... create null grp under zro grp
+    # Create and snap local and world groups
+    loc_grp = core.Null()
+    wor_grp = core.Null()
+    loc_grp.snap(base_grp)
+    wor_grp.snap(base_grp)
 
-localWorld_grp = core.Null(bodyPart + 'LocalWorld_grp')
-localWorld_grp.snap( baseGrp )
-localWorld_grp.parent(zroGrp)
+    # Assign names to local and world groups
+    if body_part:
+        loc_grp.name = body_part + '_local'
+        wor_grp.name = body_part + '_world'
+    else:
+        loc_grp.name = 'local'
+        wor_grp.name = 'world'
 
-#... parent ctrl under it
-baseGrp = core.Dag(baseGrp)
+    # Orient constraints
+    world_grp_cons = core.orientConstraint(world_obj, wor_grp, mo=True)
+    base_grp_base_cons = core.orientConstraint(loc_grp, wor_grp, local_world_grp)
+    reverse_node_rev = core.Reverse()
+    reverse_node_rev.name = body_part + '_rev'
 
-baseGrp.parent(localWorld_grp)
+    # Set up attributes for switching between local and world space
+    controller_shape = core.Dag(attr_occur)
+    attr = 'localWorld'
+    controller_shape.addAttribute(ln=attr, k=True, min=0, max=1)
 
-# Switching world and local object.
-locGrp = core.Null()
-worGrp = core.Null()
-locGrp.snap( baseGrp )
-worGrp.snap( baseGrp )
-# Store null1 null2
-oldLoc = str( locGrp.name )
-oldWor = str( worGrp.name )
+    # Connect attributes
+    controller_shape.attr(attr) >> base_grp_base_cons.attr('w1')
+    controller_shape.attr(attr) >> reverse_node_rev.attr('ix')
+    reverse_node_rev.attr('ox') >> base_grp_base_cons.attr('w0')
 
-if bodyPart == None:
-	# Assign new name
-	locGrp.name =  'local'
-	worGrp.name =  'world'
-else:
-	locGrp.name = bodyPart +'_local'
-	worGrp.name = bodyPart + '_world'
+    # Parent local and world groups
+    loc_grp.parent(local_obj)
+    wor_grp.parent(local_obj)
 
+    # Clear selection and indicate completion
+    core.clearSel()
+    print('\n# # # DONE')
 
+    # Optional: Return the created objects if needed
+    # return loc_grp, wor_grp, world_grp_cons, base_grp_base_cons, reverse_node_rev
 
-# Orient constraint
-worldGrpCons = core.orientConstraint( worldObj , worGrp , mo = True )
-baseGrpBaseCons = core.orientConstraint( locGrp , worGrp , localWorld_grp )
-reverseNode_rev = core.Reverse()
-reverseNode_rev.name = bodyPart + '_rev'
-
-# Change name back to null1 null2 for return
-#locGrp.name = oldLoc
-#worGrp.name = oldWor
-
-
-controller_shape = core.Dag( attrOccur )
-
-
-attr = 'localWorld'
-controller_shape.addAttribute( ln = attr , k = True , min = 0 , max = 1 )
-controller_shape.attr(attr) >> baseGrpBaseCons.attr('w1')
-# i = input , o = output
-controller_shape.attr(attr) >> reverseNode_rev.attr('ix')
-reverseNode_rev.attr( 'ox' ) >> baseGrpBaseCons.attr( 'w0' )
-
-
-
-locGrp.parent( localObj )
-worGrp.parent( localObj )
-
-#... if not do this is not work why??
-#locGrp.parent( 'spine03Zro_grp' ) #<<< this will cause cycle
-#worGrp.parent( 'spine03Zro_grp' )
-
-
-
-core.clearSel()
-print('\n# # #DONE')
-#return locGrp , worGrp , worldGrpCons , baseGrpBaseCons , reverseNode_rev
+except Exception as e:
+    print(f"An error occurred: {e}")
+    raise

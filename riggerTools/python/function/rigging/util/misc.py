@@ -86,6 +86,33 @@ reload(mnd)
 
 
 
+
+import maya.cmds as mc
+
+def hide_by_ext(ext='*_loc'):
+	"""
+	Hide objects in Maya by a specified naming extension.
+
+	Parameters:
+	ext (str): The naming extension to match objects. Defaults to '*_loc'.
+	"""
+	hide_ext = mc.ls(ext)
+	for each in hide_ext:
+		try:
+			mc.setAttr(f'{each}.visibility', 0)
+		except AttributeError:
+			print(f'There is no "visibility" attribute to hide for {each}')
+		except Exception as e:
+			print(f'An error occurred while hiding {each}: {e}')
+
+
+
+
+
+
+
+
+
 def rename_locator():
 	if mc.objExists('locator1'):
 		mc.rename('locator1','rename_something1')
@@ -157,10 +184,10 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		base_name = '_'.join(first_name[:-1])
 		
 		for each in for_base_name:
-		    if each.endswith('LFT'):
-		        side = 'LFT'
-		    elif each.endswith('RGT'):
-		        side = 'RGT'
+			if each.endswith('LFT'):
+				side = 'LFT'
+			elif each.endswith('RGT'):
+				side = 'RGT'
 
 	#... return reverse side
 	reverse_side = ''

@@ -998,11 +998,14 @@ def fkIkTwistGenRig(
 	upper_ctrl.attr('message') >> stick_ctrl.attr('upFkCtrl')
 	middle_ctrl.attr('message') >> stick_ctrl.attr('midFkCtrl')
 	lower_ctrl.attr('message') >> stick_ctrl.attr('lowFkCtrl')
+
 	# move to each arm and leg Rig
 	# offset_null.attr('message') >> stick_ctrl.attr('offset')
 	pov_ctrl.attr('message') >> stick_ctrl.attr('pov')
 	lowerIk_ctrl.attr('message') >> stick_ctrl.attr('ikCtrl')
 
+	#... Add IkRootCtrl for make it can snap
+	ikRoot_ctrl.attr('message') >> stick_ctrl.attr('ikRootCtrl')
 
 
 

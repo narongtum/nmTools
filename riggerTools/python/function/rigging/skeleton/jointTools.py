@@ -49,12 +49,8 @@ def select_tip_joint(selected_joints): # using list
 		 else:
 			  print("No tip joints found for", selected_joint)
 
-def replace_change_gray(selected_joints_list,searchText , replaceText):
-	select_tip_joint(selected_joints_list)
+def replace_change_gray(selected_joints_list):
 	selected = mc.ls(sl=True)
-	misc.searchReplace(searchText, replaceText)
-	
-
 	for each in selected:
 		mc.setAttr('{0}.overrideEnabled'.format(each), 1)
 		mc.setAttr('{0}.overrideColor'.format(each), 3)

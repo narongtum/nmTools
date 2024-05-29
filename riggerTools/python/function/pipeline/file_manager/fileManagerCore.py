@@ -369,11 +369,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				save_path = asset_path
 
 
-		#... There is in 'COMMIT' folder
+		#... There is in 'COMMIT' folder maybe Global or Local commit
 		elif parent_folder == STATIC_FOLDER[2]:
-			FileManagerLog.debug("	Their is Commit file.")
+			FileManagerLog.debug("	Their is Local Commit file.")
 
-			#... check is global or local commit file
+			FileManagerLog.debug("	folder_path path is >>> {0}".format(folder_path))
+
+			#... Check is global or local commit file
 			back_folder_path = os.path.dirname(folder_path)
 			FileManagerLog.debug("	back_folder_path path is >>> {0}".format(back_folder_path))
 
@@ -381,12 +383,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 			#... Check valid data
-			if os.path.exists(os.path.join(back_folder_path, 'data.json')):
-
-
-				#... This is global commit
-				FileManagerLog.debug('	855-This file is Global Commit >>> {0}'.format(back_folder_path))
+			if os.path.exists(os.path.join(back_folder_path, 'data.json')): #... This is Global commit
+				FileManagerLog.debug('	931-This file is Global Commit >>> {0}'.format(back_folder_path))
 				save_path = back_folder_path
+			else: #... This is Local commit get correct dir
+				save_path = os.path.dirname(back_folder_path)
+
 
 
 		# Create Thumbnail at current maya file
@@ -404,6 +406,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		mimage.writeToFile(save_path, fileType)
 		print('Thumbnail has been created at: {0}'.format(save_path))
+
+		save_path = os.path.normpath(save_path)
+
+		#... Add SVN
+		self.svn_maya.execute_cmd('add', file_path = save_path, close_on_end=0, logmsg='')
+
+		#...Commit SVN
+		self.svn_maya.execute_cmd('commit', file_path = save_path, close_on_end=0, logmsg='')
 
 
 		

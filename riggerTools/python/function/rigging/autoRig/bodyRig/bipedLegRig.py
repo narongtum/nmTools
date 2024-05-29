@@ -645,10 +645,18 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 
 		# footBehav = ['footOut','footIn','heelRoll','toeRoll','ballRoll','ankle']	
 
+		#... update side name
+		# print(f"f-string time: {f_string_time}")
 
-		pos_cnd = core.Condition(rawName[3] + footBehav[0] + 'PosVal_cnd')
-		neg_cnd = core.Condition(rawName[3] + footBehav[1] + 'NegVal_cnd')
-		minus_mdl = core.MultiDoubleLinear(rawName[3] + footBehav[1] + 'MinusVal')
+		
+		pos_cnd = core.Condition(f"{rawName[3]}{footBehav[0]}PosVal{side}_cnd")
+		# pos_cnd = core.Condition(rawName[3] + footBehav[0] + 'PosVal_cnd')
+
+		# neg_cnd = core.Condition(rawName[3] + footBehav[1] + 'NegVal_cnd')
+		neg_cnd = core.Condition(f"{rawName[3]}{footBehav[1]}NegVal{side}_cnd")
+
+		# minus_mdl = core.MultiDoubleLinear(rawName[3] + footBehav[1] + 'MinusVal')
+		minus_mdl = core.MultiDoubleLinear(f"{rawName[3]}{footBehav[1]}MinusVal{side}")
 
 
 

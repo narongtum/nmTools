@@ -2457,6 +2457,7 @@ class General():
 		print (inputStr,'\t',returnStr)
 		return returnStr
 
+#... SVN Part
 
 class SvnMaya:
 	def __init__(self):
@@ -2587,3 +2588,34 @@ class FileManagerActions:
 		print_b_action = QtWidgets.QAction("Print B", parent)
 		print_b_action.triggered.connect(callback)
 		return print_b_action
+
+
+
+
+
+'''
+
+#...
+#... this is example for using python and SVN by GPT
+#...
+
+def run_tortoise_svn_command(svn_bin_path, cmd_type, file_path, logmsg='', close_on_end=0):
+	command = [
+		os.path.join(svn_bin_path, 'TortoiseProc.exe'),
+		f'/command:{cmd_type}',
+		f'/path:{file_path}',
+		f'/logmsg:{logmsg}',
+		f'/closeonend:{close_on_end}'
+	]
+	
+	try:
+		result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+		print(result.stdout)
+	except subprocess.CalledProcessError as e:
+		print(f"Error running command: {e.cmd}")
+		print(f"Return code: {e.returncode}")
+		print(f"Output: {e.output}")
+		print(f"Error output: {e.stderr}")
+
+run_tortoise_svn_command(SVN_BIN_PATH, cmd_type, file_path, logmsg, close_on_end)
+'''

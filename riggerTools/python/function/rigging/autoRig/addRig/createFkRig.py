@@ -84,6 +84,14 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					color = 'red', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = True, useParentInstead = False,
 					curlCtrlShape = 'stick_ctrlShape'):
 
+
+	#... Check name style
+	naming_style = misc.check_name_style(name = tmpJnt[0])
+
+	if naming_style[3] == True:
+		print('This is LFT, RGT naming')
+
+
 	
 	''' priorJnt can be False then it will be parent to world instead '''
 	part = name + side

@@ -152,9 +152,10 @@ def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
 #       Check Nameing Stlye     
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
+
 	first_name = name.split('_')
 	if len(first_name) == 1:
-		mc.error('Naming is not have underscore.')
+		mc.error('Naming is not have underscore. terminate')
 
 	side = None
 	isDefault = True

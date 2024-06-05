@@ -149,7 +149,7 @@ def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
 
 
 #####################################################
-#       Check Nameing Stlye     
+#       Check Nameing Stlye   (use in Core instead !!!)  
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
@@ -175,8 +175,6 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 			side = 'C'
 		else:
 			side = None
-
-
 
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
@@ -206,7 +204,6 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		reverse_side = None
 
 	isDefault = False
-
 
 	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
 	return(base_name, side, reverse_side, isDefault)

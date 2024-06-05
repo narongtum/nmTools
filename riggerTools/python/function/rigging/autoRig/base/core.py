@@ -324,6 +324,14 @@ curl_ctrl = core.Dag('hellohaa')
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 curl_ctrl.setLineWidth(4)
 
+
+#... Connection with string
+curl_ctrl = core.Dag('hellohaa')
+curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
+curl_ctrl.setLineWidth(4)
+
+
+
 '''
 
 
@@ -1200,6 +1208,22 @@ class Condition( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'condition' , name = name) ) 
 		# self.suffix
+
+
+class ConditionWithNum(Node):
+	def __init__(self, name,	firstT=0, secondT=0, 
+								colorIfTrueR=0, colorIfTrueG=0, colorIfTrueB=0,
+								colorIfFalseR=1, colorIfFalseG=1, colorIfFalseB=1):
+		Node.__init__( self , mc.createNode( 'condition' , name = name) )
+		self.suffix
+		self.attr('firstTerm').value = firstT
+		self.attr('secondTerm').value = secondT
+		self.attr('colorIfTrueR').value = colorIfTrueR
+		self.attr('colorIfTrueG').value = colorIfTrueG
+		self.attr('colorIfTrueB').value = colorIfTrueB
+		self.attr('colorIfFalseR').value = colorIfFalseR
+		self.attr('colorIfFalseG').value = colorIfFalseG
+		self.attr('colorIfFalseB').value = colorIfFalseB
 
 
 class Loft( Node ):

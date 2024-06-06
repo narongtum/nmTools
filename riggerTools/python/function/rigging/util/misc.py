@@ -141,8 +141,12 @@ def select_tip_joint(selected_joints):
 		 else:
 			  print("No tip joints found for", selected_joint)
 
-def _replace_change_gray(searchText = 'bJnt', replaceText = 'endJnt'):
-	searchReplace( searchText, replaceText )
+def _change_color(name_list = [], color = 'gray', displayType = 1):
+	color_num = mnd.COLOR_dict[color]
+	for each in name_list:
+		mc.setAttr(f"{each}.overrideColor", color_num)
+		mc.setAttr(f"{each}.overrideDisplayType", displayType)
+
 
 
 

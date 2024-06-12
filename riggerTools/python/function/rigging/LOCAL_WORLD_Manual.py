@@ -2,17 +2,17 @@ from function.rigging.autoRig.base import core
 reload(core)
 
 # Define the necessary variables
-zro_grp = 'hairRear01RGTZro_grp'  # Zero out group
-ctrl = 'hairRear01RGT_ctrl'
-local_obj = 'head01_gmbCtrl'  # Parent object to assign in local space
+zro_grp = 'backSkirtBroad01Zro_grp'  # Zero out group
+ctrl = 'backSkirtBroad01_ctrl'
+local_obj = 'hip_gmbCtrl'  # Parent object to assign in local space
 world_obj = 'ctrl_grp'  # Parent object to assign in world space
-base_grp = 'hairRear01RGTOffset_grp'  # Offset group
-body_part = 'hairRear01RGT'
-attr_occur = 'hairRearCurlRGT_ctrlShape'
+base_grp = 'backSkirtBroad01_localWorld_grp'  # Offset group
+body_part = 'backSkirtBroad01'
+attr_occur = 'backSkirtBroad01_ctrl'
 
 # Function to check if an object exists
 def check_obj_exists(obj_name):
-    if not core.objExists(obj_name):
+    if not mc.objExists(obj_name):
         raise ValueError(f"Object '{obj_name}' does not exist.")
 
 # Check if all necessary objects exist

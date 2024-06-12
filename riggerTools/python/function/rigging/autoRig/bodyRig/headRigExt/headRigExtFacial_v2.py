@@ -1,4 +1,4 @@
-#... Use with for GNM mounth and Marco eye rig 
+#... Use with for GeNoMon mounth and Marco eye rig 
 #... Neck rig module
 #... add top, bottom head joint
 #... add reverse jaw for jaw rig
@@ -12,8 +12,10 @@ reload(core)
 
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
+
 import sys
 import logging
+
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 

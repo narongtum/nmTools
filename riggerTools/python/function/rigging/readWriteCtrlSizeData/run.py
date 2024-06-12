@@ -14,8 +14,10 @@ import maya.cmds as mc
 #sys.path.append(r'D:\noman')
 # DECLARE GLOBAL VARIABLE
 
-
-SHAPE_LIBRARY_PATH = wcd.validCtrlData()
+try:
+	SHAPE_LIBRARY_PATH = wcd.validCtrlData()
+except:
+	print('There are no valid data.')
 
 
 # saving data

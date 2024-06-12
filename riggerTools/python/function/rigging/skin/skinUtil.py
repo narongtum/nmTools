@@ -19,6 +19,7 @@ import maya.cmds as mc
 import json
 import pymel.core as pm
 import maya.mel as mm
+
 def getJntData():
 	joints = pm.selected(type='joint')
 	for j in joints:
@@ -37,7 +38,7 @@ def selectBindJnt(naming = '*_bind_jnt',**kwargs):
 
 
 
-
+#... rename all skin cluster in scene
 def renameSkinCluster():
 	skinClusterList = mc.ls(type = 'skinCluster')
 	ext = '_skc'
@@ -53,6 +54,33 @@ def renameSkinCluster():
 		else:
 			print ('%s already change name' %each)
 			continue
+
+	_renameAllBindpose()
+
+
+#... rename all bindpose in scene
+def _renameAllBindpose(ext = '_bindPose'):
+	dagPoseList = mc.ls(type = 'dagPose')
+	num = 1
+	for each in dagPoseList:
+		if ext not in each:
+			skc_name  = mc.listConnections(each, type='skinCluster')[0]
+			try:
+				newName = mc.rename(each, f"{skc_name}{num:02d}{ext}")
+				print ('changing name to %s'%newName)
+				num = num + 1
+
+			except:
+				print ('%s has something wrong skiped.' %geoName)
+				num = num + 1
+				pass
+		else:
+			print ('%s already change name' %each)
+			continue
+
+			
+			
+
 
 
 

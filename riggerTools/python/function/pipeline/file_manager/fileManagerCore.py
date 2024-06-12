@@ -28,6 +28,12 @@ import pymel.core as pm
 from function.pipeline import fileTools
 reload(fileTools)
 
+from function.rigging.readWriteCtrlSizeData import run as runWrite
+reload(runWrite)
+
+from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
+reload(skinIO)
+
 
 try:
 	from shiboken2 import wrapInstance
@@ -310,13 +316,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		file_menu = self.menuFile
 		toos_menu = self.menuTools
 
-		# Create 'Print A' action and add it to the 'File' menu
+		#... Create 'thumbnail' action and add it to the 'File' menu
 		create_thumbnail_action = FileManagerActions.createThumbnailAction(self, self.create_thumbnail)
 		file_menu.addAction(create_thumbnail_action)
 
 		# Create 'Print A' action and add it to the 'File' menu
 		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
 		toos_menu.addAction(print_b_action)	
+
+		save_ctrl_shape_action = FileManagerActions.saveCtrlShapeAction(self, self.save_ctrl_shape)
+		toos_menu.addAction(save_ctrl_shape_action)
+
+		load_ctrl_shape_action = FileManagerActions.loadCtrlShapeAction(self, self.load_ctrl_shape)
+		toos_menu.addAction(load_ctrl_shape_action)
+		toos_menu.addSeparator()
+		save_skinWeight_action = FileManagerActions.saveSkinWeightAction(self, self.save_skin_data)
+		toos_menu.addAction(save_skinWeight_action)
+
+		load_skinWeight_action = FileManagerActions.loadSkinWeightAction(self, self.load_skin_data)
+		toos_menu.addAction(load_skinWeight_action)
 
 
 	def printA(self):
@@ -343,7 +361,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			FileManagerLog.debug('There are no extension ?.')
 			os.startfile(file_path)
 
-
+	#....
+	#.... MENU BAR
+	#....
 
 	def create_thumbnail(self, fileType='png', width=256, height=256, fileName = 'thumb'):
 		maya_file_path = mc.file( query=True , sn=True )
@@ -409,11 +429,45 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		save_path = os.path.normpath(save_path)
 
-		#... Add SVN
-		self.svn_maya.execute_cmd('add', file_path = save_path, close_on_end=0, logmsg='')
+		#... Asking SVN
+		reply = QMessageBox(self)
+		reply.setWindowTitle('Commit Changes')
+		reply.setText('Do you want to commit thumbnail to SVN ?\n\t')
 
-		#...Commit SVN
-		self.svn_maya.execute_cmd('commit', file_path = save_path, close_on_end=0, logmsg='')
+		commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+		save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+		reply.addButton(QMessageBox.Cancel)	
+
+		result = reply.exec_()	
+		if reply.clickedButton() == commit_button:
+
+			#... Add SVN
+			self.svn_maya.execute_cmd('add', file_path = save_path, close_on_end=0, logmsg='')
+
+			#...Commit SVN
+			self.svn_maya.execute_cmd('commit', file_path = save_path, close_on_end=0, logmsg='')
+
+		elif reply.clickedButton() == save_button:
+			pass
+
+
+	#... Save and Load controller shape data
+	def save_ctrl_shape(self):
+		# print("Print B")
+		runWrite.savingData()
+
+	def load_ctrl_shape(self):
+		runWrite.loadingData(self)
+
+	#... Save and Load skin data
+	def save_skin_data(self):
+		skinIO.saveSkin()
+
+	def load_skin_data(self):
+		skinIO.loadSkin()
+
+
+
 
 
 		
@@ -2303,7 +2357,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			# If asset exists
 			if not os.path.exists(new_asset_path):
-				print("\tThere are no folder in here Continue.")
+				FileManagerLog.debug("\tThere are no folder in here Continue.")
 
 				# Normalize path
 				new_asset_path = os.path.normpath(new_asset_path)
@@ -2325,13 +2379,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Store entity data to json file here
 				# new_asset_path 
-				print("\tThis is asset path:\t{0}".format(new_asset_path))
+				FileManagerLog.debug("\tThis is asset path:\t{0}".format(new_asset_path))
 
 				# 'Asset' or 'Scene'
-				print("\tType:\t{0}".format('Asset-718-'))
+				FileManagerLog.debug("\tType:\t{0}".format('Asset-718-'))
 
 				# Asset_name 
-				print("\tAsset name:\t{0}".format(asset_name))
+				FileManagerLog.debug("\tAsset name:\t{0}".format(asset_name))
 				
 				# "fullEntityName"
 				fullEntityName = self.get_full_entity_name(new_asset_path)
@@ -2370,11 +2424,36 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			
 				# Write to json file
 				entite_dict = self.create_data_JSON(new_asset_path, 'Asset', asset_name, fullEntityName, department_name,"", add_path_for_SVN)
-				print (entite_dict)
+				FileManagerLog.debug(entite_dict)
 				self.write_entite_folder(entite_dict)
 
+				reply = QMessageBox(self)
+				reply.setWindowTitle('Commit Changes')
+				reply.setText('Do you want to commit thumbnail to SVN ?\n\t')
 
-				self.svn_maya.execute_cmd('add', file_path=add_path_for_SVN[0], close_on_end=0, add_fixed_folder = True)
+				commit_button = reply.addButton('Add', QMessageBox.AcceptRole)
+				save_button = reply.addButton('Just Create', QMessageBox.AcceptRole)
+				reply.addButton(QMessageBox.Cancel)	
+
+				result = reply.exec_()	
+				if reply.clickedButton() == commit_button:
+
+					FileManagerLog.debug("\tThis is File path:\t{0}".format(add_path_for_SVN[0]))
+
+					#... Add SVN
+					self.svn_maya.execute_cmd('add', file_path = add_path_for_SVN[0], close_on_end=0, add_fixed_folder = True)
+
+					#...Commit SVN
+					# self.svn_maya.execute_cmd('commit', file_path = add_path_for_SVN[0], close_on_end=0, logmsg='')
+
+				elif reply.clickedButton() == save_button:
+					FileManagerLog.debug("\tJust Create Do nothing.")
+					pass
+
+
+
+
+				
 
 
 
@@ -2579,16 +2658,39 @@ def do_global_commit():
 class FileManagerActions:
 	@staticmethod
 	def createThumbnailAction(parent, callback):
-		print_a_action = QtWidgets.QAction("Create thumbnail", parent)
-		print_a_action.triggered.connect(callback)
-		return print_a_action
+		create_thumbnail_open = QtWidgets.QAction("Create thumbnail", parent)
+		create_thumbnail_open.triggered.connect(callback)
+		return create_thumbnail_open
 
 	@staticmethod
 	def createPrintBAction(parent, callback):
-		print_b_action = QtWidgets.QAction("Print B", parent)
+		print_b_action = QtWidgets.QAction("Rigger Tools", parent)
 		print_b_action.triggered.connect(callback)
 		return print_b_action
 
+	@staticmethod
+	def saveCtrlShapeAction(parent, callback):
+		write_ctrl_action = QtWidgets.QAction("Write Controller", parent)
+		write_ctrl_action.triggered.connect(callback)
+		return write_ctrl_action
+
+	@staticmethod
+	def loadCtrlShapeAction(parent, callback):
+		load_ctrl_action = QtWidgets.QAction("Load Controller", parent)
+		load_ctrl_action.triggered.connect(callback)
+		return load_ctrl_action
+
+	@staticmethod
+	def saveSkinWeightAction(parent, callback):
+		save_skinWeight_action = QtWidgets.QAction("Save Skinweight", parent)
+		save_skinWeight_action.triggered.connect(callback)
+		return save_skinWeight_action
+
+	@staticmethod
+	def loadSkinWeightAction(parent, callback):
+		load_skinWeight_action = QtWidgets.QAction("Load Skinweight", parent)
+		load_skinWeight_action.triggered.connect(callback)
+		return load_skinWeight_action
 
 
 

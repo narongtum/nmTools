@@ -22,12 +22,11 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload( rigTools )
 
-
 from function.pipeline import logger 
 reload(logger)
 
 class spineHybridLog(logger.MayaLogger):
-	LOGGER_NAME = "SpineRig"
+	LOGGER_NAME = "SpineIKRig"
 
 def spineHybridIK(
 				nameSpace = '' 		,

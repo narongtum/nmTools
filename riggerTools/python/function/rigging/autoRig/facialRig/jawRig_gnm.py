@@ -1,4 +1,5 @@
 #... jaw rig using weight distribute
+#... newest than in git
 #...source >>> I:\Resource\Tutorial\Rigging The Jaw with Python in Maya\MyFile
 
 

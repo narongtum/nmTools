@@ -1,4 +1,8 @@
-# latest Use this (not in Rig tools)
+#... move to constraint module
+#... latest Use this (not in Rig tools)
+
+
+
 
 from function.rigging.util import misc
 
@@ -33,21 +37,21 @@ as close to the object as possible. Otherwise, you can specify U and V coordinat
 
 
 """
-from function.rigging.autoRig.addRig import pinLocatorToSurfac as pls
+from function.rigging.constraint import pinLocatorToSurface as pls
 reload(pls)
 
- pls.pin_locator_surface(	# need pxy nrb to drive locator
-							nurbs = 'glue_nrb',
-							region = 'ribCage',
-							side = '',
-							source_loc = ('strapALFT_loc','strapARGT_loc'),
-							locator_scale = 1,
-							creJnt = False , suffixJnt = 'bJnt',
-							creCtrl = False , ctrlShape = 'circle_ctrlShape',
-							snapAtEnd = False,
-							priorJnt = 'hip_bJnt',
-							scale = 2
-							)
+pls.pin_locator_surface(	# need pxy nrb to drive locator
+						nurbs = 'glue_nrb',
+						region = 'ribCage',
+						side = '',
+						source_loc = ('strapALFT_loc','strapARGT_loc'),
+						locator_scale = 1,
+						creJnt = False , suffixJnt = 'bJnt',
+						creCtrl = False , ctrlShape = 'circle_ctrlShape',
+						snapAtEnd = False,
+						priorJnt = 'hip_bJnt',
+						scale = 2
+						)
 
 """
 
@@ -99,8 +103,9 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 	if not source_loc:
 		mc.error('Need locator to pinpoint location.')
 	else:
-		#... check naming style
+		#... check universal naming style
 		got_naming = misc.check_name_style(name = source_loc[0])
+		
 	
 
 	# make nrb to object
@@ -127,15 +132,19 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 	locator_list=[]
 
 
-	#for each in source_loc:
+	
 
 	for num in range(0,(len(source_loc))):
 		print (source_loc[num])
 		each = source_loc[num]
 
+		#... warning please alway using index[0]
+		base_name = misc.check_name_style(name = source_loc[num])[0]
 
-		pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = '{}{:02d}{}_poiInfo'.format(region,num+1,side) )
-		# pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = region + num + side +'_poiInfo' )
+		#...change name style
+		pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = '{}_poiInfo'.format(base_name) )
+		# pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = '{}{:02d}{}_poiInfo'.format(region,num+1,side) )
+		
 		oNurbs.getShape().worldSpace.connect(pointOnSurface.inputSurface) # conntet from oNurbs
 
 		# follicles remap from 0-1, but closestPointOnSurface must take minMaxRangeV into account
@@ -160,7 +169,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			pm.warning('Invalid sourceObj specified.')
 			#return False  
 
-		oNode = pm.createNode('closestPointOnSurface', name = '{}{:02d}{}_closePInfo'.format(region,num+1,side) )
+		oNode = pm.createNode('closestPointOnSurface', name = '{}_closePInfo'.format(base_name) )
 		oNurbs.worldSpace.connect(oNode.inputSurface, force=True)
 		oNode.inPosition.set(sourceObj.getTranslation(space='world'))# get world position
 		uPos = oNode.parameterU.get() # copy value 
@@ -201,8 +210,8 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 
 		# Compose a 4x4 matrix
-		mtx = pm.createNode('fourByFourMatrix',name ='{}{:02d}{}_fbfMat'.format(region,num+1,side)  )
-		outMatrix = pm.createNode('decomposeMatrix', name = '{}{:02d}{}_deCom'.format(region,num+1,side) )
+		mtx = pm.createNode('fourByFourMatrix',name ='{}_fbfMat'.format(base_name)  )
+		outMatrix = pm.createNode('decomposeMatrix', name = '{}_deCom'.format(base_name) )
 		mtx.output.connect(outMatrix.inputMatrix)
 		outMatrix.outputTranslate.connect(result.getTransform().translate)
 		outMatrix.outputRotate.connect(result.getTransform().rotate)
@@ -255,7 +264,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		if creJnt:
 			
 			child_joint = core.Joint(scaleCompensate=False) #... not work why?
-			child_joint.name = '{}{:02d}{}_{}'.format(region, num+1, side, suffixJnt)
+			child_joint.name = '{}_{}'.format(base_name, suffixJnt)
 			child_joint.maSnap( pName )
 			#... no need to parent
 			# child_joint.parent( pName )
@@ -266,6 +275,8 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 			jnt_list.append(child_joint.name)
 			print(jnt_list)
+			print(each)
+
 
 			#... Create controller
 			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = scale, ctrlShape = ctrlShape, color = 'yellow', 
@@ -273,6 +284,8 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
 
 			ctrl_list.append(gmbl_ctrl)
+
+
 
 
 
@@ -286,7 +299,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			# child_joint.parent( gmbl_ctrl )
 			# child_joint.freeze()
 
-
+	
 
 	# # # # # # # # # # # # # # # #
 	# update function make constraint to controller
@@ -305,6 +318,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 				continue
 
 	
+		
 
 		#... 2. Parent it to prior joint that desinate
 		mc.parent(jnt_list[0], priorJnt)
@@ -316,11 +330,13 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		print('\n')
 
 		
+		
 
 		for num in range(len(jnt_list)):
 			ctrl_to_jnt_parCons = core.parentConstraint( ctrl_list[num] , jnt_list[num] )
-			ctrl_to_jnt_parCons.name = '{}{:02d}{}_parCons'.format(region,num+1,side)
+			ctrl_to_jnt_parCons.name = '{}_parCons'.format(base_name)
 
+		
 
 
 		# mc.error('Ma tum tor tomorrow')

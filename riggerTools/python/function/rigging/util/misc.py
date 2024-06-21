@@ -170,6 +170,8 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		print('\nThis is naming C_R_L_ style')
 		base_name = '_'.join(first_name[:-1])
 
+		isDefault = False
+
 		#... check side condition
 		if first_name[0] == 'L':
 			side = 'L'
@@ -180,9 +182,12 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		else:
 			side = None
 
+
+
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
 		print('This is naming LFT RGT Style')
+		isDefault = True
 		for_base_name = name.split('_')
 		base_name = '_'.join(first_name[:-1])
 		
@@ -207,7 +212,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	else:
 		reverse_side = None
 
-	isDefault = False
+	
 
 	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
 	return(base_name, side, reverse_side, isDefault)

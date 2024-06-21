@@ -32,7 +32,7 @@ reloader(misc)
 
 
 
-def select_tip_joint(selected_joints): # using list
+def select_tip_joint(selected_joints, search, replace): # using list
 	# Get the selected joint(s)
 	# selected_joints = mc.ls(sl=True, type='joint')
 
@@ -46,8 +46,14 @@ def select_tip_joint(selected_joints): # using list
 		 if tip_joints:
 			  print("Tip joint(s) of", selected_joint, ":", tip_joints)
 			  mc.select(tip_joints, r=True )
+
+			  misc.searchReplace( search, replace )
+
 		 else:
 			  print("No tip joints found for", selected_joint)
+
+
+
 
 def replace_change_gray(selected_joints_list):
 	selected = mc.ls(sl=True)
@@ -90,7 +96,7 @@ def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'y'):
 		else:
 			mc.error('There are wrong axis argument.')
 
- 	if axis == 'y':
+	if axis == 'y':
 		root_obj.rotateY.set(180)
 	elif axis == 'x':
 		root_obj.rotateX.set(180)

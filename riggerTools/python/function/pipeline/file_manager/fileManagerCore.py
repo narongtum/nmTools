@@ -248,11 +248,23 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... Connect project signals
 		self.drive_comboBox.currentIndexChanged.connect(self.update_project_comboBox)
-		#... Connect project
-		self.project_comboBox.currentIndexChanged.connect(self.populate_ASSET_treeView)	
 
 		# Called whenever a new item is clicked
 		self.populate_ASSET_treeView()
+
+		#... Connect project
+		self.project_comboBox.currentIndexChanged.connect(self.populate_ASSET_treeView)	
+
+		#... if maya open and set project correctly set combo box to that
+		if self.is_scene_open():
+			current_scene_path = pm.system.sceneName()
+			current_scene_path = os.path.normpath(current_scene_path)
+			path_elements = current_scene_path.split(os.path.sep)
+			if path_elements[2] in PROJECT_NAME:
+				FileManagerLog.debug(f'Set Project to {path_elements[2]}')
+				self.project_comboBox.setCurrentText(path_elements[2])
+
+
 
 		# Connect the on_treeview_clicked method to the clicked signal
 		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
@@ -305,6 +317,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
+
+	def is_scene_open(self):
+		current_scene = mc.file(query=True, sceneName=True)
+		return bool(current_scene)
 
 	# def closeEvent(self, event):
 	# 	# Remove the window instance from the list of open windows
@@ -1038,14 +1054,45 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			FileManagerLog.debug('The current file not maya saving file do it later.')
 			return False
 
+	def update_project_name(self):
+		FileManagerLog.debug(f'\tUI has change project name to >>> {self.project_comboBox.currentText()}')
+
+
+		current_scene_path = pm.system.sceneName()
+		
+		# Check where is the scene is saved
+		if current_scene_path:
+			# Normalize the path
+			current_scene_path = os.path.normpath(current_scene_path)
+
+			# Split the path to extract relevant information
+			path_elements = current_scene_path.split(os.path.sep)
+			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements))
+			
+			# Extract the asset and department names
+			asset_name = path_elements[-4]
+			department_name = path_elements[-3]
+
+			#... Extract Project names (updated)
+			project_name = path_elements[2]
+			FileManagerLog.debug('	This is project_name >>> {0}'.format(project_name))
+			FileManagerLog.debug('	[{0}] <<<   >>> [{1}]'.format(project_name, self.project_comboBox.currentText()))
+
+			if project_name != self.project_comboBox.currentText(): #... in case for make can change project with already open scene other project
+				FileManagerLog.debug('	[{0}] <<< is not equal set project to  >>> [{1}]'.format(project_name, self.project_comboBox.currentText()))
+				#... change project
+				# self.project_comboBox.setCurrentText(self.project_comboBox.currentText()) 
+			else:
+				FileManagerLog.debug('{0} is same as {1}'.format(project_name, self.project_comboBox.currentText()))
+				pass
+			FileManagerLog.debug('# # # update_project_name # # #')		
+
 
 	def check_exists_maya(self):
 
 		'''
 		Check the curenty maya file that already open is in the proper file manager path
-		'''		
-
-
+		'''
 
 		maya_file_path = mc.file( query=True , sn=True )
 
@@ -1057,9 +1104,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			
 
-			# ensures that the code works correctly regardless of the underlying operating system.
+			#... ensures that the code works correctly regardless of the underlying operating system.
 
-			# ... There is in 'VERSION' folder
+			#... There open in 'VERSION' folder
 
 			if parent_folder == STATIC_FOLDER[1]:
 				FileManagerLog.debug("The folder containing named 'Version'.")
@@ -1080,7 +1127,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 					
 
-			#... There is in 'COMMIT' folder
+			#... If open in 'COMMIT' folder
 
 			elif parent_folder == STATIC_FOLDER[2]:
 				FileManagerLog.debug("	Their is Commit file.")
@@ -1093,7 +1140,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				if os.path.exists(os.path.join(back_folder_path, 'data.json')):
 
 					#... This is global commit
-					FileManagerLog.debug('	855-This file is Global Commit >>> {0}'.format(back_folder_path))
+					FileManagerLog.debug('	1143 -This file is Global Commit >>> {0}'.format(back_folder_path))
 
 					#... Show Asset name at global widget
 					#... Make auto selected Asset name for make script continue to work
@@ -1117,7 +1164,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 					#... Select Asset Name
-					FileManagerLog.debug('	886-	This is assetName_path >>> {0}'.format(assetName_path))
+					FileManagerLog.debug('	1167-	This is assetName_path >>> {0}'.format(assetName_path))
 					asset_index = self.model.index(assetName_path)
 					self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(asset_index, QtCore.QItemSelectionModel.ClearAndSelect)
 					self.asset_dir_TREEVIEW.scrollTo(asset_index, QtWidgets.QAbstractItemView.PositionAtTop)
@@ -1127,7 +1174,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					#... normalize path first
 					back_folder_path = os.path.normpath(back_folder_path)
 					path_elements = back_folder_path.split(os.path.sep)
-					FileManagerLog.debug('	90001-	This is Department Name >>> {0}'.format(path_elements[-1]))
+					FileManagerLog.debug('	1177-	This is Department Name >>> {0}'.format(path_elements[-1]))
 
 					#... Add department here
 					self.asset_department_listWidget.addItem(path_elements[-1])
@@ -1161,7 +1208,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		Check the curenty maya file that already open is in the proper file manager path
 		'''
 
-		FileManagerLog.debug("This is file path{0}".format(file_path))
+		FileManagerLog.debug("	This is file path{0}".format(file_path))
 
 		# Convert the desired directory path to a model index
 		index = self.model.index(file_path)
@@ -1173,10 +1220,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			self.asset_dir_TREEVIEW.scrollTo(index, QtWidgets.QAbstractItemView.PositionAtTop)
 
 			
-
-
-
-
 		## Expand the QTreeView to the parent item of the desired directory
 		# self.asset_dir_TREEVIEW.expand(index.parent())
 
@@ -1197,7 +1240,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Get the current Maya scene file path
 		current_scene_path = pm.system.sceneName()
 		
-		# Check if the scene is saved
+		# Check where is the scene is saved
 		if current_scene_path:
 			# Normalize the path
 			current_scene_path = os.path.normpath(current_scene_path)
@@ -1210,18 +1253,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			asset_name = path_elements[-4]
 			department_name = path_elements[-3]
 
-			#... Extract Project names (updated)
-			project_name = path_elements[2]
-			FileManagerLog.debug('	This is project_name >>> {0}'.format(project_name))
-			FileManagerLog.debug('	[{0}] <<<   >>> [{1}]'.format(project_name,self.project_comboBox.currentText()))
 
-			if project_name != self.project_comboBox.currentText(): #... in case for make can change project with already open scene other project
-				FileManagerLog.debug('	[{0}] <<< is not equal set project to  >>> [{1}]'.format(project_name,self.project_comboBox.currentText()))
-				self.project_comboBox.setCurrentText(self.project_comboBox.currentText())
-			else:
-				FileManagerLog.debug('{0} is same as {1}'.format(project_name,self.project_comboBox.currentText()))
-				pass
-			FileManagerLog.debug('# # # # # # # # # # # # # # # #')
 
 
 			# Convert the desired directory path to a model index
@@ -1742,7 +1774,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Update the selected project variable with the current selection
 		selected_project = self.project_comboBox.currentText()
-		print("Show project name _255_:...\t\t\t", selected_project)
+		print("Show project name _1744_:...\t\t\t", selected_project)
 
 
 		if selected_project == None:
@@ -2094,6 +2126,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def populate_ASSET_treeView(self):
+		#... check file path of maya
+
+		print('\tChange project name')
 
 		# # initializing model and populate the tree view
 		self.model = QtWidgets.QFileSystemModel()
@@ -2105,6 +2140,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), ASSET_TOP_FOLDER)
 
 		self.check_exists_maya()
+
+		# self.update_project_name()
 
 		'''
 		## shift to __init__ instead
@@ -2148,7 +2185,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Print some information for debugging purposes
 
 		FileManagerLog.info("Populating tree view with file system model...")
-		FileManagerLog.info("populate_treeView project path:...\t\t\t{0}".format(self.path))
+		FileManagerLog.info("populate Asset project path:...\t\t\t{0}".format(self.path))
 		FileManagerLog.info("Model root path:...\t\t\t{0}".format(self.model.rootPath()	))
 
 		# Show department listWidget when selected asset

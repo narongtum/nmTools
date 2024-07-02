@@ -41,7 +41,7 @@ class ControlMaker( object ) :
 
 
 		# create controller button
-		mc.button( '%sCurveButton'%self.ui , l = 'Right Click to Choose Controller' , w=310 , h=25  , c=partial( self.checkCurve ))
+		mc.button( '%sCurveButton'%self.ui , l = 'Right Click to Choose Controller' , w=310 , h=30  , c=partial( self.checkCurve ))
 		# create popup
 		mc.popupMenu()
 
@@ -50,8 +50,8 @@ class ControlMaker( object ) :
 					'arrow' , 'circle' , 'cross' , 
 					'cube' , 'double' , 'orient' , 
 					'quad' , 'ring' , 'sphere' , 
-					'square' , 'stick' ,'placement' , 
-					'hat' , 'plus','gear'
+					'square' , 'sphere_stick' ,'placement' , 
+					'hat' , 'plus','gear','square_stick'
 					)
 
 		for label in labels :
@@ -162,6 +162,9 @@ class ControlMaker( object ) :
 
 		elif label == 'gear':
 			self.createController(shapeName = 'gear_ctrlShape')
+
+		elif label == 'square_stick':
+			self.createController(shapeName = 'squareStick_ctrlShape')
 
 
 

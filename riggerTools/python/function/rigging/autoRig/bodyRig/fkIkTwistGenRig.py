@@ -29,7 +29,7 @@ reload( softIkfunc )
 from function.rigging.tools import proc as pc
 reload(pc)
 
-from function.rigging.util import mayaNodeDict as mnd
+from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 from function.rigging.autoRig.bodyRig import twistRig as tr
@@ -1199,7 +1199,7 @@ def fkIkTwistGenRig(
 
 
 	#... Create metaNode ...#
-	fkIkTwistRig_meta = core.MetaGeneric( region + 'fkIkTwistRig' + side + '_meta')
+	fkIkTwistRig_meta = core.MetaGeneric( region.lower() + 'fkIkTwistRig'.capitalize() + side + '_meta')
 	
 	mc.connectAttr(priorJnt + '.message', fkIkTwistRig_meta.name + '.Rig_Prior')
 	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'ikh_Name')
@@ -1216,10 +1216,18 @@ def fkIkTwistGenRig(
 
 	# ------------------ Meta Node Start ------------------------------------------------------------------- #
 	#... Connect to root_meta 
-	if mc.objExists(root_meta):
-		mc.connectAttr('{0}.message'.format(root_meta), '{0}.Rig_Prior'.format(fkIkTwistRig_meta.name), f=True)
-		mc.addAttr(root_meta, longName='{0}_{1}'.format(region,side), dataType='string', keyable=True)
-		mc.connectAttr( '{0}.{1}'.format(fkIkTwistRig_meta.name, 'Base_Name'), '{0}.{1}_{2}'.format(root_meta, region, side), f=True)
+	
+	# if mc.objExists(root_meta):
+	# 	mc.connectAttr('{0}.message'.format(root_meta), '{0}.Rig_Prior'.format(fkIkTwistRig_meta.name), f=True)
+	# 	mc.addAttr(root_meta, longName='{0}_{1}'.format(region,side), dataType='string', keyable=True)
+	# 	mc.connectAttr( '{0}.{1}'.format(fkIkTwistRig_meta.name, 'Base_Name'), '{0}.{1}_{2}'.format(root_meta, region, side), f=True)
+
+	#... change connect from root_meta to stick_ctrl instead
+	if mc.objExists(stick_ctrl):
+		# mc.connectAttr('{0}.message'.format(stick_ctrl), '{0}.Rig_Prior'.format(fkIkTwistRig_meta.name), f=True)
+		metaName = mnd.MESSAGE_dict['meta'][0]
+		fkIkTwistRig_meta.attr('message') >> stick_ctrl.attr(metaName)
+
 
 
 	#... Lock All Attr

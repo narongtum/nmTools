@@ -85,7 +85,7 @@ def armRigExt(
 	if creTwistJnt == True:
 		# using non twisting upper joint
 		# passing arg to fkIkGenRig
-		stickNam, hand_bJnt , middle_bJnt , upper_bJnt , ikhAll_name , psStreEndName, softIk_name,priorMeta   = fitr.fkIkTwistGenRig(
+		stickNam, hand_bJnt , middle_bJnt , upper_bJnt , ikhAll_name , psStreEndName, softIk_name, priorMeta   = fitr.fkIkTwistGenRig(
 					nameSpace = nameSpace 	,				
 					charScale = charScale	,			
 					parentTo = parentTo 	,			
@@ -148,7 +148,7 @@ def armRigExt(
 		print('#### End of %s%s Rig ####' %( region , side ))
 		print ('\n\n\n\n\n')
 
-		return stickNam, hand_bJnt
+		return stickNam, hand_bJnt, priorMeta
 
 
 

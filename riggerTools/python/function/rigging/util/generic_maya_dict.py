@@ -1,9 +1,10 @@
-
-
+#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
+#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
+#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
 
 '''
 
-#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
+
 
 
 from function.rigging.util import generic_maya_dict as mnd
@@ -97,6 +98,10 @@ NODE_dict = [
 
 ]
 
+#... finger dict
+FINGER_dict = {		'fingerName':		('thumb','index','middle','ring','pinky'),
+					'fingerbehavior':	('fist','roll','relax','cup','spread','wide')
+					 }
 
 
 def get_short_name(long_name):
@@ -119,10 +124,11 @@ COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 
 
 # for arg message in arm and leg function
-MESSAGE_dict = { 	'listString': ('region' , 'location'), # location get foot or angle only
-					'listbJnt' :  ('stick' , 'upJnt' , 'midJnt' , 'lowJnt'), 
-					'listCtrl' :  ('upFkCtrl' , 'midFkCtrl' , 'lowFkCtrl' , 'offset'), 
-					'listPov'  :  ('pov' , 'ikCtrl' )							}
+MESSAGE_dict = { 	'listString':	('region' , 'location'), # location get foot or angle only
+					'listbJnt' 	:	('stick' , 'upJnt' , 'midJnt' , 'lowJnt'), 
+					'listCtrl' 	:	('upFkCtrl' , 'midFkCtrl' , 'lowFkCtrl' , 'offset'), 
+					'listPov'  	:	('pov' , 'ikCtrl' ),
+					'meta'		:	['metaNode']							}
 
 
 rotOrder_dict = {		'xyz'  : 0   ,

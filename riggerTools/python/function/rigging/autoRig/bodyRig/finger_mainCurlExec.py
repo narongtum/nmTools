@@ -12,6 +12,9 @@ reload(misc)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
 import maya.cmds as mc
 
 import logging
@@ -23,7 +26,7 @@ logger.setLevel(logging.DEBUG)
 # =================================
 
 def mainFingerCurlRig(      nameSpace ,             
-							fingerbehavior = ('fist','roll','relax','cup','spread','wide')  , 
+							fingerbehavior = mnd.FINGER_dict['fingerbehavior']  , 
 							fingerName = ('thumb','index','middle','ring','pinky') , 
 							side = 'LFT'  , 
 							numCtrl = 3 , zroNam = 'Zro_grp' , 
@@ -55,7 +58,7 @@ def mainFingerCurlRig(      nameSpace ,
 
 
 	# Declair name variable
-	fingerName,fingerbehavior,side,numCtrl,zroNam, offsetNam ,stickNam = finOffRig.defineVariable( fingerbehavior, fingerName, side, numCtrl, zroNam, offsetNam, stickNam )
+	fingerName, fingerbehavior, side, numCtrl, zroNam, offsetNam, stickNam = finOffRig.defineVariable( fingerbehavior, fingerName, side, numCtrl, zroNam, offsetNam, stickNam )
 
 	# [1] create each offset group
 	# run relax function    
@@ -148,6 +151,7 @@ def mainFingerCurlRig(      nameSpace ,
 
 	# Create attr
 	stick_ctrl = core.Dag( stickNam )
+
 
 	# New
 	# [6.5]
@@ -252,15 +256,28 @@ def mainFingerCurlRig(      nameSpace ,
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 
 	
-	# print (''' \n
-	# # = = = = = = update message (under construction)
-	# ''')
+	print (''' \n
+	# = = = = = = update message 
+	''')
 
-	'''
-	for each in fingerbehavior:
-		stick_ctrl.addAttribute( dataType = 'string' , longName = each )
 
-	'''
+	metaName = mnd.MESSAGE_dict['meta'][0]
+	print(f'{stick_ctrl.name}.{metaName}')
+
+	meta_node = mc.listConnections( f'{stick_ctrl.name}.{metaName}')[0]
+
+	if mc.objExists(meta_node):
+		# stick_ctrl.addAttribute( dataType = 'string' , longName = mnd.FINGER_dict['fingerbehavior']		 )
+		keys_list = list(mnd.FINGER_dict.keys())
+		second_key = keys_list[1]
+
+		finger_behavior = mnd.FINGER_dict[second_key]
+
+		mc.addAttr(meta_node, dataType = 'string' , longName = second_key )
+		mc.setAttr(f"{meta_node}.{second_key}", finger_behavior, type = 'string')
+		mc.setAttr(f"{meta_node}.{second_key}", lock = True)
+
+	
 
 	print ('#### End of lobal finger curl %s Rig ####' %side)
 	print('\n\n\n\n\n')

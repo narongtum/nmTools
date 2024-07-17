@@ -104,6 +104,14 @@ FINGER_dict = {		'fingerName':		('thumb','index','middle','ring','pinky'),
 					 }
 
 
+
+#... foot dict
+FOOT_dict = {	
+					'footbehavior':	('ballRoll','toeRoll','heelTwist','toeTwist','footRock','ballRise')
+					 }
+
+
+
 def get_short_name(long_name):
 	for node in NODE_dict:
 		if node['longName'] == long_name:

@@ -43,14 +43,19 @@ from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
 
-
+#... newer cleaner
 #... create fk rig make more clearer than earlior that is so complex
-def fkRig_new_curl_ext(	nameSpace = '', name = 'ear', parentCtrlTo = 'head_gmblCtrl',
+#... cancle name arg
+def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
 					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'red', curlCtrl = False,rotateOrder = 'zxy',
 					curlCtrlShape = 'stick_ctrlShape'):
+
+	#... find base name
+	name = misc.check_name_style(name = jntLst[0])[0]
+
 
 	old_name_Style = None
 
@@ -100,6 +105,8 @@ def fkRig_new_curl_ext(	nameSpace = '', name = 'ear', parentCtrlTo = 'head_gmblC
 		#... set Rotation Order
 		ctrl.rotateOrder = rotateOrder 
 		gimbal.rotateOrder = rotateOrder
+
+		ctrl.color = color
 
 
 		ctrls.append( ctrl )
@@ -181,7 +188,11 @@ def fkRig_new_curl_ext(	nameSpace = '', name = 'ear', parentCtrlTo = 'head_gmblC
 		fkRig_newCurl_meta = core.MetaGeneric( f'{base_name}_meta')
 		fkRig_newCurl_meta.addAttribute( attributeType = 'message' , longName = base_name)
 
-		passValue_pma.attr('message') >> fkRig_newCurl_meta.attr(name+side)
+		fkRig_newCurl_meta.addAttribute( attributeType = 'message' , longName = 'passValue')
+		passValue_pma.attr('message') >> fkRig_newCurl_meta.attr('passValue')
+
+		# passValue_pma.attr('message') >> fkRig_newCurl_meta.attr(name+side)
+
 		curl_ctrl.attr('message') >> fkRig_newCurl_meta.attr('Rig_Prior')
 
 		fkRig_newCurl_meta.setAttribute('Color', color, type = 'string')
@@ -318,21 +329,20 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 		ctrl.nmCreateController( ctrlShape )
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
 
-		if not color:
-			if side:
-				if side == 'LFT':
-					ctrl.color = 'red'
-				elif side == 'RGT':
-					ctrl.color = 'blue'
-			ctrl.color = 'red'
-		elif color:
-			ctrl.color = color
-		else:
-			ctrl.color = 'white'
+		# if not color:
+		# 	if side:
+		# 		if side == 'LFT':
+		# 			ctrl.color = 'red'
+		# 		elif side == 'RGT':
+		# 			ctrl.color = 'blue'
+		# 	ctrl.color = 'red'
+		# else:
+		
 
 
 		
 		gimbal = core.createGimbal( ctrl )
+		ctrl.color = color
 		tmp = core.Dag( tmpJnt[  num  ] )
 
 		if isTmpJnt:

@@ -72,7 +72,7 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
 	namLst = []
 	for each in namJntList:
-		fitstNam = check_name_style(each)[0]
+		fitstNam = misc.check_name_style(each)[0]
 		namLst.append( fitstNam )
 
 	

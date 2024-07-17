@@ -17,7 +17,7 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 					ikCtrl = ('ikRoot' , 'ankleIk_ctrl') , region = ''	, 
 					side = '' , scaleCtrl = 'placement_ctrl'	,
 					noTouchGrp = 	'noTouchGrp'		,
-					nameSpace ='',lowNam = '', alongAxis = 'y' ):
+					nameSpace ='',lowNam = '', alongAxis = 'y',povPosi = 'front' ):
 	#... lowNam is lower name For use run both  arg older and newer 
 	part = nameSpace + lowNam
 	strJnt = ikJnt[0]
@@ -25,21 +25,25 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 	endJnt = ikJnt[2]
 
 	#... try new method to find length
-	AA = mc.xform( strJnt, q = True, piv = True, ws = True )
-	AB = mc.xform( midJnt, q = True, piv = True, ws = True )
-	x = AB[0] - AA[0]
-	y = AB[1] - AA[1]
-	z = AB[2] - AA[2]
+	vec_A = mc.xform( strJnt, q = True, piv = True, ws = True )
+	vec_B = mc.xform( midJnt, q = True, piv = True, ws = True )
+	x = vec_B[0] - vec_A[0]
+	y = vec_B[1] - vec_A[1]
+	z = vec_B[2] - vec_A[2]
 	v = [x,y,z]
-	length_AB = mag(v)
+	vec_AB = mag(v)
 
-	AC = mc.xform( midJnt, q = True, piv = True, ws = True )
-	x = AC[0] - AB[0]
-	y = AC[1] - AB[1]
-	z = AC[2] - AB[2]
+
+	vec_C = mc.xform( endJnt, q = True, piv = True, ws = True )
+
+	x = vec_C[0] - vec_B[0]
+	y = vec_C[1] - vec_B[1]
+	z = vec_C[2] - vec_B[2]
 	v = [x,y,z]
-	length_BC = mag(v)
+	vec_BC = mag(v)
 
+
+	vec_ABC = vec_AB + vec_BC
 
 	if alongAxis == 'y':
 		strJntPosi = mc.getAttr( midJnt+'.ty')  
@@ -63,8 +67,8 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 		disJnt = strJntPosi + endJntPosi
 		ampVal = 0.1
 
-	print(disJnt)
-	print(length_AB + length_BC)
+	print(f'plus method: {disJnt}')
+	print(f'vecter method: {vec_ABC}')
 
 
 	# Ctrl Name
@@ -204,8 +208,20 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 	mc.createNode('multiplyDivide', name = scaleNode)
 	# set value to 1 prevent to unexpect error
 	mc.setAttr( scaleNode + '.input1X', 1)
+
+
+
 	# set lengte of c edge
-	mc.setAttr( scaleNode + '.input2.input2X', abLength)
+	print(f'abLength is: {abLength}')
+	print(f'vec_ABC is: {vec_ABC}')
+	
+	if povPosi == 'front':
+		mc.setAttr( scaleNode + '.input2.input2X', abLength)
+	elif povPosi == 'back':
+		mc.setAttr( scaleNode + '.input2.input2X', vec_ABC)
+	else:
+		mc.error('There must be front or back position.')
+
 
 	# Connect
 	mc.connectAttr( scaleNode + '.output.outputX', mdvAutoNode + '.input2.input2X')

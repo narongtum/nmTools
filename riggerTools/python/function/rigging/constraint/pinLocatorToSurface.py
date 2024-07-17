@@ -277,13 +277,13 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 			print(jnt_list)
 			print(each)
 
+			if creCtrl:
+				#... Create controller
+				gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = scale, ctrlShape = ctrlShape, color = 'yellow', 
+								constraint = False, matrixConst = False, mo = False, translate=True, 
+								rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
 
-			#... Create controller
-			gmbl_ctrl = adjust.creControllerFunc( 	selected = [each], scale = scale, ctrlShape = ctrlShape, color = 'yellow', 
-							constraint = False, matrixConst = False, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = True)[2]
-
-			ctrl_list.append(gmbl_ctrl)
+				ctrl_list.append(gmbl_ctrl)
 
 
 

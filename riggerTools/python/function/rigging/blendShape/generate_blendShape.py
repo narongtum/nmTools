@@ -36,7 +36,7 @@ for mocap project
 
 
 
-def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', multiplier = 2.0 ):
+def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', multiplier = 2.0, blendshapeName = 'facial_bsh' ):
 
 	
 			
@@ -162,7 +162,7 @@ def duplicateForBlendshape( blendshapeAtEnd = False,blendshape_dict = 'dict', mu
 	# return all_bsh 
 	blendshapeAtEnd = True
 	if blendshapeAtEnd:
-		mc.blendShape( all_bsh , 'facialBshBase_grp', topologyCheck = True, name = 'facial_bsh')
+		mc.blendShape( all_bsh , 'facialBshBase_grp', topologyCheck = True, name = blendshapeName)
 	
 
 	print ('''\n

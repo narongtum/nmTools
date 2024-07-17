@@ -1,3 +1,6 @@
+#... using this module instead
+# D:\sysTools\nmTools_github\riggerTools\python\function\rigging\autoRig\bodyRig\headRigExt
+
 # Neck rig module
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload

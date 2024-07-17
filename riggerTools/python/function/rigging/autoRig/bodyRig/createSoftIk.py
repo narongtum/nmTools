@@ -49,14 +49,14 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
-def softIK(		priorMeta, region, side, ctrlName,
+def softIK(		nameSpace,priorMeta, region, side, ctrlName,
 				upAxis = 2, primaryAxis = 2, ikhName= 'ankleIkRGT_ikh', 
 				inputMax = 40, outputMax = 4, debug = False  ):
 
 	SoftIkLogger.debug('ikhName is:{0}'.format(ikhName))
 	SoftIkLogger.debug('ctrlName is:{0}'.format(ctrlName))
 
-	name = 'softIk{0}_{1}'.format(side, region)
+	name = '{0}softIk{1}_{2}'.format(nameSpace, side, region)
 
 
 	#primary axis options

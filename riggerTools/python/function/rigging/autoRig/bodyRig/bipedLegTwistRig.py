@@ -1,5 +1,5 @@
-# log
-# use the same  rotateOrder of both bJnt and ctrl
+#... use this module for create fk/ik Rig
+#... use the same  rotateOrder of both bJnt and ctrl
 
 import maya.cmds as mc
 

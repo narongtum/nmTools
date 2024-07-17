@@ -254,7 +254,8 @@ def headRig(	nameSpace = '' ,
 	headTop_bJnt.parent( head01_bJnt )
 	headButtom_bJnt.parent( head01_bJnt )
 
-	jawReverse_bJnt.parent( headTop_bJnt )
+	# jawReverse_bJnt.parent( headTop_bJnt )
+	jawReverse_bJnt.parent( headButtom_bJnt )
 	jawReverse_bJnt.name = nameSpace + 'jawReverse' + '_bJnt'
 
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
@@ -417,16 +418,18 @@ def headRig(	nameSpace = '' ,
 		jawReverse_bJnt.attr('segmentScaleCompensate').value = 0
 
 		#... Parent
-		jaw01RevZro_grp.parent( headGmbl_ctrl )
+		# jaw01RevZro_grp.parent( headGmbl_ctrl )
+		jaw01RevZro_grp.parent( headBottom_ctrl )
 
-
-		#... Constraint joint parent to controller
-		jawReverse_parCons = core.parentConstraint( jaw01RevGmbl_ctrl , jawReverse_bJnt )
-		jawReverse_parCons.name = part + 'Jnt_parCons'
+		#... Constraint joint parent to controller 
+		#... no need anymore
+		# jawReverse_parCons = core.parentConstraint( jaw01RevGmbl_ctrl , jawReverse_bJnt )
+		# jawReverse_parCons.name = part + 'Jnt_parCons'
 
 
 		#... parent head top to reverse
-		headTopZro_grp.parent(jaw01RevGmbl_ctrl)
+		# headTopZro_grp.parent(jaw01RevGmbl_ctrl)
+		headTopZro_grp.parent(headGmbl_ctrl)
 
 
 		# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
@@ -603,8 +606,9 @@ def headRig(	nameSpace = '' ,
 	# print('\nStop righe there...')
 	# sys.exit(0)
 
-	headBottom_parCons = core.parentConstraint( head01_bJnt , headBottomZro_grp, mo = True  )
-	headBottom_parCons.name = part + '_headBottom' + 'Jnt_parCons'
+	#... no need anymore
+	# headBottom_parCons = core.parentConstraint( head01_bJnt , headBottomZro_grp, mo = True  )
+	# headBottom_parCons.name = part + '_headBottom' + 'Jnt_parCons'
 
 
 	head_loc.maSnap( head01_bJnt )

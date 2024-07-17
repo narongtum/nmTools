@@ -47,7 +47,9 @@ def select_tip_joint(selected_joints, search, replace): # using list
 			  print("Tip joint(s) of", selected_joint, ":", tip_joints)
 			  mc.select(tip_joints, r=True )
 
-			  misc.searchReplace( search, replace )
+			  selected = misc.searchReplace( search, replace )
+
+			  _replace_change_gray(selected)
 
 		 else:
 			  print("No tip joints found for", selected_joint)
@@ -55,9 +57,8 @@ def select_tip_joint(selected_joints, search, replace): # using list
 
 
 
-def replace_change_gray(selected_joints_list):
-	selected = mc.ls(sl=True)
-	for each in selected:
+def _replace_change_gray(selectedLst):
+	for each in selectedLst:
 		mc.setAttr('{0}.overrideEnabled'.format(each), 1)
 		mc.setAttr('{0}.overrideColor'.format(each), 3)
 
@@ -71,7 +72,7 @@ def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace =
 
 	
 
-def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'y'):
+def mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'x'):
 	root_obj = pm.PyNode(root_joint)
 
 	# Retrieve the joint chain

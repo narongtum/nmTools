@@ -81,7 +81,8 @@ def fkIkTwistGenRig(
 				# softIk = False ,
 				stickShape = 'stick_ctrlShape',
 				alongAxis = 'y' ,
-				pinMethod = 'matrix'
+				pinMethod = 'matrix',
+				povPosi = 'front'
 				):	#... stick_ctrlShape , 	gear_ctrlShape	
 				
 				
@@ -742,7 +743,8 @@ def fkIkTwistGenRig(
 								side = side , scaleCtrl = 'placement_ctrl'	, 
 								region = region ,noTouchGrp = noTouchGrp , nameSpace = nameSpace ,
 								lowNam = rawName[2], 
-								alongAxis = alongAxis 
+								alongAxis = alongAxis,
+								povPosi = povPosi
 								)
 	pmaNode = stretchNode[0]
 	psStreEndName = stretchNode[1]
@@ -1199,7 +1201,7 @@ def fkIkTwistGenRig(
 
 
 	#... Create metaNode ...#
-	fkIkTwistRig_meta = core.MetaGeneric( region + 'fkIkTwistRig' + side + '_meta')
+	fkIkTwistRig_meta = core.MetaGeneric( nameSpace + region + 'fkIkTwistRig' + side + '_meta')
 	
 	mc.connectAttr(priorJnt + '.message', fkIkTwistRig_meta.name + '.Rig_Prior')
 	fkIkTwistRig_meta.addAttribute( dataType = 'string' , longName = 'ikh_Name')
@@ -1218,8 +1220,8 @@ def fkIkTwistGenRig(
 	#... Connect to root_meta 
 	if mc.objExists(root_meta):
 		mc.connectAttr('{0}.message'.format(root_meta), '{0}.Rig_Prior'.format(fkIkTwistRig_meta.name), f=True)
-		mc.addAttr(root_meta, longName='{0}_{1}'.format(region,side), dataType='string', keyable=True)
-		mc.connectAttr( '{0}.{1}'.format(fkIkTwistRig_meta.name, 'Base_Name'), '{0}.{1}_{2}'.format(root_meta, region, side), f=True)
+		mc.addAttr(root_meta, longName = f'{nameSpace}{region}_{side}', dataType='string', keyable=True)
+		mc.connectAttr( '{0}.{1}'.format(fkIkTwistRig_meta.name, 'Base_Name'), '{0}.{1}{2}_{3}'.format(root_meta, nameSpace, region, side), f=True)
 
 
 	#... Lock All Attr

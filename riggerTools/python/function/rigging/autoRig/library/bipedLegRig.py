@@ -1,7 +1,7 @@
-# ==================== # biped LegRig
-# incluce 
-# footRoll ankle roll
-# fk/ik switch
+#... ==================== # biped LegRig
+#... incluce 
+#... footRoll ankle roll
+#... fk/ik switch
 
 
 '''

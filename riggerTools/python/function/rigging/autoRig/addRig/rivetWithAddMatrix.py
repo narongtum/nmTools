@@ -1,5 +1,6 @@
 #... using wtAddMatrix for make something like rivet
 #... this is latest file
+# D:\sysTools\nmTools_github\riggerTools\python\function\rigging\autoRig\addRig
 
 import maya.OpenMaya as om
 
@@ -13,12 +14,12 @@ reload(core)
 
 #... I can't find the old function so write the new one number3 
 #... find joint in skinCluster
-skinCluster='sphere_skc'
-vtx = 'body_ply.vtx[899] '
+skinCluster='SK_DM011_skc'
+vtx = 'SK_DM011.vtx[1507]'
 thresholdValue = 0.001
 
 #... driven slave child follower or whatever object
-target = 'rivet01_jnt'
+target = 'spineHi27_bJnt'
 #... Influence object there have a lot of joint in one VTX
 #influence_obj = 'breast01RGT_bJnt'
 
@@ -104,13 +105,13 @@ def getLocalOffset(parent, child):
 for each in influence_obj:
 
 	#... find base name
-	influName = core.findBaseName(each)
-	baseName = influName 
+	influ_jnt = core.findBaseName(each)
+	
 
 	#... Create offset mult matrix
 
 	#... CreateNode
-	mulMtx = '{0}_offset_mulMtx'.format(baseName)
+	mulMtx = '{0}_{1}_offset_mulMtx'.format(targetName, influ_jnt) #... duplicate name if we run this script again
 	mc.createNode( 'multMatrix', n = mulMtx )
 
 
@@ -127,7 +128,7 @@ for each in influence_obj:
 
 
 	#... Next create XFORM for collect value 
-	xform_mulMtx = mc.createNode( 'multMatrix', name = '{0}_xform_mulMtx'.format(baseName))
+	xform_mulMtx = mc.createNode( 'multMatrix', name = '{0}_{1}_xform_mulMtx'.format(targetName, influ_jnt))
 	mc.connectAttr('{0}.matrixSum'.format(mulMtx),'{0}.matrixIn[0]'.format(xform_mulMtx))
 	mc.connectAttr('{0}.worldMatrix[0]'.format(each),'{0}.matrixIn[1]'.format(xform_mulMtx))
 
@@ -211,7 +212,7 @@ decompost.attr('outputScale') >> offset_grp.attr('scale')
 offset_grp.attr('parentInverseMatrix[0]') >> invert_mulMtx.attr('matrixIn[1]')
 
 
-
+print('\t\t\trivetWithAddMatrix Done...')
 
 
 #... TODO

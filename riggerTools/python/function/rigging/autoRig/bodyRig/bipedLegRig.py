@@ -796,7 +796,8 @@ def bipedLegRigExt(
 					softIk = True ,
 					stickShape = 'stick_ctrlShape',
 					alongAxis = 'y',
-					pinMethod = 'matrix'	): #... using  'original' or 'matrix' only
+					pinMethod = 'matrix',
+					povPosi = 'front'	): #... using  'original' or 'matrix' only
 	
 
 	misc.makeHeader(	'Start of %s%s Rig' %(region,side)	)
@@ -830,7 +831,8 @@ def bipedLegRigExt(
 					creTwistJnt = creTwistJnt		,
 					stickShape = stickShape	,
 					alongAxis = alongAxis	,
-					pinMethod = pinMethod)
+					pinMethod = pinMethod,
+					povPosi = povPosi)
 
 
 
@@ -844,7 +846,7 @@ def bipedLegRigExt(
 
 		if softIk == True:
 
-			softIkfunc.softIK( priorMeta = priorMeta, region = region, side = side, ctrlName = ankleIk_ctrl,
+			softIkfunc.softIK( nameSpace = nameSpace, priorMeta = priorMeta, region = region, side = side, ctrlName = ankleIk_ctrl,
 						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
 						inputMax = 40, outputMax = 4  )
 
@@ -897,7 +899,10 @@ def bipedLegRigExt(
 		  'ballRolllegIk{0}_ctrl'.format(side)]
 
 
+
 		for each in rename_list:
+			if nameSpace:
+				each =  nameSpace + each
 			newName = each.replace('_ctrl','_buffCtrl')
 			mc.rename(each, newName)
 

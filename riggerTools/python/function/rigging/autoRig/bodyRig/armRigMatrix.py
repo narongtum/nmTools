@@ -491,7 +491,8 @@ def armRig(
 
 
 	# Create ik stretchy
-	pmaNode = create.iKStretch(	ikJnt = (    upperArm_IkJnt.name , lowerArm_IkJnt.name , hand_IkJnt.name )  , ikCtrl = ( ikRoot_ctrl.name , handIk_ctrl.name ) , part = name	,  side = side , scaleCtrl = 'placement_ctrl'	, noTouchGrp = 	noTouchGrp )
+	pmaNode = create.iKStretch(	ikJnt = (    upperArm_IkJnt.name , lowerArm_IkJnt.name , hand_IkJnt.name )  , ikCtrl = ( ikRoot_ctrl.name , handIk_ctrl.name ) , part = name	,  
+								side = side, scaleCtrl = 'placement_ctrl', noTouchGrp = noTouchGrp, povPosi = povPosi  )
 
 
 	

@@ -159,7 +159,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	first_name = name.split('_')
 	if len(first_name) == 1:
-		mc.error('Naming is not have underscore. terminate')
+		mc.error(f'Naming is not have underscore {first_name}. terminate')
 
 	side = None
 	isDefault = True

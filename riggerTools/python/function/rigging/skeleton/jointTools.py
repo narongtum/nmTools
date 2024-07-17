@@ -51,6 +51,9 @@ def select_tip_joint(selected_joints, search, replace): # using list
 
 			  _replace_change_gray(selected)
 
+			  selected = mc.ls(sl=True)
+			  replace_change_gray(selected)
+			  mc.select(clear=True)
 		 else:
 			  print("No tip joints found for", selected_joint)
 

@@ -157,6 +157,8 @@ def _change_color(name_list = [], color = 'gray', displayType = 1):
 #####################################################
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
+	import re
+
 	first_name = name.split('_')
 	if len(first_name) == 1:
 		mc.error(f'Naming is not have underscore {first_name}. terminate')
@@ -182,6 +184,11 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		else:
 			side = None
 
+		nameNoSide = base_name[2:]
+		nameNoSide = re.sub(r'\d+$', '', nameNoSide)
+
+
+
 
 
 	#... 2. Side follow  'somethingLFT_ext'
@@ -196,6 +203,10 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 				side = 'LFT'
 			elif each.endswith('RGT'):
 				side = 'RGT'
+
+		nameNoSide = base_name.replace(f'{side}', '')
+		nameNoSide = re.sub(r'\d+$', '', nameNoSide)
+
 
 	#... return reverse side
 	reverse_side = ''
@@ -215,7 +226,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	
 
 	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
-	return(base_name, side, reverse_side, isDefault)
+	return(base_name, side, reverse_side, isDefault, nameNoSide)
 
 
 

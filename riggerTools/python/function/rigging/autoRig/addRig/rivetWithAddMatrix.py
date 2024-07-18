@@ -170,8 +170,11 @@ invert_mulMtx.attr('matrixSum') >> decompost.attr('inputMatrix')
 
 #... create null grp
 offset_grp = '{0}_offsetGrp'.format(targetName)
-offset_grp = core.Null(offset_grp)
+# offset_grp = core.Null(offset_grp)
 
+
+#... create locator instead
+offset_grp = core.Locator(offset_grp, lock = True)
 
 #... optional
 # invert_mulMtx.attr('matrixSum') >> offset_grp.attr('offsetParentMatrix')
@@ -191,7 +194,7 @@ for num, (key, value) in enumerate(joint_influence_dict.items()):
 	
 	baseName = core.findBaseName(key)
  
-	mc.connectAttr('{0}_xform_mulMtx.matrixSum'.format(baseName), '{0}.wtMatrix[{1}].matrixIn'.format(weight_matrix,num))
+	mc.connectAttr('{0}_{1}_xform_mulMtx.matrixSum'.format(targetName, baseName), '{0}.wtMatrix[{1}].matrixIn'.format(weight_matrix,num))
 	mc.connectAttr('{0}.{1}'.format(meta.name,key), '{0}.wtMatrix[{1}].weightIn'.format(weight_matrix,num))
 	
 	#mc.setAttr('{0}.wtMatrix[0].matrixIn'.format(weight_matrix)

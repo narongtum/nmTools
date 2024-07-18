@@ -56,6 +56,8 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 	#... find base name
 	name = misc.check_name_style(name = jntLst[0])[0]
 
+	nameNoSide = misc.check_name_style(name = jntLst[0])[4]
+
 
 	old_name_Style = None
 
@@ -65,13 +67,13 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 	if naming_style[3] == True:
 		print('This is LFT, RGT naming style.')
 		old_name_Style = True
-		part = nameSpace + name + side
+		part = nameSpace + nameNoSide + side
 	else:
 		old_name_Style = False
-		part = f'{side}_{nameSpace}{name}' 
+		part = f'{side}_{nameSpace}{nameNoSide}' 
 
 
-	rigGrp = core.Null(f'{part}_grp')
+	rigGrp = core.Null(f'{part}Rig_grp')
 
 
 	#... Creatre empyt for append name
@@ -140,9 +142,12 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 	#... Make curl controller 
 	if curlCtrl:
 		if old_name_Style:
-			base_name = f'{nameSpace}{name}Curl{side}'
+			base_name = f'{nameSpace}{nameNoSide}Curl{side}'
 		else:
-			base_name = f'{side}{nameSpace}{name}Curl'
+			if side:
+				base_name = f'{side}_{nameSpace}{nameNoSide}Curl'
+			else:
+				base_name = f'{nameSpace}{nameNoSide}Curl'
 
 		curl_ctrl = core.Dag(f'{base_name}_ctrl')
 		curl_ctrl.nmCreateController( curlCtrlShape )
@@ -300,6 +305,8 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 	#... Check name style
 	naming_style = misc.check_name_style(name = tmpJnt[0])
 
+	nameNoSide = misc.check_name_style(name = tmpJnt[0])[4]
+
 	if naming_style[3] == True:
 		print('This is LFT, RGT naming')
 
@@ -309,7 +316,7 @@ def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 	part = name + side
 	# Create main group
 	rigGrp = core.Null()
-	rigGrp.name = '%sRig%s_grp' % ( name , side )
+	rigGrp.name = '%sRig%s_grp' % ( nameNoSide , side )
 
 	# Creatre empyt for append name
 	ctrls = []

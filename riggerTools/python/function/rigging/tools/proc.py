@@ -582,7 +582,7 @@ def targetPov( ctrl = '', jnt = '' ):
 	#targetPov( ctrl = 'armLFT_pov_ctrl', jnt = 'lowerArmLFT_bind_jnt' )
 	#targetPov( ctrl = 'armRGT_pov_ctrl', jnt = 'lowerArmRGT_bind_jnt' )
 
-
+	mc.setAttr( loc + '.visibility', 0) 
 
 
 def localWorldSel( ori = True ):

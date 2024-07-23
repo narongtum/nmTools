@@ -49,10 +49,8 @@ def select_tip_joint(selected_joints, search, replace): # using list
 
 			  selected = misc.searchReplace( search, replace )
 
-			  _replace_change_gray(selected)
-
 			  selected = mc.ls(sl=True)
-			  replace_change_gray(selected)
+			  _replace_change_gray(selected)
 			  mc.select(clear=True)
 		 else:
 			  print("No tip joints found for", selected_joint)
@@ -67,7 +65,9 @@ def _replace_change_gray(selectedLst):
 
 
 
-
+def change_endJnt_gray():
+	endJnt_list = mc.ls('*_endJnt')
+	_replace_change_gray(endJnt_list)
 
 def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace = '_tipJnt'):
 	list_tip_joint_grp = list_tip_joints(root_joint)

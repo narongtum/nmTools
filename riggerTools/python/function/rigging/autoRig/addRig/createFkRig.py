@@ -42,6 +42,8 @@ reload( misc )
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
+from function.rigging.constraint import normalConstraint as nmCon
+reload(nmCon)
 
 #... newer cleaner
 #... create fk rig make more clearer than earlior that is so complex
@@ -219,6 +221,17 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		localWorld_attr = ctrl_shape
 
 
+	if localWorld:
+		print(zGrps[0], ctrls[0], priorJnt, 'ctrl_grp',ofGrps[0], name, localWorld_attr)
+		nmCon.parent_localWorld(	zro_grp = zGrps[0],  # Zero out group
+						ctrl = ctrls[0],
+						local_obj = parentCtrlTo,  # Parent object to assign in local space):
+						world_obj = 'ctrl_grp',  # Parent object to assign in world space
+						base_grp = ofGrps[0],  # Offset group
+						body_part = name,
+						attr_occur = localWorld_attr)
+
+
 	#... create another loop here because of bJnt will wrong orient when constraint and then parent
 	#... parent joint to controller
 		
@@ -237,7 +250,7 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		# Add return all ctrl name at index 4
 		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
 	else:
-		return gmbls[0] ,rigGrp.name , bJnts  , ctrls
+		return gmbls[0],rigGrp.name, bJnts, ctrls
 
 
 
@@ -292,7 +305,24 @@ def smoothFk(	broad_jnt = ['frontSkirtBroad01_jnt','frontSkirtBroad02_jnt','fron
 #... everything same but edit curl condition
 #... [useHierarchy] is mean joint that create will moved to under priorJnt by not parent old useHierarchy
 #... [isTmpJnt] is ask the arg is temp joint or not
+#... [useParentInstead]
 #... [so confuse so complex]
+
+
+'''
+#... if you want to parent under prior ctrl directly using this arg
+createFkRig.fkRig_newCurl(	nameSpace = '' , name = 'finE' , parentTo = 'spine02_gmbCtrl' ,
+					tmpJnt = 	('finE01_bJnt',)	,
+					charScale =0.25, priorJnt = 'spine02_bJnt' , priorCtrl = '' ,
+					side = '', ctrlShape = 'circle_ctrlShape', localWorld = False , 
+					color = 'yellow', curlCtrl = False, suffix = '_bJnt', useHierarchy = True, rotateOrder = 'zxy'	,isTmpJnt = False, useParentInstead = True,
+					curlCtrlShape = 'stick_ctrlShape')
+'''
+
+
+
+
+
 
 def fkRig_newCurl(	nameSpace = '' , name = 'ear' , parentTo = 'ctrl_grp' ,
 					tmpJnt = 	( 	'ear01LFT_tmpJnt','ear02LFT_tmpJnt', 'ear03LFT_tmpJnt')	,

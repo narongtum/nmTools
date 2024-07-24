@@ -184,7 +184,11 @@ jtt.select_tip_joint(selected_joints, '_bJnt', '_endJnt')
 
 
 
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 
+selected = mc.ls(sl=True)
+mtc.del_selected_matrix(selected = selected)
 
 
 
@@ -203,11 +207,7 @@ createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = '
 					curlCtrlShape = 'stick_ctrlShape')
 
 							
-from function.rigging.constraint import matrixConstraint as mtc
-reload(mtc)
 
-
-mtc.del_selected_matrix(selected = ['hairB01RGT_bJnt'])
 
 
 

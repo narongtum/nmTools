@@ -207,5 +207,5 @@ def roundSkinWeight(digit=3, selection=''):
 		roundSkinLogger.info("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
 	else:
 		mc.error("JSON File was empty ")
-	print('\n### Complete ###')
+	roundSkinLogger.info('\n### Complete ###')
 	mc.select( deselect = True )

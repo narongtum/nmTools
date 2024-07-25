@@ -11,7 +11,10 @@ selected = mc.ls(sl=True)[0]
 rsw.roundSkinWeight(digit=3, selection=selected)
 
 '''
+from function.framework.reloadWrapper import reloadWrapper as reload
 
+from function.pipeline import logger 
+reload(logger)
 
 import maya.cmds as mc
 import time
@@ -24,6 +27,8 @@ class roundSkinLogger(logger.MayaLogger):
 	LOGGER_NAME = "roundSkin"
 
 def roundSkinWeight(digit=3, selection=''):
+	
+	roundSkinLogger.set_level(logging.INFO)
 
 	#...timeStart
 	timeStart = time.time()
@@ -190,7 +195,7 @@ def roundSkinWeight(digit=3, selection=''):
 				print("key, values pair have a problem")
 				continue
 		print ("\n{0} Vertices were set to vertex weight values. ".format(	len(vertexDict.keys())	))
-		print ("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
+		roundSkinLogger.debug("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
 	else:
 		mc.error("JSON File was empty ")
 	print('\n### Complete ###')

@@ -63,6 +63,29 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+# local world
+# # # # # # # # # # # # # # # # # # # # 
+
+
+from function.rigging.constraint import normalConstraint as nmCon
+reload(nmCon)
+
+nmCon.parent_localWorld(	zro_grp = 'L_pinStrap02Zro_grp',  # Zero out group
+						ctrl = 'L_pinStrap02_ctrl',
+						local_obj = 'L_pinStrap02_gmblCtrl',  # Parent object to assign in local space):
+						world_obj = 'ctrl_grp',  # Parent object to assign in world space
+						base_grp = 'L_pinStrap02Offset_grp',  # Offset group
+						body_part = 'L_pinStrap02',
+						attr_occur = 'L_pinStrap02_ctrlShape')
+
+
+
+
+
+
+
+
 
 
 

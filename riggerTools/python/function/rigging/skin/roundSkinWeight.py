@@ -13,6 +13,8 @@ rsw.roundSkinWeight(digit=3, selection=selected)
 '''
 from function.framework.reloadWrapper import reloadWrapper as reload
 
+import logging 
+
 from function.pipeline import logger 
 reload(logger)
 
@@ -26,8 +28,15 @@ reload (skin)
 class roundSkinLogger(logger.MayaLogger):
 	LOGGER_NAME = "roundSkin"
 
+
+def something():
+	roundSkinLogger.set_level(logging.INFO)
+
+
+
+
 def roundSkinWeight(digit=3, selection=''):
-	
+
 	roundSkinLogger.set_level(logging.INFO)
 
 	#...timeStart
@@ -86,7 +95,7 @@ def roundSkinWeight(digit=3, selection=''):
 				for each in range(len(VtxWeight)):
 					float_num = round(VtxWeight[each], digit)
 					vtxWeightValueList.append(float_num)
-					print(vtxWeightValueList)
+					roundSkinLogger.debug(vtxWeightValueList)
 
 			#... sum value
 			
@@ -184,7 +193,7 @@ def roundSkinWeight(digit=3, selection=''):
 			if ( key != 'skinCluster' ) and ( key != 'skinJnt' ) and ( key != 'geoName' ):
 				try:
 					# disable it for make it faster
-					print ('\nImporting %s to skin data...' %key)
+					roundSkinLogger.debug('\nImporting %s to skin data...' %key)
 					
 					# use skc name, shapeName.vtx[number]
 					mc.skinPercent( skinClusterNam, key, transformValue = vertexDict[key], zeroRemainingInfluences = True )
@@ -194,8 +203,8 @@ def roundSkinWeight(digit=3, selection=''):
 			else:
 				print("key, values pair have a problem")
 				continue
-		print ("\n{0} Vertices were set to vertex weight values. ".format(	len(vertexDict.keys())	))
-		roundSkinLogger.debug("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
+		roundSkinLogger.info("\n{0} Vertices were set to vertex weight values. ".format(len(vertexDict.keys())	))
+		roundSkinLogger.info("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
 	else:
 		mc.error("JSON File was empty ")
 	print('\n### Complete ###')

@@ -80,8 +80,11 @@ else:
 
 
 
-
+#... replace from dict
 def replace_name():
+
+	match_naming_ctrl = mnd.match_naming_dict
+
 	for key in match_naming_ctrl["noman"]:
 		#print(f"Noman: {key}")
 		#print(f'{match_naming_ctrl["noman"][key]}')

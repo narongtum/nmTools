@@ -510,7 +510,7 @@ dode_arm_leg_IK = ['footLFTIK_ctrl',
 
 
 
-match_naming_ctrl = {
+match_naming_dict = {
 	"noman": {
 		"arm_leg_FK": [
 			'ballLegFkLFT_ctrl', 'ankleFkLFT_ctrl', 'lowerLegFkLFT_ctrl', 'upperLegFkLFT_ctrl',

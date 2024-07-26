@@ -61,6 +61,13 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+from function.rigging.util import misc
+reload(misc)
+
+misc.replace_name()
+
+
+
 
 
 # # # # # # # # # # # # # # # # # # # # 

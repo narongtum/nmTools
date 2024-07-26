@@ -433,8 +433,118 @@ ribbon_joint =   {   'arm_rbn'  :	[	u'lwrArmRbn01RGT_rbnBJnt',
 
 
 
+noman_arm_leg_FK = ['ballLegFkLFT_ctrl',
+'ankleFkLFT_ctrl',
+'lowerLegFkLFT_ctrl',
+'upperLegFkLFT_ctrl',
+'ballLegFkRGT_ctrl',
+'ankleFkRGT_ctrl',
+'lowerLegFkRGT_ctrl',
+'upperLegFkRGT_ctrl',
+'handFkLFT_ctrl',
+'lowerArmFkLFT_ctrl',
+'upperArmFkLFT_ctrl',
+'handFkRGT_ctrl',
+'lowerArmFkRGT_ctrl',
+'upperArmFkRGT_ctrl']
+
+noman_arm_leg_IK = ['footIkLFT_ctrl',
+'kneePovLFT_ctrl',
+'footIkRGT_ctrl',
+'kneePovRGT_ctrl',
+'handIkLFT_ctrl',
+'elbowPovLFT_ctrl',
+'handIkRGT_ctrl',
+'elbowPovRGT_ctrl',
+'upperLegIkRootLFT_ctrl',
+'upperLegIkRootRGT_ctrl',
+'upperArmIkRootLFT_ctrl',
+'upperArmIkRootRGT_ctrl'
+]
 
 
+noman_spine=['spineCurl_ctrl',
+'spine01_ctrl',
+'spine02_ctrl',
+'clavLFT_ctrl',
+'clavRGT_ctrl']
+
+dode_spine = ['spineCurl_ctrl',
+'spine01FK_ctrl',
+'spine02FK_ctrl',
+'clvLFT_ctrl',
+'clvRGT_ctrl']
+
+
+
+dode_arm_leg_FK = ['ballLFT_ctrl',
+'footLFTFK_ctrl',
+'lowerLegLFTFK_ctrl',
+'upperLegLFTFK_ctrl',
+'ballRGT_ctrl',
+'footRGTFK_ctrl',
+'lowerLegRGTFK_ctrl',
+'upperLegRGTFK_ctrl',
+'handLFTFK_ctrl',
+'lowerArmLFTFK_ctrl',
+'upperArmLFTFK_ctrl',
+'handRGTFK_ctrl',
+'lowerArmRGTFK_ctrl',
+'upperArmRGTFK_ctrl']
+
+
+dode_arm_leg_IK = ['footLFTIK_ctrl',
+'legLFTPov_ctrl',
+'footRGTIK_ctrl',
+'legRGTPov_ctrl',
+'armLFTIK_ctrl',
+'armLFTPov_ctrl',
+'armRGTIK_ctrl',
+'armRGTPov_ctrl',
+'upperLegLFTIK_ctrl',
+'upperLegRGTIK_ctrl',
+'upperArmLFTIK_ctrl',
+'upperArmRGTIK_ctrl']
+
+
+
+
+
+match_naming_ctrl = {
+	"noman": {
+		"arm_leg_FK": [
+			'ballLegFkLFT_ctrl', 'ankleFkLFT_ctrl', 'lowerLegFkLFT_ctrl', 'upperLegFkLFT_ctrl',
+			'ballLegFkRGT_ctrl', 'ankleFkRGT_ctrl', 'lowerLegFkRGT_ctrl', 'upperLegFkRGT_ctrl',
+			'handFkLFT_ctrl', 'lowerArmFkLFT_ctrl', 'upperArmFkLFT_ctrl',
+			'handFkRGT_ctrl', 'lowerArmFkRGT_ctrl', 'upperArmFkRGT_ctrl'
+		],
+		"arm_leg_IK": [
+			'footIkLFT_ctrl', 'kneePovLFT_ctrl', 'footIkRGT_ctrl', 'kneePovRGT_ctrl',
+			'handIkLFT_ctrl', 'elbowPovLFT_ctrl', 'handIkRGT_ctrl', 'elbowPovRGT_ctrl',
+			'upperLegIkRootLFT_ctrl', 'upperLegIkRootRGT_ctrl',
+			'upperArmIkRootLFT_ctrl', 'upperArmIkRootRGT_ctrl'
+		],
+		"spine": [
+			'spineCurl_ctrl', 'spine01_ctrl', 'spine02_ctrl', 'clavLFT_ctrl', 'clavRGT_ctrl'
+		]
+	},
+	"dode": {
+		"spine": [
+			'spineCurl_ctrl', 'spine01FK_ctrl', 'spine02FK_ctrl', 'clvLFT_ctrl', 'clvRGT_ctrl'
+		],
+		"arm_leg_FK": [
+			'ballLFT_ctrl', 'footLFTFK_ctrl', 'lowerLegLFTFK_ctrl', 'upperLegLFTFK_ctrl',
+			'ballRGT_ctrl', 'footRGTFK_ctrl', 'lowerLegRGTFK_ctrl', 'upperLegRGTFK_ctrl',
+			'handLFTFK_ctrl', 'lowerArmLFTFK_ctrl', 'upperArmLFTFK_ctrl',
+			'handRGTFK_ctrl', 'lowerArmRGTFK_ctrl', 'upperArmRGTFK_ctrl'
+		],
+		"arm_leg_IK": [
+			'footLFTIK_ctrl', 'legLFTPov_ctrl', 'footRGTIK_ctrl', 'legRGTPov_ctrl',
+			'armLFTIK_ctrl', 'armLFTPov_ctrl', 'armRGTIK_ctrl', 'armRGTPov_ctrl',
+			'upperLegLFTIK_ctrl', 'upperLegRGTIK_ctrl', 'upperArmLFTIK_ctrl', 'upperArmRGTIK_ctrl'
+		]
+	}
+}
 
 
 

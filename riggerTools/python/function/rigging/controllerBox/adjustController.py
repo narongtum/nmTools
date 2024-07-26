@@ -276,13 +276,17 @@ def createZroGrp(offset = False):
 
 
 
-# create gimbal Controller
-# list name
+#... create gimbal Controller
+#... list name
 def createGimbal():
 
 	ctrlName = mc.ls(sl=True)[0]
 
 	ctrlShape = mc.listRelatives( ctrlName , shapes = True )[ 0 ]
+
+	gmblData = misc.check_name_style(name = ctrlName)
+	gmbl_nameRaw = gmblData[0]
+	gmbl_nameType = gmblData[3]
 
 	if mc.nodeType(ctrlShape) == 'nurbsCurve':
 
@@ -330,8 +334,13 @@ def createGimbal():
 		parent_ctrl = core.Dag( ctrlName )
 		parent_ctrl.hideArnoldNode()
 		
-		# rename gmbl ctrl
-		mc.rename( gmblCtrl, spName[0] + 'Gmbl' + '_ctrl' )
+		if gmbl_nameType == True:
+			#... rename gmbl ctrl
+			mc.rename( gmblCtrl, spName[0] + 'Gmbl' + '_ctrl' )
+		else:
+			mc.rename( gmblCtrl, gmbl_nameRaw + 'Gmbl' + '_ctrl' )
+			
+
 
 		mc.select( deselect = True )
 

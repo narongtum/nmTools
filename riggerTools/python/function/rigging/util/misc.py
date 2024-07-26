@@ -22,7 +22,8 @@ from function.pipeline import logger
 # logger.Mayalogger.MayaLogger.info('asdasdasd')
 
 
-
+class MiscLogger(logger.MayaLogger):
+	LOGGER_NAME = "MiscLogger"
 
 
 
@@ -76,18 +77,31 @@ else:
 
 
 
-import maya.cmds as mc
-import re
-
-from function.rigging.util import generic_maya_dict as mnd
-reload(mnd)
 
 
 
 
+def replace_name():
+	for key in match_naming_ctrl["noman"]:
+		#print(f"Noman: {key}")
+		#print(f'{match_naming_ctrl["noman"][key]}')
+		for idx,value in enumerate(match_naming_ctrl["noman"][key]):
+			
+			dode_name = match_naming_ctrl["dode"][key][idx]
+			noman_name = match_naming_ctrl["noman"][key][idx]
+			
+			
+			if mc.objExists(noman_name):
+				mc.rename(noman_name, dode_name)
+				print(f'compare name {dode_name} <<>> {noman_name}')
+			else:
+				print('Not found pass na ja.')
+	print(MiscLogger.info('\nDone...'))
 
 
-import maya.cmds as mc
+
+
+
 
 def hide_by_ext(ext='*_loc'):
 	"""

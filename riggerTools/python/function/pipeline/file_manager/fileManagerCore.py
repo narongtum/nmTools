@@ -2649,6 +2649,10 @@ def do_local_commit():
 
 	#... delete '*_bak'
 	FileManagerLog.debug('Do Delete prefix.')
+	#... Add delete suffix and prefix 
+	fileTools.doDeleteSuffixExt(suffix ='_X')
+	fileTools.doDeletePrefixExt(prefix = 'X_')
+
 
 	# Hide Root
 	# fileTools.doHideGrp( 'Root',0 )

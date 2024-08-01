@@ -2632,21 +2632,20 @@ def do_local_commit():
 	else:
 		FileManagerLog.info('There are no ngSkinTools skipped...\n')
 
-	# Remove unused ref
+	#... Remove unused ref
 	fileTools.remUnRef() 
 
-	# Import ref
+	#... Import ref
 	fileTools.impRem()
 
-	# Delete layer
+	#... Delete layer
 	fileTools.deleteDisplayLayer()
 
-	# Add new method for re-organize group struture when publish
+	#... Add new method for re-organize group struture when publish
 	fileTools.doMoveGrp()
 
-	# Move node to target
+	#... Move node to target
 	fileTools.doDeleteGrp()	
-
 
 	#... delete '*_bak'
 	FileManagerLog.debug('Do Delete prefix.')
@@ -2655,16 +2654,17 @@ def do_local_commit():
 	# fileTools.doHideGrp( 'Root',0 )
 	# fileTools.doHideGrp( 'root',0 )
 
-	# count joint
+	#... count joint
 	fileTools.countJnt()
 
-	# Hold for now cause invalid
+	#... Hold for now cause invalid
 	# fileTools.delete_unused_skin_suffix()
 
 	# fileTools.delete_unused_material() 
 
-
-	fileTools.doDeleteMisc(name = 'BaseAnimation')
+	# fileTools.doDeleteMisc(name = 'BaseAnimation')
+	#... clear anim layer
+	fileTools.delete_anim_layer()
 
 	mc.select(deselect = True)
 

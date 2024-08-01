@@ -61,6 +61,34 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+
+
+
+#... manual publish
+
+from function.pipeline import fileTools as fileTools 
+reload(fileTools)
+fileTools.localPublish(mayafileType = 'mb')
+
+
+
+
+
+
+#... replace from my repo to office repo
+
+#... replace from
+from function.
+#... replace to
+from axionTools.
+
+
+
+
+
+
+
+
 from function.rigging.util import misc
 reload(misc)
 

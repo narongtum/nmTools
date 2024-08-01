@@ -55,14 +55,6 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
-def delete_anim_layer():
-	# Get a list of all animation layers
-	anim_layers = cmds.ls(type='animLayer')
-
-	# Delete each animation layer
-	for anim_layer in anim_layers:
-		if mc.objExists(anim_layer):
-			mc.delete(anim_layer)
 
 
 
@@ -571,11 +563,20 @@ def doDeleteSuffixExt(suffix='_bak'):
 	else:
 		print('No objects with suffix "{}" found.'.format(suffix))
 
-def doDeleteMisc(name = 'BaseAnimation'):
-	if mc.objExists(name):
-		mc.delete(name)
-		print("\n %s has been deleted." %name)
 
+# def doDeleteMisc(name = 'BaseAnimation'):
+# 	if mc.objExists(name):
+# 		mc.delete(name)
+# 		print("\n %s has been deleted." %name)
+
+def delete_anim_layer():
+	# Get a list of all animation layers
+	anim_layers = mc.ls(type='animLayer')
+
+	# Delete each animation layer
+	for anim_layer in anim_layers:
+		if mc.objExists(anim_layer):
+			mc.delete(anim_layer)
 
 
 
@@ -1078,6 +1079,16 @@ def delete_unused_skin_suffix(suffix = '*_skc'):
 def delete_unused_material():
 	mel.eval('MLdeleteUnused()')
 	fileToolsLogger.info('\nUnused material deleted.')
+
+
+
+
+def delete_animation_layer(layer_name):
+    if mc.objExists(layer_name):
+        mc.delete(layer_name)
+        print(f"Deleted animation layer: {layer_name}")
+    else:
+        print(f"Animation layer {layer_name} does not exist.")
 
 
 

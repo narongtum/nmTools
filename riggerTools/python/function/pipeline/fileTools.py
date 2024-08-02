@@ -930,9 +930,6 @@ def doDeleteGrp():
 	else:
 		print("No delete_grp found.")
 
-	# Add delete suffix and prefix 
-	doDeleteSuffixExt(suffix ='_bak')
-	doDeletePrefixExt(prefix = 'bak_')
 
 
 

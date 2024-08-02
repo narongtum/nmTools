@@ -22,6 +22,80 @@ reload(misc)
 from function.rigging.controllerBox import adjustController as adjust
 reload(adjust)
 
+
+
+
+'''
+direct run
+
+
+
+
+
+
+
+from function.framework.reloadWrapper import reloadWrapper as reload
+
+from function.rigging.autoRig.bodyRig.facialRig import eyeRig_Marco_ext
+reload(eyeRig_Marco_ext)
+
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+eye_up_dict = eyeRig_Marco_ext.createControlEye(		group_name = 'L_eye_up_locGrp', 
+									CENTER = 'L_center', SIDE = 'L',
+									PART = 'up',
+									crv_hi = 'L_upLidHigh_CRV',
+									crv_low = 'L_upLidLow_CRV',
+									crtlShape = 'plainSphereB_ctrlShape',
+									ctrlSize = 0.01,
+									upVec = 'L_eyeVec_LOC',
+									proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 
+														'L_eye07_corner_jnt', 'L_eye08_corner_jnt')
+										)
+										
+										
+eye_down_dict = eyeRig_Marco_ext.createControlEye(		group_name = 'L_eye_down_locGrp', 
+									CENTER = 'L_center', SIDE = 'L',
+									PART = 'down',
+									crv_hi = 'L_downLidHigh_CRV',
+									crv_low = 'L_downLidLow_CRV',
+									crtlShape = 'plainSphereB_ctrlShape',
+									ctrlSize = 0.01,
+									upVec = 'L_eyeVec_LOC',
+									proxy_jointCurve = ('L_eye04_jnt','L_eye05_jnt','L_eye06_jnt'
+														)	,
+									corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt')
+									)
+									
+
+#... Make share transition
+
+#... L SIDE									
+eyeRig_Marco_ext.makeInbetweener(eye_up_dict = eye_up_dict, eye_down_dict = eye_down_dict)
+
+
+
+#... Make smart blink left side
+
+smartBlink_grp = eyeRig_Marco_ext.makeSmartBlink(
+					SIDE = 'L'							,
+					CURVE = 'CRV'						,
+					up_low_crv = 'L_upLidLow_CRV'		,
+					down_low_crv = 'L_downLidLow_CRV'	,
+					up_hi_crv = 'L_upLidHigh_CRV'		,
+					down_hi_crv = 'L_downLidHigh_CRV'
+															)
+
+
+
+
+'''
+
+
+
+
 #... [Must have]
 #... 1. eye center locator
 #... 2. eye up vector locator
@@ -93,7 +167,7 @@ def createControlEye(	group_name = 'upLoc_grp',
 	loc = mc.ls(sl=True, fl=True)[0]
 
 	#... ask part is upper or lower
-	PART = loc.split('_')[1]
+	PART = PART
 
 	#... select locator again
 	vtx = mc.ls(sl=True, fl=True)
@@ -108,7 +182,9 @@ def createControlEye(	group_name = 'upLoc_grp',
 	tipJnt = []
 	for each in vtx:
 		mc.select(cl=True)
-		jnt = mc.joint(name = '{}_{}EyeLidTip{:02d}_{}'.format(SIDE, PART, num, 'JNT'))
+		# jnt = mc.joint(name = '{}_{}EyeLidTip{:02d}_{}'.format(SIDE, PART, num, 'JNT'))
+		tip_jnt = core.Joint('{}_{}EyeLidTip{:02d}_{}'.format(SIDE, PART, num, 'JNT'),radius = 0.1, overrideEnabled = True, overrideColor = 3)
+		jnt = tip_jnt.name
 		pos = mc.xform(each, q=True, ws=True, t=True)
 		mc.xform(jnt, ws=True, t=pos)
 		posC = mc.xform(CENTER, q=True, ws=True, t=True)
@@ -159,6 +235,8 @@ def createControlEye(	group_name = 'upLoc_grp',
 
 	part_dict['top_grp'].append(grp)
 	mc.select(cl=True)
+
+
 
 	#... END OF PART 1
 
@@ -257,26 +335,35 @@ def createControlEye(	group_name = 'upLoc_grp',
 	if PART == 'up':
 		for each in proxy_jointCurve:
 			rawName = misc.makeProperSeparater(each)
-			joint = core.Dag( each )
-			each_joint = rigTools.jointAt( joint )
-			each_joint.name = rawName + '_pxyJnt'
+			tmp_jnt = core.Dag( each )
+			# each_joint = rigTools.jointAt( joint )
+			each_joint = core.Joint(rawName + '_pxyJnt',radius = 0.1, overrideEnabled = True, overrideColor = 3)
+			each_joint.snap(tmp_jnt)
+			# each_joint.name = rawName + '_pxyJnt'
 			joint_curve.append(each_joint.name)
 			each_joint.parent(eyeLidZro_grp)
 
+		# mc.error('Mile Stone Stop.')
+
+
 	elif PART == 'down':
 		for each in proxy_jointCurve:
-			if each.split('_')[-2] == 'corner':
+			# if each.split('_')[-3] == 'corner':
+			if 'corner' in each:
 				continue
 			else:
 				rawName = misc.makeProperSeparater(each)
-				joint = core.Dag( each )
-				each_joint = rigTools.jointAt( joint )
-				each_joint.name = rawName + '_pxyJnt'
+				tmp_jnt = core.Dag( each )
+				# each_joint = rigTools.jointAt( joint )
+				each_joint = core.Joint(rawName + '_pxyJnt',radius = 0.1, overrideEnabled = True, overrideColor = 3)
+				each_joint.snap(tmp_jnt)
+				# each_joint.name = rawName + '_pxyJnt'
 				joint_curve.append(each_joint.name)
 				each_joint.parent(eyeLidZro_grp)
 
 
 	part_dict['top_grp'].append(eyeLidZro_grp.name)
+
 
 
 
@@ -307,11 +394,12 @@ def createControlEye(	group_name = 'upLoc_grp',
 
 
 	if PART == 'up':
-		
+		print(joint_curve)
 		ctrl_name = adjust.creControllerFunc( joint_curve, scale = ctrlSize, ctrlShape = crtlShape, color = color )
 		part_dict['ctrl_grp'].append(ctrl_name)
-		
 		print(part_dict)
+
+		
 			
 
 
@@ -398,16 +486,23 @@ def makeInbetweener(eye_up_dict, eye_down_dict):
 	# # # # # # # #
 
 	L_up_between_zro = eye_up_dict['ctrl_grp'][0][6] #... L_eye03Zro_grp
-	up_middle_ctrl = eye_up_dict['ctrl_grp'][0][5] #... L_eye02_gmbCtrl
+	up_middle_ctrl = eye_up_dict['ctrl_grp'][0][4] #... L_eye02_ctrl
 	R_up_between_zro = eye_up_dict['ctrl_grp'][0][0] #... L_eye01Zro_grp
 	L_corner_ctrl = eye_up_dict['ctrl_grp'][0][-2] #... L_eye08_ctrl
 	R_corner_ctrl = eye_up_dict['ctrl_grp'][0][-5] #... L_eye07_ctrl
+
+	#... make middle ctrl bigger
+	up_middle_obj = core.Dag(up_middle_ctrl)
+	up_middle_obj.scaleCurve(scale = 1.75)
+	# mc.error('STOP')
+
 
 	#... [pattern constraint] corner_ctrl and middle_ctrl ---> inbetween_zro
 	constr_object = core.pointConstraint( L_corner_ctrl, up_middle_ctrl, L_up_between_zro, maintainOffset=True) 
 	constr_object.name = L_up_between_zro + '_poiCon'
 	constr_object = core.pointConstraint( R_corner_ctrl, up_middle_ctrl, R_up_between_zro, maintainOffset=True) 
 	constr_object.name = R_up_between_zro + '_poiCon'
+
 
 
 
@@ -418,6 +513,11 @@ def makeInbetweener(eye_up_dict, eye_down_dict):
 	down_middle_ctrl = eye_down_dict['ctrl_grp'][0][4] #...L_eye05_ctrl
 	R_down_between_zro = eye_down_dict['ctrl_grp'][0][0] #... L_eye04Zro_grp
 	L_down_between_zro = eye_down_dict['ctrl_grp'][0][6] #.... L_eye06Zro_grp
+
+	#... make middle ctrl bigger
+	down_middle_obj = core.Dag(down_middle_ctrl)
+	down_middle_obj.scaleCurve(scale = 1.75)
+
 
 	constr_object = core.pointConstraint( L_corner_ctrl, down_middle_ctrl, L_down_between_zro, maintainOffset=True) 
 	constr_object.name = L_down_between_zro + '_poiCon'
@@ -469,13 +569,16 @@ def makeSmartBlink(
 
 	#... create attr at broad ctrl for control blendshape
 	middle_ctrl = core.Dag(up_attrAt)
-	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
-	middle_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
+	shapeName = core.shapeName(up_attrAt)
+	middle_ctrlShape = core.Dag(shapeName)
 
+	middle_ctrlShape.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
+	middle_ctrlShape.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
 
-	middle_down_ctrl = core.Dag(down_attrAt)
-	# middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
-	middle_down_ctrl.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
+	shapeName = core.shapeName(down_attrAt)
+	middle_down_ctrlShape = core.Dag(shapeName)
+	# middle_down_ctrlShape.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink_heigh', keyable = True, defaultValue = 0   )
+	middle_down_ctrlShape.addAttribute( at = 'float'  , min = 0  , max = 1, longName = 'smart_Blink', keyable = True, defaultValue = 0   )
 
 
 	smartBlink_bsh = mc.blendShape(up_low_crv, down_low_crv, blendShape_upBlink_crv.name, origin = 'world', name =  '{0}_targetSmartBlink_BSH'.format(SIDE))[0]
@@ -541,14 +644,17 @@ def makeSmartBlink(
 	#downLidBlink_bsh = 'blendShape2'
 
 	#... link connnection
-	mc.connectAttr('{}.smart_Blink'.format(middle_ctrl), '{}.{}'.format(upLidBlink_bsh, upBlink_crv.name), f=True)
-	mc.connectAttr('{}.smart_Blink'.format(middle_down_ctrl), '{}.{}'.format(downLidBlink_bsh, downBlink_crv.name),f=True)
+	mc.connectAttr('{}.smart_Blink'.format(middle_ctrlShape), '{}.{}'.format(upLidBlink_bsh, upBlink_crv.name), f=True)
+	mc.connectAttr('{}.smart_Blink'.format(middle_down_ctrlShape), '{}.{}'.format(downLidBlink_bsh, downBlink_crv.name),f=True)
 
 	#... link smart blink heigh
 	rev_value = core.ReverseNam('{}_smartBlink_{}'.format(SIDE,'REV'))
-	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrl), '{}.{}'.format(smartBlink_bsh, down_low_crv), f=True)
-	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrl), '{}.inputX'.format(rev_value.name), f=True)
+	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrlShape), '{}.{}'.format(smartBlink_bsh, down_low_crv), f=True)
+	mc.connectAttr('{}.smart_Blink_heigh'.format(middle_ctrlShape), '{}.inputX'.format(rev_value.name), f=True)
 	mc.connectAttr('{}.outputX'.format(rev_value.name), '{}.{}'.format(smartBlink_bsh, up_low_crv), f=True)
+
+	#... set intial value
+	middle_ctrl.attr('smart_Blink_heigh').value = 0.8
 
 	EyeRigMarco.info('{0} is DONE'.format(__name__))
 

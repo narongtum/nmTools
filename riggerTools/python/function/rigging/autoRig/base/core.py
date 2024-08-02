@@ -1917,6 +1917,20 @@ class Dag( Node ) :
 
 	# =================
 
+	#... same but more no damage for curve that want to scale
+	def scaleCurve( self, scale = 1 ):
+		print ('Edit scale is %s' %scale)
+		shapes = self.getCurveData()    
+		newShapes = []
+
+		for i , each in enumerate( shapes["points"] ):
+			shapes["points"][i] = [ each[0]*scale, each[1]*scale, each[2]*scale ]
+
+		newShapes.append(shapes)
+		print ('Adjust new shape...')
+		# print(newShapes)
+		mc.curve( self.name, replace = True, p=newShapes[0]["points"], k=newShapes[0]["knots"], d=newShapes[0]["degree"], per=bool(newShapes[0]["form"]) )
+
 
 	def editCtrlShape( self  , axis = 1 ):
 		# is the same output of scaleShape method
@@ -1943,6 +1957,9 @@ class Dag( Node ) :
 		# specifiy the shape that u went to make
 		print ('Adjust new shape...')
 		self.setShape( newShapes )
+
+
+
 
 
 

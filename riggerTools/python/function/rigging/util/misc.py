@@ -260,7 +260,7 @@ def _unparent_if_not_world(obj_name):
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# ... Make proper separater with new condition
+# ... Make proper separater with new condition (outdate using check_name_style in core instead)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 

@@ -1,11 +1,24 @@
-#... source >>> D:\narongtum\research_and_developement\23.09.Sep.09.Sat.17_Cartoon eyeLid rigging _Macro Giordano\2023_09_11_EyeLid Marco
+#... eye lid rig
+# by Marco Giordano
+# https://www.youtube.com/watch?v=-rtys3vFmso
+
+#... Source file
+# D:\narongtum\research_and_developement\23.09.Sep.09.Sat.17_Cartoon eyeLid rigging _Macro Giordano
+# D:\narongtum\research_and_developement\23.09.Sep.09.Sat.17_Cartoon eyeLid rigging _Macro Giordano\2023_09_11_EyeLid Marco
+
+'''
+# direct run
+
+'''
+
 from function.rigging.autoRig.base import core
 reload(core)
 
 import maya.cmds as mc
 
 from maya import OpenMaya
-import uuid
+# import uuid
+
 #... start of part 1
 #... todo: create root and tip joint at the eye ball for each in vertex at eyeSocket
 #... todo: create series of locator of each vtx

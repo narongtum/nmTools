@@ -1,4 +1,21 @@
 #... [EYE RIG Marco Fashion]
+
+#... eye lid rig
+# by Marco Giordano
+# https://www.youtube.com/watch?v=-rtys3vFmso
+
+#... Source file
+# D:\narongtum\research_and_developement\23.09.Sep.09.Sat.17_Cartoon eyeLid rigging _Macro Giordano
+# D:\narongtum\research_and_developement\23.09.Sep.09.Sat.17_Cartoon eyeLid rigging _Macro Giordano\2023_09_11_EyeLid Marco
+
+#... Sample scene
+# D:\narongtum\research_and_developement\24.03.Mar.18.Mon.17_Facial Rig(Use this)\myFile\round_4\04_05_eye\04_05_eye_01_start.0001.ma
+
+'''
+# direct run
+
+'''
+
 from function.framework.reloadWrapper import reloadWrapper as reload
 
 import maya.cmds as mc
@@ -26,7 +43,7 @@ reload(adjust)
 
 
 '''
-direct run
+### direct run
 
 
 
@@ -66,10 +83,13 @@ eye_down_dict = eyeRig_Marco_ext.createControlEye(		group_name = 'L_eye_down_loc
 									upVec = 'L_eyeVec_LOC',
 									proxy_jointCurve = ('L_eye04_jnt','L_eye05_jnt','L_eye06_jnt'
 														)	,
-									corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt')
+									corner_joint = (eye_up_dict['joint'][-2], eye_up_dict['joint'][-1])
 									)
-									
 
+#... eye_up_dict['joint'][-2] = 'L_eye07_corner_pxyJnt'
+#... eye_up_dict['joint'][-1] = 'L_eye08_corner_pxyJnt'
+									
+#eye_up_dict['joint'][-2]
 #... Make share transition
 
 #... L SIDE									
@@ -87,6 +107,10 @@ smartBlink_grp = eyeRig_Marco_ext.makeSmartBlink(
 					up_hi_crv = 'L_upLidHigh_CRV'		,
 					down_hi_crv = 'L_downLidHigh_CRV'
 															)
+
+
+
+
 
 
 
@@ -145,8 +169,8 @@ def createControlEye(	group_name = 'upLoc_grp',
 						ctrlSize = 0.01 ,
 						upVec = 'L_eyeUpVec_LOC',
 						color = 'yellow'	,
-						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'), #... order left to right
-						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt') ,
+						proxy_jointCurve = ('L_eye01_jnt', 'L_eye02_jnt', 'L_eye03_jnt', 'L_eye07_jnt', 'L_eye08_jnt'), #... [between ,mid, between, corner, corner]
+						corner_joint = ('L_eye07_corner_pxyJnt', 'L_eye08_corner_pxyJnt') ,#... use for down only
 						orient_joint = 'xyz'
 						):
 
@@ -378,6 +402,10 @@ def createControlEye(	group_name = 'upLoc_grp',
 	#...#...#...#...#...#...#...#...#...#...#...#...
 
 	#... Up and Down There must be both corner joint
+	if PART == 'up':
+		if corner_joint:
+			mc.warning(f'Up is no need for corner joint. {corner_joint}')
+
 
 	if PART == 'up':
 		eyeCurve_skc = core.SkinCluster( joint_curve, crv_low, dropoffRate = 7 , maximumInfluences = 2 )
@@ -431,6 +459,9 @@ def createControlEye(	group_name = 'upLoc_grp',
 	part_dict['locator'] = []
 	part_dict['locator'] = CENTER, upVec
 
+
+	part_dict['joint'] = []
+	part_dict['joint'] = joint_curve
 
 	misc.makeHeader('{0} is complete'.format(__name__))
 	EyeRigMarco.info('\n...EyeRig DONE Really')

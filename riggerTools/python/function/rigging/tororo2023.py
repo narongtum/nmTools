@@ -61,6 +61,17 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+# # # # # # # # # # # # # # # # # # # # # # # # 
+# # # CHECK NAME STYLE
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+from function.rigging.util import misc
+reload(misc)
+
+got_naming = misc.check_name_style(name = 'L_brow_inn_loc')
+
+
 
 
 
@@ -378,15 +389,7 @@ rwm.rivetMatrix( 	skinCluster = 'Marin_cloth1_skc',
 
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # 
-# # # CHECK NAME STYLE
-# # # # # # # # # # # # # # # # # # # # # # # # 
 
-
-from function.rigging.util import misc
-reload(misc)
-
-got_naming = misc.check_name_style(name = 'L_brow_inn_loc')
 
 
 

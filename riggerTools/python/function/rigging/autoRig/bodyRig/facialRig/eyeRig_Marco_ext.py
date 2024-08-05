@@ -251,7 +251,7 @@ def createControlEye(	group_name = 'upLoc_grp',
 		mc.xform(loc.name, ws=True, t=pos)
 		par = mc.listRelatives(each, p=True)[0]
 
-		mc.aimConstraint(loc.name, par, mo=True, weight=1, aimVector=(1,0,0), upVector=(0,1,0), worldUpType='object', worldUpObject = upVec )
+		mc.aimConstraint(loc.name, par, mo=True, weight=1, aimVector=(1,0,0), upVector=(0,1,0), worldUpType='object', worldUpObject = upVec, name = f'{SIDE}_{PART}EyeLidAim{num:02d}_aimCon' )
 		aimLoc.append(loc.name)
 		num = num + 1
 
@@ -260,6 +260,9 @@ def createControlEye(	group_name = 'upLoc_grp',
 	part_dict['top_grp'].append(grp)
 	mc.select(cl=True)
 
+
+	part_dict['locator_still'] = []
+	part_dict['locator_still'] = grp
 
 
 	#... END OF PART 1
@@ -460,8 +463,11 @@ def createControlEye(	group_name = 'upLoc_grp',
 	part_dict['locator'] = CENTER, upVec
 
 
-	part_dict['joint'] = []
-	part_dict['joint'] = joint_curve
+	part_dict['joint_curve'] = []
+	part_dict['joint_curve'] = joint_curve
+
+	part_dict['joint_tip'] = []
+	part_dict['joint_tip'] = tipJnt
 
 	misc.makeHeader('{0} is complete'.format(__name__))
 	EyeRigMarco.info('\n...EyeRig DONE Really')

@@ -701,6 +701,129 @@ def makeSmartBlink(
 
 
 
+
+#... arrange grp
+def arrange_eye_grp(eye_up_dict, eye_down_dict, smartBlink, center_loc, SIDE):
+
+
+	move_grp = core.Null(f'{SIDE}_eyeMover_grp')
+	move_grp.snap(center_loc)
+
+
+	# zro_grp = []
+	# for index, value in enumerate(eye_dict['ctrl_grp'][0]):
+	# 	if index % 3 == 0:
+	# 		print(value)
+	# 		zro_grp.append(value)
+			
+		
+	zro_up_grp = [value for index, value in enumerate(eye_up_dict['ctrl_grp'][0]) if index % 3 == 0]
+	zro_down_grp = [value for index, value in enumerate(eye_down_dict['ctrl_grp'][0]) if index % 3 == 0]
+
+	eye_all_zro_grp = core.Null(f'{SIDE}_eyeZro_grp')
+	eye_all_zro_grp.snap(move_grp)
+
+	for each in zro_up_grp:
+		mc.parent(each, eye_all_zro_grp)
+
+	for each in zro_down_grp:
+		mc.parent(each, eye_all_zro_grp)	
+	
+	
+	eye_aim_grp = core.Null(f'{SIDE}_eyeAim_grp')
+	eye_aim_grp.snap(move_grp)
+	eye_aim_grp.parent(move_grp)
+
+	print(['top_grp'][0])
+	mc.parent(eye_up_dict['top_grp'][0], eye_aim_grp)
+	mc.parent(eye_down_dict['top_grp'][0], eye_aim_grp)
+	
+	eye_all_zro_grp.parent(move_grp)
+
+	print('END of part 1')
+
+
+	curve_still_grp = core.Null(f'{SIDE}_eyeWireStill_grp')
+
+
+	for idx, each in enumerate(eye_up_dict['curve_grp']):
+		mc.parent(eye_up_dict['curve_grp'][idx], curve_still_grp.name)
+		mc.parent(eye_down_dict['curve_grp'][idx], curve_still_grp.name)
+
+
+	for each in smartBlink:
+		mc.parent(each, curve_still_grp.name)
+
+	mc.parent(eye_up_dict['top_grp'][2], curve_still_grp)
+	mc.parent(eye_down_dict['top_grp'][2], curve_still_grp)
+
+
+	loc_still_grp = core.Null(f'{SIDE}_eyeLocStill_grp')
+
+	mc.parent(eye_up_dict['top_grp'][1], loc_still_grp)
+	mc.parent(eye_down_dict['top_grp'][1], loc_still_grp)
+
+	mc.select(deselect=True)
+	misc.makeHeader('{0} is complete'.format(__name__))
+	return eye_all_zro_grp, curve_still_grp, loc_still_grp
+
+
+
+
+
+
+#... create bind joint 
+
+from function.rigging.util import misc
+reload(misc)
+
+def cre_eye_bJnt(
+	eye_up_dict, 
+	eye_down_dict,
+	SIDE = 'L',
+	region = 'eyeCen',
+	center_loc = 'L_center_loc',
+	):
+
+	#... create joint at center
+
+	center_name = f'{SIDE}_{region}_bJnt'
+
+	center_jnt = core.Joint(center_name, radius = 1, overrideEnabled = True, overrideColor = 1)
+	center_jnt.snap(center_loc)
+
+	for idx, each in enumerate(eye_up_dict['joint_tip']):
+		print(each)
+		newName = each.replace('_JNT','_bJnt')
+		bind_jnt = core.Joint(newName, radius = 1, overrideEnabled = True, overrideColor = 1)
+		bind_jnt.snap(each)
+		bind_jnt.parent(center_jnt)
+
+
+	for idx, each in enumerate(eye_down_dict['joint_tip'][1:-1]):
+		print(each)
+		newName = each.replace('_JNT','_bJnt')
+		bind_jnt = core.Joint(newName, radius = 1, overrideEnabled = True, overrideColor = 1)
+		# bind_jnt = core.Joint(f'{SIDE}_{PART}EyeLidTip{idx:02d}_bJnt', radius = 1, overrideEnabled = True, overrideColor = 1)
+		bind_jnt.snap(each)
+		bind_jnt.parent(center_jnt)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 makeBlink(
 					SIDE = 'L'							,

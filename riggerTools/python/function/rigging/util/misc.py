@@ -1074,6 +1074,9 @@ def snapPointCon(source ,target):
 
 
 
+# ========== # 
+# move to constraint module
+# ========== #
 
 #####################################################
 #      constraint pair between proxy joint and bind joint old(naming)               
@@ -1112,9 +1115,6 @@ def snapPointCon(source ,target):
 
 
 
-# ========== # 
-# move to constraint module
-# ========== #
 
 #... constraint parent suffix name to bind suffix name
 

@@ -1098,9 +1098,9 @@ def localPublish( mayafileType = 'ma'):
 
 	ngSkin = mc.ls('ngSkinToolsData_*')
 	if ngSkin:
-		from ngSkinTools2.operations import removeLayerData
+		import ngSkinTools2
 		# remove all ngSkinTools custom nodes in a scene
-		removeLayerData.removeCustomNodes()
+		ngSkinTools2.operations.removeLayerData.remove_custom_nodes()
 		fileToolsLogger.info('Delete ngSkinTools2...\n')
 	else:
 		fileToolsLogger.info('There are no ngSkinTools skipped...\n')

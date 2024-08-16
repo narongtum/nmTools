@@ -201,7 +201,7 @@ def softIK(		nameSpace,priorMeta, region, side, ctrlName,
 
 	loc_check_grp = core.Null('%s_loc_grp'%name)
 
-	if debug == False:
+	if debug == True:
 
 		test_loc = mc.spaceLocator( n = '%s_test_last_point_BAK' % name )
 		mc.xform(test_loc, translation=lPoints)

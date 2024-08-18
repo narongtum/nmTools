@@ -26,7 +26,7 @@ from function.pipeline import logger
 reload(logger)
 
 PROJECT_NAME = 'Generic'
-version = 1.1
+version = 1.2
 
 # 1. group 'geo_grp' collect all of the skin
 # 2. except than that if have '*_ply' bake the key
@@ -195,6 +195,35 @@ class function:
 				for each in add_unreal_ik_jnt:
 					bakeJnt.append(each)
 
+
+		if mc.checkBox('bakeBlendshape', query=True, value=True):
+			print('this is check')
+
+			#.... bake key for blendshape
+			if mc.objExists('face_bsh'):
+				ExportLogger.debug('found face_bsh')
+				mc.select('face_bsh', r=True)
+				if mc.objExists('eye_bsh'):
+					mc.select('eye_bsh', add=True)
+				mc.bakeResults( 
+				t=(0, 20), 
+				sampleBy=1, 
+				oversamplingRate=1, 
+				disableImplicitControl=True, 
+				preserveOutsideKeys=True, 
+				sparseAnimCurveBake=False, 
+				removeBakedAttributeFromLayer=False, 
+				removeBakedAnimFromLayer=False, 
+				bakeOnOverrideLayer=False, 
+				minimizeRotation=True, 
+				controlPoints=False, 
+				shape=False
+				)
+				ExportLogger.debug('bake key for blendshape.')
+		else:
+			print('this is uncheck')
+			mc.error('this is uncheck')
+
 		
 		# bakeAttrs = ["tx","ty","tz","rx","ry","rz"]
 		bakeAttrs = ["tx","ty","tz","rx","ry","rz","sx","sy","sz"]
@@ -203,15 +232,15 @@ class function:
 
 		mc.bakeResults(bakeJnt, simulation = True, t= time, at=bakeAttrs)
 
-		ExportLogger.debug('BakeResults of Crash sa her.')
+		ExportLogger.debug('BakeResults.')
 
 
-		# Just in case unparent 'root' to world
+		#... Just in case unparent 'root' to world
 
-		if mc.pickWalk( rootJnt , d = 'up')[0] == rootJnt:
-			logger.MayaLogger.info("I'm World Already")
-		else:
-			mc.parent(rootJnt, w=True)
+		# if mc.pickWalk( rootJnt , d = 'up')[0] == rootJnt:
+		# 	logger.MayaLogger.info("I'm World Already")
+		# else:
+		# 	mc.parent(rootJnt, w=True)
 
 		ExportLogger.debug('Deleteing skin and bake key to mesh visibility.')
 		# if del_mesh:
@@ -221,6 +250,7 @@ class function:
 		try:
 			# Delete Rig GRP
 			mc.delete('rig_grp')
+			mc.delete('geo_grp')
 
 			# # Delete geo GRP
 			# if mc.objExists('geo_grp'):
@@ -372,13 +402,13 @@ class Ui:
 
 		
 		
-		#Create Space
+		#...Create Space
 		mc.text( label='', h = 8 )
 		mc.text( label='', h = 8 )
 		
 		mc.setParent("..")
 		
-		# BOTTON FOR CLICK
+		#... BOTTON FOR CLICK
 		mc.columnLayout( adjustableColumn=True )
 		mc.rowColumnLayout( numberOfColumns=2, columnWidth=[(1, 50),(2, 250)])
 		
@@ -392,17 +422,19 @@ class Ui:
 		mc.columnLayout( adjustableColumn=True )
 		mc.rowColumnLayout( numberOfColumns=1, columnWidth=[(1, 300),(2, 150)])
 
-		# CONNECT FRAME
+		#... CONNECT FRAME
 		# mc.button( label = 'Connect Frame', command = self.function.setCamera ,w = 250, h = 30)
 		# mc.text( label ='', h = 8 )
 
-		# FOR PLAYBLAST
+		#... FOR PLAYBLAST
 		# mc.button( label = 'Playblast', command = self.function.playBlast ,w=300, h=50 )
 		# mc.text( label ='', h = 8 )
 
-		# FOR BROWSE
-		# mc.button( label = 'Open folder', command = self.function.openContainFile ,w = 250, h = 30)
-
+		#... FOR BROWSE
+		mc.columnLayout(adjustableColumn=True)
+		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=True)
+		mc.setParent("..")
+		
 		mc.button( label='Import Reference', command = self.function.importRef ,w=50, h=50 )
 		mc.button( label='Bake Anim', command = self.function.bakeAnim ,w=50, h=50 )  
 		mc.button( label='Export Anim', command = self.function.exportFBX ,w=50, h=50 )  
@@ -410,13 +442,14 @@ class Ui:
 
 		mc.showWindow( dWin )
 	
+'''
+Manual run
+run = Ui()
+run.createGUI()
 
-# Manual run
-# run = Ui()
-# run.createGUI()
+from function.asset import genericAnimExporter as gae
+reload(gae)
 
-# from function.asset import genericAnimExporter as gae
-# reload(gae)
-
-# run = gae.Ui()
-# run.createGUI()
+run = gae.Ui()
+run.createGUI()
+'''

@@ -116,31 +116,7 @@ def parent_localWorld(	zro_grp = 'L_pinStrap02Zro_grp',  # Zero out group
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#####################################################
+####################################################
 #      constraint pair between proxy joint and bind joint old(naming)               
 #####################################################
 def constraintProxyJnt( child = 'bJnt', parent = 'pxyJnt' ):
@@ -154,12 +130,6 @@ def constraintProxyJnt( child = 'bJnt', parent = 'pxyJnt' ):
 		mc.parentConstraint( each , childNam , maintainOffset = True)
 		mc.scaleConstraint( each , childNam , maintainOffset = True)
 	print('DONE')
-
-
-
-
-
-
 
 
 

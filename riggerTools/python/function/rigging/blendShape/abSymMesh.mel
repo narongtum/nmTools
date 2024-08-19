@@ -237,7 +237,7 @@ global proc abMirrorSel(string $obj, string $baseObj, string $aSelVerts[], int $
 	string $aStr[];
 	string $str;
 	string $vtx;
-	string $obj;
+	//string $obj;
 	int $aPosVertsInt[];
 	int $aNegVertsInt[];
 	int $aZeroVertsInt[];

@@ -27,6 +27,7 @@ reload(logger)
 
 PROJECT_NAME = 'Generic'
 version = 1.2
+WINDOWNAME = 'animExWin'
 
 # 1. group 'geo_grp' collect all of the skin
 # 2. except than that if have '*_ply' bake the key
@@ -101,15 +102,6 @@ class function:
 
 		
 
-		'''
-		# delete base skin group
-		if mc.objExists('geo_grp'):
-			geometry = 'geo_grp'
-		elif mc.objExists('model_grp'):
-			geometry = 'model_grp'
-
-		mc.delete(geometry)
-		'''
 
 
 		# bake visible mesh
@@ -157,22 +149,6 @@ class function:
 
 
 
-		'''
-		# old condition
-		try:
-			mc.select("*_ply", add=True)
-			# mc.select("*_ply", add=True) # why select alot of ply
-			bake_obj = mc.ls(sl=True)
-			
-			mc.playbackOptions(min = startText)
-			mc.playbackOptions(max = endText)
-			
-			# bake key
-			mc.bakeResults(bake_obj, simulation = True, t= time, disableImplicitControl = True, preserveOutsideKeys = True, at=bakeAttrs)
-		except:
-			ExportLogger.debug('There are no poly bake for visibility.')
-		'''
-
 
 		
 		# Qury bake joint
@@ -205,24 +181,11 @@ class function:
 				mc.select('face_bsh', r=True)
 				if mc.objExists('eye_bsh'):
 					mc.select('eye_bsh', add=True)
-				mc.bakeResults( 
-				t=(0, 20), 
-				sampleBy=1, 
-				oversamplingRate=1, 
-				disableImplicitControl=True, 
-				preserveOutsideKeys=True, 
-				sparseAnimCurveBake=False, 
-				removeBakedAttributeFromLayer=False, 
-				removeBakedAnimFromLayer=False, 
-				bakeOnOverrideLayer=False, 
-				minimizeRotation=True, 
-				controlPoints=False, 
-				shape=False
-				)
+				mc.bakeResults(preserveOutsideKeys = True, simulation = True, t= time )
 				ExportLogger.debug('bake key for blendshape.')
 		else:
 			print('this is uncheck')
-			mc.error('this is uncheck')
+			# mc.error('this is uncheck')
 
 		
 		# bakeAttrs = ["tx","ty","tz","rx","ry","rz"]
@@ -235,16 +198,10 @@ class function:
 		ExportLogger.debug('BakeResults.')
 
 
-		#... Just in case unparent 'root' to world
 
-		# if mc.pickWalk( rootJnt , d = 'up')[0] == rootJnt:
-		# 	logger.MayaLogger.info("I'm World Already")
-		# else:
-		# 	mc.parent(rootJnt, w=True)
 
 		ExportLogger.debug('Deleteing skin and bake key to mesh visibility.')
-		# if del_mesh:
-		# 	mc.delete(del_mesh)	
+
 
 
 		try:
@@ -252,11 +209,7 @@ class function:
 			mc.delete('rig_grp')
 			mc.delete('geo_grp')
 
-			# # Delete geo GRP
-			# if mc.objExists('geo_grp'):
-			# 	mc.delete('geo_grp')
-			# else:
-			# 	ExportLogger.debug('There are no geo_grp to delete.')
+
 
 			
 		except RuntimeError:
@@ -292,34 +245,40 @@ class function:
 
 		# fileName = self.getSceneName()
 		path = path + '\\'
-		# MovingJellyLogger.info(path)
-		# MovingJellyLogger.info(fileName)
-
-		# condition of jelly visibility
-		
-		# try:
-		# 	mc.select( '*_ply', r = True )
-		# except:
-		# 	ExportLogger.info('There are no suffix {0}'.format("*_ply"))
 				
 		mc.select( rootJnt, add = True)
 
 
-		# Set time length
+		#... Set time length
 		ExportLogger.debug('Set the time length: {0}'.format(path))
 		setTime = function()
 		setTime.setTimeLine()
 
+		#... reset Take001 to file name
+		clipName = mc.textField( 'animClip', tx = True, q = True )
+		startTime = mc.textField( 'startTexFld', tx = True, q = True )
+		endTime = mc.textField( 'endTexFld', tx = True, q = True )
+		
+		cleanUpExporterCommand = 'FBXExportSplitAnimationIntoTakes -c'
+		clearExporterCommand = 'FBXExportDeleteOriginalTakeOnSplitAnimation -v true'
+		createExportClipCommand = ' FBXExportSplitAnimationIntoTakes -v "{0}" {1} {2}'.format( clipName, startTime, endTime ) 
+		
+		mel.eval( cleanUpExporterCommand )
+		mel.eval( clearExporterCommand )
+		mel.eval( createExportClipCommand )
 
-		# Export obj
+
+
+
+		#... Export obj
 		exportCommand = 'file -force -options "v=0;" -typ "FBX export" -pr -es '
 		path = path.replace('\\','/')
-		# MovingJellyLogger.info('This path result%s ' %path)
+		ExportLogger.info('This path result%s ' %path)
 
 		exportFBXPath = r'"'+ path + fileName + '.fbx' '"'
 		exportCommand += exportFBXPath
 
-		# MovingJellyLogger.info('This Export result%s' %exportCommand)
+		ExportLogger.info('This Export result%s' %exportCommand)
 
 		# Exec
 		mel.eval( exportCommand )
@@ -372,14 +331,14 @@ class Ui:
 		# normalize path
 		path = os.path.normpath( path )
 
-		# MovingJellyLogger.warning('This is funtion %s.' %path)
+		# ExportLogger.warning('This is funtion %s.' %path)
 		
 		
 		# Make a new window
-		if mc.window('pbWin', exists = True):
-			mc.deleteUI('pbWin')
+		if mc.window(WINDOWNAME, exists = True):
+			mc.deleteUI(WINDOWNAME)
 	
-		dWin = mc.window('pbWin', title="{0} Anim Export {1}".format(PROJECT_NAME,version) , iconName ='PB', widthHeight=(300, 200), s = 1, mm = 0, mxb = 0, mw = False )
+		dWin = mc.window(WINDOWNAME, title="{0} Anim Export {1}".format(PROJECT_NAME,version) , iconName ='PB', widthHeight=(300, 200), s = 1, mm = 0, mxb = 0, mw = False )
 		
 		mc.frameLayout( label='Export Options',collapsable=False, mw=5, mh=5 )
 		mc.columnLayout( adjustableColumn=True )
@@ -415,7 +374,12 @@ class Ui:
 		mc.text( label='Path :', h = 25 )
 		mc.textField( 'pathField' , fi = path )   
 		mc.text( label='Name :', h = 25 )
-		mc.textField( 'nameField', fi = name )     
+		mc.textField( 'nameField', fi = name )
+
+		#... clip field
+		mc.text( label='Clip :', h = 25 )
+		mc.textField( 'animClip', fi = name )
+
 		
 		mc.text( label='', h = 8 )
 		mc.setParent("..")
@@ -432,7 +396,7 @@ class Ui:
 
 		#... FOR BROWSE
 		mc.columnLayout(adjustableColumn=True)
-		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=True)
+		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=False)
 		mc.setParent("..")
 		
 		mc.button( label='Import Reference', command = self.function.importRef ,w=50, h=50 )

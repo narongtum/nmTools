@@ -61,6 +61,11 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+#... select bJnt
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+standard_list = mnd.standardJnt_list
+
 
 
 
@@ -605,6 +610,13 @@ def listHierarchy(type = 'joint'):
 #...  list end joint
 # # # # # # # # # # # # # # # #
 
+
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+
+
+selected_joints = mc.ls(sl=True)
+jtt.select_tip_joint(selected_joints, '_bJnt', '_endJnt')
 
 
 # Get the selected joint(s)

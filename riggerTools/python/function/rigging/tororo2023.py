@@ -61,6 +61,30 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+
+
+
+import maya.cmds as cmds
+
+def connectTrans():
+	selObjs = cmds.ls(sl=True)
+	cmds.connectAttr(selObjs[0] + ".translateX", selObjs[1] + ".translateX")
+	cmds.connectAttr(selObjs[0] + ".translateY", selObjs[1] + ".translateY")
+	cmds.connectAttr(selObjs[0] + ".translateZ", selObjs[1] + ".translateZ")
+
+	cmds.connectAttr(selObjs[0] + ".rotateX", selObjs[1] + ".rotateX")
+	cmds.connectAttr(selObjs[0] + ".rotateY", selObjs[1] + ".rotateY")
+	cmds.connectAttr(selObjs[0] + ".rotateZ", selObjs[1] + ".rotateZ")
+
+	cmds.connectAttr(selObjs[0] + ".scaleX", selObjs[1] + ".scaleX")
+	cmds.connectAttr(selObjs[0] + ".scaleY", selObjs[1] + ".scaleY")
+	cmds.connectAttr(selObjs[0] + ".scaleZ", selObjs[1] + ".scaleZ")
+
+connectTrans()
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # 
 # # # CHECK NAME STYLE
 # # # # # # # # # # # # # # # # # # # # # # # # 

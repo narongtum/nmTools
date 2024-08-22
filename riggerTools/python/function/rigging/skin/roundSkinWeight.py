@@ -44,6 +44,7 @@ def roundSkinWeight(digit=3, selection=''):
 
 	selection = mc.ls(sl = True, fl = True)
 	if selection == None:
+		mc.warning("No valid selection made. Exiting roundSkinWeight.")
 		return False
 	each = selection[0]
 	mc.select( each, r = True)

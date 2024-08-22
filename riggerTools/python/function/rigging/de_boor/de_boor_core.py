@@ -1,4 +1,4 @@
-# de_boor_core
+# de_boor_core type follow tutor
 
 def get_open_uniform_kv(n, d):
 
@@ -52,7 +52,7 @@ def knot_vector(kv_type, cvs, d):
 
 
 
-get_periodic_uniform_kv(4, 2)
+
 
 def de_boor(n, d, t, kv, tol = 0.0000001):
 	if t + tol > 1:
@@ -60,14 +60,23 @@ def de_boor(n, d, t, kv, tol = 0.0000001):
 
 	weights = [1.0 if kv[i] <= kv[i+1] else 0.0 for i in range(n+d)]
 
-	basis_width = n + d + 1
+	basis_width = n + d - 1
 
 	for degree in range(1, d+1):
 		for i in range(basis_width):
 			if weights[i] == 0 and weights[i+1] == 0:
+
 				continue
 
 			a_denom = kv[i+degree] - kv[i]
 			b_denom = kv[i+degree+1] - kv[i+1]
-			a = (t-kv[i]*weights[i] / a_denom if a_denom != 0 else 0.0)
-			b = (kv[i+degree])
+			a = (t - kv[i]) * weights[i] / a_denom if a_denom != 0 else 0.0
+
+			b = (kv[i + degree + 1] - t) * weights[i + 1] / b_denom if b_denom != 0 else 0.0
+
+			weights[i] = a + b
+
+		basis_width -= 1
+
+	return weights[:n]
+# hah

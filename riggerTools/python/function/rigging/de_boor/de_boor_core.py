@@ -1,0 +1,55 @@
+# de_boor_core
+
+def get_open_uniform_kv(n, d):
+
+	"""
+	Get uniform knot vector
+	Example:
+		#... n is control vertex
+		#... d is degree
+		get_open_uniform_kv(4, 1)
+		get_open_uniform_kv(4, 2)
+		get_open_uniform_kv(4, 3)
+
+	Attributes:
+		n(integer): the number of control vertices
+		d(integer): the degree of output
+	"""
+
+	return [0] * (d+1) + [(i-d) / (n-d) for i in range(d+1,n)] + [1]*(d+1)
+	
+
+def get_periodic_uniform_kv(n, d):
+
+	"""
+	Get periodic uniform knot vector. Append d values to the start and end
+
+	Examples:
+		get_periodic_uniform_kv(4,2)
+
+	Attributes:
+		n(integer): the number of control vertices
+		d(integer): the degree of output
+
+	"""
+	i = 1.0 / (n+d)
+	return [-i * a for a in range(d,0,-1)] + [i*a for a in range(n+d+1)] + [i*a+1 for a in range(1,d+1)]
+
+
+
+def knot_vector(kv_type, cvs, d):
+	cvs_copy = cvs[:]
+	if kv_type == 'open':
+			kv = get_open_uniform_kv(len(cvs), d)
+	else:
+		kv = get_periodic_uniform_kv(len(cvs), d)
+
+		for i in range(d):
+			cvs_copy.insert(0, cvs[len(cvs) - i - 1])
+			cvs_copy.append(cvs[i])
+
+	return kv, cvs_copy
+
+
+
+get_periodic_uniform_kv(4, 2)

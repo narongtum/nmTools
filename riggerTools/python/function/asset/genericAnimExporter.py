@@ -248,6 +248,12 @@ class function:
 				
 		mc.select( rootJnt, add = True)
 
+		if mc.objExists( 'Export_grp' ):
+			export_grp = 'Export_grp'
+		elif mc.objExists( 'export_grp' ):
+			export_grp = 'export_grp'
+		mc.select( export_grp, add = True)
+
 
 		#... Set time length
 		ExportLogger.debug('Set the time length: {0}'.format(path))
@@ -289,6 +295,7 @@ class function:
 		mc.select(deselect = True)
 
 		print ('# # # %s Export Complete # # #' %PROJECT_NAME)
+		mc.deleteUI(WINDOWNAME)
 
 
 
@@ -396,7 +403,7 @@ class Ui:
 
 		#... FOR BROWSE
 		mc.columnLayout(adjustableColumn=True)
-		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=False)
+		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=True)
 		mc.setParent("..")
 		
 		mc.button( label='Import Reference', command = self.function.importRef ,w=50, h=50 )

@@ -340,7 +340,8 @@ def _creParentCtrl(size=1.0, color='yellow', name='main', ctrlShape = 'square_ct
 
 # ------- EXAMPLES -------- #
 
-
+#... must have locator first 
+#... naming it like L_mainCv01 >>> L_mainCv016
 
 #... number of Master control
 count=6

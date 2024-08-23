@@ -68,6 +68,10 @@ standard_list = mnd.standardJnt_list
 
 
 
+ribbon_joint_dict = mnd.ribbon_joint
+
+
+
 
 import maya.cmds as cmds
 
@@ -617,6 +621,9 @@ reload(jtt)
 
 selected_joints = mc.ls(sl=True)
 jtt.select_tip_joint(selected_joints, '_bJnt', '_endJnt')
+
+
+
 
 
 # Get the selected joint(s)

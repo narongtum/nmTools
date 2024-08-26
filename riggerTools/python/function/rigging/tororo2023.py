@@ -60,6 +60,20 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 '''
+#... export
+from function.asset import exportFBX
+reload(exportFBX)
+
+if mc.objExists('rig_grp.asset_name'):
+	print('yeah')
+	asset_name = mc.getAttr('rig_grp.asset_name')
+
+selection = mc.ls(sl=True)
+
+exportFBX.exportFBXnoConnection(selection, fileName = asset_name)
+
+
+
 
 #... select bJnt
 from function.rigging.util import generic_maya_dict as mnd

@@ -26,7 +26,7 @@ from function.pipeline import logger
 reload(logger)
 
 PROJECT_NAME = 'Generic'
-version = 1.2
+version = 1.22
 WINDOWNAME = 'animExWin'
 
 # 1. group 'geo_grp' collect all of the skin
@@ -351,11 +351,16 @@ class Ui:
 		mc.columnLayout( adjustableColumn=True )
 		
 		mc.rowColumnLayout( numberOfColumns=2, columnWidth=[(1, 150),(2, 150)])
+
+
 		
 		mc.text( label='Start :', h = 20)
 		mc.text( label='End :', h = 20 )
 		mc.textField('startTexFld', tx = '' , h = 30)
 		mc.textField('endTexFld', tx = '', h = 30 )
+
+		#... auto assign value first
+		self.function.getTimeLine()
 		
 		mc.text( label='', h = 8 )
 		mc.text( label='', h = 8 )

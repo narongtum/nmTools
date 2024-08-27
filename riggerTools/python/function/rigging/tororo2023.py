@@ -286,12 +286,14 @@ pls.pin_locator_surface(	# need pxy nrb to drive locator
 from function.rigging.skeleton import jointTools as jtt
 reload(jtt)
 
+selected_joints = mc.ls(sl=True)
+jtt.select_tip_joint(selected_joints, '_bJnt', '_endJnt')
+
 
 jtt.mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'x')
 
 
-selected_joints = mc.ls(sl=True)
-jtt.select_tip_joint(selected_joints, '_bJnt', '_endJnt')
+
 
 
 

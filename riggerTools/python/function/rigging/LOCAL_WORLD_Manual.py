@@ -44,15 +44,21 @@ try:
 
 	# Assign names to local and world groups
 	if body_part:
-		loc_grp.name = body_part + '_local'
-		wor_grp.name = body_part + '_world'
+		loc_grp.name = body_part + '_local_grp'
+		wor_grp.name = body_part + '_world_grp'
 	else:
 		loc_grp.name = 'local'
 		wor_grp.name = 'world'
 
 	# Orient constraints
 	world_grp_cons = core.orientConstraint(world_obj, wor_grp, mo=True)
+	world_grp_cons.name = body_part + 'World'
+	world_grp_cons.suffix
+
 	base_grp_base_cons = core.orientConstraint(loc_grp, wor_grp, local_world_grp)
+	base_grp_base_cons.name = body_part + 'Base'
+	base_grp_base_cons.suffix
+
 	reverse_node_rev = core.Reverse()
 	reverse_node_rev.name = body_part + '_rev'
 

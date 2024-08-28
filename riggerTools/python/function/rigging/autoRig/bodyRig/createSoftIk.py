@@ -480,6 +480,11 @@ def softIK(		nameSpace,priorMeta, region, side, ctrlName,
 	misc.snapPointConst(joints[2], '%s_end_dist_loc'%name)
 	offset_parCons = core.pointConstraint( ctrlName , '%s_end_dist_loc' % name , mo = True)
 
+	#... hide locator at end
+	mc.setAttr(f'{start_loc}.visibility', 0)
+	mc.setAttr(f'{end_loc}.visibility', 0)
+	
+
 
 
 	if priorMeta:

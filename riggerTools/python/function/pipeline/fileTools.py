@@ -1111,6 +1111,9 @@ def localPublish( mayafileType = 'ma'):
 	# import ref
 	impRem()
 
+	doDeleteSuffixExt(suffix ='_X')
+	doDeletePrefixExt(prefix = 'X_')
+
 	# delete layer
 	deleteDisplayLayer()
 

@@ -50,3 +50,5 @@ def split_with_curve(mesh, base_mesh, crv, output_names, d=None):
 		if not offset_v.isEquivalent(om.MVector.kZeroVector):
 			_, t = crv_fn.closetPoint(mesh_p)
 			t_n = t / crv_spans
+
+			if kv_type ==  

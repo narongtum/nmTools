@@ -200,61 +200,60 @@ controller_thicker_list = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl'
 		'upperArmLFT_bJnt','upperArmRGT_bJnt','upperLegLFT_bJnt','upperLegRGT_bJnt'	]"""
 
 
-standardJnt_list = (
-		"ankleLFT_bJnt",
-		"ankleRGT_bJnt",
-		"ballLFT_bJnt",
-		"ballRGT_bJnt",
-		"clavLFT_bJnt",
-		"clavRGT_bJnt",
-		"handLFT_bJnt",
-		"handRGT_bJnt",
-		"hip_bJnt",
-		"index01LFT_bJnt",
-		"index01RGT_bJnt",
-		"index02LFT_bJnt",
-		"index02RGT_bJnt",
-		"index03LFT_bJnt",
-		"index03RGT_bJnt",
-		"lowerArmLFT_bJnt",
-		"lowerArmRGT_bJnt",
-		"lowerLegLFT_bJnt",
-		"lowerLegRGT_bJnt",
-		"ring01LFT_bJnt",
-		"ring01RGT_bJnt",
-		"ring02LFT_bJnt",
-		"ring02RGT_bJnt",
-		"ring03LFT_bJnt",
-		"ring03RGT_bJnt",
-		"spine01_bJnt",
-		"spine02_bJnt",
-		"spine03_bJnt",
-		"spine04_bJnt",
-		"thumb01LFT_bJnt",
-		"thumb01RGT_bJnt",
-		"thumb02LFT_bJnt",
-		"thumb02RGT_bJnt",
-		"thumb03LFT_bJnt",
-		"thumb03RGT_bJnt",
-		"upperArmLFT_bJnt",
-		"upperArmRGT_bJnt",
-		"upperLegLFT_bJnt",
-		"upperLegRGT_bJnt",
-		"neck_bJnt",
-		"indexBaseLFT_bJnt",
-		"middle03LFT_bJnt",
-		"middle02LFT_bJnt",
-		"middle01LFT_bJnt",
-		"middleBaseLFT_bJnt",
-		"ringBaseLFT_bJnt",
-		"pinkyBaseLFT_bJnt",
-		"middle03RGT_bJnt",
-		"middle02RGT_bJnt",
-		"middle01RGT_bJnt",
-		"middleBaseRGT_bJnt",
-		"indexBaseRGT_bJnt",
-		"ringBaseRGT_bJnt",
-		"pinkyBaseRGT_bJnt")
+standardJnt_list = ('ankleLFT_bJnt',
+ 'ankleRGT_bJnt',
+ 'ballLFT_bJnt',
+ 'ballRGT_bJnt',
+ 'clavLFT_bJnt',
+ 'clavRGT_bJnt',
+ 'handLFT_bJnt',
+ 'handRGT_bJnt',
+ 'hip_bJnt',
+ 'index01LFT_bJnt',
+ 'index01RGT_bJnt',
+ 'index02LFT_bJnt',
+ 'index02RGT_bJnt',
+ 'index03LFT_bJnt',
+ 'index03RGT_bJnt',
+ 'lowerArmLFT_bJnt',
+ 'lowerArmRGT_bJnt',
+ 'lowerLegLFT_bJnt',
+ 'lowerLegRGT_bJnt',
+ 'ring01LFT_bJnt',
+ 'ring01RGT_bJnt',
+ 'ring02LFT_bJnt',
+ 'ring02RGT_bJnt',
+ 'ring03LFT_bJnt',
+ 'ring03RGT_bJnt',
+ 'spine01_bJnt',
+ 'spine02_bJnt',
+ 'spine03_bJnt',
+ 'thumb01LFT_bJnt',
+ 'thumb01RGT_bJnt',
+ 'thumb02LFT_bJnt',
+ 'thumb02RGT_bJnt',
+ 'thumb03LFT_bJnt',
+ 'thumb03RGT_bJnt',
+ 'upperArmLFT_bJnt',
+ 'upperArmRGT_bJnt',
+ 'upperLegLFT_bJnt',
+ 'upperLegRGT_bJnt',
+ 'neck_bJnt',
+ 'middle03LFT_bJnt',
+ 'middle02LFT_bJnt',
+ 'middle01LFT_bJnt',
+ 'middle03RGT_bJnt',
+ 'middle02RGT_bJnt',
+ 'middle01RGT_bJnt',
+ 'pinky01LFT_bJnt',
+ 'pinky02LFT_bJnt',
+ 'pinky03LFT_bJnt',
+ 'pinky01RGT_bJnt',
+ 'pinky02RGT_bJnt',
+ 'pinky03RGT_bJnt',
+ 'head01_bJnt',
+ 'eyeLFT_bJnt',
+ 'eyeRGT_bJnt')
 
 
 
@@ -599,6 +598,21 @@ match_naming_dict = {
 		]
 	}
 }
+
+
+
+handle_behavior_dict = {
+						'finger':{
+									'stick_name':['handStickLFT_ctrl'],
+									'behavior_name':['fist','roll','relax','cup','spread','wide'],
+									'side':['LFT','RGT']		
+									},
+						'foot':{
+									'stick_name':['footIkLFT_ctrl'],
+									'behavior_name':['ballRoll','toeRoll','heelTwist','toeTwist','footRock','ballRise'],
+									'side':['LFT','RGT']		
+									}
+								}
 
 
 

@@ -1,81 +1,66 @@
-# reset all controller
-from function.framework.reloadWrapper import reloadWrapper as reload
-
 import maya.cmds as mc
-
 from function.rigging.util import misc as misc
-reload(misc)
+from function.rigging.util import generic_maya_dict as mnd
+
+#... Determine namespace and reference string
 
 def resetAllController( reference = False ):
-	name = ''
-	if reference:
-		refStr = '*:*'
-		print ('This is reference.')
-	else:
-		refStr = '*'
-	print (refStr)
 
-	#sel = mc.ls( '%s_ctrl' %refStr )
+	refStr = '*:*' if reference else '*'
 
-	sel = mc.ls('%s_ctrl' %refStr,'%s_gmbCtrl' %refStr)
-	for i in range( len(sel) ):
+	#... Select controllers
+	sel = mc.ls(f'{refStr}_ctrl', f'{refStr}_gmbCtrl')
 
-		name = sel[i]
-		# DISABLE PRINT BECAUSE IT MAKE SLOWER
-		# print 'Reset %s Ctrl Value to Zero.' %name
-		attr = 'tx','ty','tz','rx','ry','rz','sx','sy','sz'
-		for a in range(len(attr)):
-			attrName = name + '.' + attr[a]
-			lock = mc.getAttr( attrName , l = 1 )
-			if lock == True:
+	#... Reset transformation attributes
+	for name in sel:
+		attr_list = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz']
+		for attr in attr_list:
+			attr_name = f"{name}.{attr}"
+			if mc.getAttr(attr_name, lock=True):
 				continue
-			if lock == False:
-				if attr[a] == 'sx':
-					mc.setAttr(attrName,1)
-				elif attr[a] == 'sy':
-					mc.setAttr(attrName,1)
-				elif attr[a] == 'sz':
-					mc.setAttr(attrName,1)
 
-				else:
-					# if some controller having connection it will cast error.
-					try:
-						if mc.getAttr( attrName ) == 0:
-							# DISABLE PRINT BECAUSE IT MAKE SLOWER
-							# print 'It already 0 skipped.'
-							continue
-						else:
-							mc.setAttr( attrName, 0 )
-					except :
-						print ('%s is can not reset, skipped.' %name)
-						continue
-					
+			#... if attr is SCALE reset to '1' if not SCALE reset to '0'
+			default_value = 1 if attr in ['sx', 'sy', 'sz'] else 0
 
-	# include condition for finger curl controller
-	# noman edit
+			#... long version
+			'''
+			if attr in ['sx', 'sy', 'sz']:
+				default_value = 1
+			else:
+				default_value = 0
+			'''
 
-	curlBehav = ( 'fist' ,'roll' ,'relax' , 'spread' , 'wide')
+			try:
+				if mc.getAttr(attr_name) != default_value:
+					mc.setAttr(attr_name, default_value)
+			except:
+				print(f"{attr_name} cannot be reset, skipped.")
+				continue
 
-	curlFinger = ('armStickRGT_ctrl', 'armStickLFT_ctrl', 'handStickRGT_ctrl', 'handStickLFT_ctrl', 'stickLFT_ctrl', 'stickRGT_ctrl')
 
-	print (name)
-	print ('This is Reference si na.')
+	#... Handle specific finger and foot controllers
+	handle_behavior_dict = mnd.handle_behavior_dict
+	print(name)
 	mc.select(name)
+
 	nameSpace = misc.findNameSpace()
 
+	for category, data in handle_behavior_dict.items():
+		for stick_name in data['stick_name']:
+			for side in data['side']:
+				stick_with_side = stick_name.replace('LFT', side)
+				for behavior in data['behavior_name']:
+					combined_name = f"{nameSpace}{stick_with_side}.{behavior}"
+					if mc.objExists(combined_name):
+						mc.setAttr(combined_name, 0)
+						print(f"Reset {category}: {combined_name} ...\n")
+					else:
+						print(f'{combined_name} is not found. Please check.')
 
-	for finger in curlFinger:
-		for behav in curlBehav:
-			print (nameSpace + finger + '.' + behav)
-			if mc.objExists( nameSpace + finger + '.' + behav ):
-				mc.setAttr( nameSpace + finger + '.' + behav, 0 )
-	
-
-
-		print ('Reset finger ....\n')
-
-
-
-
+	# Clean up
 	mc.select(cl=True)
-	print( "### RESET CTRL VALUE COMPLETE ###")
+	print("### RESET CTRL VALUE COMPLETE ###")
+
+
+
+

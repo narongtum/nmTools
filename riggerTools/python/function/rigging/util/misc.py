@@ -3,7 +3,6 @@
 from function.rigging.util import misc
 reload(misc)
 
-
 Can do
 1. Make controller thicker
 
@@ -12,12 +11,10 @@ Can do
 # Reload module
 from function.framework.reloadWrapper import reloadWrapper as reload
 
+from function.pipeline import logger 
 
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
-
-
-from function.pipeline import logger 
 
 # logger.Mayalogger.MayaLogger.info('asdasdasd')
 

@@ -60,6 +60,35 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 '''
+
+
+
+
+'''
+for key in match_naming_ctrl["noman"]:
+    #print(f"Noman: {key}")
+    #print(f'{match_naming_ctrl["noman"][key]}')
+    for idx,value in enumerate(match_naming_ctrl["noman"][key]):
+        
+        dode_name = match_naming_ctrl["dode"][key][idx]
+        noman_name = match_naming_ctrl["noman"][key][idx]
+        
+        
+        if mc.objExists(noman_name):
+            mc.rename(noman_name, dode_name)
+            print(f'compare name {dode_name} <<>>> {noman_name}')
+        else:
+            print('Not found pass na ja')
+        
+
+'''
+
+
+
+
+
+
+
 #... export
 from function.asset import exportFBX
 reload(exportFBX)

@@ -5,14 +5,6 @@ from function.rigging.de_boor import de_boor_core as de_boor
 reload(de_boor)
 '''
 
-
-
-
-
-
-
-
-
 def get_open_uniform_kv(n, d):
 
 	"""

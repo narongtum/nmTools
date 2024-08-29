@@ -46,9 +46,38 @@ def split_with_curve(mesh, base_mesh, crv, output_names, d=None):
 
 	output_pas = [base_mesh_pa[:] for i in range(num_outputs)]
 
-	for mesh_p, offset_v, base_mesh_v, i in zip(mesh_pa, offset_va, base_mesh_va, range(len(mesh_pa))):
+	for base_mesh_p, mesh_p, offset_v, base_mesh_v, i in zip(mesh_pa, offset_va, base_mesh_va, range(len(mesh_pa))):
 		if not offset_v.isEquivalent(om.MVector.kZeroVector):
-			_, t = crv_fn.closetPoint(mesh_p)
+			_, t = crv_fn.closetPoint(base_mesh_p)
 			t_n = t / crv_spans
 
-			if kv_type ==  
+			if kv_type ==  PERIODIC:
+				t_n = kv[d+1] * (1-t_n) * (d * 0.5 + 0.5) + t_n * (1-kv[d+1]) * (d*0.5-0.5)
+
+			#... get the de boor weight
+			wts = core.de_boor_core(len(modified_output_names), d, t_n, kv)
+
+			if kv_type == PERIODIC:
+
+				consolidated_wts = {output_name: 0 for output_name in output_names}
+				for j, wt in enumerate(wts):
+					consolidated_wts[modified_output_names[j]] += wt
+
+				wts = consolidated_wts.values()
+
+			for output_pa, wt in zip(put_pas, wts):
+				pt = om.MPoint(base_mesh_v + offset_v * wt)
+				output_pa[i] = pt
+
+	output_meshes = []
+	for output_pa, output in zip(output_pas, output_names):
+		output_meshe = cmds.duplicate(base_mesh, n=output)[0]
+
+		output_sel = om.MGlobal.getSelectionListByName(output_meshe)
+		output_dp = output_sel.getDagPath(0)
+		output_fn = om.MFnMesh(output_dp)
+		output_fn.setPoints(output_pa)
+
+
+		output_meshes.append(output_mesh) 
+

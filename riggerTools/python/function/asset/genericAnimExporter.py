@@ -28,6 +28,8 @@ reload(logger)
 PROJECT_NAME = 'Generic'
 version = 1.22
 WINDOWNAME = 'animExWin'
+EXPORT_BSH = False
+
 
 # 1. group 'geo_grp' collect all of the skin
 # 2. except than that if have '*_ply' bake the key
@@ -408,7 +410,7 @@ class Ui:
 
 		#... FOR BROWSE
 		mc.columnLayout(adjustableColumn=True)
-		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=True)
+		mc.checkBox('bakeBlendshape', label='Bake Blendshape', value=EXPORT_BSH)
 		mc.setParent("..")
 		
 		mc.button( label='Import Reference', command = self.function.importRef ,w=50, h=50 )

@@ -1,9 +1,9 @@
 from maya import cmds
 from maya.api import OpenMaya as om
+
 from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.de_boor import de_boor_core as core
 reload(core)
-
 
 OPEN = 'open'
 PERIODIC = 'periodic'

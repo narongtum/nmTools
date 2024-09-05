@@ -147,7 +147,7 @@ class ControlMaker( object ) :
 		elif label == 'square':
 			self.createController(shapeName = 'square_ctrlShape')
 
-		elif label == 'stick':
+		elif label == 'sphere_stick':
 			self.createController(shapeName = 'stick_ctrlShape')
 
 		elif label == 'hat':

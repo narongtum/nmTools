@@ -899,10 +899,10 @@ misc.parentMatrix( sel[0], sel[1], mo = True, t = True, r = True, s = True)
 
 
 #... select delete matrix
-from function.rigging.util import misc
-reload(misc)
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 selected = mc.ls(sl=True)
-misc.del_sel_matrix(selected = selected)
+mtc.del_sel_matrix(selected = selected)
 
 
 

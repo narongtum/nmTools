@@ -211,10 +211,10 @@ def softIK(		nameSpace,priorMeta, region, side, ctrlName,
 
 
 	#... Create loc and Null Grp
-	start_loc = mc.spaceLocator( n = '%s_start_dist_loc' % name )
+	start_loc = mc.spaceLocator( n = '%s_start_dist_loc' % name )[0]
 	mc.xform( '%s_start_dist_loc' % name, t = fPoints, ws = True )
 
-	end_loc = mc.spaceLocator( n = '%s_end_dist_loc' % name )
+	end_loc = mc.spaceLocator( n = '%s_end_dist_loc' % name )[0]
 	mc.xform( '%s_end_dist_loc' % name, t = lPoints, ws = True )
 
 	mc.parent(start_loc, loc_check_grp.name)

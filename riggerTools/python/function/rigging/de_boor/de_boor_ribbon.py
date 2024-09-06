@@ -1,8 +1,13 @@
+'''
+from function.rigging.de_boor import de_boor_ribbon as ribbon 
+'''
+
+
 import maya.cmds as cmds
 from maya.api import OpenMaya as om
-import de_boor_core as core
-import importlib
-importlib.reload(core)
+from function.framework.reloadWrapper import reloadWrapper as reload
+from function.rigging.de_boor import de_boor_core as core
+reload(core)
 
 
 OPEN = 'open'

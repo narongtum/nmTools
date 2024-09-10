@@ -75,6 +75,22 @@ else:
 
 
 
+#... make template ctrl bigger
+
+def make_ctrl_bold(lineWidth = 2):
+	from function.rigging.util import generic_maya_dict as mnd
+	reload(mnd)
+
+	make_bigger_list = mnd.make_bigger_list
+
+	for each in make_bigger_list:
+		if mc.objExists(each):
+			shapeCtrl = misc.shapeName(each)
+			mc.setAttr('{}.lineWidth'.format(shapeCtrl), lineWidth)
+
+
+
+
 
 
 #... replace from dict

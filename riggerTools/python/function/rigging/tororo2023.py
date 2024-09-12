@@ -66,25 +66,43 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 for key in match_naming_ctrl["noman"]:
-    #print(f"Noman: {key}")
-    #print(f'{match_naming_ctrl["noman"][key]}')
-    for idx,value in enumerate(match_naming_ctrl["noman"][key]):
-        
-        dode_name = match_naming_ctrl["dode"][key][idx]
-        noman_name = match_naming_ctrl["noman"][key][idx]
-        
-        
-        if mc.objExists(noman_name):
-            mc.rename(noman_name, dode_name)
-            print(f'compare name {dode_name} <<>>> {noman_name}')
-        else:
-            print('Not found pass na ja')
-        
+	#print(f"Noman: {key}")
+	#print(f'{match_naming_ctrl["noman"][key]}')
+	for idx,value in enumerate(match_naming_ctrl["noman"][key]):
+		
+		dode_name = match_naming_ctrl["dode"][key][idx]
+		noman_name = match_naming_ctrl["noman"][key][idx]
+		
+		
+		if mc.objExists(noman_name):
+			mc.rename(noman_name, dode_name)
+			print(f'compare name {dode_name} <<>>> {noman_name}')
+		else:
+			print('Not found pass na ja')
+		
 
 '''
 
 
 
+import re
+my_list = mc.ls(type = 'file')
+filter_file = []
+for item in my_list:
+	if re.match(r'^file[0-9]$', item):
+		print(item)
+		filter_file.append(item)
+		mat_name = mc.listConnections(item, source=False)[-1] 
+		new_name = mat_name + '_file'
+		mc.rename(item, new_name)
+		
+		
+place_list = mc.ls(type = 'place2dTexture') 
+for item in place_list:
+	if re.match(r'^place2dTexture[0-9]$', item):
+		mat_name = mc.listConnections(item)[0]
+		new_name = mat_name + '_PT'       
+		mc.rename(item, new_name) 
 
 
 
@@ -218,7 +236,7 @@ selected = mc.ls(sl=True)
 
 
 for each in selected:
-    mc.setAttr(f"{each}.segmentScaleCompensate", 0)
+	mc.setAttr(f"{each}.segmentScaleCompensate", 0)
 
 
 
@@ -246,8 +264,8 @@ standardJnt_list = mnd.standardJnt_list
 print (standardJnt_list)
 
 for each in standardJnt_list:
-    if mc.objExists(each):
-        mc.select(each, add=True)
+	if mc.objExists(each):
+		mc.select(each, add=True)
 
 
 
@@ -365,9 +383,9 @@ createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = '
 list_name = mc.ls('L_*')
 
 for each in list_name:
-    new_name = each.replace('L_','R_')
-    print(each)
-    mc.rename(each,new_name)
+	new_name = each.replace('L_','R_')
+	print(each)
+	mc.rename(each,new_name)
 
 
 
@@ -536,10 +554,10 @@ misc.select_tip_joint(selected_joints)
 
 
 for each in selected:
-    mc.setAttr("{0}.overrideEnabled".format(each), 1)
-    mc.setAttr("{0}.overrideDisplayType".format(each), 1)
-    
-      
+	mc.setAttr("{0}.overrideEnabled".format(each), 1)
+	mc.setAttr("{0}.overrideDisplayType".format(each), 1)
+	
+	  
 misc.searchReplace( searchText='_bJnt', replaceText='_endJnt' )
 
 
@@ -558,21 +576,21 @@ selected = mc.ls(sl=True)
 misc.searchReplace( searchText='_bJnt', replaceText='_endJnt' )
 
 for each in selected:
-    mc.setAttr("{0}.overrideEnabled".format(each), 1)
-    mc.setAttr("{0}.overrideDisplayType".format(each), 1)
+	mc.setAttr("{0}.overrideEnabled".format(each), 1)
+	mc.setAttr("{0}.overrideDisplayType".format(each), 1)
 
 
 
 
 selected = mc.ls(sl=True)
 for each in selected:
-    if mc.nodeType(each)== 'joint':
-        if mc.getAttr('{}.segmentScaleCompensate'.format(each)) == True:
-            mc.setAttr(('{}.segmentScaleCompensate'.format(each)),0)
-        else:
-            mc.setAttr(('{}.segmentScaleCompensate'.format(each)),1)
-            
-        
+	if mc.nodeType(each)== 'joint':
+		if mc.getAttr('{}.segmentScaleCompensate'.format(each)) == True:
+			mc.setAttr(('{}.segmentScaleCompensate'.format(each)),0)
+		else:
+			mc.setAttr(('{}.segmentScaleCompensate'.format(each)),1)
+			
+		
  
 
 

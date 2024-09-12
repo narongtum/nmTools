@@ -65,7 +65,7 @@ MAYA_VERSION = mc.about(v=True)
 
 # ========== # 
 
-def exportSel( addPath = '\\data\\export\\' ):
+def exportSel( folder_name = 'data' ):
 
 	currentPath = currentFolder()
 
@@ -77,26 +77,59 @@ def exportSel( addPath = '\\data\\export\\' ):
 		finalName = name
 		
 
-	if ifHero() == True:
-		print('\nThis is Hero file.')
-		currentPath = findCurrentPath(step = 'current')
-		checkPath_normPath = os.path.normpath(currentPath)
 
+	if fileState() == 'global_hero':
+
+		print('\nThis is Global Hero file.')
+		currentPath = findCurrentPath(step = 'current')
+
+		parent_dir = os.path.dirname(os.path.dirname(currentPath))
+		#... kept export sel at Rig department
+		rig_path = f'Rig\\{folder_name}'
+
+		currentPath = os.path.join(parent_dir,rig_path)
+
+		checkPath_normPath = os.path.normpath(currentPath)
 		if os.path.exists(checkPath_normPath):
 			print('There are already exists.')
 		else:
 			print('Folder not found. Creating it now.')
 			os.makedirs(checkPath_normPath)
 
-		finalPath = currentPath + finalName + '.ma'
+		finalPath = os.path.join(currentPath, finalName + '.ma')
 		final_normPath = os.path.normpath(finalPath)
 		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
-		print ('asset has been export at: %s' %final_normPath)
+		print ('Asset has been export at: %s' %final_normPath)
 
-	else:
 
+
+	elif fileState() == 'local_hero':
+
+		print('\nThis is Local Hero file.')
+		currentPath = findCurrentPath(step = 'current')
+
+		parent_dir = os.path.dirname(os.path.dirname(currentPath))
+
+		currentPath = os.path.join(parent_dir, folder_name)
+
+		checkPath_normPath = os.path.normpath(currentPath)
+		if os.path.exists(checkPath_normPath):
+			print('There are already exists.')
+		else:
+			print('Folder not found. Creating it now.')
+			os.makedirs(checkPath_normPath)
+
+		finalPath = os.path.join(currentPath, finalName + '.ma')
+		final_normPath = os.path.normpath(finalPath)
+		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
+		print ('Asset has been export at: %s' %final_normPath)
+
+
+
+	elif fileState() == 'version':
+		print('\nThis is Version file.')
 		#... check file already exists
-		checkPath = currentPath + addPath
+		checkPath = currentPath + folder_name
 		checkPath_normPath = os.path.normpath(checkPath)
 
 		if os.path.exists(checkPath_normPath):
@@ -106,11 +139,21 @@ def exportSel( addPath = '\\data\\export\\' ):
 			os.makedirs(checkPath_normPath)
 
 
-		finalPath = currentPath + addPath + finalName + '.ma'
+		# finalPath = currentPath + folder_name + finalName + '.ma'
+		finalPath = os.path.join(currentPath, folder_name, finalName + '.ma')
 
 		final_normPath = os.path.normpath(finalPath)
 		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
-		print ('asset has been export at: %s' %final_normPath)
+		print ('Asset has been export at: %s' %final_normPath)
+
+
+	else:
+		print('\nThis is Unknow file.')
+		currentPath = fileTools.currentFolder()
+		finalPath = os.path.join(currentPath, finalName + '.ma')
+		final_normPath = os.path.normpath(finalPath)
+		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
+		print ('Asset has been export at: %s' %final_normPath)
 
 
 
@@ -332,6 +375,75 @@ def ifHero():
 	else:
 		print ('Unknow condition.')
 		return None
+
+
+
+
+
+def fileState():
+	"""
+	Determines the type of file based on its folder location and the existence of a specific file.
+
+	This function checks the current file in Maya, analyzes the folder in which it resides, 
+	and determines if the file is either a "global hero", "local hero", or a "version" file. 
+	It also checks for the existence of a `data.json` file in the parent directory to differentiate 
+	between global and local hero files.
+
+	Returns:
+		str: 
+			- 'global_hero' if the file is located in a 'hero' or 'commit' folder and the `data.json` file exists.
+			- 'local_hero' if the file is located in a 'hero' or 'commit' folder but the `data.json` file does not exist.
+			- 'version' if the file is located in a 'version' folder.
+			- 'unknown' if the folder name doesn't match any known conditions or if no file is open.
+
+	Raises:
+		None
+	"""
+
+	pathFile = mc.file(q=True, sn=True)
+
+	if not pathFile:  # Handle if no file is open or path is empty
+		print("No file is currently open or invalid path.")
+		return 'unknown'
+
+	splitFolderNam = pathFile.split('/')[-2].lower()  # Normalize the case
+
+	if splitFolderNam in ['hero', 'commit']:
+		print('This is a hero file.')
+		
+		# Get the parent directory two levels up
+		parent_dir = os.path.dirname(os.path.dirname(pathFile))
+		data_json = 'data.json'
+
+		# Join and normalize the path
+		file_path = os.path.join(parent_dir, data_json)
+		file_path = os.path.normpath(file_path)
+
+		# Check if the file exists
+		if os.path.exists(file_path):
+			print(f"\nThe file exists at: {file_path}\nThis is a Global Hero file :).")
+			return 'global_hero'
+		else:
+			print(f"\nThe file does not exist at: {file_path}\nThis is a Local Hero file.")
+			return 'local_hero'
+
+	elif splitFolderNam == 'version':
+		print('This is a version file.')
+		return 'version'
+		
+	else:
+		print('Unknown condition.')
+		return 'unknown'
+
+
+
+		
+
+
+
+
+
+
 
 
 
@@ -1081,11 +1193,11 @@ def delete_unused_material():
 
 
 def delete_animation_layer(layer_name):
-    if mc.objExists(layer_name):
-        mc.delete(layer_name)
-        print(f"Deleted animation layer: {layer_name}")
-    else:
-        print(f"Animation layer {layer_name} does not exist.")
+	if mc.objExists(layer_name):
+		mc.delete(layer_name)
+		print(f"Deleted animation layer: {layer_name}")
+	else:
+		print(f"Animation layer {layer_name} does not exist.")
 
 
 

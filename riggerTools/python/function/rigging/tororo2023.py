@@ -83,23 +83,43 @@ for key in match_naming_ctrl["noman"]:
 
 '''
 
+#... rename file and p2texture node
+
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+NODE_dict = mnd.NODE_dict
+
+file_type = 'file'
+
+file_type_short_name = [node['shortName'] for node in NODE_dict if node['longName'] == file_type ][0]
+
 
 
 import re
-my_list = mc.ls(type = 'file')
+
+my_list = mc.ls(type = file_type)
 filter_file = []
 for item in my_list:
 	if re.match(r'^file[0-9]$', item):
 		print(item)
 		filter_file.append(item)
 		mat_name = mc.listConnections(item, source=False)[-1] 
-		new_name = mat_name + '_file'
+		new_name = f"{mat_name}_{file_type_short_name}"
+		print(f"Rename from {item} to {new_name}")
 		mc.rename(item, new_name)
 		
-		
-place_list = mc.ls(type = 'place2dTexture') 
+file_type = 'place2dTexture'
+file_type_short_name = [node['shortName'] for node in NODE_dict if node['longName'] == file_type ][0]
+
+place_list = mc.ls(type = file_type) 
 for item in place_list:
-	if re.match(r'^place2dTexture[0-9]$', item):
+	
+	if item.endswith('_PT'):
+		print(item)
+		continue
+	elif re.match(fr'^{file_type}[0-9]$', item):
+		print('match')
 		mat_name = mc.listConnections(item)[0]
 		new_name = mat_name + '_PT'       
 		mc.rename(item, new_name) 

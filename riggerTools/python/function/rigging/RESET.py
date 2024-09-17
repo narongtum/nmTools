@@ -45,17 +45,17 @@ def resetAllController( reference = False ):
 
 	nameSpace = misc.findNameSpace()
 
-	for category, data in handle_behavior_dict.items():
-		for stick_name in data['stick_name']:
-			for side in data['side']:
-				stick_with_side = stick_name.replace('LFT', side)
-				for behavior in data['behavior_name']:
-					combined_name = f"{nameSpace}{stick_with_side}.{behavior}"
-					if mc.objExists(combined_name):
-						mc.setAttr(combined_name, 0)
-						print(f"Reset {category}: {combined_name} ...\n")
-					else:
-						print(f'{combined_name} is not found. Please check.')
+	for category, data in handle_behavior_dict.items(): #... loop throught finger or foot
+		for side in data['side']:
+			print(data['stick_name'])
+			stick_with_side = data['stick_name'][0].replace('LFT', side)
+			for behavior in data['behavior_name']:
+				combined_name = f"{nameSpace}{stick_with_side}.{behavior}"
+				if mc.objExists(combined_name):
+					mc.setAttr(combined_name, 0)
+					print(f"Reset {category}: {combined_name} ...\n")
+				else:
+					print(f'{combined_name} is not found. Please check.')
 
 	# Clean up
 	mc.select(cl=True)

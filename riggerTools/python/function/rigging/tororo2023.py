@@ -101,13 +101,15 @@ import re
 my_list = mc.ls(type = file_type)
 filter_file = []
 for item in my_list:
-	if re.match(r'^file[0-9]$', item):
+	if re.match(fr'^file[0-9]{{2}}$', item):
 		print(item)
 		filter_file.append(item)
 		mat_name = mc.listConnections(item, source=False)[-1] 
 		new_name = f"{mat_name}_{file_type_short_name}"
 		print(f"Rename from {item} to {new_name}")
 		mc.rename(item, new_name)
+		
+		
 		
 file_type = 'place2dTexture'
 file_type_short_name = [node['shortName'] for node in NODE_dict if node['longName'] == file_type ][0]
@@ -118,8 +120,8 @@ for item in place_list:
 	if item.endswith('_PT'):
 		print(item)
 		continue
-	elif re.match(fr'^{file_type}[0-9]$', item):
-		print('match')
+	elif re.match(fr'^{file_type}[0-9]{{2}}$', item):
+		print(f'match item: {item}')
 		mat_name = mc.listConnections(item)[0]
 		new_name = mat_name + '_PT'       
 		mc.rename(item, new_name) 

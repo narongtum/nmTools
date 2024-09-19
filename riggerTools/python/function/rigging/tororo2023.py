@@ -67,7 +67,7 @@ For further details and reference, you can consult the official FastCopy Help do
 
 1. delete 'toeRolllegLFT_ikh'
 2. delete 'ballRolllegLFT_ikh'
-3. delete 'constraint at fkJnt'
+3. delete 'constraint of fkJnt'
 4. move ikJnt to new endPosition
 5. select 'ankleLFT_ikJnt' and 'ballLFT_ikJnt' create ikHandle
 

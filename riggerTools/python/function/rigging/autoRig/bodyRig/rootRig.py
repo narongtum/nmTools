@@ -131,6 +131,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'enable', defaultValue = 0 , keyable = False )
 	rig_grp.addAttribute( attributeType = 'enum', en = 'Player:Enemy:Weapon', longName = 'asset_type', keyable = False   )
 	rig_grp.addAttribute( dataType = 'string' , longName = 'asset_name', keyable = False )
+	rig_grp.addAttribute( dataType = 'string' , longName = 'weapon_name', keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_skin', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
 	rig_grp.addAttribute( attributeType = 'bool' , longName = 'delete_unused_material', minValue = 0, maxValue = 1, defaultValue = 0 , keyable = False )
 	# rig_grp.addAttribute( attributeType = 'message' , longName = 'Meta_child')

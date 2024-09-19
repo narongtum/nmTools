@@ -83,6 +83,35 @@ for key in match_naming_ctrl["noman"]:
 
 '''
 
+
+
+
+
+#.... reconnect handle weapon joint
+
+handle = 'handPropRGT_gmbCtrl'
+
+
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'R_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'L_weapon_space_blendMatrix.target[1].targetMatrix', f=True)
+
+
+
+handle = 'handPropLFT_gmbCtrl'
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'L_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'R_weapon_space_blendMatrix.target[1].targetMatrix', f=True)
+
+
+
+
+
+
+
+
+
+
+
+
 #... rename file and p2texture node
 
 from function.rigging.util import generic_maya_dict as mnd

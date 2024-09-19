@@ -249,7 +249,7 @@ clavRGT_bJnt = clavicleRig.clavicleRig(		nameSpace = nameSpace 					,
 
 
 # arm LFT Side
-stickNamLFT, handLFT_bJnt= armRig.armRigExt(
+stickNamLFT, handLFT_bJnt, handLFT_meta = armRig.armRigExt(
 
 				nameSpace = '' 	,				
 				charScale = charScale	,			
@@ -282,7 +282,7 @@ fingerLFT = fingerRig.fingerRigExt(
 								charScale = charScale ,priorJnt = handLFT_bJnt ,stickNam = stickNamLFT )
 
 # arm RGT Side
-stickNamRGT, handRGT_bJnt= armRig.armRigExt(
+stickNamRGT, handRGT_bJnt, handRGT_meta = armRig.armRigExt(
 
 				nameSpace = '' 	,				
 				charScale = charScale	,			

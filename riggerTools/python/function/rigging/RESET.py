@@ -48,7 +48,7 @@ def resetAllController( reference = False ):
 	for category, data in handle_behavior_dict.items(): #... loop throught finger or foot
 		for side in data['side']:
 			print(data['stick_name'])
-			stick_with_side = data['stick_name'][0].replace('LFT', side)
+			stick_with_side = data['stick_name'].replace('LFT', side)
 			for behavior in data['behavior_name']:
 				combined_name = f"{nameSpace}{stick_with_side}.{behavior}"
 				if mc.objExists(combined_name):

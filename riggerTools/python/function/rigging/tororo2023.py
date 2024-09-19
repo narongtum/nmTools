@@ -61,6 +61,29 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+# # # # # # # # # # # # # # # # # # # # 
+#... how to remove foot joint
+# # # # # # # # # # # # # # # # # # # # 
+
+1. delete 'toeRolllegLFT_ikh'
+2. delete 'ballRolllegLFT_ikh'
+3. delete 'constraint at fkJnt'
+4. move ikJnt to new endPosition
+5. select 'ankleLFT_ikJnt' and 'ballLFT_ikJnt' create ikHandle
+
+7. select 'ballLFT_ikJnt' and 'toesTipLFT_ikJnt' create ikHandle
+
+9. look at 'legballRollLFT_mdl'
+10. move pivot of 'ToeRiselegIkLFTZro_grp' to new position
+11. move pivot of 'ballRolllegIkLFTZro_grp' to new position
+
+6. drag to under 'ballRolllegIkLFT_buffCtrl'
+8. drag to under 'ToeRiselegIkLFTOffset_grp'
+
+
+
+
+
 
 
 
@@ -85,9 +108,23 @@ for key in match_naming_ctrl["noman"]:
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... Select only body joint
+# # # # # # # # # # # # # # # # # # # # 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+standardJnt = mnd.standardJnt_list
+mc.select(deselect=True)
+for each in standardJnt:
+	if mc.objExists(each):
+		mc.select(each, add=True)
 
 
+# # # # # # # # # # # # # # # # # # # # 
 #.... reconnect handle weapon joint
+# # # # # # # # # # # # # # # # # # # # 
+
 
 handle = 'handPropRGT_gmbCtrl'
 
@@ -110,9 +147,11 @@ mc.connectAttr(f"{handle}.worldMatrix[0]", 'R_weapon_space_blendMatrix.target[1]
 
 
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # 
 #... rename file and p2texture node
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+
 
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
@@ -218,9 +257,11 @@ got_naming = misc.check_name_style(name = 'L_brow_inn_loc')
 
 
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # 
 #... manual publish
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+
 
 from function.pipeline import fileTools as fileTools 
 reload(fileTools)

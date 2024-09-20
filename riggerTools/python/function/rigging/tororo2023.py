@@ -61,24 +61,169 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... relocate foot pivot 
+# # # # # # # # # # # # # # # # # # # # 
+
+from function.rigging.autoRig.base import core
+reload(core)
+
+from function.rigging.util import misc
+reload(misc)
+
+#side = 'LFT'
+side = 'RGT'
+
+toeBall_loc = core.Dag('toeBall_loc')
+toeTip_loc = core.Dag('toeTip_loc')
+
+mc.delete(f'toeRollleg{side}_ikh')
+mc.delete(f'ballRollleg{side}_ikh')
+mc.delete(f'ballLegFk{side}_parCons')
+
+
+ball_ikJnt = core.Dag(f'ball{side}_ikJnt')
+new_ball_ikJnt = core.Dag(f'ball{side}_jnt')
+
+
+misc.snapPointCon(toeBall_loc.name ,ball_ikJnt.name)
+misc.snapPointCon(toeTip_loc.name ,f'toesTip{side}_fkJnt')
+
+
+misc.snapPointCon(ball_ikJnt.name ,f'ball{side}_fkJnt')
+misc.snapPointCon(toeTip_loc.name ,f'toesTip{side}_fkJnt')
+
+misc.snapPointCon(toeTip_loc.name ,f'toesTip{side}_ikJnt')
+
+
+# ball_ikJnt.snapPoint(toeBall_loc)
+
+ankle_ikJnt = f'ankle{side}_ikJnt'
+toesTip_ikJnt = f'toesTip{side}_ikJnt'
+
+ballIk_ikh = core.IkRp( startJoint = ankle_ikJnt, endEffector = ball_ikJnt )
+ballIk_ikh.name = f'ballRollleg{side}_ikh'
+
+toesTip_ikh = core.IkRp( startJoint = ball_ikJnt, endEffector = toesTip_ikJnt )
+toesTip_ikh.name = f'toeRollleg{side}_ikh'
+
+
+ToeRiselegIk_zro = core.Dag(f'ToeRiselegIk{side}Zro_grp')
+ToeRiselegIk_zro.snapPoint(toeBall_loc)
+
+ankleIkhZro_grp = core.Dag(f'ankleIkh{side}Zro_grp')
+mc.parent(ankleIkhZro_grp.name, world = True)
+
+ballRolllegIkZro_grp = core.Dag(f'ballRolllegIk{side}Zro_grp')
+ballRolllegIkZro_grp.snapPoint(toeBall_loc)
+
+
+toeRolllegIKZro_grp = core.Dag(f'toeRolllegIK{side}Zro_grp')
+toeRolllegIKZro_grp.snapPoint(toeTip_loc) #... must tip joint
+
+
+ballLegFk_gmbCtrl = core.Dag(f'ballLegFk{side}_gmbCtrl')
+ball_fkJnt = core.Dag(f'ball{side}_fkJnt')
+
+misc.snapPointCon(toeBall_loc.name ,f'ballLegFk{side}Zro_grp')
+core.parentConstraint( ballLegFk_gmbCtrl , ball_fkJnt, mo=True )
+
+
+misc.snapPointCon(toeBall_loc.name ,f'ballRolllegIk{side}Zro_grp')
+
+#... parent back
+mc.parent(f'ballRollleg{side}_ikh', f'ballRolllegIk{side}_buffCtrl')
+mc.parent(f'toeRollleg{side}_ikh', f'ToeRiselegIk{side}Offset_grp')
+mc.parent(f'ankleIkh{side}Zro_grp', f'ballRolllegIk{side}_buffCtrl')
+
+
+#... check f'ballRolllegIk{side}Zro_grp'
+
+side = 'LFT'
+ankleIk_ctrl = core.Dag(f'foot{side}IK_ctrl')
+ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_' , at ='enum' , en = 'Pivot'  , keyable = True)
+ankleIk_ctrl.setLocked('pivotBar')
+ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
+
+ankleIk_loc = core.Locator(f'ankle{side}_loc')
+ankleIk_loc.maSnap(ankle_ikJnt,pos = True,rot = False,scl = False)
+ankleIk_loc.parent(ankleIk_ctrl)
+
+ankleIk_loc.attr('v').value = 0
+ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
+
+
+
+pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
+
+
+
+
+ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
+ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
+pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # 
 #... how to remove foot joint
 # # # # # # # # # # # # # # # # # # # # 
 
-1. delete 'toeRolllegLFT_ikh'
-2. delete 'ballRolllegLFT_ikh'
-3. delete 'constraint of fkJnt'
-4. move ikJnt to new endPosition
-5. select 'ankleLFT_ikJnt' and 'ballLFT_ikJnt' create ikHandle
+[] delete 'toeRolllegLFT_ikh'
+[] delete 'ballRolllegLFT_ikh'
+[] delete 'constraint of fkJnt'
+[] move ikJnt to new endPosition
+[] select 'ankleLFT_ikJnt' and 'ballLFT_ikJnt' create ikHandle
 
-7. select 'ballLFT_ikJnt' and 'toesTipLFT_ikJnt' create ikHandle
+[] select 'ballLFT_ikJnt' and 'toesTipLFT_ikJnt' create ikHandle
 
-9. look at 'legballRollLFT_mdl'
-10. move pivot of 'ToeRiselegIkLFTZro_grp' to new position
-11. move pivot of 'ballRolllegIkLFTZro_grp' to new position
+[] look at node 'legballRollLFT_mdl'
+[] move pivot of 'ToeRiselegIkLFTZro_grp' to new position
+[] unparent 'ankleIkhLFTZro_grp' to the world
+[] snap 'ballRolllegIkLFTZro_grp' to new position
+[] snap 'toeRolllegIKLFTZro_grp' to new position
 
-6. drag to under 'ballRolllegIkLFT_buffCtrl'
-8. drag to under 'ToeRiselegIkLFTOffset_grp'
+[] drag 'ball_ikh' to under 'ballRolllegIkLFT_buffCtrl'
+[] drag 'tollRoll_ikh' to under 'ToeRiselegIkLFTOffset_grp'
+
+[] snap 'ballLegFkLFTZro_grp', 'ballLFT_fkJnt' to new position
+[] re parentConstraint 'ballLegFkLFT_gmbCtrl' to 'ballLFT_fkJnt'
 
 
 

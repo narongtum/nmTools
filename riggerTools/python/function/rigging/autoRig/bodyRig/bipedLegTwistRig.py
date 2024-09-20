@@ -371,14 +371,13 @@ def bipedLegRigTws(
 	try:
 		if ikPosi== 'foot' or ikPosi == 'animalFoot':
 
-			# Delete old parent 
+			#... Delete old parent 
 			mc.delete( stretchEndName_psCon )
 
-			# snap zro of ik grp
+			#... snap zro of ik grp
 			ikZro_grp.maSnap ( ball_ikJnt , pos = True )
 
-			# And reparent locator again
-			print '.a .b .c .d .e .f .g'
+			#... And reparent locator again
 			print stretchEndName_psCon
 			endLoc = stretchEndName_psCon.replace('_parCons' , '_loc')
 			# endLoc = 'ankle'+ 'EndDist' + side + '_loc'

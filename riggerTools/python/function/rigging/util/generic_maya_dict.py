@@ -603,12 +603,12 @@ match_naming_dict = {
 
 handle_behavior_dict = {
 						'finger':{
-									'stick_name':['handStickLFT_ctrl'],
+									'stick_name':'handStickLFT_ctrl',
 									'behavior_name':['fist','roll','relax','cup','spread','wide'],
 									'side':['LFT','RGT']		
 									},
 						'foot':{
-									'stick_name':['footIkLFT_ctrl'],
+									'stick_name':'footIkLFT_ctrl',
 									'behavior_name':['ballRoll','toeRoll','heelTwist','toeTwist','footRock','ballRise'],
 									'side':['LFT','RGT']		
 									}

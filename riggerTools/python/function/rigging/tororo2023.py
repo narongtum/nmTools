@@ -61,6 +61,29 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+# # # # # # # # # # # # # # # # # # # # 
+#... how to remove foot joint
+# # # # # # # # # # # # # # # # # # # # 
+
+1. delete 'toeRolllegLFT_ikh'
+2. delete 'ballRolllegLFT_ikh'
+3. delete 'constraint of fkJnt'
+4. move ikJnt to new endPosition
+5. select 'ankleLFT_ikJnt' and 'ballLFT_ikJnt' create ikHandle
+
+7. select 'ballLFT_ikJnt' and 'toesTipLFT_ikJnt' create ikHandle
+
+9. look at 'legballRollLFT_mdl'
+10. move pivot of 'ToeRiselegIkLFTZro_grp' to new position
+11. move pivot of 'ballRolllegIkLFTZro_grp' to new position
+
+6. drag to under 'ballRolllegIkLFT_buffCtrl'
+8. drag to under 'ToeRiselegIkLFTOffset_grp'
+
+
+
+
+
 
 
 
@@ -85,21 +108,88 @@ for key in match_naming_ctrl["noman"]:
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... Select only body joint
+# # # # # # # # # # # # # # # # # # # # 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+standardJnt = mnd.standardJnt_list
+mc.select(deselect=True)
+for each in standardJnt:
+	if mc.objExists(each):
+		mc.select(each, add=True)
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#.... reconnect handle weapon joint
+# # # # # # # # # # # # # # # # # # # # 
+
+
+handle = 'handPropRGT_gmbCtrl'
+
+
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'R_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'L_weapon_space_blendMatrix.target[1].targetMatrix', f=True)
+
+
+
+handle = 'handPropLFT_gmbCtrl'
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'L_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+mc.connectAttr(f"{handle}.worldMatrix[0]", 'R_weapon_space_blendMatrix.target[1].targetMatrix', f=True)
+
+
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # 
+#... rename file and p2texture node
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+NODE_dict = mnd.NODE_dict
+
+file_type = 'file'
+
+file_type_short_name = [node['shortName'] for node in NODE_dict if node['longName'] == file_type ][0]
+
+
+
 import re
-my_list = mc.ls(type = 'file')
+
+my_list = mc.ls(type = file_type)
 filter_file = []
 for item in my_list:
-	if re.match(r'^file[0-9]$', item):
+	if re.match(fr'^file[0-9]{{2}}$', item):
 		print(item)
 		filter_file.append(item)
 		mat_name = mc.listConnections(item, source=False)[-1] 
-		new_name = mat_name + '_file'
+		new_name = f"{mat_name}_{file_type_short_name}"
+		print(f"Rename from {item} to {new_name}")
 		mc.rename(item, new_name)
 		
 		
-place_list = mc.ls(type = 'place2dTexture') 
+		
+file_type = 'place2dTexture'
+file_type_short_name = [node['shortName'] for node in NODE_dict if node['longName'] == file_type ][0]
+
+place_list = mc.ls(type = file_type) 
 for item in place_list:
-	if re.match(r'^place2dTexture[0-9]$', item):
+	
+	if item.endswith('_PT'):
+		print(item)
+		continue
+	elif re.match(fr'^{file_type}[0-9]{{2}}$', item):
+		print(f'match item: {item}')
 		mat_name = mc.listConnections(item)[0]
 		new_name = mat_name + '_PT'       
 		mc.rename(item, new_name) 
@@ -167,9 +257,11 @@ got_naming = misc.check_name_style(name = 'L_brow_inn_loc')
 
 
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # 
 #... manual publish
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+
 
 from function.pipeline import fileTools as fileTools 
 reload(fileTools)

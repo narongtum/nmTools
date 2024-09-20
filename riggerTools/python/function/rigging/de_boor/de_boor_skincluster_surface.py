@@ -1,3 +1,11 @@
+'''
+from function.rigging.de_boor import de_boor_skincluster_surface
+reload(de_boor_skincluster_surface)
+'''
+
+
+
+
 from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
@@ -136,6 +144,7 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
     skin_wts = skin_cluster_fn.getWeights(dag, components, influence_ia)
 
     for v_jnts in jnts_copy:
+        print (v_jnts)
         v_jnt_0_index = influences_names.index(v_jnts[0])
 
         for i, v_jnt in enumerate(v_jnts):

@@ -1,3 +1,5 @@
+#... using nrb to skin
+
 from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma

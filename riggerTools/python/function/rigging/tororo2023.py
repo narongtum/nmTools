@@ -64,6 +64,53 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... add snap controller 
+# # # # # # # # # # # # # # # # # # # # 
+
+#... check f'ballRolllegIk{side}Zro_grp'
+
+side = 'LFT'
+ankleIk_ctrl = core.Dag(f'foot{side}IK_ctrl')
+ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_' , at ='enum' , en = 'Pivot'  , keyable = True)
+ankleIk_ctrl.setLocked('pivotBar')
+ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
+
+ankleIk_loc = core.Locator(f'ankle{side}_loc')
+ankleIk_loc.maSnap(ankle_ikJnt,pos = True,rot = False,scl = False)
+ankleIk_loc.parent(ankleIk_ctrl)
+
+ankleIk_loc.attr('v').value = 0
+ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
+
+
+
+pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
+
+
+
+
+ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
+ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
+pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # 
 #... relocate foot pivot 
 # # # # # # # # # # # # # # # # # # # # 
@@ -140,31 +187,10 @@ mc.parent(f'toeRollleg{side}_ikh', f'ToeRiselegIk{side}Offset_grp')
 mc.parent(f'ankleIkh{side}Zro_grp', f'ballRolllegIk{side}_buffCtrl')
 
 
-#... check f'ballRolllegIk{side}Zro_grp'
-
-side = 'LFT'
-ankleIk_ctrl = core.Dag(f'foot{side}IK_ctrl')
-ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_' , at ='enum' , en = 'Pivot'  , keyable = True)
-ankleIk_ctrl.setLocked('pivotBar')
-ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
-
-ankleIk_loc = core.Locator(f'ankle{side}_loc')
-ankleIk_loc.maSnap(ankle_ikJnt,pos = True,rot = False,scl = False)
-ankleIk_loc.parent(ankleIk_ctrl)
-
-ankleIk_loc.attr('v').value = 0
-ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
-
-
-
-pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
 
 
 
 
-ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
-ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
-pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
 
 
 

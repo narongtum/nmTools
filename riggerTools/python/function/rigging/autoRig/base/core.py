@@ -138,6 +138,8 @@ cube.nmCreateController('cube_ctrlShape')
 cube.addAttribute(ln = 'size' , k = True , dv = 1)
 # using auto suffix
 misc.autoSuffix( cube.name )
+#... set size
+
 
 
 #... Example 3 how to use property

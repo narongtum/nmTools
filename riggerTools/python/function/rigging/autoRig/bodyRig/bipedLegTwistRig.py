@@ -142,14 +142,14 @@ def bipedLegRigTws(
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 
 	if region ==  'frontLeg' :
-		print 'This maybe animal limb'
+		print ('This maybe animal limb')
 		legType = 'frontLeg'
 
 	elif region ==  'backLeg':
-		print 'This maybe animal limb'
+		print ('This maybe animal limb')
 		legType = 'backLeg'
 	else:
-		print 'This maybe human limb.'
+		print ('This maybe human limb.')
 		legType = 'leg'	
 
 
@@ -310,6 +310,7 @@ def bipedLegRigTws(
 
 	ankleIk_ctrl.editCtrlShape( axis = charScale * 1.1 )
 	ankleIk_ctrl.setColor(colorSide)
+	mc.error('what size')
 
 
 

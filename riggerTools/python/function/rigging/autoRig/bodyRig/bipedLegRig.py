@@ -266,6 +266,7 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 
 
 
+
 	# # # # # # # # # # 
 	# List of solid variable
 	# # # # # # # # # # 
@@ -304,6 +305,8 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 	print ('foot scale is =================================')
 	print (ftScl)
 	ankleIk_ctrl.scaleShape( scale = (	ftScl/3 , 1.5 , ftScl	)		 )
+	ankleIk_ctrl.scaleShape( scale = (	0.1, 0.1, 0.075	)		 )
+	# mc.error('This is large.')# ..... force stuck for debug
 	ankleIk_ctrl.setColor( colorSide )
 
 
@@ -733,17 +736,25 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 
 	#... End Create wiggling toes  # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+	#... Start Add pivot switching from ankle to foot  # # # # # # # # # # # # # # # # # # # # # # # # # 
+	print ('\nAdd pivot change')
 
+	ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_', at ='enum', en = 'Pivot', keyable = True)
+	ankleIk_ctrl.setLocked('pivotBar')
+	ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
 
+	ankleIk_loc = core.Locator(f'ankle{side}_loc')
+	ankleIk_loc.maSnap(ankle_ikJnt, pos = True, rot = False, scl = False)
+	ankleIk_loc.parent(ankleIk_ctrl)
 
+	ankleIk_loc.attr('v').value = 0
+	ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
 
-
-
-
-
-
-
-
+	pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
+	ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
+	ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
+	pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
+	#... Start Add pivot switching from ankle to foot End # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 	return ankleIk_ctrl
 
@@ -889,7 +900,7 @@ def bipedLegRigExt(
 
 
 
-	print ('rename _ctrl that not use when use link attr')
+	print ('\nRename _ctrl that not use when use link attr')
 
 	if footAttr:
 		rename_list = ['footOutlegIK{0}_ctrl'.format(side),
@@ -905,6 +916,11 @@ def bipedLegRigExt(
 				each =  nameSpace + each
 			newName = each.replace('_ctrl','_buffCtrl')
 			mc.rename(each, newName)
+
+
+
+
+
 
 	print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
 	print('\n\n\n\n\n')

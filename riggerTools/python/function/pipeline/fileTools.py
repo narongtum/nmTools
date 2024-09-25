@@ -53,6 +53,36 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... ask what is state of this file 
+# # # # # # # # # # # # # # # # # # # # 
+def openRigDatafile():
+
+	from pathlib import Path	
+	if fileState() == 'version' or fileState() == 'local_hero':
+		print('This is Version Naja.')
+
+		pathFile = mc.file(q=True, sn=True)
+		path_lib = Path(pathFile)
+		wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+		final_wanted_path = wanted / 'Data'
+
+		if final_wanted_path.exists() and final_wanted_path.is_dir():
+			os.startfile(final_wanted_path)
+
+	elif fileState() == 'global_hero':
+		print('This is Global hero.')
+		pathFile = mc.file(q=True, sn=True)
+		path_lib = Path(pathFile)
+		wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+		final_wanted_path = wanted / 'Rig' / 'Data'
+		if final_wanted_path.exists() and final_wanted_path.is_dir():
+			os.startfile(final_wanted_path)
+	else:
+		print('There are no correct file to open.')
+
+
+
 
 
 
@@ -62,7 +92,6 @@ MAYA_VERSION = mc.about(v=True)
 
 # ========== # 
 # Export selection at data folder
-
 # ========== # 
 
 def exportSel( folder_name = 'data' ):

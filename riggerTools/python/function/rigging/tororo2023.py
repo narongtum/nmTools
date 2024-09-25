@@ -63,6 +63,63 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... close all flothing windows
+# # # # # # # # # # # # # # # # # # # # 
+import maya.cmds as cmds
+
+# List all top-level UI elements
+windows = cmds.lsUI(windows=True)
+print(windows)
+
+
+import maya.cmds as cmds
+
+def close_floating_panel(panel_name):
+	# Check if the panel exists
+	if cmds.window(panel_name, exists=True):
+		# Delete the UI element
+		cmds.deleteUI(panel_name)
+
+# Usage
+close_floating_panel('myFloatingPanel')
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... ask what is state of this file 
+# # # # # # # # # # # # # # # # # # # # 
+
+from function.pipeline import fileTools as fileTools 
+reload(fileTools)
+from pathlib import Path
+import os
+
+
+if fileTools.fileState() == 'version' or fileTools.fileState() == 'local_hero':
+	print('This is Version.')
+
+	pathFile = mc.file(q=True, sn=True)
+	path_lib = Path(pathFile)
+	wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+	final_wanted_path = wanted / 'Data'
+
+	if final_wanted_path.exists() and final_wanted_path.is_dir():
+		os.startfile(final_wanted_path)
+
+elif fileTools.fileState() == 'local_hero':
+	print('This is Hero.')
+	pathFile = mc.file(q=True, sn=True)
+	path_lib = Path(pathFile)
+	wanted = path_lib.parent  # Go up two levels to get the desired directory
+
+
+
+
+
+
+
+
 
 
 

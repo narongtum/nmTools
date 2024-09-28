@@ -62,6 +62,36 @@ For further details and reference, you can consult the official FastCopy Help do
 '''
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... export both char and char with weapon
+# # # # # # # # # # # # # # # # # # # # 
+
+from function.asset import exportFBX
+reload(exportFBX)
+
+#... unparent 'Export' and 'model_grp' to world
+
+
+
+
+if mc.objExists('rig_grp.asset_name'):
+	print('yeah')
+	asset_name = mc.getAttr('rig_grp.asset_name')
+else:
+	asset_name = mc.ls(sl=True)[0]
+
+exportFBX.exportFBXnoConnection(selection, fileName = asset_name)
+
+
+
+
+
+
+
+
+
+
+
 
 # # # # # # # # # # # # # # # # # # # # 
 #... close all flothing windows

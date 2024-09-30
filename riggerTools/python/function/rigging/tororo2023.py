@@ -63,6 +63,18 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 # # # # # # # # # # # # # # # # # # # # 
+#... reconnect to blend matrix
+# # # # # # # # # # # # # # # # # # # # 
+side = 'LFT'
+template_ctrl = f'handProp{side}_gmbCtrl_tmp'
+new_ctrl = f'handProp{side}_gmbCtrl'
+
+
+mc.connectAttr(f'{new_ctrl}.worldMatrix[0]', f'R_weapon_blendMatrix.target[1].targetMatrix',f=True)
+mc.connectAttr(f'{new_ctrl}.worldMatrix[0]', f'L_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+
+
+# # # # # # # # # # # # # # # # # # # # 
 #... export both char and char with weapon
 # # # # # # # # # # # # # # # # # # # # 
 

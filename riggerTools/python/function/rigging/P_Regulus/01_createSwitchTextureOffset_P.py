@@ -99,7 +99,7 @@ def connect( objA = '' , attrA = '', objB = '', attrB = '' ):
 
 # RUN #
 
-createSwtichTextureOffset( ctrl = 'facialSwitch_ctrl', place2dTexture = 'NPC003_Conrad_01_Mouth_PT', attrName = 'mouth', addEnumList = [ 'Default', 'A', 'E', 'I', 'O', 'U','Sp1','Sp2' ] )
+createSwtichTextureOffset( ctrl = 'facialSwitch_ctrl', place2dTexture = 'CH022_Roy_Mouth_PT', attrName = 'mouth', addEnumList = [ 'Default', 'A', 'E', 'I', 'O', 'U','Sp1','Sp2' ] )
 
 
 

@@ -95,15 +95,53 @@ def roundSkinWeight(digit=3, selection=''):
 			VtxWeightNum=len(VtxWeight)
 			vtxWeightValueList=[]
 
-			print(VtxWeight)
-			mc.error('break')
 
+
+			print(f'Weight before adjust: {VtxWeight}')
+			# mc.error('break')
+
+
+			# Step 1: Round each value
+			rounded_VtxWeight = [round(value, 3) for value in VtxWeight]
+
+			# Step 2: Calculate the sum of the rounded values
+			total_sum = sum(rounded_VtxWeight)
+
+			# Step 3: Adjust the max value if the sum is not exactly 1
+			if total_sum != 1.0:
+			    max_value = max(rounded_VtxWeight)
+			    max_index = rounded_VtxWeight.index(max_value)
+			    
+			    # Calculate the difference needed to make the sum 1
+			    difference = 1.0 - total_sum
+			    # Adjust the max value
+			    rounded_VtxWeight[max_index] += difference
+
+			# Output the results
+			new_total_sum = sum(rounded_VtxWeight)
+			# rounded_VtxWeight, new_total_sum
+
+
+			if new_total_sum == 1:
+				roundSkinLogger.info('Sum of value is: 1 That OK.')
+			elif new_total_sum > 1:
+				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, new_total_sum) )
+			elif new_total_sum < 1: 
+				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, new_total_sum) )
+
+
+
+
+
+
+
+			'''
 			#... round value logic  here
 			if len(VtxWeight) > 0:
 				for each in range(len(VtxWeight)):
 					float_num = round(VtxWeight[each], digit)
 					vtxWeightValueList.append(float_num)
-					roundSkinLogger.debug(vtxWeightValueList)
+					
 
 			#... sum value
 			
@@ -145,21 +183,26 @@ def roundSkinWeight(digit=3, selection=''):
 				# 	diff = round(1-total,digit)
 				# 	vtxWeightValueList[biggest] = round((vtxWeightValueList[biggest] + diff), digit)		
 				
+
 			total = 0
 			for each in range(len(vtxWeightValueList)):
 				total = total + vtxWeightValueList[each]
+
+
+
 				
 			if total != 1:
 				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, total) )
 				#return False
 
+			'''
 
 
 			#... assign round value to the dict
 			for i in range (len(eachVtx)):
 				
 				eachVtx[i]=list(eachVtx[i])
-				eachVtx[i][1] = vtxWeightValueList[i]
+				eachVtx[i][1] = rounded_VtxWeight[i]
 				eachVtx[i]=tuple(eachVtx[i])
 
 

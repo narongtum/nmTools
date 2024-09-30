@@ -66,6 +66,7 @@ def roundSkinWeight(digit=3, selection=''):
 
 		eachVtx = vertexDict[eachVtxNum]
 		
+		#... case# 1 there are only one skin jnt
 		if len(eachVtx) == 1:
 
 			#... there is just one joint in vtx so I assign 1
@@ -77,6 +78,8 @@ def roundSkinWeight(digit=3, selection=''):
 
 
 		else:
+
+			#... case# 2 is normal weight
 			VtxWeight = []
 			for i in range (len(eachVtx)):
 				#... get only number
@@ -91,7 +94,11 @@ def roundSkinWeight(digit=3, selection=''):
 			diff = 0
 			VtxWeightNum=len(VtxWeight)
 			vtxWeightValueList=[]
-			#... round value here
+
+			print(VtxWeight)
+			mc.error('break')
+
+			#... round value logic  here
 			if len(VtxWeight) > 0:
 				for each in range(len(VtxWeight)):
 					float_num = round(VtxWeight[each], digit)

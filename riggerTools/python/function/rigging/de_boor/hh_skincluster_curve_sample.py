@@ -1,3 +1,6 @@
+#... using curve to skin joint to mesh
+
+
 from maya import cmds
 from function.rigging.de_boor import hh_skincluster_curve as skincluster_curve
 from function.framework.reloadWrapper import reloadWrapper as reload
@@ -6,7 +9,7 @@ reload(skincluster_curve)
 
 
 
-# ----- example 2, curve form = open
+# ----- example 2, curve form = open, curve that open shape
 mesh = 'L_eyebrow2'
 curve = 'L_eyebrow_crv'
 joint_all = ['L_eyebrow01_bJnt','L_eyebrow02_bJnt','L_eyebrow03_bJnt']

@@ -10,7 +10,7 @@ from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
 from function.framework.reloadWrapper import reloadWrapper as reload
-from function.rigging.de_boor import de_boor_core as core
+from function.rigging.de_boor import hh_de_boor_core as core
 reload(core)
 
 

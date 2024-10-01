@@ -34,11 +34,13 @@ reload(runWrite)
 from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
 reload(skinIO)
 
-
 try:
 	from shiboken2 import wrapInstance
 except:
 	from sid import wrapInstance as wrapInstance
+
+from function.rigging.skin import roundSkinWeight as rsw
+reload(rsw)
 
 
 
@@ -2616,6 +2618,17 @@ def createThumbnail(fileType='png', width=256, height=256 ,currentPath='',fileNa
 
 
 
+def do_pipeline_round_skinWeight(group_names = ['Export_grp', 'Model_grp']):
+	if mc.objExists("rig_grp.round_skinweight") == True and mc.getAttr("rig_grp.round_skinweight") == True:
+		mesh = fileTools.find_mesh_in_grp(group_names=group_names)
+		for each in mesh:
+			rsw.roundSkinWeight(digit=3, selection=each)
+			FileManagerLog.info('Pipeline do roundSkinWeight Done...\n')
+	else:
+		pass
+
+
+
 
 
 
@@ -2674,23 +2687,27 @@ def do_local_commit():
 
 
 def do_global_commit():
-	#... Assign old name to rig_grp
+	#... Assign previous name to rig_grp
 	fileTools.assign_pre_job_step()
 
-	# Remove unused ref
+	#... Remove unused ref
 	fileTools.remUnRef()
 
-	# Import ref
+	#... Import ref
 	fileTools.impRem()
 
-	# Hide Root
+	#... Hide Root
 	fileTools.doHideGrp( 'Root',0 )
 	fileTools.doHideGrp( 'root',0 )
 
-	# Move node to target
+	#... delete delete grp
 	fileTools.doDeleteGrp()	
 
-	# Count joint
+	#... round skinweight
+	do_pipeline_round_skinWeight()
+	FileManagerLog.info('do_pipeline_round_skinWeight...\n')
+
+	#... Count joint
 	fileTools.countJnt()
 	mc.select(deselect = True)	
 

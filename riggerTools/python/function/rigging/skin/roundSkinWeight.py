@@ -29,8 +29,25 @@ class roundSkinLogger(logger.MayaLogger):
 	LOGGER_NAME = "roundSkin"
 
 
-def something():
-	roundSkinLogger.set_level(logging.INFO)
+
+
+
+def has_skin_cluster(mesh):
+    # Get the history of the mesh
+    history = mc.listHistory(mesh)
+    
+    # Check if any of the nodes in the history are skinCluster nodes
+    skin_clusters = mc.ls(history, type='skinCluster')
+    
+    if skin_clusters:
+        return True
+    else:
+        return False
+
+
+
+
+
 
 
 
@@ -42,12 +59,26 @@ def roundSkinWeight(digit=3, selection=''):
 	#...timeStart
 	timeStart = time.time()
 
-	selection = mc.ls(sl = True, fl = True)
-	if selection == None:
+	# selection = mc.ls(sl = True, fl = True)
+	mc.select( selection, r = True)
+
+	selection = mc.ls(sl = True)[0]
+	if selection == []:
 		mc.warning("No valid selection made. Exiting roundSkinWeight.")
 		return False
-	each = selection[0]
-	mc.select( each, r = True)
+	# each = selection[0]
+
+	
+
+	#... check there are having skin
+	round_mesh = mc.ls(sl=True)[0]
+	if has_skin_cluster(round_mesh):
+		roundSkinLogger.info('There are having skincluster.')
+	else:
+		return False
+
+
+
 	# get vertex data
 	geoData = skin.geoInfo( vtx = True, geo = True, skinC = True )
 	vertexDict	=	{}
@@ -96,9 +127,10 @@ def roundSkinWeight(digit=3, selection=''):
 			vtxWeightValueList=[]
 
 
+			# roundSkinLogger.info(f'Weight before adjust: {VtxWeight}')
+			# print(f'Weight before adjust: {VtxWeight}')
 
-			print(f'Weight before adjust: {VtxWeight}')
-			# mc.error('break')
+
 
 
 			# Step 1: Round each value

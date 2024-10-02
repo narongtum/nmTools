@@ -2601,18 +2601,25 @@ class SvnMaya:
 
 
 
-def createThumbnail(fileType='png', width=256, height=256 ,currentPath='',fileName = 'thumb'):
-	# Create Thumbnail at current maya file
-	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, fileType)
+def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
+	
+	#... Create Thumbnail at current maya file
+	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'jpg')
+
+	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
 	
 	mimage = om.MImage()
 	view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
 
-	# Resize the image to the specified width and height
+	#... Resize the image to the specified width and height
 	mimage.resize(width, height)
 
-	mimage.writeToFile(imageFile, fileType)
+	mimage.writeToFile(imageFile)
+
+	#... Convert the file to PNG
+	os.rename(imageFile, pngImageFile)
+
 	print('Thumbnail has been created at: {0}'.format(imageFile))
 
 

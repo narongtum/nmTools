@@ -317,21 +317,31 @@ def getExt(splitwith = '.'):
 	return ext
 
 
-def createThumbnail(fileType='jpg', width=256, height=256):
-	# Create Thumbnail at current maya file
+def createThumbnail(width=256, height=256):
+
+	#... Create Thumbnail at current maya file
 	currentPath = findCurrentPath()
 	fileName = getFileName()[0]
-	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, fileType)
+
+	#... save as jpg first then convert
+	jpgImageFile  = '{0}{1}.{2}'.format(currentPath, fileName, 'jpg')
+
+	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
 	
 	mimage = om.MImage()
 	view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
 
-	# Resize the image to the specified width and height
+	#... Resize the image to the specified width and height
 	mimage.resize(width, height)
 
-	mimage.writeToFile(imageFile, fileType)
-	print('Thumbnail has been created at: {0}'.format(imageFile))
+	#... mimage.writeToFile(imageFile, fileType)
+	mimage.writeToFile(jpgImageFile )
+
+	#... Convert the file to PNG
+	os.rename(jpgImageFile, pngImageFile)
+
+	print('Thumbnail has been created at: {0}'.format(pngImageFile))
 
 
 #... find current maya path

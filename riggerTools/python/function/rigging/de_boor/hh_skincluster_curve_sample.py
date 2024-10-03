@@ -40,7 +40,6 @@ skincluster_curve.split_with_curve(msh, jnts, crv)
 
 
 
-
 # ----- example 1, curve form = periodic 
 cmds.file(new=True, f=True)
 

@@ -62,6 +62,17 @@ For further details and reference, you can consult the official FastCopy Help do
 '''
 
 
+
+#... Create Controller at selected object.
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
+selected = mc.ls(sl = True)
+
+adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
+							constraint = False, matrixConst = True, mo = False, translate=True, 
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
+
+
 # # # # # # # # # # # # # # # # # # # # 
 #... reconnect to blend matrix
 # # # # # # # # # # # # # # # # # # # # 
@@ -779,14 +790,7 @@ cube.addAttribute( at = 'enum', keyable = True , en = 'on:off:', longName = 'Det
 
 
 
-# Create Controller at selected object.
-from function.rigging.controllerBox import adjustController as adjust
-reload(adjust)
-selected = mc.ls(sl = True)
 
-adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
-							constraint = False, matrixConst = True, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
 
 
 

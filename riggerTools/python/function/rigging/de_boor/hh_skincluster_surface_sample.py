@@ -48,6 +48,7 @@ sff.split_with_surface(msh, jnts, nrb)
 
 
 # ----- example 2, UV form = periodic, periodic
+#... use this for skirt
 cmds.file(new=True, f=True)
 
 JNT_POS_LISTS = [[[1.0, -0.5, 0.0], [0.0, -0.5, 1.0], [-1.0, -0.5, 0.0], [0.0, -0.5, -1.0]],
@@ -79,26 +80,29 @@ sff.split_with_surface(msh, jnts, nrb)
 
 msh = 'Skirt02'
 aac = mc.ls(sl=True)
+nrb = 'loftedSurface1'
+
+  
+  
+  
+jnts_1 = ['objectA01','objectA02','objectA03','objectA04']
+jnts_2 = ['objectB01','objectB02','objectB03','objectB04'] 
+jnts_3 = ['objectC01','objectC02','objectC03','objectC04'] 
+jnts_4 = ['objectD01','objectD02','objectD03','objectD04']  
+jnts_5 = ['objectE01','objectE02','objectE03','objectE04'] 
+jnts_6 = ['objectF01','objectF02','objectF03','objectF04']   
 
 
+jnts_1 = ['objectAA01','objectAA02','objectAA03','objectAA04']
+jnts_2 = ['objectBB01','objectBB02','objectBB03','objectBB04']
+jnts_3 = ['objectCC01','objectCC02','objectCC03','objectCC04']
+jnt_grp = [jnts_1, jnts_2,jnts_3 ]  
+# jnt_grp = [jnts_1, jnts_2,jnts_3, jnts_4,jnts_5, jnts_6]  
   
   
-  
-jnts_1 = ['objectA01','objectA02','objectA03','objectA04','objectA05','objectA06']
-jnts_2 = ['objectA07','objectA08','objectA09','objectA10','objectA11','objectA12']
-jnts_3 = ['objectA13','objectA14','objectA15','objectA16','objectA17','objectA18']
-jnts_4 = ['objectA19','objectA20','objectA21','objectA22','objectA23','objectA24']  
-  
-  
-  
-jnt_grp = [jnts_1, jnts_2, jnts_3, jnts_4]  
-  
-  
-jnt_grp[0][1] 
-jnts[0][1] 
-  
+
 msh  = 'Skirt02'
-nrb =   'loftedSurface1'
+nrb =   'loft03'
 sff.split_with_surface(msh, jnt_grp, nrb)
 
 

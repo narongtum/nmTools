@@ -31,10 +31,10 @@ for p in (0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 3, 0):
 	cmds.select(cl=True)
 	jnt = cmds.joint(p=p)
 	jnts.append(jnt)
-
-cmds.skinCluster(jnts, msh)
 skincluster_curve.split_with_curve(msh, jnts, crv)
 
+
+cmds.skinCluster(jnts, msh)
 
 
 

@@ -144,7 +144,7 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
     skin_wts = skin_cluster_fn.getWeights(dag, components, influence_ia)
 
     for v_jnts in jnts_copy:
-        print (v_jnts)
+        print (f' this is v_jnts: {v_jnts}')
         v_jnt_0_index = influences_names.index(v_jnts[0])
 
         for i, v_jnt in enumerate(v_jnts):
@@ -173,6 +173,7 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
         kv, modified_jnts = core.knot_vector(_kv_type, _jnts, _d)
 
         max_val = max_val_u if i == 0 else max_val_v
+        print(f'this is vluse of U: {i}')
 
         jnt_indices = [influences_names.index(jnt) for jnt in _jnts]
         jnts_total_wts = [sum(skin_wts[jnt_index + j * len(influences_dpa)] for jnt_index in jnt_indices) for j in

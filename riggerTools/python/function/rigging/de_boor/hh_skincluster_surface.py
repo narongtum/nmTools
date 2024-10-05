@@ -120,6 +120,9 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
     max_val_u = cmds.getAttr(f'{srf}.maxValueU')
     max_val_v = cmds.getAttr(f'{srf}.maxValueV')
 
+    print(f'this is vluse of max_val_u: {max_val_u}')
+    print(f'this is vluse of max_val_v: {max_val_v}')
+
     form_u = cmds.getAttr(f'{srf}.formU')
     form_v = cmds.getAttr(f'{srf}.formV')
     kv_type = [INDEX_TO_KNOT_TYPE[form_u], INDEX_TO_KNOT_TYPE[form_v]]
@@ -191,6 +194,9 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
             if _kv_type == PERIODIC:
                 t_n = (kv[_d + 1] * (_d * 0.5 + 0.5)) * (1 - t_n) + t_n * (1 - kv[_d + 1] * (_d * 0.5 - 0.5))
 
+
+
+            print(f'This is de boor: {modified_jnts}, {_d}, {t_n}, {kv}')
             wts = core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
 
             if _kv_type == PERIODIC:

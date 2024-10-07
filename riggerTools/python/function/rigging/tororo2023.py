@@ -61,6 +61,27 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+
+
+
+
+
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+
+jtt.rename_tip_jnt(root_joint = 'joint3', search = '_bJnt', replace = '_endJnt')
+jtt.change_endJnt_gray()
+
+
+
+
+
+
+
+
+
+
+
 # cmds.skinPercent(skin_cluster, pruneWeights=tol)
 
 #... Create Controller at selected object.

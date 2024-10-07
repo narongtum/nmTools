@@ -178,7 +178,7 @@ def exportSel( folder_name = 'data' ):
 
 	else:
 		print('\nThis is Unknow file.')
-		currentPath = fileTools.currentFolder()
+		currentPath = currentFolder()
 		finalPath = os.path.join(currentPath, finalName + '.ma')
 		final_normPath = os.path.normpath(finalPath)
 		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)

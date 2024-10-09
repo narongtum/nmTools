@@ -2706,6 +2706,7 @@ def do_global_commit():
 	#... Hide Root
 	fileTools.doHideGrp( 'Root',0 )
 	fileTools.doHideGrp( 'root',0 )
+	fileTools.doHideGrp( 'root_weapon',0 )
 
 	#... delete delete grp
 	fileTools.doDeleteGrp()	

@@ -859,7 +859,7 @@ def bipedLegRigExt(
 
 			softIkfunc.softIK( nameSpace = nameSpace, priorMeta = priorMeta, region = region, side = side, ctrlName = ankleIk_ctrl,
 						upAxis = 2, primaryAxis = 2, ikhName = ikhAll_name[0], 
-						inputMax = 40, outputMax = 4  )
+						inputMax = 40, outputMax = 4,debug = False  )
 
 
 

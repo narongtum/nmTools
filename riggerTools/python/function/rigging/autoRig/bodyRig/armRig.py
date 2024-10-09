@@ -137,7 +137,7 @@ def armRigExt(
 
 			softIkfunc.softIK(	nameSpace = nameSpace, priorMeta = priorMeta ,region = region, side = side, ctrlName = softIk_name[0],
 						upAxis = softIkUpAxis, primaryAxis = softIkPrimaryAxis, ikhName = ikhAll_name[0], 
-						inputMax = 40, outputMax = 4  )
+						inputMax = 40, outputMax = 4, debug = False  )
 
 			print ('#### End of %s%s Rig ####' %( 'bipedLegRig' , side ))
 			print ('\n\n\n\n\n')

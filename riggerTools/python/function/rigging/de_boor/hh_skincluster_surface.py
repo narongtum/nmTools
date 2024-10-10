@@ -132,8 +132,11 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
     cmds.select(verts)
     vert_sl = om.MGlobal.getActiveSelectionList()
     dag, components = vert_sl.getComponent(0)
+    try:
+        skin_cluster = cmds.ls(cmds.listHistory(dag.fullPathName()), typ='skinCluster')[0]
+    except:
+        print ('You maybe forget skinweight.')
 
-    skin_cluster = cmds.ls(cmds.listHistory(dag.fullPathName()), typ='skinCluster')[0]
     cmds.skinPercent(skin_cluster, pruneWeights=tol)
 
     skin_cluster_sl = om.MGlobal.getSelectionListByName(skin_cluster)

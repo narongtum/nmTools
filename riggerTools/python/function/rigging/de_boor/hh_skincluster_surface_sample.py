@@ -4,7 +4,7 @@ from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
 from function.framework.reloadWrapper import reloadWrapper as reload
-from function.rigging.de_boor import hh_de_boor_core as core
+from qfunction.rigging.de_boor import hh_de_boor_core as core
 reload(core)
 
 from function.rigging.de_boor import hh_skincluster_surface as sff
@@ -42,6 +42,14 @@ cmds.skinCluster(flat_jnts, msh)
 
 sff.split_with_surface(msh, jnts, nrb)
 
+
+
+
+#... manual use
+msh = 'CH021_Vicky_01_Body_ply1'
+jnts = [['joint1','joint2','joint3']]
+nrb = 'UY'
+sff.split_with_surface(msh, jnts, nrb)
 
 
 

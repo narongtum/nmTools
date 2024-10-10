@@ -66,6 +66,42 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+#... pin to locator
+from function.rigging.constraint import pinLocatorToSurface as pls
+reload(pls)
+
+pls.pin_locator_surface(	# need pxy nrb to drive locator
+						nurbs = 'eyebrowLFT_nrb',
+						region = 'eyebrowLFT',
+						side = '',
+						source_loc = ('eyebrow01LFT_loc','eyebrow02LFT_loc','eyebrow03LFT_loc'),
+						locator_scale = 1,
+						creJnt = False , suffixJnt = 'bJnt',
+						creCtrl = False , ctrlShape = 'circle_ctrlShape',
+						snapAtEnd = False,
+						priorJnt = '',
+						scale = 2
+						)
+
+
+#... using de boor 
+from function.rigging.de_boor import hh_skincluster_surface as sff
+reload(sff)
+#... manual use
+msh = 'extract_brow'
+jnts = [['eyebrow01LFT_bJnt','eyebrow02LFT_bJnt','eyebrow03LFT_bJnt']]
+nrb = 'eyebrowLFT_nrb'
+sff.split_with_surface(msh, jnts, nrb)
+
+
+
+
+
+
+
+
+
+
 from function.rigging.skeleton import jointTools as jtt
 reload(jtt)
 

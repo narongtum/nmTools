@@ -84,6 +84,22 @@ pls.pin_locator_surface(	# need pxy nrb to drive locator
 						)
 
 
+
+pls.pin_locator_surface(	# need pxy nrb to drive locator
+						nurbs = 'eyebrowRGT_nrb',
+						region = 'eyebrowRGT',
+						side = '',
+						source_loc = ('eyebrow01RGT_loc','eyebrow02RGT_loc','eyebrow03RGT_loc'),
+						locator_scale = 1,
+						creJnt = False , suffixJnt = 'bJnt',
+						creCtrl = False , ctrlShape = 'circle_ctrlShape',
+						snapAtEnd = False,
+						priorJnt = '',
+						scale = 2
+						)
+
+
+
 #... using de boor 
 from function.rigging.de_boor import hh_skincluster_surface as sff
 reload(sff)

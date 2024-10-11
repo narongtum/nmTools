@@ -326,8 +326,8 @@ def createMatrixAttr(selected, attrNam = 'destination'):
 def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
 	if not source:
-		print('source is not selected.')
-		return 0
+		print('Source is not selected.')
+		return False
 
 
 	# mo = True
@@ -513,6 +513,8 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 	meta_node.addAttribute( dataType = 'string' , longName = 'Source')
 	meta_node.attr('Target').value = obj_target.name
 	meta_node.attr('Source').value = obj_source.name
+
+	mc.select(target, r=True)
 
 	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
 	return obj_target, obj_source

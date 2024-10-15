@@ -343,6 +343,51 @@ def createThumbnail(width=256, height=256):
 
 	print('Thumbnail has been created at: {0}'.format(pngImageFile))
 
+def createThumbnail_ext(width=256, height=256, currentPath='', fileName=''):
+
+	#... save as jpg first then convert
+	jpgImageFile  = '{0}{1}.{2}'.format(currentPath, fileName, 'jpg')
+
+	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
+
+	#... making to normpath
+	jpgImageFile = os.path.normpath(jpgImageFile)
+	pngImageFile = os.path.normpath(pngImageFile)
+
+	fileToolsLogger.debug(f'jpg path is: {jpgImageFile}\n')
+	fileToolsLogger.debug(f'png path is: {pngImageFile}\n')
+
+	mimage = om.MImage()
+	view = omui.M3dView.active3dView()
+	view.readColorBuffer(mimage, True)
+
+	#... Resize the image to the specified width and height
+	mimage.resize(width, height)
+
+	#... mimage.writeToFile(imageFile, fileType)
+	mimage.writeToFile(jpgImageFile )
+
+	#...if file exists delete it first
+
+	if os.path.exists(pngImageFile):
+		# Delete the file
+		os.remove(pngImageFile)
+		print(f"File '{pngImageFile}' has been deleted.")
+	else:
+		print(f"File '{pngImageFile}' does not exist.")
+
+
+	#... Convert the file to PNG
+	os.rename(jpgImageFile, pngImageFile)
+
+	print('Thumbnail has been created at: {0}'.format(pngImageFile))
+
+
+
+
+
+
+
 
 #... find current maya path
 def currentPath():

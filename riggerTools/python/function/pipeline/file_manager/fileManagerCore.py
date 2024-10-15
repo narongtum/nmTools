@@ -392,7 +392,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			parent_folder = os.path.basename(folder_path)
 
-		#... There is in 'VERSION' folder
+		#... if There is in 'VERSION' folder
 		if parent_folder == STATIC_FOLDER[1]:
 			FileManagerLog.debug("The folder containing named 'Version'.")
 
@@ -422,17 +422,35 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			#... Check valid data
 			if os.path.exists(os.path.join(back_folder_path, 'data.json')): #... This is Global commit
-				FileManagerLog.debug('	931-This file is Global Commit >>> {0}'.format(back_folder_path))
+				FileManagerLog.debug('\t425-This file is Global Commit >>> {0}'.format(back_folder_path))
 				save_path = back_folder_path
 			else: #... This is Local commit get correct dir
 				save_path = os.path.dirname(back_folder_path)
 
 
 
-		# Create Thumbnail at current maya file
+		#... Create Thumbnail at current maya file
 		# final_save_path = '{0}{1}.{2}'.format(save_path, fileName, fileType)
 
-		save_path = os.path.normpath(os.path.join(save_path,'{0}.{1}'.format(fileName, fileType)))
+
+		# save_path = os.path.normpath(os.path.join(save_path,'{0}.{1}'.format(fileName, fileType)))
+		save_full_path = os.path.normpath(os.path.join(save_path,'{0}.{1}'.format(fileName, fileType)))
+
+		
+		print(f'this is save_path: {save_path}')
+		#... normalize path before execute
+		save_path = os.path.join(save_path, '')
+
+		# save_path = os.path.normpath(save_path)
+
+		# mc.error(save_path)
+
+
+		# fileTools.createThumbnail_ext(fileName, fileType)
+		fileTools.createThumbnail_ext(currentPath=save_path, fileName=fileName)
+
+
+		'''
 		import maya.OpenMaya as om
 		import maya.OpenMayaUI as omui
 		mimage = om.MImage()
@@ -444,8 +462,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		mimage.writeToFile(save_path, fileType)
 		print('Thumbnail has been created at: {0}'.format(save_path))
+		'''
 
-		save_path = os.path.normpath(save_path)
+
+		save_full_path = os.path.normpath(save_full_path)
+
 
 		#... Asking SVN
 		reply = QMessageBox(self)
@@ -460,10 +481,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if reply.clickedButton() == commit_button:
 
 			#... Add SVN
-			self.svn_maya.execute_cmd('add', file_path = save_path, close_on_end=0, logmsg='')
+			self.svn_maya.execute_cmd('add', file_path = save_full_path, close_on_end=0, logmsg='')
 
 			#...Commit SVN
-			self.svn_maya.execute_cmd('commit', file_path = save_path, close_on_end=0, logmsg='')
+			self.svn_maya.execute_cmd('commit', file_path = save_full_path, close_on_end=0, logmsg='')
 
 		elif reply.clickedButton() == save_button:
 			pass
@@ -841,7 +862,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def push_btn_global_publish(self):
-		# Publish global file that Maya currenly open
+		#... Publish global file that Maya currenly open
 
 		try:
 			asset_path = self._get_full_path()

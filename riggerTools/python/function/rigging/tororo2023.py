@@ -62,7 +62,10 @@ For further details and reference, you can consult the official FastCopy Help do
 '''
 
 
-
+from function.rigging.controllerBox import adjustController as ccr
+importlib.reload(ccr)
+selected = mc.ls(sl=True)
+ccr.creControllerFunc(selected)
 
 
 

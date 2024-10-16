@@ -117,6 +117,11 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
 		d_v = min([len(j) for j in jnts_copy]) - 1
 		d = [d_u, d_v]
 
+	print(f'This is d_u: {d_u}')
+	print(f'This is d_v: {d_v}')
+
+
+
 	max_val_u = cmds.getAttr(f'{srf}.maxValueU')
 	max_val_v = cmds.getAttr(f'{srf}.maxValueV')
 
@@ -154,6 +159,7 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
 	for v_jnts in jnts_copy:
 		print (f' this is v_jnts: {v_jnts}')
 		v_jnt_0_index = influences_names.index(v_jnts[0])
+		print (f' this is v_jnt_0_index: {v_jnt_0_index}')
 
 		for i, v_jnt in enumerate(v_jnts):
 			if i != 0:
@@ -189,6 +195,8 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
 
 		for vert_p, jnts_total_wt, j in zip(vert_pa, jnts_total_wts, range(len(verts))):
 
+
+
 			if jnts_total_wt < tol:
 				continue
 
@@ -216,7 +224,8 @@ def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
 
 			for k, jnt_index in enumerate(jnt_indices):
 				skin_wts[jnt_index + j * len(influences_dpa)] = jnts_wts[k]
-
+	# print(f'{dag}, {components}, {influence_ia}, {skin_wts}')	
+	# cmds.error('Break')
 	skin_cluster_fn.setWeights(dag, components, influence_ia, skin_wts)
 
 	om.MGlobal.setActiveSelectionList(original_sel)

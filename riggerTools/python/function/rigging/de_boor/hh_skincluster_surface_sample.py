@@ -103,39 +103,18 @@ sff.split_with_surface(msh, jnts, nrb)
 
 
 
-msh = 'Skirt02'
-aac = mc.ls(sl=True)
-nrb = 'loftedSurface1'
 
-  
-  
-  
+
+
+
+
+
+#.... My tutoria
+
 jnts_1 = ['jntA01','jntA02','jntA03','jntA04']
 jnts_2 = ['jntB01','jntB02','jntB03','jntB04'] 
 jnts_3 = ['jntC01','jntC02','jntC03','jntC04'] 
 jnts_4 = ['jntD01','jntD02','jntD03','jntD04']  
-
-jnt_grp = [jnts_1, jnts_2,jnts_3,jnts_4 ]  
-# jnt_grp = [jnts_1, jnts_2,jnts_3, jnts_4,jnts_5, jnts_6  
-  
-
-msh  = 'pCylinder1'
-nrb =   'lofted01'
-sff.split_with_surface(msh, jnt_grp, nrb)
-
-
-
-
-
-
-
-
-
-  
-jnts_1 = ['jntA04','jntA03','jntA02','jntA01']
-jnts_2 = ['jntB04','jntB03','jntB02','jntB01'] 
-jnts_3 = ['jntC04','jntC03','jntC02','jntC01'] 
-jnts_4 = ['jntD04','jntD03','jntD02','jntD01'] 
 
 jnt_grp = [jnts_1, jnts_2, jnts_3, jnts_4 ]  
 # jnt_grp = [jnts_1, jnts_2,jnts_3, jnts_4,jnts_5, jnts_6]  
@@ -151,22 +130,35 @@ sff.split_with_surface(mesh, jnt_grp, nurb)
 
 
 
+# ----- example 3 Hi Res
+
+# jnts_1 = ['jntA04','jntA03','jntA02','jntA01']
+# jnts_2 = ['jntB04','jntB03','jntB02','jntB01'] 
+# jnts_3 = ['jntC04','jntC03','jntC02','jntC01'] 
+# jnts_4 = ['jntD04','jntD03','jntD02','jntD01'] 
+# jnts_5 = ['jntE04','jntE03','jntE02','jntE01'] 
+# jnts_6 = ['jntF04','jntF03','jntF02','jntF01'] 
+# jnts_7 = ['jntG04','jntG03','jntG02','jntG01'] 
+# jnts_8 = ['jntH04','jntH03','jntH02','jntH01'] 
+
+#... min to max this is right direction
+jnts_1 = ['jntA01','jntA02','jntA03','jntA04']
+jnts_2 = ['jntB01','jntB02','jntB03','jntB04'] 
+jnts_3 = ['jntC01','jntC02','jntC03','jntC04'] 
+jnts_4 = ['jntD01','jntD02','jntD03','jntD04'] 
+jnts_5 = ['jntE01','jntE02','jntE03','jntE04'] 
+jnts_6 = ['jntF01','jntF02','jntF03','jntF04'] 
+jnts_7 = ['jntG01','jntG02','jntG03','jntG04'] 
+jnts_8 = ['jntH01','jntH02','jntH03','jntH04'] 
+
+# jnt_grp = [jnts_1, jnts_2, jnts_3, jnts_4 ]  
+jnt_grp = [jnts_1, jnts_2,jnts_3, jnts_4, jnts_5, jnts_6, jnts_7, jnts_8]  
+  
+mesh  = 'skirt_polygon'
+nurb =   'skirt_nurb'
+sff.split_with_surface(mesh, jnt_grp, nurb)
 
 
 
 
-
-
-# ----- example 2
-flat_jnts = ['joint1','joint2','joint3']
-msh = 'polySurface67'
-nrb = 'loftedSurface2'
-nrb_con = 'loft1'
-jnts = [['joint1','joint2','joint3']]
-
-
-
-# cmds.skinCluster(flat_jnts, msh)
-
-sff.split_with_surface(msh, jnts, nrb)
 

@@ -304,9 +304,9 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 	ftScl = ((fSA[2] + fSB[2])*0.8) * charScale
 	print ('foot scale is =================================')
 	print (ftScl)
-	ankleIk_ctrl.scaleShape( scale = (	ftScl/3 , 1.5 , ftScl	)		 )
-	ankleIk_ctrl.scaleShape( scale = (	0.1, 0.1, 0.075	)		 )
-	# mc.error('This is large.')# ..... force stuck for debug
+	# ankleIk_ctrl.scaleShape( scale = (	ftScl/3 , 1.5 , ftScl	)		 )
+	# ankleIk_ctrl.scaleShape( scale = (	0.9, 0.9, 0.9	)		 )
+	# mc.error('Force stuck for debug.')
 	ankleIk_ctrl.setColor( colorSide )
 
 

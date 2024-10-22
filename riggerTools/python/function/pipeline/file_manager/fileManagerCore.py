@@ -31,8 +31,8 @@ reload(fileTools)
 from function.rigging.readWriteCtrlSizeData import run as runWrite
 reload(runWrite)
 
-from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
-reload(skinIO)
+# from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
+# reload(skinIO)
 
 try:
 	from shiboken2 import wrapInstance
@@ -409,7 +409,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... There is in 'COMMIT' folder maybe Global or Local commit
 		elif parent_folder == STATIC_FOLDER[2]:
-			FileManagerLog.debug("	Their is Local Commit file.")
+			FileManagerLog.debug("	There is Local Commit file.")
 
 			FileManagerLog.debug("	folder_path path is >>> {0}".format(folder_path))
 

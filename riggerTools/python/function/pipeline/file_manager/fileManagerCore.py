@@ -233,7 +233,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Populate Drive and Project combo boxes
 		self.populate_drives()
 		self.populate_project()
-		# self.update_project_comboBox() # It seems redundance with connect update_project_comboBox
+		# self.update_project_comboBox() #... It seems redundance with connect update_project_comboBox
 
 		FileManagerLog.debug('Set default project...')
 		self.drive_comboBox.setCurrentText(DRIVES[0])
@@ -257,14 +257,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... Connect project
 		self.project_comboBox.currentIndexChanged.connect(self.populate_ASSET_treeView)	
 
-		#... if maya open and set project correctly set combo box to that
+		#... if maya open and set project correctly 
+		#... set combo box to that
+
 		if self.is_scene_open():
 			current_scene_path = pm.system.sceneName()
 			current_scene_path = os.path.normpath(current_scene_path)
 			path_elements = current_scene_path.split(os.path.sep)
 			if path_elements[2] in PROJECT_NAME:
-				FileManagerLog.debug(f'Set Project to {path_elements[2]}')
+				FileManagerLog.debug(f'# line: 266 # # Set Project to: {path_elements[2]}')
 				self.project_comboBox.setCurrentText(path_elements[2])
+
+
+				#... make set current drive that scene open
+				current_drive = path_elements[0] + '\\'
+				if current_drive in DRIVES:
+					FileManagerLog.debug(f'# line: 275 # # Set Drive to: {current_drive}')
+					current_drive_index = DRIVES.index(current_drive)
+					self.drive_comboBox.setCurrentText(DRIVES[current_drive_index])
+					
 
 
 
@@ -1231,7 +1242,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		Check the curenty maya file that already open is in the proper file manager path
 		'''
 
-		FileManagerLog.debug("	This is file path{0}".format(file_path))
+		FileManagerLog.debug("	This is file path: {0}".format(file_path))
 
 		# Convert the desired directory path to a model index
 		index = self.model.index(file_path)
@@ -1786,7 +1797,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_project = self.project_comboBox.currentText()
 
 		FileManagerLog.info("\nThis is Run When start")
-		# Set selected drive and project as root path
+		#... Set selected drive and project as root path
 		try:
 			self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
 		except FileNotFoundError:
@@ -1795,7 +1806,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		FileManagerLog.info("Show project path:...\t\t\t", self.path)
 
-		# Update the selected project variable with the current selection
+		#... Update the selected project variable with the current selection
 		selected_project = self.project_comboBox.currentText()
 		print("Show project name _1744_:...\t\t\t", selected_project)
 

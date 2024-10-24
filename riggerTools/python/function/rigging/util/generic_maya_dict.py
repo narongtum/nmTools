@@ -202,59 +202,144 @@ controller_thicker_list = (		'head01_ctrl','eyeCenter_ctrl','upperArmLFTFK_ctrl'
 
 
 standardJnt_list = ('ankleLFT_bJnt',
- 'ankleRGT_bJnt',
- 'ballLFT_bJnt',
- 'ballRGT_bJnt',
- 'clavLFT_bJnt',
- 'clavRGT_bJnt',
- 'handLFT_bJnt',
- 'handRGT_bJnt',
- 'hip_bJnt',
- 'index01LFT_bJnt',
- 'index01RGT_bJnt',
- 'index02LFT_bJnt',
- 'index02RGT_bJnt',
- 'index03LFT_bJnt',
- 'index03RGT_bJnt',
- 'lowerArmLFT_bJnt',
- 'lowerArmRGT_bJnt',
- 'lowerLegLFT_bJnt',
- 'lowerLegRGT_bJnt',
- 'ring01LFT_bJnt',
- 'ring01RGT_bJnt',
- 'ring02LFT_bJnt',
- 'ring02RGT_bJnt',
- 'ring03LFT_bJnt',
- 'ring03RGT_bJnt',
- 'spine01_bJnt',
- 'spine02_bJnt',
- 'spine03_bJnt',
- 'thumb01LFT_bJnt',
- 'thumb01RGT_bJnt',
- 'thumb02LFT_bJnt',
- 'thumb02RGT_bJnt',
- 'thumb03LFT_bJnt',
- 'thumb03RGT_bJnt',
- 'upperArmLFT_bJnt',
- 'upperArmRGT_bJnt',
- 'upperLegLFT_bJnt',
- 'upperLegRGT_bJnt',
- 'neck_bJnt',
- 'middle03LFT_bJnt',
- 'middle02LFT_bJnt',
- 'middle01LFT_bJnt',
- 'middle03RGT_bJnt',
- 'middle02RGT_bJnt',
- 'middle01RGT_bJnt',
- 'pinky01LFT_bJnt',
- 'pinky02LFT_bJnt',
- 'pinky03LFT_bJnt',
- 'pinky01RGT_bJnt',
- 'pinky02RGT_bJnt',
- 'pinky03RGT_bJnt',
- 'head01_bJnt',
- 'eyeLFT_bJnt',
- 'eyeRGT_bJnt')
+'ankleRGT_bJnt',
+'ballLFT_bJnt',
+'ballRGT_bJnt',
+'clavLFT_bJnt',
+'clavRGT_bJnt',
+'handLFT_bJnt',
+'handRGT_bJnt',
+'hip_bJnt',
+'index01LFT_bJnt',
+'index01RGT_bJnt',
+'index02LFT_bJnt',
+'index02RGT_bJnt',
+'index03LFT_bJnt',
+'index03RGT_bJnt',
+'lowerArmLFT_bJnt',
+'lowerArmRGT_bJnt',
+'lowerLegLFT_bJnt',
+'lowerLegRGT_bJnt',
+'ring01LFT_bJnt',
+'ring01RGT_bJnt',
+'ring02LFT_bJnt',
+'ring02RGT_bJnt',
+'ring03LFT_bJnt',
+'ring03RGT_bJnt',
+'spine01_bJnt',
+'spine02_bJnt',
+'spine03_bJnt','thumb01LFT_bJnt',
+'thumb01RGT_bJnt','thumb02LFT_bJnt',
+'thumb02RGT_bJnt','thumb03LFT_bJnt',
+'thumb03RGT_bJnt',
+'upperArmLFT_bJnt',
+'upperArmRGT_bJnt',
+'upperLegLFT_bJnt',
+'upperLegRGT_bJnt','neck_bJnt',
+'middle03LFT_bJnt',
+'middle02LFT_bJnt',
+'middle01LFT_bJnt',
+'middle03RGT_bJnt',
+'middle02RGT_bJnt',
+'middle01RGT_bJnt',
+'pinky01LFT_bJnt',
+'pinky02LFT_bJnt',
+'pinky03LFT_bJnt',
+'pinky01RGT_bJnt',
+'pinky02RGT_bJnt',
+'pinky03RGT_bJnt',
+'head01_bJnt',
+'eyeLFT_bJnt',
+'eyeRGT_bJnt')
+
+
+
+
+
+
+standard_jnt_dict = {
+	'root': ['root','L_weapon_bJnt','R_weapon_bJnt'],
+	'L_arm': ['clavLFT_bJnt', 'upperArmLFT_bJnt', 'lowerArmLFT_bJnt', 'handLFT_bJnt',
+			  'thumb01LFT_bJnt', 'thumb02LFT_bJnt', 'thumb03LFT_bJnt',
+			  'index01LFT_bJnt', 'index02LFT_bJnt', 'index03LFT_bJnt',
+			  'middle01LFT_bJnt', 'middle02LFT_bJnt', 'middle03LFT_bJnt',
+			  'ring01LFT_bJnt', 'ring02LFT_bJnt', 'ring03LFT_bJnt',
+			  'pinky01LFT_bJnt', 'pinky02LFT_bJnt', 'pinky03LFT_bJnt'],
+
+	'R_arm': ['clavRGT_bJnt', 'upperArmRGT_bJnt', 'lowerArmRGT_bJnt', 'handRGT_bJnt',
+			  'thumb01RGT_bJnt', 'thumb02RGT_bJnt', 'thumb03RGT_bJnt',
+			  'index01RGT_bJnt', 'index02RGT_bJnt', 'index03RGT_bJnt',
+			  'middle01RGT_bJnt', 'middle02RGT_bJnt', 'middle03RGT_bJnt',
+			  'ring01RGT_bJnt', 'ring02RGT_bJnt', 'ring03RGT_bJnt',
+			  'pinky01RGT_bJnt', 'pinky02RGT_bJnt', 'pinky03RGT_bJnt'],
+
+	'L_leg': ['upperLegLFT_bJnt', 'lowerLegLFT_bJnt', 'ankleLFT_bJnt', 'ballLFT_bJnt'],
+
+	'R_leg': ['upperLegRGT_bJnt', 'lowerLegRGT_bJnt', 'ankleRGT_bJnt', 'ballRGT_bJnt'],
+
+	'spine': ['hip_bJnt', 'spine01_bJnt', 'spine02_bJnt', 'spine03_bJnt'],
+
+	'head': ['neck_bJnt', 'head01_bJnt', 'eyeLFT_bJnt', 'eyeRGT_bJnt']
+}
+
+
+
+
+
+nanuq_jnt_dict = {
+	'root': ['Root_JNT','L_HandSlot_JNT','R_HandSlot_JNT'],
+	'L_arm': ['L_Clav_JNT', 'L_Shoulder_JNT', 'L_Elbow_JNT', 'L_Wrist_JNT',
+			  'L_Thumb1_JNT', 'L_Thumb2_JNT', 'L_Thumb3_JNT',
+			  'L_Index1_JNT', 'L_Index2_JNT', 'L_Index3_JNT',
+			  'L_Middle1_JNT', 'L_Middle2_JNT', 'L_Middle3_JNT',
+			  'L_Ring1_JNT', 'L_Ring2_JNT', 'L_Ring3_JNT',
+			  'L_Pinky1_JNT', 'L_Pinky2_JNT', 'L_Pinky3_JNT'],
+
+	'R_arm': ['R_Clav_JNT', 'R_Shoulder_JNT', 'R_Elbow_JNT', 'R_Wrist_JNT',
+			  'R_Thumb1_JNT', 'R_Thumb2_JNT', 'R_Thumb3_JNT',
+			  'R_Index1_JNT', 'R_Index2_JNT', 'R_Index3_JNT',
+			  'R_Middle1_JNT', 'R_Middle2_JNT', 'R_Middle3_JNT',
+			  'R_Ring1_JNT', 'R_Ring2_JNT', 'R_Ring3_JNT',
+			  'R_Pinky1_JNT', 'R_Pinky2_JNT', 'R_Pinky3_JNT'],
+
+	'L_leg': ['L_Hip_JNT', 'L_Knee_JNT', 'L_Ankle_JNT', 'L_Ball_JNT'],
+
+	'R_leg': ['R_Hip_JNT', 'R_Knee_JNT', 'R_Ankle_JNT', 'R_Ball_JNT'],
+
+	'spine': ['Hip_JNT', 'Back_JNT', 'Spine1_JNT', 'Chest_JNT'],
+
+	'head': ['Neck_JNT', 'Head_JNT', 'L_Eye_JNT', 'R_Eye_JNT']
+}
+
+
+
+import maya.cmds as mc
+
+# Rename function
+def rename_joints(standard_dict, nanuq_dict):
+    for body_part in standard_dict:
+        # Iterate over joints in each part
+        for i, standard_jnt in enumerate(standard_dict[body_part]):
+            if i < len(nanuq_dict[body_part]):  # Ensure there is a corresponding nanuq joint
+                nanuq_jnt = nanuq_dict[body_part][i]
+                
+                # Check if the standard joint exists in the scene
+                if mc.objExists(standard_jnt):
+                    # Rename to the corresponding nanuq joint
+                    mc.rename(standard_jnt, nanuq_jnt)
+                    print(f"Renamed {standard_jnt} to {nanuq_jnt}")
+                else:
+                    print(f"{standard_jnt} does not exist.")
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -627,5 +712,9 @@ def askColor(side):
 		return 'yellow'
 	else:
 		return 'white'
+
+
+
+
 
 

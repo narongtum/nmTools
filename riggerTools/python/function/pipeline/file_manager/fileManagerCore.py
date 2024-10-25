@@ -1242,7 +1242,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		Check the curenty maya file that already open is in the proper file manager path
 		'''
 
-		FileManagerLog.debug("	This is file path: {0}".format(file_path))
+		FileManagerLog.debug("	The Scene is already open: {0}".format(file_path))
 
 		# Convert the desired directory path to a model index
 		index = self.model.index(file_path)
@@ -1268,7 +1268,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def populate_version_from_open_scene(self, file_path):
 		FileManagerLog.debug('# # # # # # # # # # # # # # # #')
-		#... Mimic the behavior of a user manually clicking on an item in the UI
+		#... Mimic the behavior like a user manually clicking on an item in the UI
 		
 		FileManagerLog.debug('	This is file_path >>> {0}'.format(file_path))
 		# Get the current Maya scene file path
@@ -1287,9 +1287,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			asset_name = path_elements[-4]
 			department_name = path_elements[-3]
 
-
-
-
 			# Convert the desired directory path to a model index
 			FileManagerLog.debug('	922 - This is file_path >>> {0}'.format(file_path))
 			asset_index  = self.model.index(file_path)
@@ -1303,7 +1300,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			# Set the current selection in asset_dir_TREEVIEW
 			self.asset_dir_TREEVIEW.selectionModel().select(selection, QtCore.QItemSelectionModel.ClearAndSelect)
-
 
 
 			#... Add department here
@@ -1366,9 +1362,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def filter_proper_version_list(self):
 
-	# Make list to proper version workspace listWidget
-	# 1. cut off if naming is not having prior folder name
-	# 2. if file is not ma or mb
+	#... Make list to proper version workspace listWidget
+	#... 1. cut off if naming is not having prior folder name
+	#... 2. if file is not ma or mb
 
 		# Get full path
 		asset_path = self._get_full_path()
@@ -2111,12 +2107,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		department_text = self.asset_department_listWidget.currentItem().text()
 		full_department_path = os.path.join(full_path, department_text)
 		return full_department_path
-
-
-
-
-
-
 
 
 

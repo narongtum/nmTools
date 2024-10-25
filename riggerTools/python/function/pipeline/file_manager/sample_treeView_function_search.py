@@ -1,11 +1,7 @@
 from PySide2 import QtWidgets, QtCore
 
 """
-Apologies for the confusion. You're right; the QFileSystemModel does not have a findItems method.
-
-To implement the filtering functionality, you can create a custom filter proxy model that filters 
-
-the data based on the text entered in the QLineEdit. Here's an updated version of the code:
+This is sucess filter model
 """
 
 #DRIVE = "E:/"

@@ -160,7 +160,7 @@ else:
 
 import maya.OpenMayaUI as OpenMayaUI
 
-#... get this window on top
+#... get this window alway on top
 #... chad vernon said about parent window on top at 1:16 (crateing the remapping dialog)
 def getMayaMainWindow():
 	main_window_ptr = OpenMayaUI.MQtUtil.mainWindow() #... find maya pointer
@@ -224,13 +224,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# self.model = None
 
 
-		# ... My existing code
+		#... My existing code
 
 		# Create an instance of the SvnMaya class
 		self.svn_maya = SvnMaya()
 		
 
-		# Populate Drive and Project combo boxes
+		#... Populate Drive and Project combo boxes
 		self.populate_drives()
 		self.populate_project()
 		# self.update_project_comboBox() #... It seems redundance with connect update_project_comboBox
@@ -372,9 +372,15 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def printB(self):
 		print("Print B")
 
+	# def filter_model(self, text):
+	# 	self.proxyModel.pattern = text
+
 	def filter_model(self, text):
-		self.proxyModel.pattern = text
-		
+		# Apply the filter to the proxy model
+		search_pattern = f"*{text}*"  # Wildcards allow partial matches
+		self.proxyModel = QtCore.QSortFilterProxyModel()
+		self.proxyModel.setFilterWildcard(search_pattern)
+
 	def handle_double_click(self, item):
 		# Double click is mean open
 		file_path = self.get_deep_path() #... get path from selected in UI
@@ -924,7 +930,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
 				#... update return logmsg for SVN
-				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT)
+				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
 
 				# 3.Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
@@ -941,7 +947,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(global_path, global_commit_name, MAYA_EXT)
+				self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
 
 				# 3.Update localWidget viewport
 				self.load_global_commit(global_path)
@@ -1041,7 +1047,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# 2. Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
 				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
-				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT)
+				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
 
 				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
 				# mc.error('WHAT')
@@ -1065,7 +1071,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# 2. Maya Save
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(full_path, local_commit_name, MAYA_EXT)
+				self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
 
 				# 3. Update localWidget viewport
 				self.load_local_commit(full_path)
@@ -1575,28 +1581,29 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	#... this method is for publish saving only
 	#... change to return path for make it more dynamic
-	def maya_save(self, save_path, save_name, MAYA_EXT):
+	def maya_save(self, save_path, save_name, MAYA_EXT, mode):
 		logmsg = ''
-
 
 		if MAYA_EXT == 'ma':
 			maya_type = 'mayaAscii'
 		elif MAYA_EXT == 'mb':
 			maya_type = 'mayaBinary'
 
-		#... get Specific name when publish
-		if mc.objExists("rig_grp.enable") == True:
-			if mc.getAttr("rig_grp.asset_name") != '':
-				FileManagerLog.debug('asset_name no data skipped')
+		if mode == 'global':
+			print('This is global file.')
+			#... get Specific name when publish
+			if mc.objExists("rig_grp.enable") == True:
+				if mc.getAttr("rig_grp.asset_name") != '':
+					FileManagerLog.debug('asset_name no data skipped')
 
-				if mc.getAttr("rig_grp.enable") == True:
-					if mc.getAttr("rig_grp.asset_name") != None:
-						save_name = mc.getAttr("rig_grp.asset_name")
-						FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
+					if mc.getAttr("rig_grp.enable") == True:
+						if mc.getAttr("rig_grp.asset_name") != None:
+							save_name = mc.getAttr("rig_grp.asset_name")
+							FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
+				else:
+					pass
 			else:
-				pass
-		else:
-			FileManagerLog.debug('Not found naming specific. skipped')
+				FileManagerLog.debug('Not found naming specific. skipped')
 			pass
 
 		#... if having logmsg pass it to SVN
@@ -1618,8 +1625,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return save_full_path, logmsg
 
 
-
-	#... this method is for saving version only
+	#... this method is for saving for version only
 	def maya_save_version(self, save_path, save_name, MAYA_EXT):
 
 		if MAYA_EXT == 'ma':
@@ -2150,33 +2156,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def populate_ASSET_treeView(self):
-		#... check file path of maya
+
 
 		print('\tChange project name')
-
-		# # initializing model and populate the tree view
+		#...initializing model and populate the tree view
 		self.model = QtWidgets.QFileSystemModel()
 		self.model.setRootPath(self.path)
 		self.asset_dir_TREEVIEW.setModel(self.model)
 
-		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
-		# Update the `self.path` variable whenever the user selects a new project
+		self.asset_filter_lineEdit.setPlaceholderText('Search...')
+		self.asset_filter_lineEdit.textChanged.connect(self.filter_model)
+
+
+		#... Update the `self.path` variable with the selected project path
 		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), ASSET_TOP_FOLDER)
 
 		self.check_exists_maya()
 
 		# self.update_project_name()
 
-		'''
-		## shift to __init__ instead
-		## Set up file system model
-		# model = QtWidgets.QFileSystemModel()
-		# model.setRootPath(self.path)
-
-		## Store model as an instance variable
-		# self.model = QtWidgets.QFileSystemModel()  
-		# self.model.setRootPath(self.path)
-		'''
 
 
 		# Hide some file formats, such as ".pyc" and ".o" files
@@ -2729,6 +2727,7 @@ def do_global_commit():
 	fileTools.doHideGrp( 'Root',0 )
 	fileTools.doHideGrp( 'root',0 )
 	fileTools.doHideGrp( 'root_weapon',0 )
+	fileTools.doHideGrp( 'Root_JNT',0 )
 
 	#... delete delete grp
 	fileTools.doDeleteGrp()	

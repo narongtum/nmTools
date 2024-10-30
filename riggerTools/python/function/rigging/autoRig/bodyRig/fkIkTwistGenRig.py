@@ -591,7 +591,7 @@ def fkIkTwistGenRig(
 
 	if not ikPosi:
 		lowerIk_ctrl.nmCreateController('cube_ctrlShape')
-		lowerIk_ctrl.editCtrlShape( axis = charScale * 3 )
+		lowerIk_ctrl.editCtrlShape( axis = charScale * 8 )
 	elif ikPosi == 'foot':
 		lowerIk_ctrl.nmCreateController('squarePlain_ctrlShape')
 	elif ikPosi == 'ankle':

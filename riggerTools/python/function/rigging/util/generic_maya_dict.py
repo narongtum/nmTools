@@ -137,6 +137,7 @@ MESSAGE_dict = { 	'listString':	('region' , 'location'), # location get foot or 
 					'listbJnt' 	:	('stick' , 'upJnt' , 'midJnt' , 'lowJnt'), 
 					'listCtrl' 	:	('upFkCtrl' , 'midFkCtrl' , 'lowFkCtrl' , 'offset'), 
 					'listPov'  	:	('pov' , 'ikCtrl' ),
+					'listIkRoot':	('ikRootCtrl',),
 					'meta'		:	['metaNode']							}
 
 

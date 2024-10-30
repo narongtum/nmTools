@@ -62,6 +62,45 @@ For further details and reference, you can consult the official FastCopy Help do
 '''
 
 
+
+
+
+#... Create Controller at selected object.
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
+selected = mc.ls(sl = True)
+
+adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
+							constraint = True, matrixConst = True, mo = False, translate=True, 
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
+
+
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+
+selected = mc.ls(sl=True)
+mtc.del_selected_matrix(selected = selected)
+
+
+
+
+
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+
+createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = 'head_ctrl',
+					jntLst = ('beard01LFT_bJnt','beard02LFT_bJnt', 'beard03LFT_bJnt','beard04LFT_bJnt'),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = True,rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_ctrlShape')
+
+
+
+
+
 from function.rigging.controllerBox import adjustController as ccr
 importlib.reload(ccr)
 selected = mc.ls(sl=True)
@@ -139,14 +178,7 @@ jtt.change_endJnt_gray()
 
 # cmds.skinPercent(skin_cluster, pruneWeights=tol)
 
-#... Create Controller at selected object.
-from function.rigging.controllerBox import adjustController as adjust
-reload(adjust)
-selected = mc.ls(sl = True)
 
-adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
-							constraint = True, matrixConst = True, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
 
 
 # # # # # # # # # # # # # # # # # # # # 
@@ -803,27 +835,7 @@ jtt.mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'x')
 
 
 
-from function.rigging.constraint import matrixConstraint as mtc
-reload(mtc)
 
-selected = mc.ls(sl=True)
-mtc.del_selected_matrix(selected = selected)
-
-
-
-
-
-
-from function.rigging.autoRig.addRig import createFkRig
-reload(createFkRig)
-
-
-createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = 'head_ctrl',
-					jntLst = ('beard01LFT_bJnt','beard02LFT_bJnt', 'beard03LFT_bJnt','beard04LFT_bJnt'),
-					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
-					ctrlShape = 'circle_ctrlShape', localWorld = False ,
-					color = 'red', curlCtrl = True,rotateOrder = 'zxy',
-					curlCtrlShape = 'stick_ctrlShape')
 
 							
 

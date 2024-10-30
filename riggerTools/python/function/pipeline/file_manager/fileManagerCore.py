@@ -42,7 +42,7 @@ except:
 from function.rigging.skin import roundSkinWeight as rsw
 reload(rsw)
 
-
+import fnmatch
 
 class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
@@ -78,7 +78,7 @@ file_path = os.path.join(directory, fileName)
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
 PADDING 			= 	4
-HIDE_FORMAT = ['*.pyc', '*.o']
+
 
 
 
@@ -105,6 +105,8 @@ if os.path.exists(file_path):
 	MAYA_EXT = config.MAYA_EXT
 	USE_VARIATION = config.USE_VARIATION
 	SVN_BIN_PATH = config.SVN_BIN_PATH
+	HIDE_FORMAT = config.HIDE_FORMAT
+
 	FileManagerLog.debug("using {0} as a default project.".format(DEFAULT_PROJECT))
 
 else:
@@ -148,6 +150,7 @@ else:
 	MAYA_EXT 			= 	'ma'
 	USE_VARIATION 		= 	('P_Regulus')
 	SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
+	HIDE_FORMAT = ['*.pyc', '*.o']
 	
 
 
@@ -1840,19 +1843,31 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-			# If the selection has 'Version' folder
+			#... If the selection is a directory
 			if not os.path.isfile(version_folder):
-
+				#... Get the list of files in the directory
 				version_file_list = os.listdir(version_folder)			
-				self.asset_version_view_listWidget.addItems(version_file_list)
-				# local_commit_folder = os.path.join(asset_path, department_text, 'Commit')
-				# self.load_local_commit(local_commit_folder)
+				# self.asset_version_view_listWidget.addItems(version_file_list)
+				print("Hide file extension ['*.pyc', '*.o', '*.png', '.mayaSwatches'] for me please")
+
+
+				#... Filter out files that match any patterns in HIDE_FORMAT
+				filtered_file_list = [
+				file_name for file_name in version_file_list
+				if not any(fnmatch.fnmatch(file_name, pattern) for pattern in HIDE_FORMAT)
+				]
+
+				#... Add the filtered files to the QListWidget
+				self.asset_version_view_listWidget.addItems(filtered_file_list)
+
+
+
 		else:
 			FileManagerLog.info('The folder Version does not exists.')
 			pass
 
 	
-	# Try to make return directory when clicked in treeview
+	#... Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
 		#... refresh everytime that click at treeview
 		self.asset_local_view_listWidget.clear()
@@ -2177,14 +2192,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-		# Hide some file formats, such as ".pyc" and ".o" files
-		self.model.setNameFilters(['*.pyc', '*.o'])
+		#.... Hide some file formats, such as ".pyc" and ".o" files from tree view
+		self.model.setNameFilters(HIDE_FORMAT)
 		self.model.setNameFilterDisables(False)
+		print(f"Hide file extension {HIDE_FORMAT} for me please")
+
 
 		# Set the model on the tree view
 		self.asset_dir_TREEVIEW.setModel(self.model)
 		self.asset_dir_TREEVIEW.setRootIndex(self.model.index(self.path))
 		print("Model root path:...\t\t\t", self.model.rootPath())
+
+
+
 
 		# Sort the items alphabetically from A to Z and allow sorting in both directions
 		self.asset_dir_TREEVIEW.setSortingEnabled(True)

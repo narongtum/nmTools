@@ -147,9 +147,9 @@ shape = self.shape
 
 
 #... Example 4 
-# Create COG controller
-name = 'cog'
-cog_ctrl = core.Dag(name + '_ctrl')
+# Create controller
+
+cog_ctrl = core.Dag('cog' + '_ctrl')
 cog_ctrl.nmCreateController('cog_ctrlShape')
 
 cogZro_grp = rigTools.zeroGroup( cog_ctrl )

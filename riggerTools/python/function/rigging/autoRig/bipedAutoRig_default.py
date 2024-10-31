@@ -1,46 +1,25 @@
 # -*- coding: utf-8 -*-
 
+# # # # # # # # # # # # # # # #
+# Autorig with following feature
+# # # # # # # # # # # # # # # #
 
-""" 
+# stretchy IK
+# auto upper arm/leg twist
+# Fk/Ik switch
+# kneelock
+# ribbon limb (option)
+# head clavicle local world
+# finger curl
+# arm space snaping
+# foot roll behavior
 
-Standard autorig
-
-This module generate auto rig 
-
-Features
-
-	Standard modular rig for any creature
-
-	IK/FK Stretchy Spine-Stretchiness is blendable
-
-	IK/FK Stretchy Limbs-Bendable Limbs with ribbon control
-
-	Can build multiple Limbs and Spines (with different Namespace)
-
-	Two different leg setup options (Biped, Quadruped)
-
-	Dual-Layer Finger curl
-
-	Eye setup (World/Local Inheritance)
-
-	SoftIk limb
-
-
-
-
-Todo:
-	* For module TODOs
-
-
-
-"""
 
 
 
 import maya.cmds as mc
 
-import time
-# sys.path.append(r'D:\True_Axion\Tools\riggerTools\python\axionTools\rigging\autoRig\bodyRig')
+from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.rigging.autoRig.base import rigTools
 reload( rigTools )
@@ -101,28 +80,27 @@ reload(pc)
 from function.rigging.autoRig import util 
 reload(util)
 
-nameSpace = '' 
-
-from function.rigging.autoRig.bodyRig import fkIkGenRig
-reload( fkIkGenRig )
-
-
-
+import time
 
 #...timeStart
 timeStart = time.time()
-		
+
+# Declare some global variables
+nameSpace = '' 
 ribbon = False
-showInfo = True
+linkRotOrder = True
+keepFkIkBoth = False
+creTwistJnt = True
+showInfo = False
+stickShape = 'stickCircle_Y_long_ctrlShape'
 
 # = = = = = Check charactor hight  = = = = = #
 charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
 
-
+# charScale = 1
 
 # = = = = = 01 Create main Controller = = = = = #
 rootRig.createMasterGrp(	charScale = charScale 	)
-
 
 
 
@@ -134,58 +112,20 @@ hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace ,
 
 
 
-'''
-# Optional for make spine IK rig
-# = = = = = 03 Create spine IK Rig  = = = = = #
-topSpine_bJnt = torsoRig.torsoRig( 
-									nameSpace = nameSpace									,
-									ctrl_grp = 'ctrl_grp'							,
-									tmpJnt = ( 'spine01_tmpJnt', 'spine02_tmpJnt' )	,
-									charScale = charScale 									)
-'''
 
 
-
-# = = = = = Spine IK Rig (Optional) = = = = = #
-'''
-
-from function.rigging.autoRig.bodyRig import spineIKRig
-reload(spineIKRig)
-
-topSpine_bJnt = spineIKRig.spineHybridIK(
-				nameSpace = '' 		,
-				parentTo = 'ctrl_grp' 						,		
-				tmpJnt = (		'spine01_tmpJnt' 			,
-								'spine02_tmpJnt' 			,
-								'spine03_tmpJnt' 			,
-								'spine04_tmpJnt'			),
-				priorCtrl = 'cog_gmbCtrl'					,
-				priorJnt = hip_bJnt						,				
-				charScale = charScale								,							
-				linkRotOrder = True							)
-				
-
-'''
+# = = = = = 03 Create spine FK Rig  = = = = = #
 
 
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , parentTo = 'ctrl_grp'  ,
+					tmpJnt = 	( 	'spine01_tmpJnt','spine02_tmpJnt','spine03_tmpJnt' )	,
+					charScale = charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_ctrl',
+					side = '' ,ctrlShape = 'circle_ctrlShape'  , localWorld = True , 
+					color = 'yellow' , curlCtrl = True ,suffix = '_bJnt'	)[2][-1]
 
-
-
-
-
-
-
-# = = = = = Spine FK Rig  = = = = = #
-topSpine_bJnt = spineFkRig.spineRig( 		parentTo = 'ctrl_grp' 								,
-										tmpJnt = (	'spine01_tmpJnt' ,'spine02_tmpJnt', 
-												'spine03_tmpJnt', 'spine04_tmpJnt')			,
-										priorCtrl = 'cog_gmbCtrl'	,
-										charScale = charScale 	,
-										ctrShape = 'circleCurlUp_ctrlShape'						)
-
-
-
-
+topSpine_bJnt = topSpine_bJnt.name
 
 
 
@@ -209,10 +149,11 @@ headRig.headRig(
 					'jaw01Lwr_tmpJnt' , 'jaw02Lwr_tmpJnt' , 'jaw03Lwr_tmpJnt' 			,		# jaw
 					'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
 					'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 				),		# eye			
-					faceCtrl = False	,
+					faceCtrl = True	,
 					priorJnt = neck_bJnt	,
 					charScale = charScale	,
-					linkRotOrder = True			)
+					ctrlShape = 'sphereRound_ctrlShape',
+					linkRotOrder = linkRotOrder			)
 
 
 
@@ -247,7 +188,6 @@ clavRGT_bJnt = clavicleRig.clavicleRig(		nameSpace = nameSpace 					,
 
 
 
-
 # arm LFT Side
 stickNamLFT, handLFT_bJnt, handLFT_meta = armRig.armRigExt(
 
@@ -265,13 +205,16 @@ stickNamLFT, handLFT_bJnt, handLFT_meta = armRig.armRigExt(
 				noTouchGrp = 'noTouch_grp' ,			
 				nullGrp = 'snapNull_grp',			
 				jnt_grp =  'jnt_grp'	,			
-				povShape = 'sphereAxis',
-				keepFkIkBoth = False,
+				povShape = 'pyramid',
+				keepFkIkBoth = keepFkIkBoth,
 				ribbon = ribbon,
 				ribbonRes = 'low', 
 				ribbonName = ('upArm', 'lwrArm'),
 				showInfo = showInfo ,
-				linkRotOrder = False )
+				linkRotOrder = linkRotOrder	,
+				stickShape = stickShape 	,
+				creTwistJnt = creTwistJnt		
+				 )
 
 
 # = = = = = 08 Create finger LFT = = = = = #	 		
@@ -282,7 +225,7 @@ fingerLFT = fingerRig.fingerRigExt(
 								charScale = charScale ,priorJnt = handLFT_bJnt ,stickNam = stickNamLFT )
 
 # arm RGT Side
-stickNamRGT, handRGT_bJnt, handRGT_meta = armRig.armRigExt(
+stickNamRGT, handRGT_bJnt, handRGT_meta= armRig.armRigExt(
 
 				nameSpace = '' 	,				
 				charScale = charScale	,			
@@ -299,12 +242,15 @@ stickNamRGT, handRGT_bJnt, handRGT_meta = armRig.armRigExt(
 				nullGrp = 'snapNull_grp',			
 				jnt_grp =  'jnt_grp'	,			
 				povShape = 'sphereAxis',
-				keepFkIkBoth = True,
+				keepFkIkBoth = keepFkIkBoth,
 				ribbon = ribbon,
 				ribbonRes = 'low', 
 				ribbonName = ('upArm', 'lwrArm'),
 				showInfo = showInfo 	,
-				linkRotOrder = False )
+				linkRotOrder = linkRotOrder	,
+				stickShape = stickShape 	,
+				creTwistJnt = creTwistJnt		
+				 )
 
 
 # Create Finger RGT = = = = = #
@@ -332,31 +278,20 @@ fingerCurl.mainFingerCurlRig( 	nameSpace = nameSpace 	 ,
 
 
 
-# 10 finger local curl # = = = = = #
+
+
+# 10 Local finger curl # = = = = = #
 finloCurl.localFingerAllRig( 		nameSpace = nameSpace, parentTo='ctrl_grp' , side = 'LFT' , 
-											fingerName = ('thumb','index','middle','ring','pinky') ,
-											charScale= charScale, numCtrl = 3, stickNam = stickNamLFT)
+									fingerName = ('thumb','index','middle','ring','pinky') ,
+									charScale= charScale, numCtrl = 3, stickNam = stickNamLFT)
 
 
 finloCurl.localFingerAllRig( 		nameSpace = nameSpace, parentTo='ctrl_grp' , side = 'RGT' , 
-											fingerName = ('thumb','index','middle','ring','pinky') ,
-											charScale= charScale, numCtrl = 3, stickNam = stickNamRGT)
+									fingerName = ('thumb','index','middle','ring','pinky') ,
+									charScale= charScale, numCtrl = 3,stickNam = stickNamRGT)
 
-# prop Rig LFT
-propRig.propRig(	nameSpace = nameSpace		,
-					ctrl_grp =  'ctrl_grp' 		,
-					tmpJnt = 'propLFT_tmpJnt' 	,
-					charScale = charScale		,
-					side = 'LFT'				,
-					priorJnt ='handLFT_bJnt'		)
 
-# prop Rig RGT
-propRig.propRig(	nameSpace = nameSpace		,
-					ctrl_grp =  'ctrl_grp' 		,
-					tmpJnt = 'propRGT_tmpJnt' 	,
-					charScale = charScale		,
-					side = 'RGT'				,
-					priorJnt ='handRGT_bJnt'		)
+
 
 
 # add base finger spread 
@@ -389,10 +324,14 @@ bipedLegRig.bipedLegRigExt(
 					ribbonName = ('upLeg', 'lwrLeg'),	
 					charScale = charScale	,					
 					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle'
-					keepFkIkBoth = True	,# keep fk/ik ctrl visibility both or not
+					keepFkIkBoth = keepFkIkBoth	,# keep fk/ik ctrl visibility both or not
 					povShape = 'pyramid' ,# choice pyramid or sphereAxis
 					jnt_grp = 'jnt_grp' ,
-					linkRotOrder = False		)
+					linkRotOrder = linkRotOrder	,
+					footAttr = True,
+					stickShape = stickShape 	,
+					creTwistJnt = creTwistJnt		
+					 )
 
 
 # 11 Leg RGT
@@ -415,15 +354,42 @@ bipedLegRig.bipedLegRigExt(
 					ribbonName = ('upLeg', 'lwrLeg'),	
 					charScale = charScale	,					
 					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle'
-					keepFkIkBoth = True	,# keep fk/ik ctrl visibility both or not
+					keepFkIkBoth = keepFkIkBoth	,# keep fk/ik ctrl visibility both or not
 					povShape = 'pyramid' ,# choice pyramid or sphereAxis
 					jnt_grp = 'jnt_grp' ,
-					linkRotOrder = False		)
+					linkRotOrder = linkRotOrder	,
+					footAttr = True 			,
+					stickShape = stickShape 	,
+					creTwistJnt = creTwistJnt		
+					 )
 
 
 # add space switch
 rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamLFT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', neck_bJnt, topSpine_bJnt, hip_bJnt ] )
 rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamRGT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', neck_bJnt, topSpine_bJnt, hip_bJnt ] )
+
+
+# prop Rig LFT
+propRig.propRig(	nameSpace = nameSpace		,
+					ctrl_grp =  'ctrl_grp' 		,
+					tmpJnt = 'propLFT_tmpJnt' 	,
+					charScale = charScale		,
+					side = 'LFT'				,
+					priorJnt ='handLFT_bJnt'		)
+
+# prop Rig RGT
+propRig.propRig(	nameSpace = nameSpace		,
+					ctrl_grp =  'ctrl_grp' 		,
+					tmpJnt = 'propRGT_tmpJnt' 	,
+					charScale = charScale		,
+					side = 'RGT'				,
+					priorJnt ='handRGT_bJnt'		)
+
+
+
+# Lock attr
+util.cleanup()
+
 
 
 #...timeEnd
@@ -434,9 +400,32 @@ roundedTimeElapsed = round(timeElapsed, 1)
 
 #...print time
 print('SaveData Elapsed: %s'%roundedTimeElapsed)
-		
-		
-		
 
-# Lock attr
-util.cleanup()
+
+
+
+
+# # # # # # # # # # # #
+# Additional Rig      #
+# # # # # # # # # # # #
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+
+
+#... ear
+
+createFkRig.fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('L_ear01_bJnt',),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'L',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'yellow', curlCtrl = False, rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_tri02_ctrlShape')
+
+createFkRig.fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('R_ear01_bJnt',),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'R',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'yellow', curlCtrl = False, rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_tri02_ctrlShape')

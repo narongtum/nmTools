@@ -9,10 +9,12 @@ reload(core)
 
 
 
+side = 'LFT'
+source = f'upperLeg{side}_bJnt'
 
-source = 'upperLegRGT_bJnt'
-side = 'RGT'
-destination_grp = 'back1Offset_grp'
+
+destination_grp = f'back01{side}Offset_grp'
+#destination_grp = f'front01{side}Offset_grp'
 
 
 

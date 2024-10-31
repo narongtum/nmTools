@@ -530,17 +530,22 @@ def fkIkGenRig(
 
 	if not ikPosi:
 		lowerIk_ctrl.nmCreateController('cube_ctrlShape')
+		lowerIk_ctrl.editCtrlShape( axis = charScale * 4 )
 	elif ikPosi == 'foot':
 		lowerIk_ctrl.nmCreateController('squarePlain_ctrlShape')
+		lowerIk_ctrl.editCtrlShape( axis = charScale * 4 )
 	elif ikPosi == 'ankle':
 		ankleIk_ctrl.nmCreateController('cube_ctrlShape')
+		ankleIk_ctrl.editCtrlShape( axis = charScale * 4 )
 	else:
 		lowerIk_ctrl.nmCreateController('squarePlain_ctrlShape')
+		lowerIk_ctrl.editCtrlShape( axis = charScale * 4 )
 
 
 
 	
-	lowerIk_ctrl.editCtrlShape( axis = charScale * 0.8 )
+	# lowerIk_ctrl.editCtrlShape( axis = charScale * 0.8 )
+	mc.error('STOP debug at line 548.')
 	lowerIk_ctrl.setColor( colorSide )
 
 	# Create Attr

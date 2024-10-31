@@ -22,7 +22,7 @@ import functools
 class buildUI():
 	def __init__(self):
 		self.width = 200
-		self.height = 100
+		self.height = 200
 		self.ui = 'skinData' # no not leave space because it will unknow windowID
 		self.winID = '%sWin' %self.ui
 
@@ -37,6 +37,8 @@ class buildUI():
 		mc.rowColumnLayout(numberOfColumns=2)
 		mc.button(h=100,w=100,label="Export general \nmesh data", command = self.click_writeRigData, ann = "Export mesh general data")
 		mc.button(h=100,w=100,label="Import skin \njoint list", command = self.click_importSkinJntList , ann = "Import joint into selected mesh(Just add no skin data.)")
+		mc.button(h=100,w=100,label="Write \nVTX sel", command = self.click_writeVTXselected , ann = "Write selected Vertex")
+
 		mc.showWindow()
 
 
@@ -130,6 +132,42 @@ class buildUI():
 		print ('now we got mesh and skin joint list')
 		mc.skinCluster( skinJntList, sel, toSelectedBones=True )
 		fileTools.makeHeader('Add skin joint list complete')
+
+
+	def click_writeVTXselected(self,DATA):
+		DATA = mc.ls(sl=True)
+		if 'vtx' not in DATA[0]:
+			mc.error('This not vtx selection for sure.')
+
+		if fileTools.ifHero():
+			SAVE_PATH  = fileTools.desinatePath('\\data\\')
+			print ('this is Hero file'+ SAVE_PATH)
+		else:
+			SAVE_PATH  = fileTools.desinatePath('\\data\\')
+			#... if not exists create folder
+			fileTools.checkExistFolder(SAVE_PATH)
+
+
+		number = DATA[0].split('[')[1].split(':')[0]
+
+		SP_NAME = DATA[0].split('.')[0]
+		FILE_NAME = SP_NAME + '_' + number
+		print(FILE_NAME)
+
+		# FILE_NAME = DATA[0]
+
+		# FILE_PATH = SAVE_PATH + FILE_NAME + '.py'
+
+		# with open(FILE_PATH, 'w') as py_file:
+		# 	py_file.write(''.join(DATA))
+
+		FILE_PATH = SAVE_PATH + FILE_NAME + '.json'
+		f = open(FILE_PATH, "w")
+		f.write(json.dumps( DATA , sort_keys=2, indent=4, ))
+		f.close()
+
+		print ('File was save at: %s' %FILE_PATH)
+		print ('\n')
 
 
 

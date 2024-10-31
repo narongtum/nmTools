@@ -64,6 +64,276 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+
+#... Create Controller at selected object.
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
+selected = mc.ls(sl = True)
+
+adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
+							constraint = True, matrixConst = True, mo = False, translate=True, 
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
+
+
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+
+selected = mc.ls(sl=True)
+mtc.del_selected_matrix(selected = selected)
+
+
+
+
+
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+
+createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = 'head_ctrl',
+					jntLst = ('beard01LFT_bJnt','beard02LFT_bJnt', 'beard03LFT_bJnt','beard04LFT_bJnt'),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = True,rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_ctrlShape')
+
+
+
+
+
+from function.rigging.controllerBox import adjustController as ccr
+importlib.reload(ccr)
+selected = mc.ls(sl=True)
+ccr.creControllerFunc(selected)
+
+
+
+#... pin to locator
+from function.rigging.constraint import pinLocatorToSurface as pls
+reload(pls)
+
+pls.pin_locator_surface(	# need pxy nrb to drive locator
+						nurbs = 'eyebrowLFT_nrb',
+						region = 'eyebrowLFT',
+						side = '',
+						source_loc = ('eyebrow01LFT_loc','eyebrow02LFT_loc','eyebrow03LFT_loc'),
+						locator_scale = 1,
+						creJnt = False , suffixJnt = 'bJnt',
+						creCtrl = False , ctrlShape = 'circle_ctrlShape',
+						snapAtEnd = False,
+						priorJnt = '',
+						scale = 2
+						)
+
+
+
+pls.pin_locator_surface(	# need pxy nrb to drive locator
+						nurbs = 'eyebrowRGT_nrb',
+						region = 'eyebrowRGT',
+						side = '',
+						source_loc = ('eyebrow01RGT_loc','eyebrow02RGT_loc','eyebrow03RGT_loc'),
+						locator_scale = 1,
+						creJnt = False , suffixJnt = 'bJnt',
+						creCtrl = False , ctrlShape = 'circle_ctrlShape',
+						snapAtEnd = False,
+						priorJnt = '',
+						scale = 2
+						)
+
+
+
+#... using de boor 
+from function.rigging.de_boor import hh_skincluster_surface as sff
+reload(sff)
+#... manual use
+msh = 'extract_brow'
+jnts = [['eyebrow01LFT_bJnt','eyebrow02LFT_bJnt','eyebrow03LFT_bJnt']]
+nrb = 'eyebrowLFT_nrb'
+sff.split_with_surface(msh, jnts, nrb)
+
+
+
+
+
+
+
+
+
+
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+
+jtt.rename_tip_jnt(root_joint = 'joint3', search = '_bJnt', replace = '_endJnt')
+jtt.change_endJnt_gray()
+
+
+
+
+
+
+
+
+
+
+
+# cmds.skinPercent(skin_cluster, pruneWeights=tol)
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... reconnect to blend matrix
+# # # # # # # # # # # # # # # # # # # # 
+side = 'LFT'
+template_ctrl = f'handProp{side}_gmbCtrl_tmp'
+new_ctrl = f'handProp{side}_gmbCtrl'
+
+
+mc.connectAttr(f'{new_ctrl}.worldMatrix[0]', f'R_weapon_blendMatrix.target[1].targetMatrix',f=True)
+mc.connectAttr(f'{new_ctrl}.worldMatrix[0]', f'L_weapon_space_blendMatrix.target[0].targetMatrix', f=True)
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... export both char and char with weapon
+# # # # # # # # # # # # # # # # # # # # 
+
+from function.asset import exportFBX
+reload(exportFBX)
+
+#... unparent 'Export' and 'model_grp' to world
+
+
+
+
+if mc.objExists('rig_grp.asset_name'):
+	print('yeah')
+	asset_name = mc.getAttr('rig_grp.asset_name')
+else:
+	asset_name = mc.ls(sl=True)[0]
+
+exportFBX.exportFBXnoConnection(selection, fileName = asset_name)
+
+
+
+
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... close all flothing windows
+# # # # # # # # # # # # # # # # # # # # 
+import maya.cmds as cmds
+
+# List all top-level UI elements
+windows = cmds.lsUI(windows=True)
+print(windows)
+
+
+import maya.cmds as cmds
+
+def close_floating_panel(panel_name):
+	# Check if the panel exists
+	if cmds.window(panel_name, exists=True):
+		# Delete the UI element
+		cmds.deleteUI(panel_name)
+
+# Usage
+close_floating_panel('myFloatingPanel')
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... ask what is state of this file 
+# # # # # # # # # # # # # # # # # # # # 
+
+from function.pipeline import fileTools as fileTools 
+reload(fileTools)
+from pathlib import Path
+import os
+
+
+if fileTools.fileState() == 'version' or fileTools.fileState() == 'local_hero':
+	print('This is Version Naja.')
+
+	pathFile = mc.file(q=True, sn=True)
+	path_lib = Path(pathFile)
+	wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+	final_wanted_path = wanted / 'Data'
+
+	if final_wanted_path.exists() and final_wanted_path.is_dir():
+		os.startfile(final_wanted_path)
+
+elif fileTools.fileState() == 'global_hero':
+	print('This is Global hero.')
+	pathFile = mc.file(q=True, sn=True)
+	path_lib = Path(pathFile)
+	wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+	final_wanted_path = wanted / 'Rig' / 'Data'
+	if final_wanted_path.exists() and final_wanted_path.is_dir():
+		os.startfile(final_wanted_path)
+else:
+	print('There are no correct file to open.')
+
+
+
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # 
+#... add snap controller 
+# # # # # # # # # # # # # # # # # # # # 
+
+#... check f'ballRolllegIk{side}Zro_grp'
+
+side = 'LFT'
+ankleIk_ctrl = core.Dag(f'foot{side}IK_ctrl')
+ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_' , at ='enum' , en = 'Pivot'  , keyable = True)
+ankleIk_ctrl.setLocked('pivotBar')
+ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
+
+ankleIk_loc = core.Locator(f'ankle{side}_loc')
+ankleIk_loc.maSnap(ankle_ikJnt,pos = True,rot = False,scl = False)
+ankleIk_loc.parent(ankleIk_ctrl)
+
+ankleIk_loc.attr('v').value = 0
+ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
+
+
+
+pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
+
+
+
+
+ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
+ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
+pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # # # # # # # # # # # # # # # # # # # # 
 #... relocate foot pivot 
 # # # # # # # # # # # # # # # # # # # # 
@@ -140,31 +410,10 @@ mc.parent(f'toeRollleg{side}_ikh', f'ToeRiselegIk{side}Offset_grp')
 mc.parent(f'ankleIkh{side}Zro_grp', f'ballRolllegIk{side}_buffCtrl')
 
 
-#... check f'ballRolllegIk{side}Zro_grp'
-
-side = 'LFT'
-ankleIk_ctrl = core.Dag(f'foot{side}IK_ctrl')
-ankleIk_ctrl.addAttribute( longName = 'pivotBar', niceName = '_' , at ='enum' , en = 'Pivot'  , keyable = True)
-ankleIk_ctrl.setLocked('pivotBar')
-ankleIk_ctrl.addAttribute( longName = 'pivotChoice', niceName = 'Pivot At' , at ='enum' , en = 'foot:ankle'  , keyable = True)
-
-ankleIk_loc = core.Locator(f'ankle{side}_loc')
-ankleIk_loc.maSnap(ankle_ikJnt,pos = True,rot = False,scl = False)
-ankleIk_loc.parent(ankleIk_ctrl)
-
-ankleIk_loc.attr('v').value = 0
-ankleIk_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz')
-
-
-
-pivot_cnd = core.Condition(f'footIKPivot{side}_cnd')
 
 
 
 
-ankleIk_loc.attr('translate') >> pivot_cnd.attr('colorIfFalse')
-ankleIk_ctrl.attr('pivotChoice') >> pivot_cnd.attr('secondTerm')
-pivot_cnd.attr('outColor') >> ankleIk_ctrl.attr('rotatePivot')
 
 
 
@@ -586,27 +835,7 @@ jtt.mirror_joint_chain(root_joint = 'R_wing01_tmpJnt', axis = 'x')
 
 
 
-from function.rigging.constraint import matrixConstraint as mtc
-reload(mtc)
 
-selected = mc.ls(sl=True)
-mtc.del_selected_matrix(selected = selected)
-
-
-
-
-
-
-from function.rigging.autoRig.addRig import createFkRig
-reload(createFkRig)
-
-
-createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = 'head_ctrl',
-					jntLst = ('beard01LFT_bJnt','beard02LFT_bJnt', 'beard03LFT_bJnt','beard04LFT_bJnt'),
-					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
-					ctrlShape = 'circle_ctrlShape', localWorld = False ,
-					color = 'red', curlCtrl = True,rotateOrder = 'zxy',
-					curlCtrlShape = 'stick_ctrlShape')
 
 							
 
@@ -649,14 +878,7 @@ cube.addAttribute( at = 'enum', keyable = True , en = 'on:off:', longName = 'Det
 
 
 
-# Create Controller at selected object.
-from function.rigging.controllerBox import adjustController as adjust
-reload(adjust)
-selected = mc.ls(sl = True)
 
-adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
-							constraint = False, matrixConst = True, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
 
 
 

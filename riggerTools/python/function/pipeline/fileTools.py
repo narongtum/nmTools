@@ -53,6 +53,36 @@ MAYA_VERSION = mc.about(v=True)
 
 
 
+# # # # # # # # # # # # # # # # # # # # 
+#... ask what is state of this file 
+# # # # # # # # # # # # # # # # # # # # 
+def openRigDatafile():
+
+	from pathlib import Path	
+	if fileState() == 'version' or fileState() == 'local_hero':
+		print('This is Version Naja.')
+
+		pathFile = mc.file(q=True, sn=True)
+		path_lib = Path(pathFile)
+		wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+		final_wanted_path = wanted / 'Data'
+
+		if final_wanted_path.exists() and final_wanted_path.is_dir():
+			os.startfile(final_wanted_path)
+
+	elif fileState() == 'global_hero':
+		print('This is Global hero.')
+		pathFile = mc.file(q=True, sn=True)
+		path_lib = Path(pathFile)
+		wanted = path_lib.parent.parent  # Go up two levels to get the desired directory
+		final_wanted_path = wanted / 'Rig' / 'Data'
+		if final_wanted_path.exists() and final_wanted_path.is_dir():
+			os.startfile(final_wanted_path)
+	else:
+		print('There are no correct file to open.')
+
+
+
 
 
 
@@ -62,7 +92,6 @@ MAYA_VERSION = mc.about(v=True)
 
 # ========== # 
 # Export selection at data folder
-
 # ========== # 
 
 def exportSel( folder_name = 'data' ):
@@ -149,7 +178,7 @@ def exportSel( folder_name = 'data' ):
 
 	else:
 		print('\nThis is Unknow file.')
-		currentPath = fileTools.currentFolder()
+		currentPath = currentFolder()
 		finalPath = os.path.join(currentPath, finalName + '.ma')
 		final_normPath = os.path.normpath(finalPath)
 		mc.file ( final_normPath, force = True, options = 'v=0', type = 'mayaAscii', preserveReferences = True, exportSelected = True)
@@ -288,21 +317,76 @@ def getExt(splitwith = '.'):
 	return ext
 
 
-def createThumbnail(fileType='jpg', width=256, height=256):
-	# Create Thumbnail at current maya file
+def createThumbnail(width=256, height=256):
+
+	#... Create Thumbnail at current maya file
 	currentPath = findCurrentPath()
 	fileName = getFileName()[0]
-	imageFile = '{0}{1}.{2}'.format(currentPath, fileName, fileType)
+
+	#... save as jpg first then convert
+	jpgImageFile  = '{0}{1}.{2}'.format(currentPath, fileName, 'jpg')
+
+	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
 	
 	mimage = om.MImage()
 	view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
 
-	# Resize the image to the specified width and height
+	#... Resize the image to the specified width and height
 	mimage.resize(width, height)
 
-	mimage.writeToFile(imageFile, fileType)
-	print('Thumbnail has been created at: {0}'.format(imageFile))
+	#... mimage.writeToFile(imageFile, fileType)
+	mimage.writeToFile(jpgImageFile )
+
+	#... Convert the file to PNG
+	os.rename(jpgImageFile, pngImageFile)
+
+	print('Thumbnail has been created at: {0}'.format(pngImageFile))
+
+def createThumbnail_ext(width=256, height=256, currentPath='', fileName=''):
+
+	#... save as jpg first then convert
+	jpgImageFile  = '{0}{1}.{2}'.format(currentPath, fileName, 'jpg')
+
+	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
+
+	#... making to normpath
+	jpgImageFile = os.path.normpath(jpgImageFile)
+	pngImageFile = os.path.normpath(pngImageFile)
+
+	fileToolsLogger.debug(f'jpg path is: {jpgImageFile}\n')
+	fileToolsLogger.debug(f'png path is: {pngImageFile}\n')
+
+	mimage = om.MImage()
+	view = omui.M3dView.active3dView()
+	view.readColorBuffer(mimage, True)
+
+	#... Resize the image to the specified width and height
+	mimage.resize(width, height)
+
+	#... mimage.writeToFile(imageFile, fileType)
+	mimage.writeToFile(jpgImageFile )
+
+	#...if file exists delete it first
+
+	if os.path.exists(pngImageFile):
+		# Delete the file
+		os.remove(pngImageFile)
+		print(f"File '{pngImageFile}' has been deleted.")
+	else:
+		print(f"File '{pngImageFile}' does not exist.")
+
+
+	#... Convert the file to PNG
+	os.rename(jpgImageFile, pngImageFile)
+
+	print('Thumbnail has been created at: {0}'.format(pngImageFile))
+
+
+
+
+
+
 
 
 #... find current maya path
@@ -1314,3 +1398,31 @@ def globalPublish():
 
 	mc.select(deselect = True)
 #publish( mode = 'global' )
+
+
+
+
+#... find mesh in group
+
+def find_mesh_in_grp(group_names=['Export_grp', 'Model_grp']):
+	mesh_grp = []
+	
+	for group in group_names:
+		if mc.objExists(group):  # Check if the group exists
+			print(f"Checking group: {group}")
+			
+			# Get all members (children) of the group
+			members = mc.listRelatives(group, allDescendents=True, fullPath=True) or []
+			
+			for member in members:
+				# Check if the member is a mesh
+				if mc.nodeType(member) == 'mesh':
+					# If it's a mesh, print its transform name (parent object)
+					transform = mc.listRelatives(member, parent=True, fullPath=True)
+					if transform:
+						print(f"Mesh found: {transform[0]}")
+						mesh_grp.append(transform[0])
+		else:
+			print(f"Group '{group}' does not exist.")
+	
+	return mesh_grp if mesh_grp else False  # Return the list of meshes or False if none found

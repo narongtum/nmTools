@@ -58,7 +58,7 @@ else:
 
 naming_txtField = 'object@##'
 
-alphabet = (	'A','B','C','D','E','F','G','H','I','J','K','M','N',
+alphabet = (	'A','B','C','D','E','F','G','H','L','J','K','M','N',
 				'O','P','Q','R','S','T','U','V','W','X','Y','Z'			)
 
 

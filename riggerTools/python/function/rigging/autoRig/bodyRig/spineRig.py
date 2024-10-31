@@ -17,6 +17,19 @@ import maya.cmds as mc
 #cog_gmbCtrl
 #hip_bJnt
 
+
+'''# = = = = = 03 Create spine IK Rig ( Optional rig you must select one ) = = = = = #
+topSpine_bJnt = spineRig.spineIK(nameSpace = ''                  ,
+						spineNum = 4                  	 ,
+						hipJnt = 'hip_bJnt'           	,
+					   cog_ctrl = 'cog_gmbCtrl'			,
+					   ctrl_grp = 'ctrl_grp'      		,
+					   isIK = True                      ,
+					   charScale = charScale                  )'''
+
+
+
+
 def spineIK(nameSpace = '' 			,
 			spineNum = '' 			,
 			hipJnt = 'hip_bJnt'		, 

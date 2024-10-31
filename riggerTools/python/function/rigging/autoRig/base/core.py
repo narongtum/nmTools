@@ -138,6 +138,8 @@ cube.nmCreateController('cube_ctrlShape')
 cube.addAttribute(ln = 'size' , k = True , dv = 1)
 # using auto suffix
 misc.autoSuffix( cube.name )
+#... set size
+
 
 
 #... Example 3 how to use property
@@ -296,41 +298,47 @@ metaNode.attr('clavLFT_jnt').getMessage()
 stick_ctrl.setAttribute('location'  , region , type = 'string')
 
 
-#... Example 25: Create joint
+#... Example 26: Create joint
 joint = core.Joint('nameJnt')
 
 
 
-#... Set size
+#... Example 27: Set size
 neck_ctrl.editCtrlShape( axis = charScale * 2.8 )
 
 
-#... Example 26: delete matrix constraint
+#... Example 28: Example 26: delete matrix constraint
 from function.rigging.util import misc
 sel= 'broadA04_jnt'
 misc.del_sel_matrix(selected = [sel])
 
-#... Set attr string
+#... Example 29: Set attr string
 metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
 metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
 
 
-#... Change joint color
+#... Example 30: Change joint color
 metaNode.setAttribute('ParentTo'  ,'ctrl_grp'  , type = 'string')
 metaNode.setAttribute('PriorJnt'  ,'head_jnt'  , type = 'string')
 
-#... Change controller line width
+#... Example 31: Change controller line width
 curl_ctrl = core.Dag('hellohaa')
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 curl_ctrl.setLineWidth(4)
 
 
-#... Connection with string
+#... Example 32: Connection with string
 curl_ctrl = core.Dag('hellohaa')
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 curl_ctrl.setLineWidth(4)
 
 
+#... Example 33: Create joint
+joint = core.Joint('nameJnt')
+
+#... Example 33: Create joint
+multMat = core.Dag('something')
+multMat = core.MultMatrixWithValue('something')
 
 '''
 

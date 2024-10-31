@@ -68,7 +68,7 @@ reload(rigTools)
 #... outdate using fkRig instead
 def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape', color = 'yellow', 
 							constraint = True, matrixConst = False, mo = False, translate=True, 
-							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False):
+							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False, parentTo = False, priorJnt = False):
 	'''
 	Create Controller at selected object.
 	@param scale: A dictionary of template component and items.
@@ -82,6 +82,10 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 	return_list = []
 
 	if selected:
+		
+		if priorJnt:
+			mc.parent(selected[0], priorJnt)
+
 		for each in selected:
 			print(selected)
 			
@@ -116,6 +120,9 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 			#... set RotationOrder
 			child_ctrl.rotateOrder = rotateOrder 
 			gimbal_ctrl.rotateOrder = rotateOrder
+
+
+
 			
 			if constraint == True:
 				if matrixConst == False:
@@ -134,6 +141,11 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 		if parentUnder:
 			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected))
 			mc.parent(childZro_grp.name, selected)
+
+
+		if parentTo:
+			mc.parent(childZro_grp.name, parentTo)
+
 
 		
 		return return_list

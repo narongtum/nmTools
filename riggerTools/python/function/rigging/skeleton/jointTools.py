@@ -68,6 +68,7 @@ def _replace_change_gray(selectedLst):
 def change_endJnt_gray():
 	endJnt_list = mc.ls('*_endJnt')
 	_replace_change_gray(endJnt_list)
+	mc.select(deselect=True)
 
 def rename_tip_jnt(root_joint = 'R_wing01_tmpJnt', search = '_tmpJnt', replace = '_tipJnt'):
 	list_tip_joint_grp = list_tip_joints(root_joint)

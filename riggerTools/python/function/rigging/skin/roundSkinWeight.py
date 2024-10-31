@@ -29,8 +29,25 @@ class roundSkinLogger(logger.MayaLogger):
 	LOGGER_NAME = "roundSkin"
 
 
-def something():
-	roundSkinLogger.set_level(logging.INFO)
+
+
+
+def has_skin_cluster(mesh):
+    # Get the history of the mesh
+    history = mc.listHistory(mesh)
+    
+    # Check if any of the nodes in the history are skinCluster nodes
+    skin_clusters = mc.ls(history, type='skinCluster')
+    
+    if skin_clusters:
+        return True
+    else:
+        return False
+
+
+
+
+
 
 
 
@@ -42,12 +59,26 @@ def roundSkinWeight(digit=3, selection=''):
 	#...timeStart
 	timeStart = time.time()
 
-	selection = mc.ls(sl = True, fl = True)
-	if selection == None:
+	# selection = mc.ls(sl = True, fl = True)
+	mc.select( selection, r = True)
+
+	selection = mc.ls(sl = True)[0]
+	if selection == []:
 		mc.warning("No valid selection made. Exiting roundSkinWeight.")
 		return False
-	each = selection[0]
-	mc.select( each, r = True)
+	# each = selection[0]
+
+	
+
+	#... check there are having skin
+	round_mesh = mc.ls(sl=True)[0]
+	if has_skin_cluster(round_mesh):
+		roundSkinLogger.info('There are having skincluster.')
+	else:
+		return False
+
+
+
 	# get vertex data
 	geoData = skin.geoInfo( vtx = True, geo = True, skinC = True )
 	vertexDict	=	{}
@@ -66,6 +97,7 @@ def roundSkinWeight(digit=3, selection=''):
 
 		eachVtx = vertexDict[eachVtxNum]
 		
+		#... case# 1 there are only one skin jnt
 		if len(eachVtx) == 1:
 
 			#... there is just one joint in vtx so I assign 1
@@ -77,6 +109,8 @@ def roundSkinWeight(digit=3, selection=''):
 
 
 		else:
+
+			#... case# 2 is normal weight
 			VtxWeight = []
 			for i in range (len(eachVtx)):
 				#... get only number
@@ -91,12 +125,55 @@ def roundSkinWeight(digit=3, selection=''):
 			diff = 0
 			VtxWeightNum=len(VtxWeight)
 			vtxWeightValueList=[]
-			#... round value here
+
+
+			# roundSkinLogger.info(f'Weight before adjust: {VtxWeight}')
+			# print(f'Weight before adjust: {VtxWeight}')
+
+
+
+
+			# Step 1: Round each value
+			rounded_VtxWeight = [round(value, 3) for value in VtxWeight]
+
+			# Step 2: Calculate the sum of the rounded values
+			total_sum = sum(rounded_VtxWeight)
+
+			# Step 3: Adjust the max value if the sum is not exactly 1
+			if total_sum != 1.0:
+			    max_value = max(rounded_VtxWeight)
+			    max_index = rounded_VtxWeight.index(max_value)
+			    
+			    # Calculate the difference needed to make the sum 1
+			    difference = 1.0 - total_sum
+			    # Adjust the max value
+			    rounded_VtxWeight[max_index] += difference
+
+			# Output the results
+			new_total_sum = sum(rounded_VtxWeight)
+			# rounded_VtxWeight, new_total_sum
+
+
+			if new_total_sum == 1:
+				roundSkinLogger.info('Sum of value is: 1 That OK.')
+			elif new_total_sum > 1:
+				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, new_total_sum) )
+			elif new_total_sum < 1: 
+				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, new_total_sum) )
+
+
+
+
+
+
+
+			'''
+			#... round value logic  here
 			if len(VtxWeight) > 0:
 				for each in range(len(VtxWeight)):
 					float_num = round(VtxWeight[each], digit)
 					vtxWeightValueList.append(float_num)
-					roundSkinLogger.debug(vtxWeightValueList)
+					
 
 			#... sum value
 			
@@ -138,21 +215,26 @@ def roundSkinWeight(digit=3, selection=''):
 				# 	diff = round(1-total,digit)
 				# 	vtxWeightValueList[biggest] = round((vtxWeightValueList[biggest] + diff), digit)		
 				
+
 			total = 0
 			for each in range(len(vtxWeightValueList)):
 				total = total + vtxWeightValueList[each]
+
+
+
 				
 			if total != 1:
 				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, total) )
 				#return False
 
+			'''
 
 
 			#... assign round value to the dict
 			for i in range (len(eachVtx)):
 				
 				eachVtx[i]=list(eachVtx[i])
-				eachVtx[i][1] = vtxWeightValueList[i]
+				eachVtx[i][1] = rounded_VtxWeight[i]
 				eachVtx[i]=tuple(eachVtx[i])
 
 

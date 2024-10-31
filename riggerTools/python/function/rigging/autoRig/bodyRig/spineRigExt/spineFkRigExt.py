@@ -1,3 +1,6 @@
+#... forgetten function not sure should delete it.
+
+
 '''
 from function.rigging.autoRig.bodyRig.spineRigExt import spineFkRigExt
 reload(spineFkRigExt)

@@ -82,7 +82,7 @@ def fkIkTwistGenRig(
 				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
 				creTwistJnt = True ,
 				# softIk = False ,
-				stickShape = 'stick_ctrlShape',
+				stickShape = 'stickCircle_Y_long_ctrlShape',
 				alongAxis = 'y' ,
 				pinMethod = 'matrix',
 				povPosi = 'front'
@@ -586,11 +586,12 @@ def fkIkTwistGenRig(
 
 
 	#
-	#	 Insert condition for ik controller shape
+	#	 Insert condition for IK controller shape
 	# 
 
 	if not ikPosi:
 		lowerIk_ctrl.nmCreateController('cube_ctrlShape')
+		lowerIk_ctrl.editCtrlShape( axis = charScale * 8 )
 	elif ikPosi == 'foot':
 		lowerIk_ctrl.nmCreateController('squarePlain_ctrlShape')
 	elif ikPosi == 'ankle':
@@ -1261,5 +1262,7 @@ def fkIkTwistGenRig(
 	#... Add ikhZro_grp for SoftIK
 	ikhAll_name = ikhNam, povZro_grp, Loc_grp.name, World_grp.name, ikhZro_grp
 	softIk_name = [lowerIk_ctrl.name]
+
+
 
 	return stick_ctrl.name , lower_bJnt.name , middle_bJnt.name , upper_bJnt.name , ikhAll_name ,psStreEndName, softIk_name, fkIkTwistRig_meta

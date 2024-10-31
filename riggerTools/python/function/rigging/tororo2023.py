@@ -99,12 +99,13 @@ createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = '
 
 
 
+#... create  controller
+from function.rigging.autoRig.base import core
+reload(core)
 
 
-from function.rigging.controllerBox import adjustController as ccr
-importlib.reload(ccr)
-selected = mc.ls(sl=True)
-ccr.creControllerFunc(selected)
+cog_ctrl = core.Dag('skirt01BCK_ctrl')
+cog_ctrl.nmCreateController('boomerang_ctrlShape')
 
 
 

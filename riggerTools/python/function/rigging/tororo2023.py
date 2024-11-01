@@ -65,6 +65,17 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 
+
+from function.rigging.autoRig.addRig import rivetWithAddMatrix as rwm
+reload(rwm)
+
+rwm.rivetMatrix( 	skinCluster = 'SK_DM011_skc', 
+					vtx = 'SK_DM011.vtx[1507]'	, 
+					target = 'spineHi27_bJnt'	, 
+					thresholdValue = 0.001)
+
+
+
 #... Create Controller at selected object.
 from function.rigging.controllerBox import adjustController as adjust
 reload(adjust)

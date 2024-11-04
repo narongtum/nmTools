@@ -110,6 +110,28 @@ createFkRig.fkRig_new_curl_ext(	nameSpace = '', name = 'beard', parentCtrlTo = '
 
 
 
+
+
+def moveAttrUp():
+	selIndex = pm.textScrollList('newAttrField', q=True, si=True)
+	custom_attr_list = pm.textScrollList('newAttrField', q=True, allItems = True)
+
+	list_len = len(custom_attr_list)
+
+	indexNumber = custom_attr_list.index(selIndex[0])
+	upIndex = indexNumber - 1
+
+	custom_attr_list.remove(selIndex[0])
+	custom_attr_list.insert(upIndex, selIndex[0])
+
+	pm.textScrollList('newAttrField', e=True, removeAll=True)
+	pm.textScrollList('newAttrField', e=True, append custom_attr_list)
+	pm.textScrollList('newAttrField', e=True, si selIndex[0])
+
+
+
+
+
 #... create  controller
 from function.rigging.autoRig.base import core
 reload(core)

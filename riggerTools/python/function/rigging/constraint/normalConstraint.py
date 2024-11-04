@@ -19,6 +19,23 @@ reload(misc)
 from function.rigging.autoRig.base import core
 reload(core)
 
+
+
+
+
+def check_obj_exists(obj_name):
+	if not mc.objExists(obj_name):
+		raise ValueError(f"Object '{obj_name}' does not exist.")
+		return False
+	else:
+		return True
+
+
+
+
+
+
+
 #
 # newer local world function 
 #
@@ -33,10 +50,10 @@ def parent_localWorld(	zro_grp = 'L_pinStrap02Zro_grp',  # Zero out group
 	
 	
 
-	# Function to check if an object exists
-	def check_obj_exists(obj_name):
-		if not mc.objExists(obj_name):
-			raise ValueError(f"Object '{obj_name}' does not exist.")
+	# # Function to check if an object exists
+	# def check_obj_exists(obj_name):
+	# 	if not mc.objExists(obj_name):
+	# 		raise ValueError(f"Object '{obj_name}' does not exist.")
 
 	# Check if all necessary objects exist
 	try:
@@ -151,10 +168,14 @@ def multipleCon( child = '*_bJnt', parent = '*Gmbl_ctrl' ):
 	proxyList = mc.ls( naming )
 	
 	for each in proxyList:
-		spEach = each.split('_')
-		childNam = spEach[0] + '_' + child
-		mc.parentConstraint( each , childNam , maintainOffset = True)
-		mc.scaleConstraint( each , childNam , maintainOffset = True)
+		if check_obj_exists(each):
+			spEach = each.split('_')
+			childNam = spEach[0] + '_' + child
+			mc.parentConstraint( each , childNam , maintainOffset = True)
+			mc.scaleConstraint( each , childNam , maintainOffset = True)
+		else:
+			print('Object not found skipt.')
+
 
 	print('DONE')
 

@@ -9,20 +9,28 @@ reload(core)
 
 
 
-side = 'LFT'
+side = 'RGT'
 source = f'upperLeg{side}_bJnt'
+destination_grp = f'skirt02{side}Offset_grp'
+connectAxis = 'Z'
 
 
-destination_grp = f'back01{side}Offset_grp'
-#destination_grp = f'front01{side}Offset_grp'
+#destination_grp = 'null2'
+
+
 
 
 
 sensitive = (0,1,0,90)
 
 direction = ('forward','rear','backward')
+
+
 #... choose direction here
-direction =  direction[2]
+direction =  direction[0]
+
+
+
 baseName = 'along' + direction.capitalize()
 
 
@@ -103,7 +111,7 @@ turn_off_mdl.attr('output') >> collectValue_pma.attr('input3D[0].input3Dx')
 
 # remap_value.attr('outValue') >> collectValue_pma.attr('input3D[0].input3Dx')
 
-collectValue_pma.attr('output3Dx') >> destination_grp.attr('rotateX')
+collectValue_pma.attr('output3Dx') >> destination_grp.attr(f'rotate{connectAxis}')
 
 
 print('DONE')

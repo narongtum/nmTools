@@ -61,8 +61,97 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+#... newer than before
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+createFkRig.fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = '',
+					jntLst = ('hairG01_bJnt','hairG02_bJnt','hairG03_bJnt'),
+					charScale = 1, priorJnt = 'hairRoot_jnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = True,rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = True,
+					curlCtrlShape = 'stickCircle_Z_ctrlShape')
 
 
+#... create a lot of fk controller
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+
+
+
+three_ctrl = ('G')
+
+
+
+two_ctrl = ('ABCDEFHIK')
+
+ctrl_list = []
+# num = 2
+for letter in two_ctrl:
+	for num in range(1,3):
+		tmp_name = f'hair{letter}{str(num).zfill(2)}_bJnt'
+		ctrl_list.append(tmp_name)
+	print(ctrl_list)
+
+	createFkRig.fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = '',
+					jntLst = ctrl_list,
+					charScale = 1, priorJnt = 'hairRoot_jnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False,rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_ctrlShape')
+
+
+	ctrl_list = []
+
+
+
+
+
+
+
+one_ctrl = ('MNOPQR')
+
+
+    
+    
+    
+ctrl_list = []
+# num = 2
+for letter in one_ctrl:
+	for num in range(1,2):
+		tmp_name = f'hair{letter}{str(num).zfill(2)}_bJnt'
+		ctrl_list.append(tmp_name)
+	print(ctrl_list)
+
+	createFkRig.fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = '',
+					jntLst = ctrl_list,
+					charScale = 1, priorJnt = 'hairRoot_jnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False,rotateOrder = 'zxy',
+					curlCtrlShape = 'stick_ctrlShape')
+
+
+	ctrl_list = []
+
+
+
+
+
+
+
+
+
+
+
+
+
+def disable_compensate():
+	allJnt = mc.ls(type = 'joint')
+	for each in allJnt:
+		mc.setAttr(f'{each}.segmentScaleCompensate', 0 )
+	print('Done')
 
 
 

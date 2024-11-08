@@ -29,6 +29,16 @@ reloader(misc)
 
 
 
+#... uncheck seqment scale compensate
+
+
+def disable_compensate():
+	allJnt = mc.ls(type = 'joint')
+	for each in allJnt:
+		mc.setAttr(f'{each}.segmentScaleCompensate', 0 )
+	print('Done')
+
+
 
 
 

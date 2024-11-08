@@ -81,13 +81,13 @@ def create_localWorld(zro_grp,ctrl,local_obj,world_obj,base_grp,body_part,attr_o
 
 
 # Define the necessary variables
-zro_grp = 'spine03Zro_grp'  # Zero out group
-ctrl = 'spine03_ctrl'
-local_obj = 'spine02_gmbCtrl'  # Parent object to assign in local space
+zro_grp = 'headZro_grp'  # Zero out group
+ctrl = 'head_ctrl'
+local_obj = 'neckGmbl_ctrl'  # Parent object to assign in local space
 world_obj = 'ctrl_grp'  # Parent object to assign in world space
-base_grp = 'spine03Offset_grp'  # Offset group
-body_part = 'spine03'
-attr_occur = 'spine03_ctrlShape'
+base_grp = 'headOffset_grp'  # Offset group
+body_part = 'head'
+attr_occur = 'head_ctrlShape'
 
 
 

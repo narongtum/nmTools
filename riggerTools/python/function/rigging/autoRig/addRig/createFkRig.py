@@ -42,9 +42,272 @@ reload(mnd)
 from function.rigging.constraint import normalConstraint as nmCon
 reload(nmCon)
 
+
+
+
+
+
+#... newer than before
+#... just add matrix constraint for make it ligther
+
+
+def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
+					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False,rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape'):
+
+	#... find base name
+	name = misc.check_name_style(name = jntLst[0])[0]
+
+	nameNoSide = misc.check_name_style(name = jntLst[0])[4]
+
+
+	old_name_Style = None
+
+	#... Check name style
+	naming_style = misc.check_name_style(name = jntLst[0])
+
+	if naming_style[3] == True:
+		print('This is LFT, RGT naming style.')
+		old_name_Style = True
+		part = nameSpace + nameNoSide + side
+	else:
+		old_name_Style = False
+		part = f'{side}_{nameSpace}{nameNoSide}' 
+
+
+	rigGrp = core.Null(f'{part}Rig_grp')
+
+
+	#... Creatre empyt for append name
+	ctrls = []
+	jnts = []
+	gmbls = []
+	zGrps = []
+	bJnts = []
+	ofGrps = []
+
+
+
+	#... For loop in tmpJnt 
+	for  num  in range( 0 , ( len(jntLst)  ) ):
+		base_name = misc.check_name_style(name = jntLst[num])[0]
+
+		ctrl = core.Dag(f'{base_name}_ctrl')
+		ctrl.nmCreateController( ctrlShape )
+		ctrl.editCtrlShape( axis = charScale * 6.4 )
+
+
+		gimbal = core.createGimbal( ctrl )
+		bJnt = core.Dag( jntLst[num] )
+
+		zroGrp,offsetGrp = rigTools.zroNewGrpWithOffset( ctrl )
+		zroGrp.snap( bJnt )
+		zroGrp.name = f'{base_name}Zro_grp'
+		offsetGrp.name = f'{base_name}Offset_grp'
+
+
+		#... set Rotation Order
+		ctrl.rotateOrder = rotateOrder 
+		gimbal.rotateOrder = rotateOrder
+
+		ctrl.color = color
+
+
+		ctrls.append( ctrl )
+		jnts.append( jntLst[num] )
+		gmbls.append( gimbal )
+		zGrps.append( zroGrp )
+		bJnts.append( bJnt )
+		ofGrps.append( offsetGrp )
+
+		
+
+
+		#... parent ctrl to hierarchy
+		if not num == 0:
+			print('\nNo need to useHierarchy.\n')
+			zroGrp.parent( gmbls[ num -1] )
+		else:
+			print('\nUse Hierarchy.\n')
+			rigGrp.maSnap(bJnts[0])
+			zroGrp.parent( rigGrp )
+
+		#.... End for loop
+
+	if parentCtrlTo:
+		rigGrp.parent( parentCtrlTo )
+
+	if priorJnt:
+		bJnts[0].parent( priorJnt )
+
+
+	#... Make curl controller 
+	if curlCtrl:
+		if old_name_Style:
+			base_name = f'{nameSpace}{nameNoSide}Curl{side}'
+		else:
+			if side:
+				base_name = f'{side}_{nameSpace}{nameNoSide}Curl'
+			else:
+				base_name = f'{nameSpace}{nameNoSide}Curl'
+
+		curl_ctrl = core.Dag(f'{base_name}_ctrl')
+		curl_ctrl.nmCreateController( curlCtrlShape )
+		curl_ctrl.editCtrlShape( axis = charScale * 7.4 )
+		curl_ctrl.color = color
+		zroGrpCurl,offsetCurl = rigTools.zroNewGrpWithOffset(curl_ctrl)
+		curl_ctrl.rotateOrder = rotateOrder 
+
+		#... snap position to root 
+		zroGrpCurl.maSnap(bJnts[0])
+
+		first_offset_grp = core.Dag(ofGrps[0])
+
+		#... connect attr
+		curl_ctrl.attr('tx') >> first_offset_grp.attr('tx')
+		curl_ctrl.attr('ty') >> first_offset_grp.attr('ty')
+		curl_ctrl.attr('tz') >> first_offset_grp.attr('tz')
+
+		curl_ctrl.attr('sx') >> first_offset_grp.attr('sx')
+		curl_ctrl.attr('sy') >> first_offset_grp.attr('sy')
+		curl_ctrl.attr('sz') >> first_offset_grp.attr('sz')
+
+
+		#... Make attr at curl ctrl
+		curlShape_ctrl = core.Dag(curl_ctrl.shape)
+		curlShape_ctrl.addAttribute(at = 'long', min = 0, max = 1, longName = 'Detail', keyable = True, defaultValue = 0)
+		mc.connectAttr('{0}.Detail'.format(curlShape_ctrl.name), '{0}.visibility'.format(zGrps[0]), f=True )
+
+
+		#... Create PMA
+		passValue_pma = core.PlusMinusAverage( f'{base_name}_pma' )
+
+		#... Create MDV
+		multiplyValue_mdv = core.MultiplyDivine( f'{base_name}_mdv' )
+
+
+		curl_ctrl.attr('rotate') >> passValue_pma.attr('input3D[0]')
+		passValue_pma.attr('output3D') >> multiplyValue_mdv.attr('input1')
+
+		#... Create meta node
+
+		# metaNode = core.MetaRoot('fkRig_newCurl_meta')
+		fkRig_newCurl_meta = core.MetaGeneric( f'{base_name}_meta')
+		fkRig_newCurl_meta.addAttribute( attributeType = 'message' , longName = base_name)
+
+		fkRig_newCurl_meta.addAttribute( attributeType = 'message' , longName = 'passValue')
+		passValue_pma.attr('message') >> fkRig_newCurl_meta.attr('passValue')
+
+		# passValue_pma.attr('message') >> fkRig_newCurl_meta.attr(name+side)
+
+		curl_ctrl.attr('message') >> fkRig_newCurl_meta.attr('Rig_Prior')
+
+		fkRig_newCurl_meta.setAttribute('Color', color, type = 'string')
+		fkRig_newCurl_meta.setAttribute('Side', side, type = 'string')
+		fkRig_newCurl_meta.setAttribute('Base_Name', rigGrp.name, type = 'string')
+		
+		for eachObj in ofGrps:
+			multiplyValue_mdv.attr('output') >> eachObj.attr( 'rotate' ) #... change line to use multiplt divide instead
+
+		zroGrpCurl.parent( rigGrp )
+
+		#... for local world use
+		localWorld_attr = curlShape_ctrl.name
+
+
+	else:
+		#... find shape name
+		ctrl_shape = misc.shapeName(ctrls[0])
+		localWorld_attr = ctrl_shape
+
+
+	if localWorld:
+		print(zGrps[0], ctrls[0], priorJnt, 'ctrl_grp',ofGrps[0], name, localWorld_attr)
+		nmCon.parent_localWorld(	zro_grp = zGrps[0],  # Zero out group
+						ctrl = ctrls[0],
+						local_obj = parentCtrlTo,  # Parent object to assign in local space):
+						world_obj = 'ctrl_grp',  # Parent object to assign in world space
+						base_grp = ofGrps[0],  # Offset group
+						body_part = name,
+						attr_occur = localWorld_attr)
+
+
+	#... create another loop here because of bJnt will wrong orient when constraint and then parent
+	#... parent joint to controller
+
+	if parentMatrix == True:
+		for  num  in range( 0 , ( len( jntLst )  ) ):
+			print('Print type')
+			print(type(gmbls[num]))
+			print(type(bJnts[num]))
+			print(gmbls[num].name)
+			print(bJnts[num].name)
+			# mc.error('BREAK')
+			misc.parentMatrix( gmbls[num].name, bJnts[num].name, mo = True, translate = True, rotate = True, scale = True)
+
+
+
+
+	else:
+
+		for  num  in range( 0 , ( len( jntLst )  ) ):
+			parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
+			base_name = misc.check_name_style(name = jntLst[num])[0]
+			parCons.name = f'{base_name}_psCons'
+			print ('\nPARENT IT DONE...')
+
+
+	misc.makeHeader('End of {0}'.format(__name__))
+
+
+
+
+	if curlCtrl:
+		# Add return all ctrl name at index 4
+		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
+	else:
+		return gmbls[0],rigGrp.name, bJnts, ctrls
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #... newer cleaner
 #... create fk rig make more clearer than earlior that is so complex
 #... cancle name arg
+
 def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
 					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',

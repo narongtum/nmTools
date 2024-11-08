@@ -61,6 +61,17 @@ For further details and reference, you can consult the official FastCopy Help do
 
 '''
 
+
+#... selection body joint
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+nodeDict = mnd.standardJnt_list
+
+mc.select(nodeDict)
+
+
+
 #... newer than before
 from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)

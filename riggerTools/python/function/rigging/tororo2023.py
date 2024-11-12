@@ -60,6 +60,26 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 '''
+#... add ikroot name for matcher
+from function.rigging.autoRig.base import core
+reload(core)
+
+side = ('LFT','RGT')
+for each in side:
+    ikRoot_ctrl = core.Dag(f'upperArmIkRoot{each}_ctrl')
+    #ikRoot_ctrl = core.Dag(f'upperArm{each}IK_ctrl')
+    stick_ctrl = core.Dag(f'handStick{each}_ctrl')
+    stick_ctrl.addAttribute( attributeType = 'message' , longName = 'ikRootCtrl')
+    ikRoot_ctrl.attr('message') >> stick_ctrl.attr('ikRootCtrl')
+
+
+#... setting rotate order
+hair_jnt = mc.ls('hair*_bJnt')
+
+
+for each in hair_jnt:
+    mc.setAttr(f'{each}.rotateOrder', 2)
+
 
 
 #... selection body joint
@@ -186,6 +206,8 @@ adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_
 							rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
 
 
+
+#... delete selected matrix
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 

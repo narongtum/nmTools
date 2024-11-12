@@ -11,9 +11,12 @@ reload(core)
 
 side = 'RGT'
 source = f'upperLeg{side}_bJnt'
-destination_grp = f'skirt02{side}Offset_grp'
-connectAxis = 'Z'
-
+destination_grp = f'skirtC01OffsetAnotherSide_grp'
+connectAxis = 'X'
+sensitive = (0,1,0,90)
+direction = ('forward','rear','backward')
+#... choose direction here
+direction =  direction[3]
 
 #destination_grp = 'null2'
 
@@ -21,13 +24,10 @@ connectAxis = 'Z'
 
 
 
-sensitive = (0,1,0,90)
-
-direction = ('forward','rear','backward')
 
 
-#... choose direction here
-direction =  direction[0]
+
+
 
 
 
@@ -84,9 +84,9 @@ remap_value = core.RemapCurve(name = baseName + '_sentsitive' + side,positive = 
 
 if side == 'LFT':
 	forward_dot.attr('outputZ') >> remap_value.attr('inputValue')
-	reverseVal_mdl = core.MDLWithMul(name = baseName + '_RevVal' + side,dv = 1)
+	reverseVal_mdl = core.MDLWithMul(name = baseName + '_RevVal' + side, dv = 1)
 elif side == 'RGT':
-	reverseVal_mdl = core.MDLWithMul(name = baseName + '_RevVal' + side,dv = -1)
+	reverseVal_mdl = core.MDLWithMul(name = baseName + '_RevVal' + side, dv = -1)
 
 forward_dot.attr('outputZ') >> reverseVal_mdl.attr('input1')
 
@@ -95,6 +95,40 @@ input_min = remap_value.attr('inputValue').value
 remap_value.attr('inputMin').value = input_min
 
 reverseVal_mdl.attr('output') >> remap_value.attr('inputValue')
+
+#... remap to invert value
+invert_mdl = core.MultiDoubleLinear(name = baseName + '_invert' + side +'_mdl')
+invert_mdl.attr('input2').value = 1
+
+
+#... remap to on/off 
+turn_off_mdl = core.MultiDoubleLinear(name = baseName + '_TurnOff' + side+'_mdl')
+turn_off_mdl.attr('input2').value = 1
+
+
+#... make pma for collect all value
+collectValue_pma = core.PlusMinusAverage(name= baseName + '_collect' + side)
+
+#... make turn on/off
+remap_value.attr('outValue') >> invert_mdl.attr('input1')
+invert_mdl.attr('output') >> turn_off_mdl.attr('input1')
+turn_off_mdl.attr('output') >> collectValue_pma.attr('input3D[0].input3Dx')
+
+
+
+
+# remap_value.attr('outValue') >> collectValue_pma.attr('input3D[0].input3Dx')
+
+collectValue_pma.attr('output3Dx') >> destination_grp.attr(f'rotate{connectAxis}')
+
+
+print('simpleAutoSkirt DONE')
+
+
+
+
+'''
+#... sandbox zone
 
 #... remap to on/off 
 turn_off_mdl = core.MultiDoubleLinear(name = baseName + '_TurnOff' + side+'_mdl')
@@ -108,18 +142,6 @@ remap_value.attr('outValue') >> turn_off_mdl.attr('input1')
 turn_off_mdl.attr('output') >> collectValue_pma.attr('input3D[0].input3Dx')
 
 
-
-# remap_value.attr('outValue') >> collectValue_pma.attr('input3D[0].input3Dx')
-
-collectValue_pma.attr('output3Dx') >> destination_grp.attr(f'rotate{connectAxis}')
-
-
-print('DONE')
-
-
-
-
-
-#... sandbox zone
 #mc.connectAttr('{0}.outValue'.format(remap_value.name), ' alongforward_collectRGT.input3D[0].input3Dx')
+'''
 

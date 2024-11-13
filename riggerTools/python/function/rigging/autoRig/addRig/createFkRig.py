@@ -42,8 +42,8 @@ reload(mnd)
 from function.rigging.constraint import normalConstraint as nmCon
 reload(nmCon)
 
-
-
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 
 
 
@@ -247,7 +247,8 @@ def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 			print(gmbls[num].name)
 			print(bJnts[num].name)
 			# mc.error('BREAK')
-			misc.parentMatrix( gmbls[num].name, bJnts[num].name, mo = True, translate = True, rotate = True, scale = True)
+			mtc.parentConMatrix(gmbls[num].name, bJnts[num].name, mo = True, translate = True, rotate = True, scale = True)
+			# misc.parentMatrix( gmbls[num].name, bJnts[num].name, mo = True, translate = True, rotate = True, scale = True)
 
 
 

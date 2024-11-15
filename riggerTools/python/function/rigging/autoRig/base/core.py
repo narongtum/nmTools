@@ -346,6 +346,90 @@ multMat = core.MultMatrixWithValue('something')
 
 
 
+
+def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
+
+	import re
+
+	first_name = name.split('_')
+	if len(first_name) == 1:
+		mc.error(f'Naming is not have underscore {first_name}. terminate')
+
+	side = None
+	isDefault = True
+
+	#... 1. Capital Lead Style  'L_something_something_ext'
+
+	if len(first_name[0]) == 1:
+		print('\nThis is naming C_R_L_ style')
+		base_name = '_'.join(first_name[:-1])
+
+		isDefault = False
+
+		#... check side condition
+		if first_name[0] == 'L':
+			side = 'L'
+		elif first_name[0] == 'R':
+			side = 'R'
+		elif first_name[0] == 'C':
+			side = 'C'
+		else:
+			side = None
+
+		nameNoSide = base_name[2:]
+		nameNoSide = re.sub(r'\d+$', '', nameNoSide)
+
+
+
+
+
+	#... 2. Side follow  'somethingLFT_ext'
+	else:
+		print('This is naming LFT RGT Style')
+		isDefault = True
+		for_base_name = name.split('_')
+		base_name = '_'.join(first_name[:-1])
+		
+		for each in for_base_name:
+			if each.endswith('LFT'):
+				side = 'LFT'
+			elif each.endswith('RGT'):
+				side = 'RGT'
+
+		nameNoSide = base_name.replace(f'{side}', '')
+		nameNoSide = re.sub(r'\d+$', '', nameNoSide)
+
+
+	#... return reverse side
+	reverse_side = ''
+	if side == 'LFT':
+		reverse_side = 'RGT'
+	elif side == 'RGT':
+		reverse_side = 'LFT'
+	elif side == 'L':
+		reverse_side = 'R'
+	elif side == 'R':
+		reverse_side = 'L'
+	elif side == 'C':
+		reverse_side = 'C'
+	else:
+		reverse_side = None
+
+	
+
+	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
+	return(base_name, side, reverse_side, isDefault, nameNoSide)
+
+
+
+
+
+
+
+
+
+
+
 #... find base name
 def findBaseName(name):
 	if '_' not in name:

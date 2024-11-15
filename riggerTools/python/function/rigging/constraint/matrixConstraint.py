@@ -322,7 +322,18 @@ def createMatrixAttr(selected, attrNam = 'destination'):
 	mc.addAttr(selected, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
 
 
-	
+
+
+
+
+
+
+
+
+
+
+
+#... parant constraint using matrix use this mainly	
 def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
 	if not source:
@@ -330,17 +341,12 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 		return False
 
 
-	# mo = True
-	# translate = True
-	# rotate = True
-	# scale = True
-
 	#... rotate offset function
 	obj_target = core.Dag(target)
 	obj_source = core.Dag(source)
 
-
-
+	#... find base name
+	base_name = core.check_name_style(name = target)[0]
 
 
 	#...Got call maya API for get local offset position  
@@ -349,19 +355,17 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 
 
 	#... Create
-	decomposeMatrix = core.DecomposeMatrix(target)
-	multMatrix = core.MultMatrix(target)
+	decomposeMatrix = core.DecomposeMatrix(base_name)
+	multMatrix = core.MultMatrix(base_name)
 
 
 	#... Notice
 	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
 
+
 	#... Set and Connect
 	if mo == True:
 		mc.setAttr( multMatrix.name + '.matrixIn[0]', offMat, type = 'matrix')
-
-
-
 
 	#... Just in case for add manual attr
 	#obj_source.addAttribute( ln = 'localOffset' , k = False, at = 'matrix' )
@@ -372,12 +376,11 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 	if rotate == True:
 		pass
 
-	# START HERE
-	target_eulerToQuat = core.EulerToQuat(target)
-	target_quatInvert = core.QuatInvert(target)
-	target_quatProd = core.QuatProd(target)
-	target_quatToEuler = core.QuatToEuler(target)
-
+	#... START HERE
+	target_eulerToQuat = core.EulerToQuat(base_name)
+	target_quatInvert = core.QuatInvert(base_name)
+	target_quatProd = core.QuatProd(base_name)
+	target_quatToEuler = core.QuatToEuler(base_name)
 
 
 	if obj_target.type == 'joint' and obj_source.type == 'transform': #... if between transform to joint must add value from orient
@@ -495,20 +498,22 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 
 
 
-
-	# #... link variable to Network node
+	#... still not work disable for now
+	#... link variable to Network node
 	# parentConMatrix_meta = core.MetaGeneric('matCon')
 	 
 	# mc.select(target, r=True)
 	
 	# meta_node = core.MetaGeneric(obj_source.name)
 
-
 	# #... connect message
 	# obj_target.attr('message') >> meta_node.attr('Rig_Prior')
 	# meta_node.attr('Base_Name').value = obj_target.name
 	# meta_node.attr('Side').value = 'None'
-	# Constraint.debug('why not work')
+	
+	# meta_node.addAttribute( dataType = 'string' , longName = 'node')
+	# meta_node.attr('node').value = f'{decomposeMatrix},{target_quatToEuler},{multMatrix}'
+
 	# meta_node.addAttribute( dataType = 'string' , longName = 'Target')
 	# meta_node.addAttribute( dataType = 'string' , longName = 'Source')
 	# meta_node.attr('Target').value = obj_target.name

@@ -17,18 +17,27 @@ reload(mnd)
 '''
 #... How to use
 
-
-
 nodeDict = mnd.NODE_dict
 
 for each in nodeDict:
 	if each["longName"] == 'joint':
 		node_exp = each["shortName"]
-
-
-
-
 nodeDict = mnd.NODE_dict['eulerToQuat']
+
+
+
+
+
+
+#... select body bind joint
+
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+nodeDict = mnd.standardJnt_list
+
+mc.select(nodeDict)
+
 		
 '''
 

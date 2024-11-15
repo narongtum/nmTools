@@ -1,6 +1,6 @@
 //Maya ASCII 2023 scene
 //Name: hh_skincluster_surface_sample_hi_Res02.ma
-//Last modified: Fri, Nov 15, 2024 05:24:09 PM
+//Last modified: Fri, Nov 15, 2024 05:28:40 PM
 //Codeset: 1252
 requires maya "2023";
 requires -nodeType "ikSpringSolver" "ikSpringSolver" "1.0";
@@ -13,12 +13,12 @@ fileInfo "product" "Maya 2023";
 fileInfo "version" "2023";
 fileInfo "cutIdentifier" "202205052215-234554116d";
 fileInfo "osv" "Windows 10 Home v2009 (Build: 19045)";
-fileInfo "UUID" "F01D6EE5-46A1-D174-BEF0-1096569213A3";
+fileInfo "UUID" "692DE710-4849-1965-9C0A-1C8687C7DA82";
 createNode transform -s -n "persp";
 	rename -uid "E83C7A1F-4FA8-1698-A4EC-28B7BDE10271";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 11.236002729339392 9.0603159628339558 -8.8617930489142047 ;
-	setAttr ".r" -type "double3" -21.338352736466742 -2043.7999999994529 0 ;
+	setAttr ".t" -type "double3" 1.8512123478322189 17.138451838787105 -7.5239413782204325 ;
+	setAttr ".r" -type "double3" -68.738352736467306 -2008.9999999994395 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "F80457FD-4473-3048-D10B-3992EB4557D3";
 	setAttr -k off ".v" no;
@@ -3411,7 +3411,7 @@ createNode skinCluster -n "skinCluster4";
 	setAttr -s 2 ".ifcl";
 	setAttr -s 2 ".ifcl";
 createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
-	rename -uid "9CA4CF00-4D9C-E1E8-F3BE-DDBF35238BA5";
+	rename -uid "A4622CE5-4333-51FE-DD90-AAA5300A1978";
 	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
 	setAttr ".tgi[0].vl" -type "double2" 645.97500351219287 -7.4445746613153982 ;
 	setAttr ".tgi[0].vh" -type "double2" 2245.9749586334033 782.47136956869383 ;

@@ -131,7 +131,8 @@ sff.split_with_surface(mesh, jnt_grp, nurb)
 
 
 
-# ----- example 3 Hi Res
+# ----- example 3 Hi Res version
+#... haveing and controller for reposition nurbe
 
 # jnts_1 = ['jntA04','jntA03','jntA02','jntA01']
 # jnts_2 = ['jntB04','jntB03','jntB02','jntB01'] 

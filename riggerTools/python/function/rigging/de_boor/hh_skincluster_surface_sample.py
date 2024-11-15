@@ -110,7 +110,8 @@ sff.split_with_surface(msh, jnts, nrb)
 
 
 #.... My tutoria
-
+# "D:\sysTools\nmTools_github\riggerTools\python\function\rigging\de_boor\hh_skincluster_surface_sample.ma"
+#... don't forget to add skincluster first
 jnts_1 = ['jntA01','jntA02','jntA03','jntA04']
 jnts_2 = ['jntB01','jntB02','jntB03','jntB04'] 
 jnts_3 = ['jntC01','jntC02','jntC03','jntC04'] 
@@ -153,7 +154,7 @@ jnts_8 = ['jntH01','jntH02','jntH03','jntH04']
 
 # jnt_grp = [jnts_1, jnts_2, jnts_3, jnts_4 ]  
 jnt_grp = [jnts_1, jnts_2,jnts_3, jnts_4, jnts_5, jnts_6, jnts_7, jnts_8]  
-  
+
 mesh  = 'skirt_polygon'
 nurb =   'skirt_nurb'
 sff.split_with_surface(mesh, jnt_grp, nurb)

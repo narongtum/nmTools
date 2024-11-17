@@ -185,9 +185,9 @@ def connectProxyJnt( master = 'bind_jnt' , slave = 'proxy_jnt' ):
 
 
 
-# copy selected weight
-# select source and destination
-# move from skin weight
+#... copy selected weight
+#... select source and destination
+#... move from skin weight
 
 def copyWeight():
 	sels = mc.ls(sl=True)
@@ -220,14 +220,14 @@ def copyWeight():
 #       multiple copyweight     
 #####################################################
 
-def mulWeight():
+def mulWeight(source = ''):
 	# select destination and source
 	selection = mc.ls(sl=True)
-	destination = selection[1:]
-	source = selection[-1]
+	# destination = selection[1:]
+	# source = selection[-1]
 	#print 'source is %s, destination is %s' %selection,destination
 	
-	for each in destination:
+	for each in selection:
 		mc.select(source ,r=True)
 		mc.select(each ,add=True)
 		print ('%s has copied' %each)

@@ -1,6 +1,24 @@
 '''
 from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)
+
+
+
+
+createFkRig.fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
+					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
+					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape')
+
+
+
+
+
+
+
 '''
 
 

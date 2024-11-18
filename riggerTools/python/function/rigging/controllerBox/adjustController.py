@@ -87,7 +87,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 			mc.parent(selected[0], priorJnt)
 
 		for each in selected:
-			print(selected)
+			print(each)
 			
 			each_sel = misc.check_name_style(name = each)
 
@@ -95,6 +95,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 
 			# Create  controller
 			child_ctrl = core.Dag( rawName + '_ctrl' )
+			# mc.error(rawName)
 			child_ctrl.nmCreateController(ctrlShape)
 			child_ctrl.editCtrlShape( axis = scale * 1.2 )
 			child_ctrl.color = color

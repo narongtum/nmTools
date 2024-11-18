@@ -86,7 +86,11 @@ for each in hair_jnt:
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
-nodeDict = mnd.standardJnt_list
+standardJnt_list = mnd.standardJnt_list
+
+for each in standardJnt_list:
+	if mc.objExists(each):
+		mc.select(each,add=True)
 
 mc.select(nodeDict)
 

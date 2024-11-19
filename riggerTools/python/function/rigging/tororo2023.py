@@ -60,6 +60,27 @@ For further details and reference, you can consult the official FastCopy Help do
 
 
 '''
+
+
+
+
+#... delete selected matrix
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+
+selected = mc.ls(sl=True)
+mtc.del_selected_matrix(selected = selected)
+
+
+
+
+
+
+
+
+
+
+
 #... add ikroot name for matcher
 from function.rigging.autoRig.base import core
 reload(core)
@@ -211,12 +232,7 @@ adjust.creControllerFunc( 		selected = selected, scale = 1, ctrlShape = 'circle_
 
 
 
-#... delete selected matrix
-from function.rigging.constraint import matrixConstraint as mtc
-reload(mtc)
 
-selected = mc.ls(sl=True)
-mtc.del_selected_matrix(selected = selected)
 
 
 

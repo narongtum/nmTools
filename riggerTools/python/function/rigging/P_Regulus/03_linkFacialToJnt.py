@@ -23,7 +23,7 @@ def linkFacialToJnt( ctrl = 'facialSwitch_ctrl', attr = 'mouth', facialJnt = 'fa
 		if mc.listConnections( '{0}.tx'.format( facialJnt )):
 			print ( '{0} Already Connect'.format( facialJnt ) )
 		else:
-			mc.connectAttr( '{0}.{1}'.format( ctrl, attr ), '{0}.tx'.format( facialJnt ) )
+			mc.connectAttr( '{0}.{1}'.format( ctrl, attr ), '{0}.sx'.format( facialJnt ) )
 
 	else:
 		return

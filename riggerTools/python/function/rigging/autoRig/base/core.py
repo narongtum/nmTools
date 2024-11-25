@@ -336,7 +336,7 @@ curl_ctrl.setLineWidth(4)
 #... Example 33: Create joint
 joint = core.Joint('nameJnt')
 
-#... Example 33: Create joint
+#... Example 33: MultMatrixWithValue
 multMat = core.Dag('something')
 multMat = core.MultMatrixWithValue('something')
 

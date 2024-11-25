@@ -785,6 +785,44 @@ def doHideGrp(jntName,num):
 	
 
 
+
+
+def get_objects_with_suffix(suffix, namespace=None):
+	"""
+	Returns a list of objects in the Maya scene that have the given suffix, optionally within a specific namespace.
+	
+	Args:
+		suffix (str): The suffix to search for (e.g., '_pxyJnt').
+		namespace (str, optional): The namespace to search within. Defaults to None.
+	
+	Returns:
+		list: A list of object names matching the suffix and namespace.
+	"""
+	# Build the search pattern
+	if namespace:
+		search_pattern = f"{namespace}:*{suffix}"
+	else:
+		search_pattern = f"*{suffix}"
+	
+	# Use mc.ls to find matching objects
+	matching_objects = mc.ls(search_pattern)
+	
+	return matching_objects if matching_objects else []
+
+
+def do_hide_objects(suffix = '_pxyJnt',namespace=None):
+	suffix_list = get_objects_with_suffix(suffix, namespace=namespace)
+	for each in suffix_list:
+		try:
+			mc.setAttr(f'{each}.v', 0)
+		except Exception as eror:
+			print(f"Error hiding object '{each}': {eror}")
+
+
+
+
+
+
 def fileData():
 	rigPath = whereAreMe()  
 
@@ -1377,6 +1415,11 @@ def globalPublish():
 	#... hide Root
 	doHideGrp( 'Root',0 )
 	doHideGrp( 'root',0 )
+
+	#... hide proxy joint
+	# do_hide_objects(suffix = '_pxyJnt')
+	# do_hide_objects(suffix = '_loc')
+
 
 	#... delete layer
 	#deleteDisplayLayer()

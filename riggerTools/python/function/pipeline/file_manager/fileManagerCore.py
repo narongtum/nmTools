@@ -2749,6 +2749,14 @@ def do_global_commit():
 	fileTools.doHideGrp( 'root_weapon',0 )
 	fileTools.doHideGrp( 'Root_JNT',0 )
 
+
+
+	#... hide proxy joint
+	fileTools.do_hide_objects(suffix = '_pxyJnt')
+	fileTools.do_hide_objects(suffix = '_loc')
+
+
+
 	#... delete delete grp
 	fileTools.doDeleteGrp()	
 

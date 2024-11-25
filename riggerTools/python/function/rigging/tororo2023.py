@@ -72,8 +72,12 @@ selected = mc.ls(sl=True)
 mtc.del_selected_matrix(selected = selected)
 
 
+from function.rigging.autoRig.base import core
+reload(core)
 
-
+#... Example 33: MultMatrixWithValue
+multMat = core.Dag('something')
+multMat = core.MultMatrixWithValue('something')
 
 
 

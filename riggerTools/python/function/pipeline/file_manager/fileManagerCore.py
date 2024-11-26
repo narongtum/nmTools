@@ -2749,18 +2749,14 @@ def do_global_commit():
 	fileTools.doHideGrp( 'root_weapon',0 )
 	fileTools.doHideGrp( 'Root_JNT',0 )
 
-
-
-	#... hide proxy joint
+	#... Hide proxy joint
 	fileTools.do_hide_objects(suffix = '_pxyJnt')
 	fileTools.do_hide_objects(suffix = '_loc')
 
-
-
-	#... delete delete grp
+	#... Delete delete grp
 	fileTools.doDeleteGrp()	
 
-	#... round skinweight
+	#... Round skinweight
 	do_pipeline_round_skinWeight()
 	FileManagerLog.info('do_pipeline_round_skinWeight...\n')
 

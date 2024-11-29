@@ -2704,14 +2704,16 @@ def do_local_commit():
 	#... Add new method for re-organize group struture when publish
 	fileTools.doMoveGrp()
 
-	#... Move node to target
-	fileTools.doDeleteGrp()	
 
-	#... delete '*_bak'
-	FileManagerLog.debug('Do Delete prefix.')
-	#... Add delete suffix and prefix 
-	fileTools.doDeleteSuffixExt(suffix ='_X')
-	fileTools.doDeletePrefixExt(prefix = 'X_')
+	
+
+	# #... Move node to target
+	# FileManagerLog.debug('Do Delete delete_grp.')
+	# fileTools.doDeleteGrp()	
+
+	# #... Add delete suffix and prefix 
+	# fileTools.doDeleteSuffixExt(suffix ='_X')
+	# fileTools.doDeletePrefixExt(prefix = 'X_')
 
 
 	# Hide Root
@@ -2754,7 +2756,14 @@ def do_global_commit():
 	fileTools.do_hide_objects(suffix = '_loc')
 
 	#... Delete delete grp
+	FileManagerLog.debug('Do Delete delete_grp.')
 	fileTools.doDeleteGrp()	
+
+	#... Add delete suffix and prefix 
+	fileTools.doDeleteSuffixExt(suffix ='_X')
+	fileTools.doDeletePrefixExt(prefix = 'X_')
+
+
 
 	#... Round skinweight
 	do_pipeline_round_skinWeight()

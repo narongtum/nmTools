@@ -108,6 +108,15 @@ NODE_dict = [
 
 ]
 
+
+
+#... naming for auto name in meta data
+auto_name_variation = ('01','02')
+auto_name_used = ('Gameplay_Model','Charactor_Model','Other')
+
+
+
+
 #... finger dict
 FINGER_dict = {		'fingerName':		('thumb','index','middle','ring','pinky'),
 					'fingerbehavior':	('fist','roll','relax','cup','spread','wide')

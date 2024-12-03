@@ -53,6 +53,23 @@ def exportFBXnoConnection(selection, fileName = ''):
 
 
 
+def exportFBX_with_path(selection, fileName = '', path = ''):
+	
+	#... verify if anything is selected
+	if selection:
+
+		if not fileName: # If not have file name use file instead
+			name = fileTools.Scene()
+			fileName = name.get_scene_name()
+
+		sys.stdout.write('# Preparing to write FBX file...\n')
+		folder = path + "%s"%fileName + ".fbx" 
+		pm.mel.eval('FBXExportInputConnections -v 0')
+		pm.mel.eval('FBXExport -f "%s" -s'%folder)
+
+		fileTools.openContainerFile( path = path )
+
+
 
 
 

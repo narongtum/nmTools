@@ -16,7 +16,7 @@ connectAxis = 'X'
 sensitive = (0,1,0,90)
 direction = ('forward','rear','backward')
 #... choose direction here
-direction =  direction[3]
+direction =  direction[2]
 
 #destination_grp = 'null2'
 

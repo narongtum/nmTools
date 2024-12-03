@@ -138,6 +138,12 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	# rig_grp.addAttribute( attributeType = 'message' , longName = 'Meta_child')
 	rig_grp.addAttribute( dataType = 'string' , longName = 'logmsg', keyable = False )
 	rig_grp.addAttribute( dataType = 'string' , longName = 'preJobStep', keyable = False )
+	
+	#.... Create attr for auto naming when export FBX
+	rig_grp.addAttribute( dataType = 'string' , longName = 'code', keyable = False )
+	rig_grp.addAttribute( dataType = 'string' , longName = 'name', keyable = False )
+	rig_grp.addAttribute( attributeType = 'enum', en = '01:02', longName = 'variation', keyable = False   )
+	rig_grp.addAttribute( attributeType = 'enum', en = 'Gameplay_Model:Charactor_Model:Other', longName = 'used', keyable = False   )
 
 
 

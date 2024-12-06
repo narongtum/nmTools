@@ -30,7 +30,7 @@ def clearVis( suffix = '_ctrl' , hide = False):
 		mc.select( cl = True )
 
 	except:
-		print (" there is no " )
+		print ("There is no controller to hide." )
 		print (suffix)
 
 

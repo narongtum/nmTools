@@ -21,6 +21,7 @@ import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
+
 # =================================
 # - Exec Function for main(all) finger -
 # =================================

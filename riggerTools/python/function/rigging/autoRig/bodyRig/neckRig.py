@@ -16,6 +16,11 @@ reload(rigTools)
 from function.pipeline import logger 
 reload(logger)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+color_part_dict = mnd.COLOR_part_dict
+
 # import logging
 # logger = logging.getLogger('debug_text')
 # logger.setLevel(logging.DEBUG)
@@ -79,7 +84,7 @@ def neckRig( 	nameSpace = '' ,
 	neckZro_grp.name = part + 'Zro_grp'
 	neck_ctrl.editCtrlShape( axis = charScale * 2.8 )
 	neckGmbl_ctrl = core.createGimbal( neck_ctrl )
-	neck_ctrl.color = 'red'
+	neck_ctrl.color = color_part_dict['primary'] #... yellow
 	neck_ctrl.rotateOrder = 'xzy'
 	neckGmbl_ctrl.rotateOrder = 'xzy'
 
@@ -176,13 +181,13 @@ def quradpedNeckRig( 		nameSpace = '' ,
 	# create lowerBody controller
 	neck1Zro_grp , neck1_ctrl, neck1_gmblCtrl = rigTools._creControl( 	nameSpace = nameSpace , name = neck1_bJnt.name  , 
 													ctrlShape = 'circle_ctrlShape', charScale = 10 , 
-													color = 'red' , rotateOrder = 'xzy', parentTo = neckFkCtrl_grp , 
+													color = color_part_dict['primary'] , rotateOrder = 'xzy', parentTo = neckFkCtrl_grp , 
 													rotation = (0,0,0)  )
 
 	# create lowerBody controller
 	neck2Zro_grp , neck2_ctrl, neck2_gmblCtrl = rigTools._creControl( 	nameSpace = nameSpace , name = neck2_bJnt.name  , 
 													ctrlShape = 'circle_ctrlShape', charScale = 10 , 
-													color = 'red' , rotateOrder = 'xzy', parentTo = neck1_gmblCtrl , 
+													color = color_part_dict['primary'] , rotateOrder = 'xzy', parentTo = neck1_gmblCtrl , 
 													rotation = (0,0,0)  )
 
 	# Constraint rig_grp to prior controller grp

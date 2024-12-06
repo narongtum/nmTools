@@ -1,11 +1,4 @@
-#... THIS MODULE IS WILL REMOVE 
-#... ALL FUNTION IS MOVE TO RIGGING.UTIL.CLEANUP INSTEAD !!!!!
-
-
-
-
-
-
+#.... shift from autorig.util
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.tools import proc as pc 

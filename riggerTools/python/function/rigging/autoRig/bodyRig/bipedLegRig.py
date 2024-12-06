@@ -44,7 +44,9 @@ import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
-
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+color_part_dict = mnd.COLOR_part_dict
 
 
 
@@ -66,9 +68,9 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 	core.makeHeader('Start of %s%s Rig' %('footRollRig',side))
 
 	if side == 'LFT':
-	    colorSide = 'red'
+	    colorSide = color_part_dict['left'] #... blue
 	else:
-	    colorSide = 'blue'
+	    colorSide = color_part_dict['right'] #... red
 
 	ball = core.Dag( nameSpace + tmpJnt[ 4 ] )
 	toe = core.Dag( nameSpace + tmpJnt[5] )
@@ -775,9 +777,8 @@ def footRollRig(	nameSpace, side, region, tmpJnt, priorJnt, nullGrp, charScale,
 
 
 
-# bipedLegRig original has been deleted please use below function
-
-# this function just passing throught keyword arg to fkIk function
+#... bipedLegRig original has been deleted please use "bipedLegRigExt"
+#... this function just passing throught keyword arg to fkIk function
 def bipedLegRigExt(
 					nameSpace = '' 	,	
 					parentTo = 'ctrl_grp' ,			

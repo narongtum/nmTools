@@ -37,6 +37,10 @@ reload(logger)
 class QuardrupedLogger(logger.MayaLogger):
 	LOGGER_NAME = "quardruped"
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+color_part_dict = mnd.COLOR_part_dict
+
 '''
 nameSpace = '' 		
 parentTo = 'ctrl_grp' 			
@@ -85,9 +89,11 @@ def quradrupedLegRig(		nameSpace = '' 	,
 
 
 	if side == 'LFT':
-		colorSide = 'red'
+		colorSide = color_part_dict['left'] #... blue
 	else:
-		colorSide = 'blue'
+		colorSide = color_part_dict['right'] #... red
+
+
 
 
 
@@ -500,12 +506,32 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	# create grp
 	povZro_grp = core.Null( nameSpace + 'knee' + legType.capitalize() + side + 'Zro_grp' )
 
-	# Create POV Controller
+
+
+	#... Create POV Controller
 	name = nameSpace + tmpPov + legType.capitalize() + side
 	pov_ctrl = core.Dag( name + '_ctrl' )
-	pov_ctrl.nmCreateController(povShape)
+
+	# pov_ctrl.nmCreateController(povShape)
+	if povShape == 'sphereAxis':
+		# Change Shape from sphere to pyramid la
+		pov_ctrl.nmCreateController('legLFT_pov_ctrlShape')
+
+	elif povShape == 'pyramid':
+		pov_ctrl.nmCreateController('pyramid_ctrlShape')
+		pov_ctrl.rotateShape( rotate = ( 90 , 0 , 0) )
+		#... Add pole vector line 
+		pc.targetPov( ctrl = pov_ctrl.name , jnt = lowerLeg_bJnt.name )
+
+
+
 	pov_ctrl.editCtrlShape( axis = charScale * 0.8 )
 	pov_ctrl.setColor('yellow')
+
+
+
+
+
 
 	mc.parent( pov_ctrl.name , povZro_grp  )
 	# Snap with orient and prosition
@@ -1438,7 +1464,7 @@ def plantigradeLegRig(
 	elif povShape == 'pyramid':
 		pov_ctrl.nmCreateController('pyramid_ctrlShape')
 		pov_ctrl.rotateShape( rotate = ( 90 , 0 , 0) )
-		# Add pole vector line 
+		#... Add pole vector line 
 		pc.targetPov( ctrl = pov_ctrl.name , jnt = lowerLeg_bJnt.name )
 
 

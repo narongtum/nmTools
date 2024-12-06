@@ -13,6 +13,11 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+color_part_dict = mnd.COLOR_part_dict
+
 # set logging for debug mode
 import logging
 logger = logging.getLogger('debug_text')
@@ -65,7 +70,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	master_ctrl.editCtrlShape( axis = charScale * 1.8 )
 
 	master_ctrl.renameShape( master_ctrl.shape )
-	master_ctrl.setColor( 'yellow' )
+	master_ctrl.setColor(color_part_dict['primary']) #... yellow
 
 
 	# Create controller
@@ -75,7 +80,7 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	
 	placement_ctrl.editCtrlShape( axis = charScale * 1.4 )
 	#placement_ctrl.addAttribute( ln = 'size' , k = True , dv = 1 )
-	placement_ctrl.setColor('white')
+	placement_ctrl.setColor(color_part_dict['secondary']) #... white
 
 
 

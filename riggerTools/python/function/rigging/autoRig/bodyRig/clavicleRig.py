@@ -17,6 +17,10 @@ import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+color_part_dict = mnd.COLOR_part_dict
 
 def clavicleRig(		nameSpace = ''  ,
 						parentTo = 'ctrl_grp' 				,
@@ -29,9 +33,9 @@ def clavicleRig(		nameSpace = ''  ,
 
 	
 	if side == 'LFT':
-		colorSide = 'red'
+		colorSide = color_part_dict['left']
 	else:
-		colorSide = 'blue'
+		colorSide = color_part_dict['right']
 
 
 	core.makeHeader( 'Start of %s%s Rig' %('clavicle',side) )

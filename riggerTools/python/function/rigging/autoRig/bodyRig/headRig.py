@@ -12,7 +12,10 @@ import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
 
+color_part_dict = mnd.COLOR_part_dict
 
 def _eyeCtrl( nameSpace = ''  , eyeJntNam = '' , side = ''  , headJnt = '' , charScale = '' , parentTo = '', eyeCenCtrl = '', eyeTarget = '' ):
 	# = = = = = = = = = = = = = #
@@ -256,7 +259,7 @@ def headRig(	nameSpace = '' ,
 		jaw01UprZro_grp = rigTools.zeroGroup( jaw01Upr )
 		jaw01UprZro_grp.name = part + 'Zro_grp'
 		jaw01GmblUpr_ctrl = core.createGimbal( jaw01Upr )
-		jaw01Upr.color = 'red'
+		jaw01Upr.color = color_part_dict['primary'] #... yellow
 		jaw01Upr.rotateOrder = headRotOrder
 		jaw01GmblUpr_ctrl.rotateOrder = headRotOrder
 		jaw01UprZro_grp.snap( jaw1Upr_bJnt )
@@ -281,7 +284,7 @@ def headRig(	nameSpace = '' ,
 		jaw01LwrZro_grp = rigTools.zeroGroup( jaw01Lwr )
 		jaw01LwrZro_grp.name = part + 'Zro_grp'
 		jaw01GmblLwr_ctrl = core.createGimbal( jaw01Lwr )
-		jaw01Lwr.color = 'red'
+		jaw01Lwr.color = color_part_dict['primary']#... yellow
 		jaw01Lwr.rotateOrder = headRotOrder
 		jaw01GmblLwr_ctrl.rotateOrder = headRotOrder
 		jaw01LwrZro_grp.snap( jaw1Lwr_bJnt )
@@ -304,7 +307,7 @@ def headRig(	nameSpace = '' ,
 		jaw02LwrZro_grp = rigTools.zeroGroup( jaw02Lwr )
 		jaw02LwrZro_grp.name = part + 'Zro_grp'
 		jaw02GmblLwr_ctrl = core.createGimbal( jaw02Lwr )
-		jaw02Lwr.color = 'red'
+		jaw02Lwr.color = color_part_dict['primary']#... yellow
 		jaw02Lwr.rotateOrder = headRotOrder
 		jaw02GmblLwr_ctrl.rotateOrder = headRotOrder
 		jaw02LwrZro_grp.snap( jaw2Lwr_bJnt )
@@ -336,7 +339,7 @@ def headRig(	nameSpace = '' ,
 		eyeCenterZro_grp.snap( eyeCen )
 		eyeCenterZro_grp.parent( headGmbl_ctrl )			
 		eyeCenter_ctrl.editCtrlShape( axis = charScale * 0.8 )
-		eyeCenter_ctrl.color = 'yellow'
+		eyeCenter_ctrl.color = color_part_dict['primary'] #... yellow
 		eyeCenter_ctrl.rotateOrder = headRotOrder			
 			
 

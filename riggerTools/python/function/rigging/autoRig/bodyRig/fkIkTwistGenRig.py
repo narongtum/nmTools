@@ -45,6 +45,10 @@ import logging
 logger = logging.getLogger('fkIkTwistRig')
 logger.setLevel(logging.DEBUG)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+color_part_dict = mnd.COLOR_part_dict
+
 hastag = '# '*20
 
 
@@ -108,11 +112,11 @@ def fkIkTwistGenRig(
 	root_meta = 'root_meta'
 
 	if side == 'LFT':
-		colorSide = 'red'
+		colorSide = color_part_dict['left']
 	elif side == 'RGT':
-		colorSide = 'blue'
+		colorSide = color_part_dict['right']
 	else:
-		colorSide = 'yellow'
+		colorSide = color_part_dict['primary']
 
 
 	# rotOrder = 'yxz'
@@ -687,7 +691,7 @@ def fkIkTwistGenRig(
 	elif povShape == 'pyramid':
 		pov_ctrl.nmCreateController('pyramid_ctrlShape')
 		pov_ctrl.rotateShape( rotate = ( 90 , 0 , 0) )
-		# Add pole vector line 
+		#... Add pole vector line 
 		pc.targetPov( ctrl = pov_ctrl.name , jnt = middle_bJnt.name )
 
 

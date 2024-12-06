@@ -149,6 +149,15 @@ COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 				'green'     : 14 ,          'softBlue'      : 18 ,
 				'none'      : 0     }
 
+COLOR_part_dict = { 	'right': 'red', 
+						'left': 'blue', 
+						'dynamic': 'white',
+						'primary': 'yellow',
+						'secondary': 'white',
+						'tertiary': 'red'}
+
+
+
 
 # for arg message in arm and leg function
 MESSAGE_dict = { 	'listString':	('region' , 'location'), # location get foot or angle only

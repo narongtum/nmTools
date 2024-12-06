@@ -16,6 +16,10 @@ import logging
 logger = logging.getLogger('debug_text')
 logger.setLevel(logging.DEBUG)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+color_part_dict = mnd.COLOR_part_dict
+
 # just create fk at finger joint
 def fingerRig( 			nameSpace = '' 						,
 						side = 'LFT', 
@@ -95,9 +99,9 @@ def fingerRig( 			nameSpace = '' 						,
 			bJnt = nameSpace + name + '_bJnt'
 			
 			if side == 'LFT':
-				sideColor = 'red'
+				sideColor = color_part_dict['left'] #... blue
 			elif side == 'RGT':
-				sideColor = 'blue'
+				sideColor = color_part_dict['right'] #... red
 				
 			ctrl = core.Dag( nameSpace + name + '_ctrl' ) # Create Ctrl
 			ctrl.nmCreateController('circle_ctrlShape')
@@ -161,7 +165,7 @@ def fingerRig( 			nameSpace = '' 						,
 
 
 
-# finger rig update version
+#... Finger rig update version
 
 def fingerRigExt( 			nameSpace = '' 						,
 							side = 'LFT', 
@@ -235,9 +239,9 @@ def fingerRigExt( 			nameSpace = '' 						,
 			bJnt = nameSpace + name + '_bJnt'
 			
 			if side == 'LFT':
-				sideColor = 'red'
+				sideColor = color_part_dict['left'] #... blue
 			elif side == 'RGT':
-				sideColor = 'blue'
+				sideColor = color_part_dict['right'] #... red
 				
 			ctrl = core.Dag( nameSpace + name + '_ctrl' ) # Create Ctrl
 			ctrl.nmCreateController('circle_ctrlShape')
@@ -318,6 +322,11 @@ def baseFingerRig(
 	# reload(rigTools)
 
 
+	if side == 'LFT':
+		sideColor = color_part_dict['left'] #... blue
+	elif side == 'RGT':
+		sideColor = color_part_dict['right'] #... red
+
 
 	# Use hand joint name instead
 	rawNam = misc.splitName( priorJnt )[0]
@@ -364,12 +373,12 @@ def baseFingerRig(
 		bJnt.parent( handJnt )
 
 
-		# create controller	
+		#... create controller	
 
-		if side == 'LFT':
-			sideColor = 'red'
-		elif side == 'RGT':
-			sideColor = 'blue'
+		# if side == 'LFT':
+		# 	sideColor = color_part_dict['left'] #... blue
+		# elif side == 'RGT':
+		# 	sideColor = color_part_dict['right'] #... red
 
 		ctrl = core.Dag( nameSpace + name + '_ctrl' ) # Create Ctrl
 		ctrl.nmCreateController('circle_ctrlShape')
@@ -437,10 +446,10 @@ def baseFingerRig(
 
 			bJnt =  nameSpace + name + '_bJnt'
 			
-			if side == 'LFT':
-				sideColor = 'red'
-			elif side == 'RGT':
-				sideColor = 'blue'
+			# if side == 'LFT':
+			# 	sideColor = 'red'
+			# elif side == 'RGT':
+			# 	sideColor = 'blue'
 				
 			ctrl = core.Dag( nameSpace + name + '_ctrl' ) # Create Ctrl
 			ctrl.nmCreateController('circle_ctrlShape')

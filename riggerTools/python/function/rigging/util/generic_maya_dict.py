@@ -154,7 +154,7 @@ COLOR_part_dict = { 	'right': 'red',
 						'dynamic': 'white',
 						'primary': 'yellow',
 						'secondary': 'white',
-						'tertiary': 'red'}
+						'tertiary': 'softBlue'}
 
 
 

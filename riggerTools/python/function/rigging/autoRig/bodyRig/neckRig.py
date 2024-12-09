@@ -181,13 +181,13 @@ def quradpedNeckRig( 		nameSpace = '' ,
 	# create lowerBody controller
 	neck1Zro_grp , neck1_ctrl, neck1_gmblCtrl = rigTools._creControl( 	nameSpace = nameSpace , name = neck1_bJnt.name  , 
 													ctrlShape = 'circle_ctrlShape', charScale = 10 , 
-													color = color_part_dict['primary'] , rotateOrder = 'xzy', parentTo = neckFkCtrl_grp , 
+													color = color_part_dict['tertiary'] , rotateOrder = 'xzy', parentTo = neckFkCtrl_grp , 
 													rotation = (0,0,0)  )
 
 	# create lowerBody controller
 	neck2Zro_grp , neck2_ctrl, neck2_gmblCtrl = rigTools._creControl( 	nameSpace = nameSpace , name = neck2_bJnt.name  , 
 													ctrlShape = 'circle_ctrlShape', charScale = 10 , 
-													color = color_part_dict['primary'] , rotateOrder = 'xzy', parentTo = neck1_gmblCtrl , 
+													color = color_part_dict['tertiary'] , rotateOrder = 'xzy', parentTo = neck1_gmblCtrl , 
 													rotation = (0,0,0)  )
 
 	# Constraint rig_grp to prior controller grp

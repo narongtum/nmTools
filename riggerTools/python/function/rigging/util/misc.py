@@ -73,6 +73,64 @@ else:
 
 
 
+def check_case_sentitive(group_name):
+
+	#... Normalize the group name to lower case for comparison
+	group_name_lower = group_name.lower()
+
+	#... Search for an object matching the normalized group name
+	all_objects = mc.ls(dag=True)  # List all DAG objects
+	matching_group = None
+
+	for obj in all_objects:
+		if obj.lower() == group_name_lower:
+			matching_group = obj
+			return matching_group
+
+	if not matching_group:
+		print(f"Group '{group_name}' does not exist in the scene.")
+		return False
+
+
+def check_case_manual(name):
+	"""
+	Check if the given name exists in Maya, either as lowercase or capitalized.
+	
+	Args:
+		name (str): The object name to check.
+
+	Returns:
+		str or None: The existing name in the correct case, or None if not found.
+	"""
+	# Convert name to lowercase and capitalized forms
+	name_lower = name.lower()
+	name_upper = name.capitalize()
+
+	# Check which case exists
+	if mc.objExists(name_lower):
+		return name_lower
+	elif mc.objExists(name_upper):
+		return name_upper
+
+	# If neither exists, return None
+	return None
+	
+
+def unparent_group(group_name):
+	# Check if the group exists
+	if not mc.objExists(group_name):
+		print(f"Group '{group_name}' does not exist in the scene.")
+		return
+
+	# Check if the group has a parent
+	parent = mc.listRelatives(group_name, parent=True)
+	if parent:
+		# Unparent the group to the world
+		mc.parent(group_name, world=True)
+		print(f"Group '{group_name}' was under '{parent[0]}'. It has been unparented to the world.")
+	else:
+		print(f"Group '{group_name}' is already under the world.")
+
 
 
 #... make template ctrl bigger

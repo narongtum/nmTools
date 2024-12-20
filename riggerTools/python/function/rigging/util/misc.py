@@ -381,15 +381,14 @@ def setRotateOrder(rotateOrder='yzx'):
 			continue
 
 
-
+#... use this in controller module instead
 def ctrlWidth(Width = 5):
 	for each in mnd.controller_thicker_list:
 		_makeCurveWidth(name = each , Width = Width)
 
 
 
-
-
+#... use this in controller module instead
 def _makeCurveWidth(name = '', Width = 5):
 	print(name)
 	if mc.objExists(name):

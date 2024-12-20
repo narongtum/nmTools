@@ -34,6 +34,12 @@ reload(runWrite)
 # from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
 # reload(skinIO)
 
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
+
 try:
 	from shiboken2 import wrapInstance
 except:
@@ -2703,6 +2709,12 @@ def do_local_commit():
 
 	#... Add new method for re-organize group struture when publish
 	fileTools.doMoveGrp()
+
+	#... Make endJnt gray
+	jtt.change_endJnt_gray()
+
+	#... Make some controller bigger
+	adjust.ctrlWidth(Width = 3)
 
 
 	

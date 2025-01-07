@@ -441,7 +441,7 @@ def zeroGroupNam( obj = '' ):
 	# If not retrun it will be can't use Dag object
 
 
-# add offset group
+#... add offset group
 def zroNewGrpWithOffset( obj ):
 	''' name naming '''
 
@@ -458,9 +458,6 @@ def zroNewGrpWithOffset( obj ):
 	else:
 		mc.warning('Too many element.')
 
-
-	
-
 	zro_grp = core.Null( name + 'Zro_grp' )
 	offset_grp = core.Null( name + 'Offset_grp' )
 
@@ -468,7 +465,39 @@ def zroNewGrpWithOffset( obj ):
 	zro_grp.snap( child )
 	child.parent( offset_grp )
 
-	return zro_grp,offset_grp
+	return zro_grp, offset_grp
+
+
+
+#... add offset group
+def zroNewGrpWithOffsetAndLocator( obj ):
+
+	child = core.Dag( obj )
+	rawNam = child.name.split('_')
+
+	#... extract name condition (need to update)
+	if len(rawNam) == 2:
+			name = rawNam[0]
+	elif len(rawNam) == 3:
+			name = rawNam[0] + '_' + rawNam[1] 
+	elif len(rawNam) == 4:
+			name = rawNam[0] + '_' + rawNam[1]  + '_' + rawNam[2]  
+	else:
+		mc.warning('Too many element.')
+
+	zro_grp = core.Null( name + 'Zro_grp' )
+	offset_grp = core.Null( name + 'Offset_grp' )
+	offset_loc = core.Locotor( name + 'Offset_loc' )
+
+	offset_grp.parent( zro_grp )
+	zro_grp.snap( child )
+	offset_loc.snap( child )
+	
+	offset_loc.parent( offset_grp )
+	child.parent( offset_loc )
+	
+	return zro_grp, offset_grp
+
 
 
 # Super Ultra Extreme Redundance function

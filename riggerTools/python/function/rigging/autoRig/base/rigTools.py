@@ -470,24 +470,28 @@ def zroNewGrpWithOffset( obj ):
 
 
 #... add offset group
-def zroNewGrpWithOffsetAndLocator( obj ):
+def offset_locator_grp( obj ):
 
 	child = core.Dag( obj )
-	rawNam = child.name.split('_')
 
-	#... extract name condition (need to update)
-	if len(rawNam) == 2:
-			name = rawNam[0]
-	elif len(rawNam) == 3:
-			name = rawNam[0] + '_' + rawNam[1] 
-	elif len(rawNam) == 4:
-			name = rawNam[0] + '_' + rawNam[1]  + '_' + rawNam[2]  
-	else:
-		mc.warning('Too many element.')
+	# rawNam = child.name.split('_')
 
-	zro_grp = core.Null( name + 'Zro_grp' )
-	offset_grp = core.Null( name + 'Offset_grp' )
-	offset_loc = core.Locotor( name + 'Offset_loc' )
+	
+	name = core.check_name_style(name = child.name)
+
+	# #... extract name condition (need to update)
+	# if len(rawNam) == 2:
+	# 		name = rawNam[0]
+	# elif len(rawNam) == 3:
+	# 		name = rawNam[0] + '_' + rawNam[1] 
+	# elif len(rawNam) == 4:
+	# 		name = rawNam[0] + '_' + rawNam[1]  + '_' + rawNam[2]  
+	# else:
+	# 	mc.warning('Too many element.')
+
+	zro_grp = core.Null( name[0] + 'Zro_grp' )
+	offset_grp = core.Null( name[0] + 'Offset_grp' )
+	offset_loc = core.Locator( name[0] + 'Offset_loc' )
 
 	offset_grp.parent( zro_grp )
 	zro_grp.snap( child )

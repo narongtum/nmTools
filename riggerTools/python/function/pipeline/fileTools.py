@@ -370,7 +370,7 @@ def createThumbnail_ext(width=256, height=256, currentPath='', fileName=''):
 	#...if file exists delete it first
 
 	if os.path.exists(pngImageFile):
-		# Delete the file
+		#... Delete the file
 		os.remove(pngImageFile)
 		print(f"File '{pngImageFile}' has been deleted.")
 	else:
@@ -379,10 +379,32 @@ def createThumbnail_ext(width=256, height=256, currentPath='', fileName=''):
 
 	#... Convert the file to PNG
 	os.rename(jpgImageFile, pngImageFile)
-
 	print('Thumbnail has been created at: {0}'.format(pngImageFile))
 
+	resize_with_PIL(width=256, height=256, currentPath=pngImageFile)
 
+
+
+def resize_with_PIL(width=256, height=256, currentPath=''):
+	try:
+		from PIL import Image
+		print("Pillow is installed and working!")
+		#... Open an image file
+		image = Image.open(currentPath)
+
+		#... Resize the image
+		new_size = (width, height)  # Width, Height
+		resized_image = image.resize(new_size)
+
+		resized_image.save(currentPath)
+		print('Thumbnail has been created at: {0}'.format(currentPath))
+
+		return True
+
+
+	except ImportError:
+		print("Pillow is NOT installed.")
+		return False
 
 
 

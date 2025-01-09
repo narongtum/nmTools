@@ -1,9 +1,6 @@
-# Reload module
+#... Reload module
 
-BUILD = 'mayaTools'
-sys.path.append(r'D:\sysTools\nmTools\{0}\python'.format(BUILD))
-
-# import mayaEnviron as ENV
+#... import mayaEnviron as ENV
 
 try:
 	reload  # Python 2.7
@@ -17,36 +14,17 @@ except NameError:
 		print('Python 3.0 - 3.3')
 
 
-
-
-# userSetup for maya2022 is not load, I donno how to fix it
-
-# import module
-import maya.cmds as mc
+#... userSetup for maya2022 is not load, I donno how to fix it
 import sys
 import maya.utils
-
-
-cmds.evalDeferred( runThis ) 
-
-
+import importlib
+import maya.cmds as mc
 
 
 
 
 # import importlib for maya2022
 import importlib
-
-# append path
-sys.path.append(r'{0}\\python'.format(ENV.PROJECT_PATH))
-
-
-from axionMenu import axionMenu2022 as axm
-importlib.reload(axm)
-
-
-# for Zv
-import axionTools.animation 
 
 '''
 check to see if we re in batch or interactive mode. 
@@ -55,17 +33,18 @@ and if we re in batch mode  it just executes the function
 run menu
 '''
 
-maya.utils.executeDeferred('axm.runMenu()') 
-print 'Create Axion menu...'
+
+sys.path.append('D:/sysTools/nmTools_github/riggerTools/python')
+from nmMenu import nmMenu2023
+importlib.reload(nmMenu2023)
+maya.utils.executeDeferred('nmMenu2023.runMenu()')
+from function.framework.reloadWrapper import reloadWrapper as reload
+from function.rigging.autoRig.base import core
+reload(core)
 
 
-
-# Active port 7002 to recived message from Sublime to Maya
-try:
-	mc.commandPort(name=":7002", sourceType="python")
-except :
-	mc.warning('Could not active port 7002 (maybe it already opened.)')
-
-
-
-
+if mc.pluginInfo("bifrostGraph", query=True, loaded=True):
+	print("BifrostGraph loaded: True")
+else:
+	mc.loadPlugin("bifrostGraph")
+	print("BifrostGraph was not loaded. It has now been loaded.")

@@ -34,6 +34,12 @@ reload(runWrite)
 # from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
 # reload(skinIO)
 
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
+
 try:
 	from shiboken2 import wrapInstance
 except:
@@ -2687,8 +2693,12 @@ def do_local_commit():
 	if ngSkin:
 		import ngSkinTools2
 		# remove all ngSkinTools custom nodes in a scene
-		ngSkinTools2.operations.removeLayerData.remove_custom_nodes()
-		FileManagerLog.info('Delete ngSkinTools2...\n')
+		try:
+			ngSkinTools2.operations.removeLayerData.remove_custom_nodes()
+			FileManagerLog.info('Delete ngSkinTools2...\n')
+		except ExceptionType as error:
+			# FileManagerLog.error("There are ngSkinTools in scene, Please open ngSkin and close and run again.")
+			mc.error(f"There are ngSkinTools in scene, Please open ngSkin and close and run again.\n{error}")
 	else:
 		FileManagerLog.info('There are no ngSkinTools skipped...\n')
 
@@ -2703,6 +2713,12 @@ def do_local_commit():
 
 	#... Add new method for re-organize group struture when publish
 	fileTools.doMoveGrp()
+
+	#... Make endJnt gray
+	jtt.change_endJnt_gray()
+
+	#... Make some controller bigger
+	adjust.ctrlWidth(Width = 3)
 
 
 	

@@ -59,6 +59,41 @@ reload(core)
 from function.rigging.autoRig.base import rigTools
 reload(rigTools)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
+
+
+
+
+#... use this in controller module instead
+def ctrlWidth(Width = 5):
+	for each in mnd.controller_thicker_list:
+		_makeCurveWidth(name = each , Width = Width)
+
+
+
+#... use this in controller module instead
+def _makeCurveWidth(name = '', Width = 5):
+	print(name)
+	if mc.objExists(name):
+		try:
+			shapeCtrl = misc.shapeName(name)
+			mc.setAttr('{}.lineWidth'.format(shapeCtrl), Width)
+			print('{} has expand curve width.'.format(name))
+		except:
+			pass
+	else:
+		print('{} not found.'.format(name))
+			
+
+
+
+
+
+
+
+
 
 
 # =================================

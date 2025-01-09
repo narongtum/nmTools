@@ -35,12 +35,12 @@ exportFBX.exportFBXnoConnection(selection, fileName = selection[-1])
 '''
 def exportFBXnoConnection(selection, fileName = ''):
 	
-	# verify if anything is selected
+	#... verify if anything is selected
 
 	path = fileTools.findCurrentPath()
 	path = path.replace('\\','/')
 
-	if not fileName: # If not have file name use file instead
+	if not fileName: #... If not have file name use file instead
 		name = fileTools.Scene()
 		fileName = name.get_scene_name()
 

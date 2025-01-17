@@ -17,6 +17,10 @@ reloader(logger)
 class utilLogger(logger.MayaLogger):
 	LOGGER_NAME = "JointTools"
 
+from function.rigging.util import generic_maya_dict as mnd
+reloader(mnd)
+
+
 import maya.cmds as mc
 import pymel.core as pm
 
@@ -26,6 +30,19 @@ import pymel.core as pm
 
 from function.rigging.util import misc
 reloader(misc)
+
+
+
+
+def select_body_jnt():
+	nodeDict = mnd.standardJnt_list
+	mc.select(r=True)
+	for each in nodeDict:
+		if mc.objExists(each):
+			mc.select(each, add=True)
+
+
+
 
 
 

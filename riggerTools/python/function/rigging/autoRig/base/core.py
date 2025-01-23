@@ -1412,14 +1412,17 @@ class WtAddMatrixWithVal( Node ):
 		self.autoSuffix()
 
 
-class WtAddMatrixWithChannal( Node ):
-	def __init__(self, name, num_cv ):
+class WtAddMatrixWithChannal( Node):
+	def __init__(self, name, num_cv, conn = False ):
 		Node.__init__(self, mc.createNode('wtAddMatrix', name = name))
 		for num in range(num_cv):
 			self.addAttribute( at = 'float', keyable = True, ln = 'wt_{0}'.format(num)  )
+			if conn == True:
+				self.attr(f'wt_{num}') >> self.attr(f'wtMatrix[{num}].weightIn')
 			print (num)
 		self.autoSuffix()
 		
+
 
 
 

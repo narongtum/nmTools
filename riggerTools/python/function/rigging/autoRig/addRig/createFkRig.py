@@ -63,10 +63,33 @@ reload(nmCon)
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
+from function.pipeline import logger 
+reload(logger)
+
+class createFKRigLogger(logger.MayaLogger):
+	LOGGER_NAME = "FKRig"
+
+
 
 
 #... newer than before
 #... just add matrix constraint for make it ligther
+
+
+
+
+
+def _is_parent(parent, is_child):
+	#... Get all descendants of parent
+	descendants = mc.listRelatives(parent, allDescendents=True, fullPath=False) or []
+	#... Check if is_child is in the list of descendants
+	if is_child in descendants:
+		print(f"{is_child} is a child of {parent}.")
+	else:
+		print(f"{is_child} is NOT a child of {parent}.")
+
+
+
 
 
 def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
@@ -332,7 +355,7 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'red', curlCtrl = False,rotateOrder = 'zxy',
-					curlCtrlShape = 'stick_ctrlShape'):
+					curlCtrlShape = 'stick_ctrlShape', segmentScaleCompensate = False):
 
 	#... find base name
 	name = misc.check_name_style(name = jntLst[0])[0]
@@ -417,7 +440,10 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		rigGrp.parent( parentCtrlTo )
 
 	if priorJnt:
-		bJnts[0].parent( priorJnt )
+		if _is_parent(priorJnt, bJnts[0]):
+			bJnts[0].parent( priorJnt )
+		else:
+			pass
 
 
 	#... Make curl controller 
@@ -519,6 +545,12 @@ def fkRig_new_curl_ext(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		base_name = misc.check_name_style(name = jntLst[num])[0]
 		parCons.name = f'{base_name}_psCons'
 		print ('\nPARENT IT DONE...')
+
+	if segmentScaleCompensate == False:
+		createFKRigLogger.info('Disable segmentScaleCompensate.')
+		for each in jntLst:
+			mc.setAttr(f'{each}.segmentScaleCompensate', 0)
+
 
 	misc.makeHeader('End of {0}'.format(__name__))
 

@@ -306,17 +306,18 @@ def runMenu():
 	#------------------------------------------------
 	mc.menuItem( label = 'Skeleton' ,subMenu = True, tearOff = True)
 
-	# Create Joint at selected vertex
+	#... Create Joint at selected vertex
 	mc.menuItem(label = "Create Joint at selected vertex", command = "from function.rigging.util import misc as misc\nimportlib.reload(misc)\nmisc.creJntAtVertex()" , ann = "Create Joint at selected vertex" )
 
-	# CometJointOrient
+	#... CometJointOrient
 	
 	FUNCTION_PATH = "/mel/cometTools/cometJointOrient.mel"
 	mel.eval('source "%s%s"' %(PROJECT_PATH,FUNCTION_PATH))
 	mc.menuItem(label="cometJointOrient",	command = "mel.eval('cometJointOrient()')",ann = "Comet Set JointOrient" )
 
-	# Create joint along curve
-	mc.menuItem(label = "Create Joint Along Curve", command = "from function.rigging.skeleton import createJointAlongCurve as cjac\nimportlib.reload(cjac)\ncjac.run()" , ann = "Create Joint at selected vertex" )
+	#... Select Body Joint
+	mc.menuItem(label = "Select Body Joint", command = "from function.rigging.skeleton import jointTools as jntTools\nimportlib.reload(jntTools)\njntTools.select_body_jnt()", ann = "Selected the body joint that exists in scene." )
+
 
 	mc.setParent( '..', menu=True )
 

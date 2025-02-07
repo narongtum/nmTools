@@ -170,6 +170,60 @@ NOSE_SIDE_DICT = { 	'facialRegion'	:	'nose',
 
 
 
+
+
+
+
+#.... make sculpting first and use this tool to extract delta of deformation
+#... from gvok
+#... https://forums.autodesk.com/t5/maya-forum/blendshape-mesh-extraction-extracting-deltas-as-geometry-how/td-p/7118456
+
+def extractBlendShapeTargetGeo(blendShape):
+	if not mc.objExists(blendShape) or mc.nodeType(blendShape) != 'blendShape':
+		mc.error('The blend shape "{}" does not exist or is not a blendShape node.'.format(blendShape))
+
+	target_data = mc.aliasAttr(blendShape, q=True)
+	if not target_data:
+		mc.error('No target found in blend shape "{}".'.format(blendShape))
+
+	indices = [int(re.findall(r'\[([\d]+)\]', i)[0]) for i in target_data[1::2]]
+
+	grp = mc.group(empty=True, name='{}__targets'.format(blendShape))
+	targets = []
+
+	for i in indices:
+		new_mesh = mc.sculptTarget(blendShape, e=True, regenerate=True, target=i)
+		
+		if not new_mesh:
+			mc.warning('Failed to generate sculpt target for index {}'.format(i))
+			continue
+		
+		dupe_mesh = mc.duplicate(new_mesh[0])
+		mc.delete(new_mesh)
+
+		new_name = mc.rename(dupe_mesh[0], '{}_target_{}'.format(blendShape, i))
+		mc.parent(new_name, grp)
+		targets.append(new_name)
+
+	return grp, targets
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def createBshToPly( bsh_dict, side):
 	'''
 	Duplicate base geometry for each facial in dict in the same collum

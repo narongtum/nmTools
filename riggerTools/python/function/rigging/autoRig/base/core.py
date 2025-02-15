@@ -340,6 +340,8 @@ joint = core.Joint('nameJnt')
 multMat = core.Dag('something')
 multMat = core.MultMatrixWithValue('something')
 
+#... Example 34: Create controller and zero grp
+curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 '''
 
 

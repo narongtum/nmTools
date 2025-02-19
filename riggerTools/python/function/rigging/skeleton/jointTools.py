@@ -35,9 +35,9 @@ reloader(misc)
 
 #... select endJnt and rename suffix and change color 
 
-def change_replace_endJnt(search, search):
+def change_replace_endJnt(search, replace):
 	selected_joints = mc.ls(sl=True)
-	select_tip_joint(selected_joints, search, search)
+	select_tip_joint(selected_joints, search, replace)
 
 
 

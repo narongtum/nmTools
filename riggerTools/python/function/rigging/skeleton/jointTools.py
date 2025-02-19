@@ -33,6 +33,13 @@ reloader(misc)
 
 
 
+#... select endJnt and rename suffix and change color 
+
+def change_replace_endJnt(search, search):
+	selected_joints = mc.ls(sl=True)
+	select_tip_joint(selected_joints, search, search)
+
+
 
 def select_body_jnt():
 	nodeDict = mnd.standardJnt_list

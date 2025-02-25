@@ -318,7 +318,9 @@ def runMenu():
 	#... Select Body Joint
 	mc.menuItem(label = "Select Body Joint", command = "from function.rigging.skeleton import jointTools as jntTools\nimportlib.reload(jntTools)\njntTools.select_body_jnt()", ann = "Selected the body joint that exists in scene." )
 
-
+	#... Create joint along curve
+	mc.menuItem(label = "Create Joint Along Curve", command = "from function.rigging.skeleton import createJointAlongCurve as cjac\nimportlib.reload(cjac)\ncjac.run()" , ann = "Create Joint at selected vertex" )
+	
 	mc.setParent( '..', menu=True )
 
 

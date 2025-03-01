@@ -348,7 +348,7 @@ curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 
 
 
-
+#... Latest here using this function instead another 
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	import re

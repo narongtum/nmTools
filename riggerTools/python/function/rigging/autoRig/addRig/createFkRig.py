@@ -4,6 +4,7 @@ reload(createFkRig)
 
 
 
+#... example
 
 createFkRig.fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
@@ -16,6 +17,17 @@ createFkRig.fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 
 
 
+createFkRig.fkMulChild(	nameSpace = ''  ,  name = 'skirt' , parentTo = 'skirtCtrl_grp'  ,
+						tmpJnt = (  'skirtOutRoot_tmpJnt' , ['skirtOutA01_tmpJnt', 'skirtOutA02_tmpJnt', 'skirtOutA03_tmpJnt'] , 
+															['skirtOutD01_tmpJnt', 'skirtOutD02_tmpJnt', 'skirtOutD03_tmpJnt'], 
+															['skirtOutB01_tmpJnt', 'skirtOutB02_tmpJnt', 'skirtOutB03_tmpJnt'],
+															['skirtOutE01_tmpJnt', 'skirtOutE02_tmpJnt', 'skirtOutE03_tmpJnt'],
+															['skirtOutC01_tmpJnt', 'skirtOutC02_tmpJnt', 'skirtOutC03_tmpJnt']	)		,
+						charScale = 1	, 
+						priorJnt = 'skirtOutRoot_bJnt' 							,
+						side = '' ,ctrlShape = 'circle_ctrlShape' 	 	, 
+						color = 'red' , 
+						curlCtrl = True	)
 
 
 

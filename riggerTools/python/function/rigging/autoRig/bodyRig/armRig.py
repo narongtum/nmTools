@@ -147,9 +147,10 @@ def armRigExt(
 
 		print('#### End of %s%s Rig ####' %( region , side ))
 		print ('\n\n\n\n\n')
-
-		return stickNam, hand_bJnt, priorMeta
-
+		
+		#... disable priorMeta it cause error
+		# return stickNam, hand_bJnt, priorMeta 
+		return stickNam, hand_bJnt
 
 
 

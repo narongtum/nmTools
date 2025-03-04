@@ -348,7 +348,7 @@ curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 
 
 
-#... Latest here using this function instead another 
+#... Latest here using this function only 
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	import re
@@ -379,7 +379,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 			side = None
 
 		nameNoSide = base_name[2:]
-		nameNoSide = re.sub(r'\d+$', '', nameNoSide)
+		# nameNoSide = re.sub(r'\d+$', '', nameNoSide)
 
 
 

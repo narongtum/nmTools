@@ -103,7 +103,7 @@ def _is_parent(parent, is_child):
 
 
 
-
+#... fk rig for all purpose fk
 def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					jntLst = ('ear01LFT_bJnt','ear02LFT_bJnt', 'ear03LFT_bJnt'),
 					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
@@ -113,23 +113,26 @@ def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					curlCtrlShape = 'stick_ctrlShape'):
 
 	#... find base name
-	name = misc.check_name_style(name = jntLst[0])[0]
+	# name = misc.check_name_style(name = jntLst[0])[0]
 
-	nameNoSide = misc.check_name_style(name = jntLst[0])[4]
+	name = core.check_name_style(name = jntLst[0])[0]
+
+	nameNoSide = core.check_name_style(name = jntLst[0])[4]
 
 
 	old_name_Style = None
 
 	#... Check name style
-	naming_style = misc.check_name_style(name = jntLst[0])
+	naming_style = core.check_name_style(name = jntLst[0])
 
 	if naming_style[3] == True:
-		print('This is LFT, RGT naming style.')
+		print('This is old style LFT, RGT naming.')
 		old_name_Style = True
 		part = nameSpace + nameNoSide + side
 	else:
 		old_name_Style = False
-		part = f'{side}_{nameSpace}{nameNoSide}' 
+		# part = f'{side}_{nameSpace}{nameNoSide}' 
+		part = f'{nameSpace}{name}'
 
 
 	rigGrp = core.Null(f'{part}Rig_grp')
@@ -147,7 +150,7 @@ def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 
 	#... For loop in tmpJnt 
 	for  num  in range( 0 , ( len(jntLst)  ) ):
-		base_name = misc.check_name_style(name = jntLst[num])[0]
+		base_name = core.check_name_style(name = jntLst[num])[0]
 
 		ctrl = core.Dag(f'{base_name}_ctrl')
 		ctrl.nmCreateController( ctrlShape )
@@ -304,13 +307,11 @@ def fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 			# misc.parentMatrix( gmbls[num].name, bJnts[num].name, mo = True, translate = True, rotate = True, scale = True)
 
 
-
-
 	else:
 
 		for  num  in range( 0 , ( len( jntLst )  ) ):
 			parCons = core.parentConstraint( gmbls[num] , bJnts[num]  )
-			base_name = misc.check_name_style(name = jntLst[num])[0]
+			base_name = core.check_name_style(name = jntLst[num])[0]
 			parCons.name = f'{base_name}_psCons'
 			print ('\nPARENT IT DONE...')
 

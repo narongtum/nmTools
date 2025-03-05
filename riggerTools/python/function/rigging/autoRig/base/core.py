@@ -517,22 +517,26 @@ def createGimbal( obj = '' ):
 
 	# reduce size to 75 percent
 	gmblCtrl.editCtrlShape(axis =   0.75 )
-	#... split name with underscore
-	spName = ctrl.splitName()
 
+	# #... split name with underscore
+	# spName = ctrl.splitName()
 
-	# Check naming condition
-	if len(spName) == 2:
-		gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
-	elif len(spName) == 3:
-		gmblCtrl.rename( spName[0] + '_' + spName[1] +'_gmb' + 'Ctrl' )
-	elif len(spName) == 4:
-		gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] +'_gmb' + 'Ctrl' )
-	elif len(spName) == 5:
-		gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] + spName[3] +'_gmb' + 'Ctrl' )
-	else:
-		mc.warning('\nelement is too much')
-		gmblCtrl.rename( ctrl.name +'_gmbCtrl' )
+	spName = check_name_style(ctrl.name)
+	gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
+	
+
+	# # Check naming condition
+	# if len(spName) == 2:
+	# 	gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
+	# elif len(spName) == 3:
+	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] +'_gmb' + 'Ctrl' )
+	# elif len(spName) == 4:
+	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] +'_gmb' + 'Ctrl' )
+	# elif len(spName) == 5:
+	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] + spName[3] +'_gmb' + 'Ctrl' )
+	# else:
+	# 	mc.warning('\nelement is too much')
+	# 	gmblCtrl.rename( ctrl.name +'_gmbCtrl' )
 
 
 

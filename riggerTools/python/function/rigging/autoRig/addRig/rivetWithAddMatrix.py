@@ -54,8 +54,8 @@ def rivetMatrix( 	skinCluster = 'SK_DM011_skc',
 
 
 	#.... name for main function
-	targetName = misc.check_name_style(target)[0]
-
+	base = misc.check_name_style(target)[0]
+	targetName = base + 'Rivet'
 
 
 

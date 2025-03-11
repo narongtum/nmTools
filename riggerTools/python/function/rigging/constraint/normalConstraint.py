@@ -19,8 +19,8 @@ reload(misc)
 from function.rigging.autoRig.base import core
 reload(core)
 
-
-
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
 
 
 def check_obj_exists(obj_name):
@@ -29,6 +29,33 @@ def check_obj_exists(obj_name):
 		return False
 	else:
 		return True
+
+
+
+
+
+
+
+
+
+def constraintSuffix( child = 'bJnt', parent = 'pxyJnt' ):
+	nodeDict = mnd.NODE_short_dict
+	psC_suffix = nodeDict.get('parentConstraint', 'Unknown')
+	scC_suffix = nodeDict.get('scaleConstraint', 'Unknown')
+	naming = '*_' + parent
+	proxyList = mc.ls( naming )
+	
+	for each in proxyList:
+		if check_obj_exists(each):
+			baseName = core.check_name_style(each)[0]
+			childNam = baseName + '_' + child
+			mc.parentConstraint( each , childNam, maintainOffset = True, name = f'{baseName}_{psC_suffix}')
+			mc.scaleConstraint( each , childNam, maintainOffset = True, name = f'{baseName}_{scC_suffix}')
+		else:
+			pass
+		print('DONE')
+
+
 
 
 

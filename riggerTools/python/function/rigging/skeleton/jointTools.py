@@ -63,9 +63,12 @@ def disable_compensate():
 	print('Done')
 
 
+'''
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
 
-
-
+select_tip_joint([selected_joints], '_bJnt', '_endJnt')
+'''
 def select_tip_joint(selected_joints, search, replace): # using list
 	# Get the selected joint(s)
 	# selected_joints = mc.ls(sl=True, type='joint')

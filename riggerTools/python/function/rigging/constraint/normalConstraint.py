@@ -147,13 +147,14 @@ def parent_localWorld_ext(zro_grp='L_skirt_L03_A01Zro_grp',  # Zero out group
 
 
 
-def parent_localWorld(zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
+def parent_localWorld(	zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
 						ctrl='L_pinStrap02_ctrl',
 						local_obj='L_pinStrap02_gmblCtrl',  # Parent object to assign in local space
 						world_obj='ctrl_grp',  # Parent object to assign in world space
 						base_grp='L_pinStrap02Offset_grp',  # Offset group
 						body_part='L_pinStrap02',
-						attr_occur='L_pinStrap02_ctrlShape'):  # Attribute occurrence object
+						attr_occur='L_pinStrap02_ctrlShape',
+						noTouch = 'noTouch_grp'):  # Attribute occurrence object
 	
 	def check_obj_exists(obj_name):
 		"""Check if an object exists in the Maya scene."""
@@ -173,7 +174,7 @@ def parent_localWorld(zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
 	
 	try:
 		# Create a null group under zero group
-		local_world_grp = core.Null(body_part + '_LocalWorld_grp')
+		local_world_grp = core.Null(body_part + '_localWorld_grp')
 		local_world_grp.snap(base_grp)
 		local_world_grp.parent(zro_grp)
 
@@ -183,13 +184,18 @@ def parent_localWorld(zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
 
 		# Create and snap local and world groups under zero group
 		loc_grp = core.Null(body_part + '_local_grp')
+		locZro_grp = core.Null(body_part + '_localZro_grp')
 		wor_grp = core.Null(body_part + '_world_grp')
 		loc_grp.snap(base_grp_dag)
+		locZro_grp.snap(base_grp_dag)
 		wor_grp.snap(base_grp)
 		
 		# Parent local and world groups correctly
-		loc_grp.parent(local_obj)
-		wor_grp.parent(world_obj)  # Fixed potential cycle issue
+		locZro_grp.parent(local_obj)
+		loc_grp.parent(locZro_grp)
+		# wor_grp.parent(world_obj)  #... Fixed potential cycle issue
+		wor_grp.parent(noTouch)#... parent here
+		
 
 		# Create and apply constraints
 		world_grp_cons = core.orientConstraint(world_obj, wor_grp, mo=True)
@@ -206,10 +212,16 @@ def parent_localWorld(zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
 		attr = 'localWorld'
 		# controller_shape.addAttribute(attr, at='double', min=0, max=1, k=True)
 		controller_shape.addAttribute(ln=attr, k=True, min=0, max=1)
-		# Connect attributes
-		controller_shape.attr(attr) >> base_grp_base_cons.attr('w0')
+
+		#... Connect attributes
+		controller_shape.attr(attr) >> base_grp_base_cons.attr('w1')
 		controller_shape.attr(attr) >> reverse_node_rev.attr('inputX')
-		reverse_node_rev.attr('outputX') >> world_grp_cons.attr('w1')
+		reverse_node_rev.attr('outputX') >> base_grp_base_cons.attr('w0')
+
+		# reverse_node_rev.attr('outputX') >> world_grp_cons.attr('w1')
+
+
+
 
 		# Clear selection
 		core.clearSel()

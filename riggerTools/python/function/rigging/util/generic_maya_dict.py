@@ -22,7 +22,7 @@ nodeDict = mnd.NODE_dict
 for each in nodeDict:
 	if each["longName"] == 'joint':
 		node_exp = each["shortName"]
-nodeDict = mnd.NODE_dict['eulerToQuat']
+
 
 
 
@@ -43,6 +43,72 @@ mc.select(nodeDict)
 
 
 alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
+
+
+NODE_short_dict = {
+    'nurbsSurface': 'nrb',
+    'nurbsCurve': 'ctrl',
+    'condition': 'cnd',
+    'blendColors': 'blc',
+    'distanceBetween': 'dtw',
+    'expression': 'exp',
+    'file': 'file',
+    'lambert': 'lambert',
+    'place2dTexture': 'place2d',
+    'plusMinusAverage': 'pma',
+    'skinCluster': 'skc',
+    'multiplyDivide': 'mdv',
+    'reverse': 'rev',
+    'mesh': 'ply',
+    'cluster': 'clus',
+    'parentConstraint': 'parCons',
+    'scaleConstraint': 'scaleCons',
+    'orientConstraint': 'orienCons',
+    'pointConstraint': 'poinCons',
+    'ikHandle': 'ikh',
+    'ikEffector': 'ike',
+    'poleVectorConstraint': 'poleCons',
+    'joint': 'jnt',
+    'group': 'grp',
+    'locator': 'loc',
+    'clamp': 'cmp',
+    'pointOnCurveInfo': 'poci',
+    'decomposeMatrix': 'deComp',
+    'animCurveU': 'animCrv',
+    'multDoubleLinear': 'mdl',
+    'phong': 'phong',
+    'shadingEngine': 'sg',
+    'motionPath': 'mp',
+    'cMuscleSmartConstraint': 'musleCons',
+    'addDoubleLinear': 'adl',
+    'aimConstraint': 'aimCons',
+    'animCurveUU': 'animUU',
+    'curveInfo': 'crvInfo',
+    'follicle': 'flc',
+    'remapValue': 'remap',
+    'composeMatrix': 'composeMatrix',
+    'vectorProduct': 'vecProd',
+    'fourByFourMatrix': 'fBFMat',
+    'multMatrix': 'multMatrix',
+    'aimMatrix': 'aimMatrix',
+    'wtAddMatrix': 'wtAddMat',
+    'eulerToQuat': 'eulToQuat',
+    'quatInvert': 'quatInv',
+    'quatProd': 'quatProd',
+    'quatToEuler': 'quatToEul',
+    'blendMatrix': 'blendMat',
+    'blendShape': 'bsh',
+    'network': 'meta',
+    'setRange': 'setRange'
+}
+
+#... Example usage
+# print(mnd.NODE_short_dict.get('parentConstraint', 'Unknown'))  # Output: parCons
+
+
+
+
+
 
 
 

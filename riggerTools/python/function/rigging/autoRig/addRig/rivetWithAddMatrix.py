@@ -43,7 +43,7 @@ import maya.cmds as mc
 
 
 
-
+#... give skin cluster and vtx number
 
 def rivetMatrix( 	skinCluster = 'SK_DM011_skc', 
 					vtx = 'SK_DM011.vtx[1507]'	, 

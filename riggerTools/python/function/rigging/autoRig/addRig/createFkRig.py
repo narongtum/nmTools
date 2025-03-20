@@ -82,7 +82,13 @@ class createFKRigLogger(logger.MayaLogger):
 	LOGGER_NAME = "FKRig"
 
 
-
+def make_list(letter='A', leng=3, pattern='{prefix}hair{letter}{index:02d}_bJnt', prefix=''):
+	jnt_list = []
+	for each in range(0, leng):
+		name = pattern.format(prefix=prefix, letter=letter, index=each+1)
+		jnt_list.append(name)
+	return jnt_list
+	
 
 #... fk rig for all purpose fk change curl policy
 def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',

@@ -108,7 +108,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		mc.error('Need locator to pinpoint location.')
 	else:
 		#... check universal naming style
-		got_naming = misc.check_name_style(name = source_loc[0])
+		got_naming = core.check_name_style(name = source_loc[0])
 		
 	
 
@@ -131,7 +131,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		pm.warning('Invalid surface object specified.')
 		#return False
 
-
+	
 
 	locator_list=[]
 
@@ -143,10 +143,11 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		each = source_loc[num]
 
 		#... warning please alway using index[0]
-		base_name = misc.check_name_style(name = source_loc[num])[0]
-
+		base_name = core.check_name_style(name = source_loc[num])[0]
+		# mc.error(base_name)
 		#...change name style
 		pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = '{}_poiInfo'.format(base_name) )
+
 		# pointOnSurface = pm.createNode( 'pointOnSurfaceInfo', name = '{}{:02d}{}_poiInfo'.format(region,num+1,side) )
 		
 		oNurbs.getShape().worldSpace.connect(pointOnSurface.inputSurface) # conntet from oNurbs
@@ -207,7 +208,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		# assign 'white color'
 		result.setAttr('overrideEnabled', 1)
 		result.setAttr('overrideColor', 16)
-
+		# mc.error('Break183')
 
 
 
@@ -219,7 +220,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		mtx.output.connect(outMatrix.inputMatrix)
 		outMatrix.outputTranslate.connect(result.getTransform().translate)
 		outMatrix.outputRotate.connect(result.getTransform().rotate)
-
+		
 
 		'''
 		Thanks to kiaran at https://forums.cgsociety.org/t/rotations-by-surface-normal/1228039/4
@@ -257,6 +258,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		mtx.in33.set(1)
 
 		locator_list.append(pName)
+
 		# locator_list.reverse()
 
 		# pm.delete(sourceObj)
@@ -264,11 +266,14 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		#... [ Update if use joint]
 		#... create joint and parent under locator
 		
+		PinLogger.debug('Line: 269')
 
 		if creJnt:
-			
+
 			child_joint = core.Joint(scaleCompensate=False) #... not work why?
+			
 			child_joint.name = '{}_{}'.format(base_name, suffixJnt)
+
 			child_joint.maSnap( pName )
 			#... no need to parent
 			# child_joint.parent( pName )

@@ -1,6 +1,12 @@
 import maya.cmds as mc
+
+from function.framework.reloadWrapper import reloadWrapper as reload
+
 from function.rigging.util import misc as misc
+reload(misc)
+
 from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
 
 #... Determine namespace and reference string
 
@@ -56,6 +62,24 @@ def resetAllController( reference = False ):
 					print(f"Reset {category}: {combined_name} ...\n")
 				else:
 					print(f'{combined_name} is not found. Please check.')
+
+	#... reset controller for each curl finger 
+	each_behavior_dict = mnd.eachFinger_behavior_dict
+
+	for category, data in each_behavior_dict.items():
+		for stick in data['stick_name']:
+			for side in data['side']:
+				for behavior in data['behavior_name']:
+					stick_with_side = stick.replace('LFT', side)
+					combined_name = f'{nameSpace}{stick_with_side}.{behavior}'
+					# mc.error(combined_name)
+
+					if mc.objExists(combined_name):
+						mc.setAttr(combined_name, 0)
+						print(f"Reset {category}: {combined_name} ...\n")
+					else:
+						print(f'{combined_name} is not found. Please check.')
+				
 
 	# Clean up
 	mc.select(cl=True)

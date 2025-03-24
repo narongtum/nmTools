@@ -67,15 +67,24 @@ if ANIMLIB_PATH not in sys.path:
 
 
 
-# load plugins
-mc.loadPlugin( PLUGINS_PATH + "\\AnimSchoolPicker.mll", quiet = True)
+#... load plugins
+# mc.loadPlugin( PLUGINS_PATH + "\\AnimSchoolPicker.mll", quiet = True)
 
 def reloadMenu():
 	if pm.menu( 'MayaWindow|%s' %PROJECT_NAME , exists = True):
 		mc.deleteUI('MayaWindow|%s' %PROJECT_NAME )
 
 
-# runAxion menu
+#... Add DreamWallPicker
+DW_PATH = PROJECT_PATH + r'/python/function/animation/dwpicker-1.0.2-2025.02.11'
+
+def launch_dwpicker(*args):
+	if DW_PATH not in sys.path:
+		sys.path.insert(0, DW_PATH)
+	import dwpicker
+	dwpicker.show()
+
+#... runmenu
 def runMenu():
 	try:
 		# Delete exists menu
@@ -218,7 +227,10 @@ def runMenu():
 	mc.menuItem( label = "Studio Library", 			command = "import studiolibrary\nstudiolibrary.main()" , ann = "Run animation Library" )
 
 	# AnimSchoolPicker
-	mc.menuItem( label = "AnimSchool Picker", 		command = "mel.eval('AnimSchoolPicker()')" , ann = "Run AnimSchool Picker" )
+	# mc.menuItem( label = "AnimSchool Picker", 		command = "mel.eval('AnimSchoolPicker()')" , ann = "Run AnimSchool Picker" )
+
+	#... DreamWall Picker
+	mc.menuItem(label = "DreamWall Picker", 		command = launch_dwpicker, ann="Launch DreamWall Picker")
 
 	# onionSkinRenderer
 	mc.menuItem( label = "OnionSkinRenderer", 		command = "from function.animation.onionSkinRenderer import onionSkinRendererWindow as onionWindow\nimportlib.reload(onionWindow)\nonionWindow.openOnionSkinRenderer()" , ann = "onionSkinRenderer" )

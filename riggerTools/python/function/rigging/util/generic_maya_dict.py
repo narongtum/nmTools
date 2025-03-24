@@ -795,6 +795,13 @@ handle_behavior_dict = {
 								}
 
 
+eachFinger_behavior_dict = {
+						'finger':{
+									'stick_name':['thumblocalLFT_ctrl','indexlocalLFT_ctrl','middlelocalLFT_ctrl','ringlocalLFT_ctrl','pinkylocalLFT_ctrl'],
+									'behavior_name':['roll','stretch'],
+									'side':['LFT','RGT']			}
+						}
+
 
 
 def askColor(side):

@@ -288,15 +288,18 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-		# Connect the on_treeview_clicked method to the clicked signal
+		#... Connect the on_treeview_clicked method to the clicked signal
 		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
 
-		# Connect The 'on_department_clicked' method to the clicked signal
+		#... Connect The 'on_department_clicked' method to the clicked signal
 		self.asset_department_listWidget.itemClicked.connect(self.on_department_clicked)
 
 		#... Connect entity scene to treeview
 		self.populate_SCENE_treeView()
 		self.dir_scene_TREEVIEW.clicked.connect(self.on_treeview_SCENE_clicked)
+
+		#... Connect entity 
+		self.asset_global_listWidget.itemClicked.connect(self.on_glogal_commit_clicked)
 
 
 		# # Connect the on_version_clicked method to the left clicked signal
@@ -354,13 +357,21 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		file_menu = self.menuFile
 		toos_menu = self.menuTools
 
+		#... inside 'File' menubar
 		#... Create 'thumbnail' action and add it to the 'File' menu
 		create_thumbnail_action = FileManagerActions.createThumbnailAction(self, self.create_thumbnail)
 		file_menu.addAction(create_thumbnail_action)
 
+		replaceRef_action = FileManagerActions.createReplaceRefAction(self, self.replaceSelectedReference)
+		file_menu.addAction(replaceRef_action)
+
+		#... inside 'Tools' menubar
 		# Create 'Print A' action and add it to the 'File' menu
 		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
-		toos_menu.addAction(print_b_action)	
+		toos_menu.addAction(print_b_action)
+
+
+
 
 		save_ctrl_shape_action = FileManagerActions.saveCtrlShapeAction(self, self.save_ctrl_shape)
 		toos_menu.addAction(save_ctrl_shape_action)
@@ -380,6 +391,59 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def printB(self):
 		print("Print B")
+
+	def replaceSelectedReference(self):
+		#... Step
+		# 1. user want to replace reference in current scene
+		# 2. select global commit in UI
+		# 3. select some of ctrl in scene
+		# 4. run method replaceSelectedReference to switch
+
+
+		#... Get what user selected asset from global widget
+		try:
+			asset = self.asset_global_listWidget.currentItem().text()
+			# asset = self.asset_global_listWidget.currentItem()
+		except:
+			QMessageBox.warning(self, "No Selection", "Please select a global commit file from the UI.")
+			return False  # Terminate early if no selection
+
+
+		#... Get what user selected from treeview widget
+		index = self.asset_dir_TREEVIEW.currentIndex()
+		file_path = self.model.filePath(index)
+		new_asset_path = f'{file_path}/commit/{asset}'
+
+		#...select run
+		sel = mc.ls(sl=True)[0]
+		refNodes = []
+		refNode = mc.referenceQuery(sel, isNodeReferenced=True)
+		if refNode:
+			topRefNode = mc.referenceQuery(sel, referenceNode=True, topReference=True)
+			if not topRefNode in refNodes:
+				refNodes.append(topRefNode)
+
+		reply = QMessageBox.question(
+												self ,
+												'Confirm' ,
+												f'Selected reference object will be replaced with {asset}. Do you want to replace?' ,
+												QMessageBox.Yes | QMessageBox.No 
+											)
+		if reply == QMessageBox.Yes:
+			for refNode in refNodes:
+				mc.file(new_asset_path, loadReference=refNode, type='mayaAscii', options='v=0')
+			return True
+		
+		elif reply == QMessageBox.No:
+			return False
+
+
+
+
+
+
+		FileManagerLog.debug(f'\t1.Get what asset that user choose: {global_path}')
+		FileManagerLog.debug('\t2.Replace reference. with current selected object in scene.')
 
 	# def filter_model(self, text):
 	# 	self.proxyModel.pattern = text
@@ -1885,7 +1949,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Get the file name and path from the model
 		file_path = self.model.filePath(index)
-		FileManagerLog.debug('This is file path {0}'.format(file_path))
+		FileManagerLog.debug('This is file path: {0}'.format(file_path))
 
 
 
@@ -2051,6 +2115,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			current_version_clicked = os.path.join(asset_path, 'Version', selected_task_text)
 			current_version_clicked = self.handle_selected_path(current_version_clicked)
 
+	def on_glogal_commit_clicked(self):
+		FileManagerLog.debug(": {0}".format('That maybe selected globel commit widget.') )
 
 
 	def load_local_commit(self, folder_path):
@@ -2800,7 +2866,7 @@ class FileManagerActions:
 
 	@staticmethod
 	def createPrintBAction(parent, callback):
-		print_b_action = QtWidgets.QAction("Rigger Tools", parent)
+		print_b_action = QtWidgets.QAction("Print B", parent)
 		print_b_action.triggered.connect(callback)
 		return print_b_action
 
@@ -2828,7 +2894,11 @@ class FileManagerActions:
 		load_skinWeight_action.triggered.connect(callback)
 		return load_skinWeight_action
 
-
+	@staticmethod
+	def createReplaceRefAction(parent, callback):
+		createReplaceRef_action = QtWidgets.QAction("Replace Reference", parent)
+		createReplaceRef_action.triggered.connect(callback)
+		return createReplaceRef_action
 
 
 '''

@@ -3,13 +3,13 @@ reload(core)
 
 
 #... Define the necessary variables
-zro_grp = 'rope01LFTZro_grp'  # Zero out group
-ctrl = 'rope01LFT_ctrl'
-local_obj = 'knot_ctrl'  # Parent object to assign in local space
+zro_grp = 'spine03Zro_grp'  # Zero out group
+ctrl = 'spine03_ctrl'
+local_obj = 'spine02_bJnt'  # Parent object to assign in local space
 world_obj = 'ctrl_grp'  # Parent object to assign in world space
-base_grp = 'rope01LFTOffset_grp'  # Offset group
-body_part = 'rope01LFT'
-attr_occur = 'rope01LFT_ctrlShape'
+base_grp = 'spine03Offset_grp'  # Offset group
+body_part = 'spine03'
+attr_occur = 'spine03_ctrlShape'
 still_grp = 'noTouch_grp'
 
 

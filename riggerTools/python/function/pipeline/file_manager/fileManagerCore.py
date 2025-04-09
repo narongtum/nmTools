@@ -17,7 +17,7 @@ import subprocess
 import sys
 from function.framework.reloadWrapper import reloadWrapper as reload
 
-#...  ogging system 
+#...  logging system 
 import logging
 from function.pipeline import logger 
 reload(logger)
@@ -125,7 +125,7 @@ else:
 	DRIVES = [		"D:\\",
 					"E:\\"		]
 
-	PROJECT_NAME = ['P_sample','P_jobby','P_Regulus']
+	PROJECT_NAME = ['P_sample','P_Regulus']
 
 	DICTIONARY_TEMPLATE = {		
 
@@ -436,11 +436,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		
 		elif reply == QMessageBox.No:
 			return False
-
-
-
-
-
 
 		FileManagerLog.debug(f'\t1.Get what asset that user choose: {global_path}')
 		FileManagerLog.debug('\t2.Replace reference. with current selected object in scene.')
@@ -2896,7 +2891,7 @@ class FileManagerActions:
 
 	@staticmethod
 	def createReplaceRefAction(parent, callback):
-		createReplaceRef_action = QtWidgets.QAction("Replace Reference", parent)
+		createReplaceRef_action = QtWidgets.QAction("Replace Selected Reference", parent)
 		createReplaceRef_action.triggered.connect(callback)
 		return createReplaceRef_action
 

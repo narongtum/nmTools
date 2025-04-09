@@ -12,6 +12,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
+PROJECT = ''
+VERSION = '0.9.023'
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -450,7 +452,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"nmFileManager 0.8", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"nmFileManager 0.9.023", None))
         self.drive_label.setText(QCoreApplication.translate("MainWindow", u"Drive", None))
         self.project_label.setText(QCoreApplication.translate("MainWindow", u"Project", None))
         self.asset_filter_text_label.setText(QCoreApplication.translate("MainWindow", u"Filter", None))

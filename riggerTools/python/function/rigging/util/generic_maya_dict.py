@@ -103,7 +103,7 @@ NODE_short_dict = {
 }
 
 #... Example usage
-# print(mnd.NODE_short_dict.get('parentConstraint', 'Unknown'))  # Output: parCons
+# ext = mnd.NODE_short_dict.get('parentConstraint', 'Unknown') # Output: parCons
 
 
 

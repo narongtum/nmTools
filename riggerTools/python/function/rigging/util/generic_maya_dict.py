@@ -36,7 +36,8 @@ reload(mnd)
 
 nodeDict = mnd.standardJnt_list
 
-mc.select(nodeDict)
+for each in nodeDict:
+	mc.select(each, add=True)
 
 		
 '''
@@ -104,6 +105,7 @@ NODE_short_dict = {
 
 #... Example usage
 # ext = mnd.NODE_short_dict.get('parentConstraint', 'Unknown') # Output: parCons
+
 
 
 

@@ -1,15 +1,16 @@
 #... Splite weight with curve to mesh
 #... Request mesh, curve, joint
 
-from maya import cmds
+import maya.cmds as mc
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
 
+from function.rigging.de_boor import hh_de_boor_core as core
 import importlib
 importlib.reload(core)
 
-from function.rigging.de_boor import hh_de_boor_core as core
-reload(core)
+
+
 
 OPEN = 'open'
 PERIODIC = 'periodic'
@@ -89,10 +90,9 @@ def split_with_curve(verts, jnts, crv, d=None, tol=0.000001):
 '''
 
 
-from function.rigging.de_boor import hh_de_boor_core as core
-reload(core)
-
-
+from function.rigging.de_boor import hh_de_boor_to_mesh
+reload(hh_de_boor_to_mesh)
+hh_de_boor_to_mesh.split_with_curve(msh, jnts, crv)
 
 
 
@@ -117,19 +117,6 @@ split_with_curve(msh, jnts, crv)
 
 
 # ----- example 2, curve form = open
-mc.file(new=True, f=True)
-
-msh, msh_con = mc.polyCube()
-for attr, val in zip(('hbl', 'h', 'sh'), (-1, 3, 30)):
-	mc.setAttr(f'{msh_con}.{attr}', val)
-crv = mc.curve(p=[(0, 0, 0), (0, 3, 0)], d=1, k=(0, 1))
-jnts = []
-for p in (0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 3, 0):
-	mc.select(cl=True)
-	jnt = mc.joint(p=p)
-	jnts.append(jnt)
-
-
 
 msh = 'upper'
 

@@ -1,3 +1,10 @@
+"""
+from function.rigging.de_boor import hh_de_boor_to_curve
+reload(hh_de_boor_to_curve)
+
+"""
+
+
 #... distribute de boor weight value to curve
 
 from maya import cmds as mc
@@ -12,6 +19,11 @@ PERIODIC = 'periodic'
 INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
 
 def split_curve_cvs_with_de_boor_v2(jnts, crv, d=None, tol=0.000001):
+
+	print(mc.objExists(crv))
+
+	for j in jnts:
+		print(j, mc.objExists(j))
 	
 	orginal_sel = om.MGlobal.getActiveSelectionList()
 
@@ -100,25 +112,11 @@ def list_joints_from_skincluster(skincluster):
 	return jnts
 
 
-#... usege
-
-# Your joints and curve
-
-jnts = list_joints_from_skincluster('lip_upper_L01_skc')
 
 
-crv = 'lip_upper_L01_crv'  
+# #... usege sample
 
+# jnts = list_joints_from_skincluster('lip_upper_L01_skc')
+# crv = 'lip_upper_L01_crv'  
+# split_curve_cvs_with_de_boor_v2(jnts, crv)
 
-print(mc.objExists(crv))
-for j in jnts:
-	print(j, mc.objExists(j))
-
-
-
-# Call the function
-split_curve_cvs_with_de_boor_v2(jnts, crv)
-
-
-# RuntimeError: (kInvalidParameter): Object does not exist  
-# but jnts and crv has exist help

@@ -10,6 +10,10 @@
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
+
+
+mnd.select_body_jnt()
+
 '''
 
 
@@ -196,6 +200,15 @@ FINGER_dict = {		'fingerName':		('thumb','index','middle','ring','pinky'),
 FOOT_dict = {	
 					'footbehavior':	('ballRoll','toeRoll','heelTwist','toeTwist','footRock','ballRise')
 					 }
+
+
+
+def select_body_jnt():
+	for each in standardJnt_list:
+		if mc.objExists(each):
+			mc.select(each, add = True)
+	print('DONE')
+
 
 
 

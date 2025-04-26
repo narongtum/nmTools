@@ -1261,7 +1261,18 @@ class BlendColors ( Node ):
 	'''  create BlendColors object  '''
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode('blendColors', name = name)  )
-		
+	
+
+
+
+class BlendShape( Node ):
+	'''  create BlendShape   '''
+	def __init__( self , *args , **kwargs):
+		Node.__init__( self , mc.blendShape(*args , **kwargs)[0] )
+		self.suffix
+
+# blendshape_node = core.BlendShape('pSphere2','pSphere1','pSphere3',name = 'aaaaahiahi')
+# blendshape_node.attr('pSphere2').value = 0
 
 
 

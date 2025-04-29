@@ -250,7 +250,9 @@ def createController():
 
 def createZroGrpWithFlexName(selected):
 
-	selected = mc.ls( sl = True )
+	# selected = mc.ls( sl = True )
+	zro_grp = []
+	offset_grp = []
 
 	for each in selected:
 
@@ -270,6 +272,11 @@ def createZroGrpWithFlexName(selected):
 
 		mc.parent( each , offsetGrpName )
 		mc.parent( offsetGrpName , zroGrpName )
+
+		zro_grp.append(zroGrpName)
+		offset_grp.append(offsetGrpName)
+
+	return zro_grp, offset_grp
 
 
 

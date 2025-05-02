@@ -350,7 +350,7 @@ def split_curve_cvs_with_de_boor_v4(joints, curve, degree=3, falloff_mode='ramp_
 
 # jnts = list_joints_from_skincluster('lip_upper_L01_skc')
 # crv = 'lip_upper_L01_crv'  
-# split_curve_cvs_with_de_boor_v2(jnts, crv)
+# split_curve_cvs_with_de_boor_v4(jnts, crv,degree=3)
 
 
 # msh = 'upper02'

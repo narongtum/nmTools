@@ -358,7 +358,7 @@ pCount=8
 
 
 #... use 1 for sample
-degree=1
+degree=3
 
 pCount = pCount or count * 4
 cRadius = 1.0

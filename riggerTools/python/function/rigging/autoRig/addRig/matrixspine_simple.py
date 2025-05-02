@@ -55,29 +55,34 @@ def pointOnCurveWeights(cvs, t, degree, knots=None):
 	Creates a mapping of cvs to curve weight values on a spline curve.
 	While all cvs are required, only the cvs with non-zero weights will be returned.
 	This function is based on de Boor's algorithm for evaluating splines and has been modified to consolidate weights.
+	If there are not enough CVs for the specified degree, it will pad the list by repeating the last CV.
 
 	Args:
 		cvs(list): A list of cvs, these are used for the return value.
 		t(float): A parameter value. 
-		degree(int): The curve dimensions. 
+		degree(int): The curve degree. 
 		knots(list): A list of knot values. 
 
 	Returns:
 		list: A list of control point, weight pairs.
 	"""
-
 	order = degree + 1  # Our functions often use order instead of degree
-	if len(cvs) <= degree:
-		raise CurveException('Curves of degree %s require at least %s cvs' % (degree, degree + 1))
+
+	# --- CV Padding logic ---
+	if len(cvs) < order:
+		padding = [cvs[-1]] * (order - len(cvs))
+		cvs += padding
+		mc.warning('Not enough CVs for degree %s. Padded with last CV to meet requirement of %s.' % (degree, order))
 
 	knots = knots or defaultKnots(len(cvs), degree)  # Defaults to even knot distribution
 	if len(knots) != len(cvs) + order:
-		raise CurveException('Not enough knots provided. Curves with %s cvs must have a knot vector of length %s. '
-							 'Received a knot vector of length %s: %s. '
-							 'Total knot count must equal len(cvs) + degree + 1.' % (len(cvs), len(cvs) + order,
-																					 len(knots), knots))
+		raise CurveException(
+			'Not enough knots provided. Curves with %s cvs must have a knot vector of length %s. '
+			'Received a knot vector of length %s: %s. '
+			'Total knot count must equal len(cvs) + degree + 1.' % (len(cvs), len(cvs) + order,
+			                                                       len(knots), knots))
 
-	#... print out arg
+	# --- Debug Print ---
 	print('\nThis is cvs: {0}'.format(cvs))
 	print('This is t: {0}'.format(t))
 	print('This is degree: {0}'.format(degree))
@@ -123,6 +128,7 @@ def pointOnCurveWeights(cvs, t, degree, knots=None):
 
 	cvWeights = cvWeights[degree]
 	return [[_cvs[index], weight] for index, weight in cvWeights.items()]
+
 
 
 
@@ -344,14 +350,15 @@ def _creParentCtrl(size=1.0, color='yellow', name='main', ctrlShape = 'square_ct
 #... naming it like L_mainCv01 >>> L_mainCv016
 
 #... number of Master control
-count=6
+#... naming 'L_mainCv01'
+count=3
 #... number of Slave
-pCount=13
+pCount=8
 
 
 
-
-degree=5
+#... use 1 for sample
+degree=1
 
 pCount = pCount or count * 4
 cRadius = 1.0
@@ -365,8 +372,19 @@ side = 'L'
 network_resultNode_point = mc.createNode('network', name='{0}_pointMatrixWeights_meta'.format(side))
 network_resultNode_tangent = mc.createNode('network', name='{0}_tangentMatrixWeights_meta'.format(side))
 
+
+
+# master name
+startNum = 0
+pattern = f'{side}_mainCv{startNum:02d}'
+
+
 # Create the control points
 cvMatrices = []
+
+
+
+
 for num in range(count):
 	startNum = num + 1
 	# cv = _testSphere(cRadius, color=(0.7,1,1), name='cv%s' % i, position=(i * spacing, 0, 0))
@@ -381,7 +399,7 @@ reload(core)
 
 
 
-#... snap parent control to the locator
+#... snap parent control to the locator in scene
 from function.rigging.util import misc
 
 num = 1

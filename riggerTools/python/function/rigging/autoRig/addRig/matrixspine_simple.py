@@ -346,7 +346,7 @@ def _creParentCtrl(size=1.0, color='yellow', name='main', ctrlShape = 'square_ct
 
 # ------- EXAMPLES -------- #
 
-#... must have locator first 
+#... must have locator in scene first 
 #... naming it like L_mainCv01 >>> L_mainCv016
 
 #... number of Master control
@@ -357,8 +357,8 @@ pCount=8
 
 
 
-#... use 1 for sample
-degree=3
+#... can use only 1
+degree=1
 
 pCount = pCount or count * 4
 cRadius = 1.0
@@ -435,10 +435,9 @@ for i in range(pCount):
 	#... Give 1. cvMatrices, 2. t value 3. degree
 	pointMatrixWeights = pointOnCurveWeights(cvMatrices, t, degree=degree)
 
-	# pointMatrixNode = core.WtAddMatrixWithVal('%s_pointMatrix%s' % (side, str(i+1).zfill(2)))
-	pointMatrixNode = core.WtAddMatrixWithChannal('%s_pointMatrix%s' % (side, str(i+1).zfill(2)), count)
+	# pointMatrixNode = core.WtAddMatrixWithChannal('%s_pointMatrix%s' % (side, str(i+1).zfill(2)), count)
+	pointMatrixNode = core.WtAddMatrixWithChannal('%s_pointMatrix%s' % (side, str(i+1).zfill(2)), len(pointMatrixWeights))
 
-	# pointMatrixNode = mc.createNode('wtAddMatrix', name='%s_pointMatrix0%s_wtAddMat' % (side, i+1))
 
 	#... create network node for read
 	pointMatrix = '%s.matrixSum' % pointMatrixNode
@@ -487,9 +486,8 @@ for i in range(pCount):
 
 	tangentMatrixWeights = tangentOnCurveWeights(cvMatrices, t, degree=degree)
 
-	tangentMatrixNode = core.WtAddMatrixWithChannal('%s_tangentMatrix%s' % (side, str(i+1).zfill(2)), count+4)
-	# tangentMatrixNode = core.WtAddMatrixWithVal('%s_tangentMatrix%s' % (side, str(i+1).zfill(2)))
-	# tangentMatrixNode = mc.createNode('wtAddMatrix', name='%s_tangentMatrix0%s_wtAddMat' % (side, i+1))
+	# tangentMatrixNode = core.WtAddMatrixWithChannal('%s_tangentMatrix%s' % (side, str(i+1).zfill(2)), count+4)
+	tangentMatrixNode = core.WtAddMatrixWithChannal('%s_tangentMatrix%s' % (side, str(i+1).zfill(2)), len(tangentMatrixWeights))
 
 	tangentMatrix = '%s.matrixSum' % tangentMatrixNode
 	for index, (matrix, weight) in enumerate(tangentMatrixWeights):

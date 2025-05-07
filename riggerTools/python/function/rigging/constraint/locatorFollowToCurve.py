@@ -7,6 +7,7 @@ reload(lfc)
 import maya.cmds as mc
 
 def locator_follow_curve_spec_position(locator_param_list, curve_name):
+	#... [WARNING] for curve that havig length 0 - 1 only
 
 	try:
 		curve_shape_name = mc.listRelatives( curve_name , s = True )[ 0 ]

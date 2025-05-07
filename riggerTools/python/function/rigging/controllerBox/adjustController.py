@@ -109,7 +109,6 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 	@param scale: A dictionary of template component and items.
 	@type template: dict
 	'''
-
 	print (scaleConstraint)
 	rawName = ''
 	rawNamLst = []
@@ -145,7 +144,6 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 			# Create zero group
 			childZro_grp = rigTools.zroGrpWithOffset( child_ctrl )
 
-
 			childZro_grp.matchPosition( each )
 			childZro_grp.matchRotation( each )
 
@@ -157,8 +155,6 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 			child_ctrl.rotateOrder = rotateOrder 
 			gimbal_ctrl.rotateOrder = rotateOrder
 
-
-
 			
 			if constraint == True:
 				if matrixConst == False:
@@ -169,8 +165,6 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 					joint_ScalCons = core.scaleConstraint( gimbal_ctrl , each )
 					joint_ScalCons.name = rawName + '_scalCons'
 				else:
-
-
 					mtc.parentConMatrix( gimbal_ctrl, each, mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
 					# misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scaleConstraint)
 
@@ -178,12 +172,9 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 			print('\nParent {0} to {1}\n'.format(childZro_grp.name, selected))
 			mc.parent(childZro_grp.name, selected)
 
-
 		if parentTo:
 			mc.parent(childZro_grp.name, parentTo)
-
-
-		
+	
 		return return_list
 	else:
 		mc.warning('Please select something.')

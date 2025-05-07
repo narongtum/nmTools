@@ -1,5 +1,4 @@
-#... move to constraint module
-#... latest Use this (not in Rig tools)
+#... Use this (not in Rig tools)
 
 '''
 from function.rigging.constraint import pinLocatorToSurface as pls

@@ -6,6 +6,9 @@
 Functions for generating spline weights by Cole O'Brien
 https://coleobrien.medium.com/matrix-splines-in-maya-ec17f3b3741
 01_matrixspine_01_breakdown.py
+
+#... use with file
+r"D:\sysTools\nmTools_github\riggerTools\python\function\rigging\autoRig\addRig\matrixspine_simple.py"
 """
 
 import math
@@ -355,11 +358,8 @@ count=3
 #... number of Slave
 pCount=8
 
-
-
 #... can use only 1
 degree=1
-
 pCount = pCount or count * 4
 cRadius = 1.0
 pRadius = 0.5
@@ -372,23 +372,16 @@ side = 'L'
 network_resultNode_point = mc.createNode('network', name='{0}_pointMatrixWeights_meta'.format(side))
 network_resultNode_tangent = mc.createNode('network', name='{0}_tangentMatrixWeights_meta'.format(side))
 
-
-
 # master name
 startNum = 0
-pattern = f'{side}_mainCv{startNum:02d}'
-
+PATTERN = '{side}_mainCv{startNum:02d}'
 
 # Create the control points
 cvMatrices = []
 
-
-
-
 for num in range(count):
 	startNum = num + 1
-	# cv = _testSphere(cRadius, color=(0.7,1,1), name='cv%s' % i, position=(i * spacing, 0, 0))
-	cv = _creParentCtrl(size=1, color='yellow', name = '{0}_mainCv{1:02d}'.format(side, startNum), ctrlShape = 'cube_ctrlShape')
+	cv = _creParentCtrl(size=1, color='yellow', name = PATTERN.format(side=side, startNum=startNum), ctrlShape = 'cube_ctrlShape')
 	cvMatrices.append('%s.worldMatrix[0]' % cv)
 
 
@@ -406,14 +399,18 @@ num = 1
 for num in range(count):
 	num = num +1
 	print(num)
-	main_ctrl = '{0}_mainCv0{1}_ctrl'.format(side, num)
-	source_temp_loc = '{1}_main0{0}'.format(num, side)
+	name = PATTERN.format(side=side, startNum=num)
+	print(name)
+	
+	main_ctrl = name + '_ctrl'
+	source_temp_loc = name + '_loc'  
+	
 	misc.snapParentCon(source_temp_loc, main_ctrl)
 
 
 
 
-
+PATTERN = '{side}_childCv{startNum:02d}'
 
 
 
@@ -426,7 +423,7 @@ for i in range(pCount):
 	print('\nThis is "T" {0} at loop of {1}'.format(t,i))
 
 	# pNode = _testCube(pRadius, color=(0,0.5,1), name='p%s' % i)
-	pNode = _creParentCtrl(size=0.02, color='white', name = '{0}_childCV{1:02d}'.format(side, num), ctrlShape = 'plainSphereB_ctrlShape')
+	pNode = _creParentCtrl(size=0.02, color='white', name = PATTERN.format(side=side, startNum=num), ctrlShape = 'plainSphereB_ctrlShape')
 
 	#
 	# Create the point matrix

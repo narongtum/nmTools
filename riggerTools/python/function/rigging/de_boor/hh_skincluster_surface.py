@@ -1,231 +1,118 @@
-'''
-from function.rigging.de_boor import de_boor_skincluster_surface
-reload(de_boor_skincluster_surface)
-'''
-
-
-
-
 from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
-from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.de_boor import hh_de_boor_core as core
-reload(core)
-
-
-
-
-
-
-
-
-
 
 OPEN = 'open'
 PERIODIC = 'periodic'
 INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
 
 
-def split_with_surface(verts, jnts, srf, d=None, tol=0.000001):
-	"""
-	Procedurally set the skinCluster weights for the joints attached to the skinCluster deforming the verts using the
-	surface and the Cox-deBoor algorith
+def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True):
+    original_sel = om.MGlobal.getActiveSelectionList()
 
-	Examples:
-		from maya import cmds
-		import skincluster_surface
-		from importlib import reload
-		reload(skincluster_surface)
+    verts = cmds.ls(cmds.polyListComponentConversion(mesh, toVertex=True), fl=True)
+    jnts_copy = jnt_grid[:]
 
+    if d is None:
+        d_u = len(jnts_copy) - 1
+        d_v = min([len(j) for j in jnts_copy]) - 1
+        d = [d_u, d_v]
+    else:
+        d_u, d_v = d
 
-		# ----- example 1, surface form = open, open
-		cmds.file(new=True, f=True)
+    max_val_u = cmds.getAttr(f'{surface}.maxValueU')
+    max_val_v = cmds.getAttr(f'{surface}.maxValueV')
+    form_u = cmds.getAttr(f'{surface}.formU')
+    form_v = cmds.getAttr(f'{surface}.formV')
+    kv_type = [INDEX_TO_KNOT_TYPE[form_u], INDEX_TO_KNOT_TYPE[form_v]]
 
-		jnts = []
-		flat_jnts = []
-		for i in range(3):
-			v_jnts = []
-			for j in range(3):
-				cmds.select(cl=True)
-				# we choose the x and z position values to align with the U and V directions of the nurbs plane
-				jnt = cmds.joint(p=(i - 1, 0, 1 - j))
-				v_jnts.append(jnt)
-				flat_jnts.append(jnt)
-			jnts.append(v_jnts)
+    vert_pa = om.MPointArray([cmds.xform(v, q=True, ws=True, t=True) for v in verts])
 
-		msh, msh_con = cmds.polyPlane()
-		cmds.setAttr(f'{msh_con}.width', 2)
-		cmds.setAttr(f'{msh_con}.height', 2)
-		cmds.setAttr(f'{msh_con}.subdivisionsWidth', 30)
-		cmds.setAttr(f'{msh_con}.subdivisionsHeight', 40)
+    cmds.select(verts)
+    vert_sl = om.MGlobal.getActiveSelectionList()
+    dag, components = vert_sl.getComponent(0)
 
-		nrb, nrb_con = cmds.nurbsPlane(ax=(0, 1, 0))
-		cmds.setAttr(f'{nrb_con}.width', 2)
+    try:
+        skin_cluster = cmds.ls(cmds.listHistory(dag.fullPathName()), typ='skinCluster')[0]
+    except:
+        raise RuntimeError('No skinCluster found on mesh.')
 
-		cmds.skinCluster(flat_jnts, msh)
+    cmds.skinPercent(skin_cluster, pruneWeights=tol)
 
-		skincluster_surface.split_with_surface(msh, jnts, nrb)
+    skin_cluster_sl = om.MGlobal.getSelectionListByName(skin_cluster)
+    skin_cluster_obj = skin_cluster_sl.getDependNode(0)
+    skin_cluster_fn = oma.MFnSkinCluster(skin_cluster_obj)
 
-		# ----- example 2, UV form = periodic, periodic
-		cmds.file(new=True, f=True)
+    influences_dpa = skin_cluster_fn.influenceObjects()
+    influences_names = [i.partialPathName() for i in influences_dpa]
+    influence_ia = om.MIntArray(range(len(influences_dpa)))
 
-		JNT_POS_LISTS = [[[1.0, -0.5, 0.0], [0.0, -0.5, 1.0], [-1.0, -0.5, 0.0], [0.0, -0.5, -1.0]],
-						 [[1.5, 0.0, 0.0], [0.0, 0.0, 1.5], [-1.5, 0.0, 0.0], [0.0, 0.0, -1.5]],
-						 [[1.0, 0.5, 0.0], [0.0, 0.5, 1.0], [-1.0, 0.5, 0.0], [0.0, 0.5, -1.0]],
-						 [[0.5, 0.0, 0.0], [0.0, 0.0, 0.5], [-0.5, 0.0, 0.0], [0.0, 0.0, -0.5]]]
+    skin_wts = skin_cluster_fn.getWeights(dag, components, influence_ia)
 
-		jnts = []
-		flat_jnts = []
-		for i, jnt_pos_list in enumerate(JNT_POS_LISTS):
-			v_jnts = []
-			for jnt_pos in jnt_pos_list:
-				cmds.select(cl=True)
-				jnt = cmds.joint(p=jnt_pos)
-				v_jnts.append(jnt)
-				flat_jnts.append(jnt)
-			jnts.append(v_jnts)
+    # Consolidate row weights
+    for v_jnts in jnts_copy:
+        v_jnt_0_index = influences_names.index(v_jnts[0])
+        for i, v_jnt in enumerate(v_jnts):
+            if i == 0:
+                continue
+            v_jnt_index = influences_names.index(v_jnt)
+            for j in range(len(verts)):
+                wt = skin_wts[j * len(influences_dpa) + v_jnt_index]
+                skin_wts[j * len(influences_dpa) + v_jnt_0_index] += wt
+                skin_wts[j * len(influences_dpa) + v_jnt_index] = 0
 
-		msh, msh_con = cmds.polyTorus()
+    srf_sl = om.MGlobal.getSelectionListByName(surface)
+    srf_dp = srf_sl.getDagPath(0)
+    srf_fn = om.MFnNurbsSurface(srf_dp)
 
-		nrb, nrb_con = cmds.torus(ax=(0, 1, 0))
-		cmds.setAttr(f'{nrb_con}.heightRatio', 0.5)
+    u_jnts = [jnts_v[0] for jnts_v in jnts_copy]
+    jnts_copy.insert(0, u_jnts)
 
-		cmds.skinCluster(flat_jnts, msh)
+    for i, _jnts in enumerate(jnts_copy):
+        if len(_jnts) < 2:
+            continue
 
-		skincluster_surface.split_with_surface(msh, jnts, nrb)
+        _d = d[0] if i == 0 else d[1]
+        _kv_type = kv_type[0] if i == 0 else kv_type[1]
+        kv, modified_jnts = core.knot_vector(_kv_type, _jnts, _d)
+        max_val = max_val_u if i == 0 else max_val_v
 
-	Args:
-		verts (str, list): verts that will be affected
-		jnts (list): joints whose weight will be set
-		srf (str): surface used to get the UV values for each vert which are then used in the de boor algorithm
-		d (list): degree of the basis functions in the U and V directions
-		tol (float): tolerance used to optimization
+        jnt_indices = [influences_names.index(jnt) for jnt in _jnts]
+        jnts_total_wts = [sum(skin_wts[jnt_index + j * len(influences_dpa)] for jnt_index in jnt_indices) for j in range(len(verts))]
 
-	Returns:
-		None
-	"""
+        for j, (vert_p, jnt_total_wt) in enumerate(zip(vert_pa, jnts_total_wts)):
+            if jnt_total_wt < tol:
+                continue
 
-	original_sel = om.MGlobal.getActiveSelectionList()
+            cp = srf_fn.closestPoint(vert_p)
+            t = cp[1] if i == 0 else cp[2]
+            t_n = t / max_val
 
-	verts = cmds.ls(cmds.polyListComponentConversion(verts, toVertex=True), fl=True)
+            if _kv_type == PERIODIC:
+                t_n = (kv[_d + 1] * (_d * 0.5 + 0.5)) * (1 - t_n) + t_n * (1 - kv[_d + 1] * (_d * 0.5 - 0.5))
 
-	jnts_copy = jnts[:]
+            # Debug: Create locator at closest point
+            if i == 0 and visualize:
+                name = f'debug_uv_loc_{j:03d}'
+                if not cmds.objExists(name):
+                    loc = cmds.spaceLocator(name=name)[0]
+                    cmds.xform(loc, ws=True, t=cp[0])
+                    cmds.setAttr(f"{loc}.localScaleX", 0.05)
+                    cmds.setAttr(f"{loc}.localScaleY", 0.05)
+                    cmds.setAttr(f"{loc}.localScaleZ", 0.05)
 
-	if d is None:
-		d_u = len(jnts_copy) - 1
-		d_v = min([len(j) for j in jnts_copy]) - 1
-		d = [d_u, d_v]
+            wts = core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
 
-	print(f'This is d_u: {d_u}')
-	print(f'This is d_v: {d_v}')
+            if _kv_type == PERIODIC:
+                consolidated_wts = {jnt: 0 for jnt in _jnts}
+                for k, wt in enumerate(wts):
+                    consolidated_wts[modified_jnts[k]] += wt
+                wts = consolidated_wts.values()
 
+            jnts_wts = [wt * jnt_total_wt for wt in wts]
+            for k, jnt_index in enumerate(jnt_indices):
+                skin_wts[jnt_index + j * len(influences_dpa)] = jnts_wts[k]
 
-
-	max_val_u = cmds.getAttr(f'{srf}.maxValueU')
-	max_val_v = cmds.getAttr(f'{srf}.maxValueV')
-
-	# print(f'this is vluse of max_val_u: {max_val_u}')
-	# print(f'this is vluse of max_val_v: {max_val_v}')
-
-	form_u = cmds.getAttr(f'{srf}.formU')
-	form_v = cmds.getAttr(f'{srf}.formV')
-	print (f'\n this is form_u: {form_u}')
-	print (f' this is form_v: {form_v}\n')
-	kv_type = [INDEX_TO_KNOT_TYPE[form_u], INDEX_TO_KNOT_TYPE[form_v]]
-
-	vert_pa = om.MPointArray([cmds.xform(v, q=True, ws=True, t=True) for v in verts])
-
-	cmds.select(verts)
-	vert_sl = om.MGlobal.getActiveSelectionList()
-	dag, components = vert_sl.getComponent(0)
-	try:
-		skin_cluster = cmds.ls(cmds.listHistory(dag.fullPathName()), typ='skinCluster')[0]
-	except:
-		print ('You maybe forget skinweight.')
-
-	cmds.skinPercent(skin_cluster, pruneWeights=tol)
-
-	skin_cluster_sl = om.MGlobal.getSelectionListByName(skin_cluster)
-	skin_cluster_obj = skin_cluster_sl.getDependNode(0)
-	skin_cluster_fn = oma.MFnSkinCluster(skin_cluster_obj)
-
-	influences_dpa = skin_cluster_fn.influenceObjects()
-	influences_names = [i.partialPathName() for i in influences_dpa]
-	influence_ia = om.MIntArray(range(len(influences_dpa)))
-
-	skin_wts = skin_cluster_fn.getWeights(dag, components, influence_ia)
-
-	for v_jnts in jnts_copy:
-		print (f' this is v_jnts: {v_jnts}')
-		v_jnt_0_index = influences_names.index(v_jnts[0])
-		print (f' this is v_jnt_0_index: {v_jnt_0_index}')
-
-		for i, v_jnt in enumerate(v_jnts):
-			if i != 0:
-				v_jnt_index = influences_names.index(v_jnt)
-
-				for j in range(len(verts)):
-					v_jnt_wt = skin_wts[len(influences_dpa) * j + v_jnt_index]
-					skin_wts[len(influences_dpa) * j + v_jnt_0_index] += v_jnt_wt
-					skin_wts[len(influences_dpa) * j + v_jnt_index] = 0
-
-	srf_sl = om.MGlobal.getSelectionListByName(srf)
-	srf_dp = srf_sl.getDagPath(0)
-	srf_fn = om.MFnNurbsSurface(srf_dp)
-
-	u_jnts = [jnts_v[0] for jnts_v in jnts_copy]
-	jnts_copy.insert(0, u_jnts)
-
-	for i, _jnts in enumerate(jnts_copy):
-
-		if len(_jnts) < 2:
-			continue
-
-		_d = d[0] if i == 0 else d[1]
-		_kv_type = kv_type[0] if i == 0 else kv_type[1]
-		kv, modified_jnts = core.knot_vector(_kv_type, _jnts, _d)
-
-		max_val = max_val_u if i == 0 else max_val_v
-		print(f'this is vluse of U: {i}')
-
-		jnt_indices = [influences_names.index(jnt) for jnt in _jnts]
-		jnts_total_wts = [sum(skin_wts[jnt_index + j * len(influences_dpa)] for jnt_index in jnt_indices) for j in
-						  range(len(verts))]
-
-		for vert_p, jnts_total_wt, j in zip(vert_pa, jnts_total_wts, range(len(verts))):
-
-
-
-			if jnts_total_wt < tol:
-				continue
-
-			cp = srf_fn.closestPoint(vert_p)
-			t = cp[1] if i == 0 else cp[2]
-			t_n = t / max_val
-
-			if _kv_type == PERIODIC:
-				t_n = (kv[_d + 1] * (_d * 0.5 + 0.5)) * (1 - t_n) + t_n * (1 - kv[_d + 1] * (_d * 0.5 - 0.5))
-
-
-
-			print(f'This is de boor: {modified_jnts}, {_d}, {t_n}, {kv}')
-			wts = core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
-
-			if _kv_type == PERIODIC:
-
-				consolidated_wts = {jnt: 0 for jnt in _jnts}
-				for k, wt in enumerate(wts):
-					consolidated_wts[modified_jnts[k]] += wt
-
-				wts = consolidated_wts.values()
-
-			jnts_wts = [wt * jnts_total_wt for wt in wts]
-
-			for k, jnt_index in enumerate(jnt_indices):
-				skin_wts[jnt_index + j * len(influences_dpa)] = jnts_wts[k]
-	# print(f'{dag}, {components}, {influence_ia}, {skin_wts}')	
-	# cmds.error('Break')
-	skin_cluster_fn.setWeights(dag, components, influence_ia, skin_wts)
-
-	om.MGlobal.setActiveSelectionList(original_sel)
+    skin_cluster_fn.setWeights(dag, components, influence_ia, skin_wts)
+    om.MGlobal.setActiveSelectionList(original_sel)

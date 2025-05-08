@@ -10,6 +10,54 @@ reload(core)
 from function.rigging.de_boor import hh_skincluster_surface as sff
 reload(sff)
 
+
+
+
+
+
+# ----- example 2, UV form = periodic, periodic
+cmds.file(new=True, f=True)
+
+JNT_POS_LISTS = [[[1.0, -0.5, 0.0], [0.0, -0.5, 1.0], [-1.0, -0.5, 0.0], [0.0, -0.5, -1.0]],
+				 [[1.5, 0.0, 0.0], [0.0, 0.0, 1.5], [-1.5, 0.0, 0.0], [0.0, 0.0, -1.5]],
+				 [[1.0, 0.5, 0.0], [0.0, 0.5, 1.0], [-1.0, 0.5, 0.0], [0.0, 0.5, -1.0]],
+				 [[0.5, 0.0, 0.0], [0.0, 0.0, 0.5], [-0.5, 0.0, 0.0], [0.0, 0.0, -0.5]]]
+
+jnts = []
+flat_jnts = []
+for i, jnt_pos_list in enumerate(JNT_POS_LISTS):
+	v_jnts = []
+	for jnt_pos in jnt_pos_list:
+		cmds.select(cl=True)
+		jnt = cmds.joint(p=jnt_pos)
+		v_jnts.append(jnt)
+		flat_jnts.append(jnt)
+	jnts.append(v_jnts)
+
+msh, msh_con = cmds.polyTorus()
+
+nrb, nrb_con = cmds.torus(ax=(0, 1, 0))
+cmds.setAttr(f'{nrb_con}.heightRatio', 0.5)
+
+cmds.skinCluster(flat_jnts, msh)
+
+skincluster_surface.split_with_surface(msh, jnts, nrb)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #... define
 #... U == y
 #... V == x

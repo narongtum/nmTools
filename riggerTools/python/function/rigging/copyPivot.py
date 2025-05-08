@@ -1,8 +1,10 @@
 # all credits to Serge Scherbakov
 # This script allows you to copy object pivot translation and rotation from one object to another one. How to use:
 #  - copy code to the script editor "Python tab"
-#  - select source object
+
 #  - select target object
+#  - select source object
+
 #  - execute script
 # Works on multiple selection. Align all object pivots with last selected.
 import maya.cmds as mc

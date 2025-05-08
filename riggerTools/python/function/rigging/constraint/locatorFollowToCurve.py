@@ -67,9 +67,13 @@ def locator_follow_curve_spec_position(locator_param_list, curve_name):
 		mc.connectAttr(f'{dcm}.outputRotate', f'{locator_name}.rotate')
 
 		print(f'Locator {locator_name} is now following {curve_shape_name} at parameter {parameter}.')
+'''		
+from function.rigging.constraint import locatorFollowToCurve as lfc
+reload(lfc)
 
-# Example usage
-# lfc.locator_follow_curve( [('locator1', 0.0), ('locator2', 0.25), ('locator3', 0.5), ('locator4', 0.75), ('locator4', 1)], 'curve1')
+lfc.locator_follow_curve_spec_position( [('locator1', 0.0), ('locator2', 0.25), ('locator3', 0.5), ('locator4', 0.75), ('locator5', 1)], 'curve1')
+''
+
 
 
 

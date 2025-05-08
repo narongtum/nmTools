@@ -66,6 +66,7 @@ def fkSkirtSpline(
 	mc.select(cl=1)
 	mc.select(firstJnt, hi=1)
 	jntChain = mc.ls(sl=1)
+	print(f'This is jntChain: {jntChain}')
 	lastJntIndx = jntChain.index(lastJnt)
 	#del jntChain [(lastJntIndx + 1):]
 

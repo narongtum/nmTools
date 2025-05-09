@@ -72,7 +72,7 @@ from function.rigging.constraint import locatorFollowToCurve as lfc
 reload(lfc)
 
 lfc.locator_follow_curve_spec_position( [('locator1', 0.0), ('locator2', 0.25), ('locator3', 0.5), ('locator4', 0.75), ('locator5', 1)], 'curve1')
-''
+'''
 
 
 

@@ -60,6 +60,8 @@ reload(mnd)
 # setup
 obj_target.addAttribute( attributeType = 'message' , longName = 'mulmatrix')
 obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
+stick_ctrl.addAttribute( attributeType = 'float' , longName = 'FK_IK' , minValue = 0 , maxValue = 1 , defaultValue = 0 , keyable = True )
+
 # qury
 mc.listConnections( obj_target.name + '.' + 'mulmatrix' )[0]
 mc.listConnections( obj_target.name + '.' + 'm_quatToEuler' )[0]
@@ -1894,7 +1896,7 @@ class Dag( Node ) :
 		colorDict = {   'yellow'    : 17 ,          'red'           : 13 ,
 						'softBlue'  : 18 ,          'blue'          : 6 ,
 						'white'     : 16 ,          'brown'         : 11 ,
-						'black'     : 1 ,           'gray'          : 2 ,
+						'black'     : 1 ,           f'gray'          : 2 ,
 						'softGray'  : 3 ,           'darkRed'       : 4 ,
 						'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
 						'green'     : 14 ,          'none'          : 0     }
@@ -2882,6 +2884,7 @@ class Joint( Dag ):
 			colorId = COLOR_dict[color]
 			mc.setAttr( '%s.overrideEnabled'    % self.name , 1 )
 			mc.setAttr( '%s.overrideColor'      % self.name, colorId )
+			print(f'set color to {color}')
 
 		else:
 			colorId = 0

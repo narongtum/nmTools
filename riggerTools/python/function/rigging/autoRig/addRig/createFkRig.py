@@ -310,7 +310,7 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 
 	if curlCtrl:
 		# Add return all ctrl name at index 4
-		return gmbls[0] ,rigGrp.name , bJnts , zroGrpCurl.name , ctrls
+		return gmbls[0], rigGrp.name, bJnts, zroGrpCurl.name, ctrls, curl_ctrl.name, zGrps
 	else:
 		return gmbls[0],rigGrp.name, bJnts, ctrls
 

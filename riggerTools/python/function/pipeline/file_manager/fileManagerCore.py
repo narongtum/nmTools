@@ -2750,6 +2750,7 @@ def do_pipeline_round_skinWeight(group_names = ['Export_grp', 'Model_grp']):
 
 
 def do_local_commit():
+	FileManagerLog.info('Doing local commit...\n')
 	ngSkin = mc.ls('ngSkinToolsData_*')
 	if ngSkin:
 		import ngSkinTools2
@@ -2781,9 +2782,6 @@ def do_local_commit():
 	#... Make some controller bigger
 	adjust.ctrlWidth(Width = 3)
 
-
-	
-
 	# #... Move node to target
 	# FileManagerLog.debug('Do Delete delete_grp.')
 	# fileTools.doDeleteGrp()	
@@ -2791,7 +2789,6 @@ def do_local_commit():
 	# #... Add delete suffix and prefix 
 	# fileTools.doDeleteSuffixExt(suffix ='_X')
 	# fileTools.doDeletePrefixExt(prefix = 'X_')
-
 
 	# Hide Root
 	# fileTools.doHideGrp( 'Root',0 )

@@ -174,10 +174,10 @@ NODE_dict = [
 	{	'longName': 'quatToEuler'							,	'shortName': 'quatToEuler'					},
 	{	'longName': 'blendMatrix'							,	'shortName': 'blendMat'					},
 	{	'longName': 'blendShape'							,	'shortName': 'bsh'					},
-	{	'longName': 'network'							,	'shortName': 'meta'					},
-	{	'longName': 'setRange'							,	'shortName': 'setRange'}
-	
-
+	{	'longName': 'network'							,	'shortName': 'meta'						},
+	{	'longName': 'setRange'							,	'shortName': 'setRange'					},
+	{	'longName': 'blendWeighted'							,	'shortName': 'blendWeighted'		},	
+	{	'longName': 'animCurveUL'							,	'shortName': 'animCurveUL'}	
 ]
 
 

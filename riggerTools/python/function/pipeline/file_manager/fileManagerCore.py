@@ -2827,7 +2827,9 @@ def do_global_commit():
 
 	#... Hide proxy joint
 	fileTools.do_hide_objects(suffix = '_pxyJnt')
-	fileTools.do_hide_objects(suffix = '_loc')
+	# fileTools.do_hide_objects(suffix = '_loc')
+	fileTools.do_hide_objects(suffix = '_ikJnt')
+	fileTools.do_hide_objects(suffix = '_fkJnt')
 
 	#... Delete delete grp
 	FileManagerLog.debug('Do Delete delete_grp.')

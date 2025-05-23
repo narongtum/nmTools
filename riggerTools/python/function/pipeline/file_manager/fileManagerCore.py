@@ -40,6 +40,9 @@ reload(jtt)
 from function.rigging.controllerBox import adjustController as adjust
 reload(adjust)
 
+from function.pipeline.file_manager import run_ui
+reload(run_ui)
+
 try:
 	from shiboken2 import wrapInstance
 except:
@@ -79,7 +82,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-
+CORE_VERSION = '0.9.300'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -231,7 +234,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Define model as an instance variable
 		# self.model = None
-
+		self.setObjectName("FileManager")
+		self.setWindowTitle(f"File Manager {CORE_VERSION}")
 
 		#... My existing code
 
@@ -366,11 +370,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		file_menu.addAction(replaceRef_action)
 
 		#... inside 'Tools' menubar
-		# Create 'Print A' action and add it to the 'File' menu
+		# Create 'Print B' action and add it to the 'File' menu
 		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
 		toos_menu.addAction(print_b_action)
 
-
+		print_c_action = FileManagerActions.createPrintCAction(self, self.printC)
+		toos_menu.addAction(print_c_action)
+		# ------------------------------------- #
+		toos_menu.addSeparator()
 
 
 		save_ctrl_shape_action = FileManagerActions.saveCtrlShapeAction(self, self.save_ctrl_shape)
@@ -378,6 +385,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		load_ctrl_shape_action = FileManagerActions.loadCtrlShapeAction(self, self.load_ctrl_shape)
 		toos_menu.addAction(load_ctrl_shape_action)
+
+		# ------------------------------------- #
 		toos_menu.addSeparator()
 		save_skinWeight_action = FileManagerActions.saveSkinWeightAction(self, self.save_skin_data)
 		toos_menu.addAction(save_skinWeight_action)
@@ -439,6 +448,20 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		FileManagerLog.debug(f'\t1.Get what asset that user choose: {global_path}')
 		FileManagerLog.debug('\t2.Replace reference. with current selected object in scene.')
+
+
+
+	#... template for replace
+	def printC(self):
+		print("Print C run AssetHeroExporter")
+
+		run_ui.run_file_exporter()
+
+
+
+
+
+
 
 	# def filter_model(self, text):
 	# 	self.proxyModel.pattern = text
@@ -2860,9 +2883,18 @@ class FileManagerActions:
 
 	@staticmethod
 	def createPrintBAction(parent, callback):
-		print_b_action = QtWidgets.QAction("Print B", parent)
+		print_b_action = QtWidgets.QAction("Print B in menu", parent)
 		print_b_action.triggered.connect(callback)
 		return print_b_action
+
+	@staticmethod
+	def createPrintCAction(parent, callback):
+		print_c_action = QtWidgets.QAction("Print C in menu", parent)
+		print_c_action.triggered.connect(callback)
+		return print_c_action
+
+
+
 
 	@staticmethod
 	def saveCtrlShapeAction(parent, callback):

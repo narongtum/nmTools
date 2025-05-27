@@ -44,11 +44,100 @@ import os.path
 from function.pipeline import logger 
 reload(logger)
 
+class FileToolsLog(logger.MayaLogger):
+	LOGGER_NAME = "FileToolsLog"
 
-class fileToolsLogger(logger.MayaLogger):
-	LOGGER_NAME = "FileToolsLogger"
 
 MAYA_VERSION = mc.about(v=True)	
+
+
+#.... Check there is config file in document
+
+
+# Get the user's home directory
+user_home = os.path.expanduser("~")
+
+# Define the directory path relative to the user's home directory
+directory = os.path.join(user_home, 'Documents', 'maya', 'scripts')
+
+# Define the file name
+fileName = 'fileManager_config.py'
+
+# Create the full file path
+FILE_CONFIG_PATH = os.path.join(directory, fileName)
+
+
+
+
+
+#... Check if the file exists
+if os.path.exists(FILE_CONFIG_PATH):
+	import fileManager_config as config
+	DRIVES = config.DRIVES
+	PROJECT_NAME = config.PROJECT_NAME
+else:
+	DRIVES = [			"D:\\",
+						"E:\\"		]
+	PROJECT_NAME = ['P_RP','P_Regulus']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#... Ask what is Project of this file 
+def currentProject():
+	current_scene_path = pm.system.sceneName()
+	current_scene_path = os.path.normpath(current_scene_path)
+	path_elements = current_scene_path.split(os.path.sep)
+
+	if path_elements[2] in PROJECT_NAME:
+		FileToolsLog.info(f'The project name is {path_elements[2]}')
+		return path_elements[2]
+	else:
+		FileToolsLog.info('There are no current proper project.')
+		return None
+
+
+
+def findAppropriateFBXFolder():
+	#... Check project condition
+	project = currentProject()
+	if project != None:
+		if fileState() == 'global_hero':
+			from pathlib import Path	
+			pathFile = mc.file(q=True, sn=True)
+			path_lib = Path(pathFile)
+			department_folder = path_lib.parent.parent
+			FBX_folder_obj = department_folder / 'FBX'
+			# FBX_folder_path = str(FBX_folder_obj)
+			# FBX_norm_path = os.path.normpath(FBX_folder_path)
+			# FBX_norm_path = FBX_norm_path + '\\'
+			# FBX_ok_path = FBX_norm_path.replace('\\','/')
+
+
+			if FBX_folder_obj.exists() and FBX_folder_obj.is_dir():
+				FileToolsLog.info(f'There are appropriate FBX path: {FBX_folder_obj}')
+				FBX_ok_path = FBX_folder_obj.as_posix().rstrip('/') + '/'
+				return FBX_ok_path
+				# os.startfile(FBX_folder_path)
+			else:
+				return None
+
+
+
+
+
+
+
 
 
 
@@ -515,7 +604,7 @@ def fileState():
 	splitFolderNam = pathFile.split('/')[-2].lower()  # Normalize the case
 
 	if splitFolderNam in ['hero', 'commit']:
-		print('This is a hero file.')
+		print('This is a HERO file.')
 		
 		# Get the parent directory two levels up
 		parent_dir = os.path.dirname(os.path.dirname(pathFile))
@@ -534,7 +623,7 @@ def fileState():
 			return 'local_hero'
 
 	elif splitFolderNam == 'version':
-		print('This is a version file.')
+		print('This is a VERSION file.')
 		return 'version'
 		
 	else:

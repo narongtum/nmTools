@@ -13,9 +13,19 @@ import subprocess
 from function.pipeline import fileTools
 reload(fileTools)
 
+SVN_BIN_PATH = r"C:\Program Files\TortoiseSVN\bin"
 '''
 from function.pipeline import svnMaya as svn 
 reload(svn)
+'''
+
+
+
+
+
+'''
+self.svn_maya = SvnMaya()
+self.svn_maya.execute_cmd('add', file_path = save_full_path, close_on_end=0, logmsg='')
 '''
 
 
@@ -85,3 +95,24 @@ def commitCurrentPath():
 		svnCommit( path )
 	else:
 		print ('File not exists Please Check.')
+
+
+
+
+#... SVN Part
+
+class SvnMaya:
+	def __init__(self):
+		pass
+	def execute_cmd(self, cmd_type, file_path, close_on_end, add_fixed_folder = False, logmsg = ''):
+
+		file_path = os.path.normpath(file_path)
+		#... Create a variable to store the command line
+		if add_fixed_folder == False:
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /logmsg:"{4}" /closeonend:{3}'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end, logmsg )
+		else:
+			FileManagerLog.debug('Specific "Add" folder.')
+			command_line = r'cd "{0}" && TortoiseProc.exe /command:{1} /path:"{2}" /closeonend:{3} --depth=files /nodlg'.format(SVN_BIN_PATH, cmd_type, file_path, close_on_end, logmsg)
+
+		#... Execute the command line
+		subprocess.run(command_line, shell=True)

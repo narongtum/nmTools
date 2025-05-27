@@ -92,9 +92,9 @@ PADDING 			= 	4
 
 
 
-# Check if the file exists
+#... Check if the file exists
 if os.path.exists(file_path):
-	FileManagerLog.debug("File exists.")
+	FileManagerLog.debug("Config File exists.")
 	import fileManager_config as config
 
 	DRIVES = config.DRIVES
@@ -454,7 +454,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	#... template for replace
 	def printC(self):
 		print("Print C run AssetHeroExporter")
-
+		
 		run_ui.run_file_exporter()
 
 

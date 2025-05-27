@@ -24,7 +24,14 @@ from function.pipeline import logger
 reload(logger)
 
 from function.pipeline.file_manager import fileManagerCore
+from function.pipeline.file_manager import fileAssetExporterCore
+importlib.reload(fileAssetExporterCore)
+
 from function.pipeline.file_manager.fileAssetExporterCore import FileAssetExporter
+
+
+
+
 
 class BuildUILog(logger.MayaLogger):
 	LOGGER_NAME = "BuildUILog"

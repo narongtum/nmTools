@@ -44,7 +44,7 @@ import os.path
 from function.pipeline import logger 
 reload(logger)
 
-class FileToolsLog(logger.MayaLogger):
+class fileToolsLogger(logger.MayaLogger):
 	LOGGER_NAME = "FileToolsLog"
 
 
@@ -707,8 +707,9 @@ def saveCurrentMayaDir():
 		fileToolsLogger.info('Files has been saved at: {0}'.format(fileNameDir))
 		mc.file( force = True , ignoreVersion = True, type =  mayaFileType , save = True )
 		# mc.file( force = True , ignoreVersion = True, save = True )
-	except :
-		print ('\nCancle Progress...')
+	except Exception as e:
+		fileToolsLogger.error(f"Save failed: {str(e)}")
+		raise  
 
 
 

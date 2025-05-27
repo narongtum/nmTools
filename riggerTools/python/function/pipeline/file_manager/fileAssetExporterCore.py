@@ -254,7 +254,7 @@ class FileAssetExporter(QtWidgets.QMainWindow):
 					found_targets.append(obj)
 
 		if not found_targets:
-			QtWidgets.QMessageBox.warning(self, "Not Found", "No matching group found in scene.")
+			QtWidgets.QMessageBox.warning(self, "Not Found", "No matching 'Export_grp' and 'Model_grp' found in scene.")
 			return
 
 		# Select object 

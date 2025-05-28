@@ -1256,6 +1256,7 @@ class PlusMinusAverage ( Node ):
 	'''  create plusMinusAverage object  '''
 	def __init__( self , name):
 		Node.__init__( self , mc.createNode('plusMinusAverage', name = name) )
+		self.suffix
 		
 
 

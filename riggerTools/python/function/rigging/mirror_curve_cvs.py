@@ -33,3 +33,6 @@ def mirror_curve_cvs(curve, right_to_left=True):
 		mirrored_pos = [mirrored_x, pos[1], pos[2]]
 
 		mc.xform(target_cv, ws=True, t=mirrored_pos)
+		
+curve = mc.ls(sl=True)[0]
+mirror_curve_cvs(curve, right_to_left=False)

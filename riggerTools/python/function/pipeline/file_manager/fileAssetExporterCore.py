@@ -47,24 +47,25 @@ FILE_CONFIG_PATH = os.path.join(directory, fileName)
 
 
 
+try:
+	#... Check if the file exists
+	if os.path.exists(FILE_CONFIG_PATH):
+		FileManagerLog.debug("Config File exists.")
+		import fileManager_config as config
+		reload(config)
+		DRIVES = config.DRIVES
+		PROJECT_NAME = config.PROJECT_NAME
+		PROJECT_DICT_DETAIL = config.PROJECT_DETAIL
+		GROUP_NAMES = config.GROUP_NAMES
+	else:
+		DRIVES = [			"D:\\",
+							"E:\\"		]
 
-#... Check if the file exists
-if os.path.exists(FILE_CONFIG_PATH):
-	FileManagerLog.debug("Config File exists.")
-	import fileManager_config as config
-	reload(config)
-	DRIVES = config.DRIVES
-	PROJECT_NAME = config.PROJECT_NAME
-	PROJECT_DICT_DETAIL = config.PROJECT_DETAIL
-	GROUP_NAMES = config.GROUP_NAMES
-else:
-	DRIVES = [			"D:\\",
-						"E:\\"		]
+		PROJECT_NAME = ['P_RP','P_Regulus']
+		GROUP_NAMES = ['Model_grp', 'Export_grp']
 
-	PROJECT_NAME = ['P_RP','P_Regulus']
-	GROUP_NAMES = ['Model_grp', 'Export_grp']
-
-
+except:
+	print('There are no config file.')
 
 
 

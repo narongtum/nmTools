@@ -100,10 +100,10 @@ def currentProject():
 	path_elements = current_scene_path.split(os.path.sep)
 
 	if path_elements[2] in PROJECT_NAME:
-		FileToolsLog.info(f'The project name is {path_elements[2]}')
+		fileToolsLogger.info(f'The project name is {path_elements[2]}')
 		return path_elements[2]
 	else:
-		FileToolsLog.info('There are no current proper project.')
+		fileToolsLogger.info('There are no current proper project.')
 		return None
 
 

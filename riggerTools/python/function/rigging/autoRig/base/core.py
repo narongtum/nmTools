@@ -1843,8 +1843,12 @@ class Dag( Node ) :
 	''' Template DAG class  '''
 	def __init__( self , nodeName = '' ) :
 		Node.__init__( self , nodeName )
+
+
+	def unParent(self):
+		mc.parent(self.name, world=True)
 	
-	# shape properties
+	#... shape properties
 	def getShape( self ) :
 		shapes = mc.listRelatives( self.name , shapes = True )
 		if shapes :

@@ -125,7 +125,7 @@ def findAppropriateFBXFolder():
 
 
 			if FBX_folder_obj.exists() and FBX_folder_obj.is_dir():
-				FileToolsLog.info(f'There are appropriate FBX path: {FBX_folder_obj}')
+				fileToolsLogger.info(f'There are appropriate FBX path: {FBX_folder_obj}')
 				FBX_ok_path = FBX_folder_obj.as_posix().rstrip('/') + '/'
 				return FBX_ok_path
 				# os.startfile(FBX_folder_path)

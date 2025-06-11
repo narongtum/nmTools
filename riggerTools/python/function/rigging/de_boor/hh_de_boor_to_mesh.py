@@ -1,5 +1,6 @@
 #... Split weight with curve to mesh
 #... Request mesh, curve, joint
+#... verts is mean mesh my friend
 
 import maya.cmds as mc
 from maya.api import OpenMaya as om
@@ -24,7 +25,7 @@ INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
 
 
 
-def split_with_curve(verts, jnts, crv, d=None, tol=0.000001):
+def split_with_curve_to_mesh(verts, jnts, crv, d=None, tol=0.000001):
 
 	orginal_sel = om.MGlobal.getActiveSelectionList()
 
@@ -93,7 +94,7 @@ def split_with_curve(verts, jnts, crv, d=None, tol=0.000001):
 
 
 
-def split_with_curve_V2(verts, jnts, crv, d=None, tol=0.000001):
+def split_with_curve_to_mesh_V2(verts, jnts, crv, d=None, tol=0.000001):
 
 	#... make for curve degree 3 
 	orginal_sel = om.MGlobal.getActiveSelectionList()
@@ -135,7 +136,7 @@ def split_with_curve_V2(verts, jnts, crv, d=None, tol=0.000001):
 	curve_length = crv_fn.length()
 
 	if curve_degree != 1 and curve_degree != 3:
-		om.MGlobal.displayWarning(f"split_with_curve_V2: Curve degree {curve_degree} is not tested. Only degree 1 and 3 are recommended.")
+		om.MGlobal.displayWarning(f"split_with_curve_to_mesh_V2: Curve degree {curve_degree} is not tested. Only degree 1 and 3 are recommended.")
 
 	for vert_p, jnts_total_wt, i in zip(vert_pa, jnts_total_wts, range(len(verts))):
 
@@ -171,13 +172,21 @@ def split_with_curve_V2(verts, jnts, crv, d=None, tol=0.000001):
 	om.MGlobal.setActiveSelectionList(orginal_sel)
 
 
+def list_joints_from_skincluster(skincluster):
+	
+	if not mc.objExists(skincluster):
+		raise RuntimeError(f"SkinCluster '{skincluster}' does not exist.")
+	
+	jnts = mc.skinCluster(skincluster, q=True, inf=True)
+	print(f'This is joint in skinCluster: {jnts}')
+	return jnts
 
 '''
 
 
 from function.rigging.de_boor import hh_de_boor_to_mesh
 reload(hh_de_boor_to_mesh)
-hh_de_boor_to_mesh.split_with_curve(msh, jnts, crv)
+hh_de_boor_to_mesh.split_with_curve_to_mesh(msh, jnts, crv)
 
 
 
@@ -198,7 +207,7 @@ for p in (0, 0, -1), (-1, 0, 0), (0, 0, 1), (1, 0, 0):
 mc.skinCluster(jnts, msh)
 
 
-split_with_curve(msh, jnts, crv)
+split_with_curve_to_mesh(msh, jnts, crv)
 
 
 # ----- example 2, curve form = open
@@ -243,7 +252,7 @@ jnts = ['lip_upper_L03_skin_01_jnt',
 crv = 'lip_upper_L03_crv'
 
 mc.skinCluster(jnts, msh)
-split_with_curve(msh, jnts, crv)
+split_with_curve_to_mesh(msh, jnts, crv)
 
 
 '''

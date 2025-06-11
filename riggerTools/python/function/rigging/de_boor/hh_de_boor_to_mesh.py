@@ -186,7 +186,7 @@ def list_joints_from_skincluster(skincluster):
 
 from function.rigging.de_boor import hh_de_boor_to_mesh
 reload(hh_de_boor_to_mesh)
-hh_de_boor_to_mesh.split_with_curve_to_mesh(msh, jnts, crv)
+hh_de_boor_to_mesh.split_with_curve_to_mesh_V2(msh, jnts, crv)
 
 
 

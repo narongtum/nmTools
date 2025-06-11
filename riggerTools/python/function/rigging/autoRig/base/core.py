@@ -1306,7 +1306,7 @@ class AddDoubleLinear( Node ):
 	def __init__( self, name, input2=0):
 		Node.__init__( self , mc.createNode( 'addDoubleLinear' , name = name) )
 		self.attr('input2').value = input2
-		# self.suffix
+		self.suffix
 
 
 class MultiDoubleLinear( Node ):

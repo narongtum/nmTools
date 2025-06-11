@@ -1,14 +1,37 @@
+'''
+
+from function.rigging.de_boor import hh_de_boor_to_surface as srf_deboor
+reload(srf_deboor)
+
+srf_deboor.split_with_surface(msh, [jnts], nrb)
+
+# accept in 2D list [V][U]
+# U herizontal
+# V verticle
+# jnts[V][U]
+jnts = [
+    ['j00', 'j01', 'j02'],  # V = 0
+    ['j10', 'j11', 'j12'],  # V = 1
+    ['j20', 'j21', 'j22']   # V = 2
+]
+
+
+'''
+
+
+
+
 from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
-from function.rigging.de_boor import hh_de_boor_core as core
+from function.rigging.de_boor import hh_de_boor_core as de_core
 
 OPEN = 'open'
 PERIODIC = 'periodic'
 INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
 
 
-def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True):
+def split_with_surface(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True):
 	original_sel = om.MGlobal.getActiveSelectionList()
 
 	verts = cmds.ls(cmds.polyListComponentConversion(mesh, toVertex=True), fl=True)
@@ -75,7 +98,7 @@ def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visu
 
 		_d = d[0] if i == 0 else d[1]
 		_kv_type = kv_type[0] if i == 0 else kv_type[1]
-		kv, modified_jnts = core.knot_vector(_kv_type, _jnts, _d)
+		kv, modified_jnts = de_core.knot_vector(_kv_type, _jnts, _d)
 		max_val = max_val_u if i == 0 else max_val_v
 
 		jnt_indices = [influences_names.index(jnt) for jnt in _jnts]
@@ -102,7 +125,7 @@ def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visu
 					cmds.setAttr(f"{loc}.localScaleY", 0.05)
 					cmds.setAttr(f"{loc}.localScaleZ", 0.05)
 
-			wts = core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
+			wts = de_core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
 
 			if _kv_type == PERIODIC:
 				consolidated_wts = {jnt: 0 for jnt in _jnts}
@@ -120,10 +143,9 @@ def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visu
 
 
 '''
-mc.file(new=True, f=True)
 
-from function.rigging.de_boor import hh_de_boor_to_surface as srf_deboor
-reload(srf_deboor)
+
+
 
 
 
@@ -150,6 +172,6 @@ mc.setAttr(f'{nrb_con}.width', 2)
 
 mc.skinCluster(flat_jnts, msh)
 mc.skinCluster(flat_jnts, nrb)
-srf_deboor.split_with_surface(msh, jnts, nrb)
+
 
 '''

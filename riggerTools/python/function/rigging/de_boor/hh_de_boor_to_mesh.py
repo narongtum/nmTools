@@ -171,7 +171,7 @@ def split_with_curve_to_mesh_V2(verts, jnts, crv, d=None, tol=0.000001):
 
 	om.MGlobal.setActiveSelectionList(orginal_sel)
 
-
+#... cut this to core
 def list_joints_from_skincluster(skincluster):
 	
 	if not mc.objExists(skincluster):

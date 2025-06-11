@@ -9,8 +9,10 @@
 
 '''
 # direct call
+
 from function.rigging.autoRig.base import core
 reload(core)
+
 '''
 
 
@@ -346,6 +348,16 @@ multMat = core.MultMatrixWithValue('something')
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 '''
 
+
+
+def list_joints_from_skincluster(skincluster):
+	
+	if not mc.objExists(skincluster):
+		raise RuntimeError(f"SkinCluster '{skincluster}' does not exist.")
+	
+	jnts = mc.skinCluster(skincluster, q=True, inf=True)
+	print(f'This is joint in skinCluster: {jnts}')
+	return jnts
 
 
 

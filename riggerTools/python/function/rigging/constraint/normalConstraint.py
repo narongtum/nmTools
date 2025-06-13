@@ -24,6 +24,68 @@ reload(mnd)
 
 
 
+def snapPointCon():
+	sel = mc.ls(sl = True)
+	src = sel[0]
+	tgt = sel[1]
+	mc.matchTransform( tgt , src, position = True, rotation = False, scale = False )
+
+
+
+def snapOrientCon():
+	sel = mc.ls(sl = True)
+	src = sel[0]
+	tgt = sel[1]
+	mc.matchTransform( tgt , src, position = False, rotation = True, scale = False )
+
+def snapScaleCon():
+	sel = mc.ls(sl=True)
+	src = sel[0]
+	tgt = sel[1]
+	mc.delete(mc.parentConstraint(src,tgt, mo = False))
+	mc.delete(mc.scaleConstraint(src,tgt, mo = False))
+
+# snap for key frame object	
+def snapMat():
+	sel = mc.ls(sl=True)
+	src = sel[0]
+	tgt = sel[1]
+
+	srcMatrix = mc.xform( src, query=True, worldSpace=True, matrix=True )
+	mc.xform( tgt, worldSpace=True, matrix = srcMatrix )
+
+
+def snapMatArg( source , target ):
+	srcMatrix = mc.xform( source, query = True , worldSpace = True , matrix = True )
+	mc.xform( target, worldSpace = True, matrix = srcMatrix )
+
+
+
+
+
+
+
+
+#####################################################
+#      remain  constraint  snapParentCon snapScaleCon                      
+#####################################################
+def normalParentConstr( source, target , **kwargs ):
+	mc.parentConstraint( source ,target  ) 
+def normalScaleConstr( source, target , **kwargs ):
+	mc.scaleConstraint( source ,target )	
+def normalPointConstr( source, target , **kwargs  ):
+	mc.pointConstraint( source ,target )	
+def orientConstr( source, target , **kwargs  ):
+	mc.pointConstraint( source ,target )	
+
+
+
+
+
+
+
+
+
 def check_obj_exists(obj_name):
 	if not mc.objExists(obj_name):
 		raise ValueError(f"Object '{obj_name}' does not exist.")

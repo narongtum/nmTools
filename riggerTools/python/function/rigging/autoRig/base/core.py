@@ -1266,9 +1266,19 @@ class MultiplyDivine ( Node ):
 
 class PlusMinusAverage ( Node ):
 	'''  create plusMinusAverage object  '''
-	def __init__( self , name):
+	def __init__( self, name, startVal = None):
 		Node.__init__( self , mc.createNode('plusMinusAverage', name = name) )
 		self.suffix
+		if startVal:
+			tmp_loc = Locator('startValTemp')
+			tmp_loc.attr('scaleX').value = startVal
+			tmp_loc.attr('scale.scaleX') >> self.attr('input1D[0]')
+			tmp_loc.attr('scale.scaleX') // self.attr('input1D[0]') 
+			mc.delete(tmp_loc.name)
+
+
+
+
 		
 
 

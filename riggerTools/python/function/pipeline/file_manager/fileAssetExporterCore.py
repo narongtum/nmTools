@@ -136,10 +136,7 @@ class FileAssetExporter(QtWidgets.QMainWindow):
 		self.ui.commit_pushButton.clicked.connect(self.on_commit_clicked)
 		self.ui.add_pushButton.clicked.connect(self.on_add_clicked)
 
-	def on_export_type2_clicked(self):
-		name = self.ui.text_2_lineEdit.text()
-		checked = self.ui.asset_2_checkBox.isChecked()
-		QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: {name}\nChecked: {checked}")
+
 
 	def on_get_asset_clicked(self):
 		self.update_input_path_with_scene_name()
@@ -287,7 +284,17 @@ class FileAssetExporter(QtWidgets.QMainWindow):
 
 		exportFBX.exportFBX_with_path(found_targets, fileName = FBX_new_name, path = self.fbx_folder_path)
 
-
+	def on_export_type2_clicked(self):
+		# name = self.ui.text_2_lineEdit.text()
+		# checked = self.ui.asset_2_checkBox.isChecked()
+		found_targets = mc.ls(sl=True)
+		if not found_targets:
+			QtWidgets.QMessageBox.warning(self, "Not Found", "No matching 'Export_grp' and 'Model_grp' found in scene.")
+			return	
+		FBX_new_name = self.ui.text_result_02_lineEdit.text()
+		self.fbx_folder_path = fileTools.findAppropriateFBXFolder()
+		exportFBX.exportFBX_with_path(found_targets, fileName = FBX_new_name, path = self.fbx_folder_path)
+		QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: {name}\nChecked: {checked}")
 
 	def on_commit_clicked(self):
 		if not self.fbx_folder_path:

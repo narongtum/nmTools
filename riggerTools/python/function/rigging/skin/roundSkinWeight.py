@@ -95,6 +95,8 @@ def roundSkinWeight(digit=3, selection=''):
 
 	for eachVtxNum in vertexList:
 
+		
+
 		eachVtx = vertexDict[eachVtxNum]
 		
 		#... case# 1 there are only one skin jnt
@@ -155,7 +157,7 @@ def roundSkinWeight(digit=3, selection=''):
 
 
 			if new_total_sum == 1:
-				roundSkinLogger.info('Sum of value is: 1 That OK.')
+				roundSkinLogger.info(f'{eachVtxNum} Sum of value is: 1 That OK.')
 			elif new_total_sum > 1:
 				roundSkinLogger.warning( 'THE {0} VALUE IS {1} MORE THAN ONE WHY!!!!!.'.format(eachVtxNum, new_total_sum) )
 			elif new_total_sum < 1: 

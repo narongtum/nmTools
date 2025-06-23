@@ -2861,6 +2861,7 @@ def do_global_commit():
 	#... Add delete suffix and prefix 
 	fileTools.doDeleteSuffixExt(suffix ='_X')
 	fileTools.doDeletePrefixExt(prefix = 'X_')
+	FileManagerLog.info('doDeleteSuffixExt...\n')
 
 
 

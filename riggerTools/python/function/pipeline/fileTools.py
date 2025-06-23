@@ -492,7 +492,7 @@ def resize_with_PIL(width=256, height=256, currentPath=''):
 
 
 	except ImportError:
-		print("Pillow is NOT installed.")
+		print("\nPillow is NOT installed.\n")
 		return False
 
 

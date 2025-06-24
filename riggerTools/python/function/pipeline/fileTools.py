@@ -1558,26 +1558,28 @@ def globalPublish():
 
 
 #... find mesh in group
-
 def find_mesh_in_grp(group_names=['Export_grp', 'Model_grp']):
-	mesh_grp = []
+	import maya.cmds as mc
 	
+	mesh_grp = []
+	seen = set()
+
 	for group in group_names:
-		if mc.objExists(group):  # Check if the group exists
+		if mc.objExists(group):
 			print(f"Checking group: {group}")
-			
-			# Get all members (children) of the group
+
 			members = mc.listRelatives(group, allDescendents=True, fullPath=True) or []
-			
+
 			for member in members:
-				# Check if the member is a mesh
 				if mc.nodeType(member) == 'mesh':
-					# If it's a mesh, print its transform name (parent object)
 					transform = mc.listRelatives(member, parent=True, fullPath=True)
 					if transform:
-						print(f"Mesh found: {transform[0]}")
-						mesh_grp.append(transform[0])
+						mesh_name = transform[0]
+						if mesh_name not in seen:
+							print(f"Mesh found: {mesh_name}")
+							mesh_grp.append(mesh_name)
+							seen.add(mesh_name)
 		else:
 			print(f"Group '{group}' does not exist.")
-	
-	return mesh_grp if mesh_grp else False  # Return the list of meshes or False if none found
+
+	return mesh_grp if mesh_grp else False

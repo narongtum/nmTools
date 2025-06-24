@@ -29,7 +29,7 @@ class roundSkinLogger(logger.MayaLogger):
 	LOGGER_NAME = "roundSkin"
 
 
-
+import traceback
 
 
 def has_skin_cluster(mesh):
@@ -54,8 +54,12 @@ def has_skin_cluster(mesh):
 
 def roundSkinWeight(digit=3, selection=''):
 
-	roundSkinLogger.set_level(logging.INFO)
+	roundSkinLogger.set_level(logging.DEBUG)
+	roundSkinLogger.info('Start function.')
 
+	roundSkinLogger.info('[ROUND] CALLED')
+	roundSkinLogger.info('Traceback:\n' + ''.join(traceback.format_stack()))
+	
 	#...timeStart
 	timeStart = time.time()
 
@@ -292,5 +296,5 @@ def roundSkinWeight(digit=3, selection=''):
 		roundSkinLogger.info("\n{0}{0} Import SkinCluster Complete {0}{0}".format('--------------' ))
 	else:
 		mc.error("JSON File was empty ")
-	roundSkinLogger.info('\n### Complete ###')
+	roundSkinLogger.info('# # # Complete # # #')
 	mc.select( deselect = True )

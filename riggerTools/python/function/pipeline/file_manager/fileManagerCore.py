@@ -2756,6 +2756,7 @@ def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 
 
 def do_pipeline_round_skinWeight(group_names = ['Export_grp', 'Model_grp']):
+	FileManagerLog.debug('\ndo_pipeline_round_skinWeight...')
 	if mc.objExists("rig_grp.round_skinweight") == True and mc.getAttr("rig_grp.round_skinweight") == True:
 		mesh = fileTools.find_mesh_in_grp(group_names=group_names)
 		for each in mesh:
@@ -2833,6 +2834,8 @@ def do_local_commit():
 
 
 def do_global_commit():
+	FileManagerLog.debug('do_global_commit START')
+
 	#... Assign previous name to rig_grp
 	fileTools.assign_pre_job_step()
 
@@ -2861,13 +2864,15 @@ def do_global_commit():
 	#... Add delete suffix and prefix 
 	fileTools.doDeleteSuffixExt(suffix ='_X')
 	fileTools.doDeletePrefixExt(prefix = 'X_')
-	FileManagerLog.info('doDeleteSuffixExt...\n')
+	FileManagerLog.info('doDeleteSuffixExt...')
 
 
 
 	#... Round skinweight
+
 	do_pipeline_round_skinWeight()
-	FileManagerLog.info('do_pipeline_round_skinWeight...\n')
+	FileManagerLog.info('do_pipeline_round_skinWeight...')
+
 
 	#... Count joint
 	fileTools.countJnt()

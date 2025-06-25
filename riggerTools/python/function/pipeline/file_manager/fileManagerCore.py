@@ -370,12 +370,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		file_menu.addAction(replaceRef_action)
 
 		#... inside 'Tools' menubar
-		# Create 'Print B' action and add it to the 'File' menu
-		print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
-		toos_menu.addAction(print_b_action)
+		#... Create 'Print B' action and add it to the 'File' menu
+		# print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
+		# toos_menu.addAction(print_b_action)
 
-		print_c_action = FileManagerActions.createPrintCAction(self, self.printC)
-		toos_menu.addAction(print_c_action)
+		assetExport_action = FileManagerActions.createAssetExportAction(self, self.printC)
+		toos_menu.addAction(assetExport_action)
 		# ------------------------------------- #
 		toos_menu.addSeparator()
 
@@ -2887,17 +2887,17 @@ class FileManagerActions:
 		create_thumbnail_open.triggered.connect(callback)
 		return create_thumbnail_open
 
-	@staticmethod
-	def createPrintBAction(parent, callback):
-		print_b_action = QtWidgets.QAction("Print B in menu", parent)
-		print_b_action.triggered.connect(callback)
-		return print_b_action
+	# @staticmethod
+	# def createPrintBAction(parent, callback):
+	# 	print_b_action = QtWidgets.QAction("Print B in menu", parent)
+	# 	print_b_action.triggered.connect(callback)
+	# 	return print_b_action
 
 	@staticmethod
-	def createPrintCAction(parent, callback):
-		print_c_action = QtWidgets.QAction("Print C in menu", parent)
-		print_c_action.triggered.connect(callback)
-		return print_c_action
+	def createAssetExportAction(parent, callback):
+		assetExport_action = QtWidgets.QAction("Asset Exporter", parent)
+		assetExport_action.triggered.connect(callback)
+		return assetExport_action
 
 
 

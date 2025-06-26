@@ -24,6 +24,8 @@ import os
 import math
 from maya import OpenMaya as om
 
+import pymel.core as pm
+
 from function.pipeline import logger 
 reload(logger)
 

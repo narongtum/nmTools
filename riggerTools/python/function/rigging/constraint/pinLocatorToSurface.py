@@ -132,10 +132,19 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 	
 
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	# Make multi double linear for make u parameter to [0] [1]
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+	meta_node = core.MetaBlank(f'{region}_driveAllValue_meta')
+	# meta_node.addAttribute( dataType = 'string' , longName = 'region')
+	meta_node.addAttribute( attributeType = 'float' , longName = 'slide_path' , minValue = 0 , maxValue = 2 , defaultValue = 1 , keyable = True )
+
+
+
+
 	locator_list=[]
 
-
-	
 
 	for num in range(0,(len(source_loc))):
 		print (source_loc[num])
@@ -186,6 +195,10 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 		# pName = '{}_loc#'.format(region + num + side)
 		result = pm.spaceLocator(n=pName).getShape()
+
+
+
+
 
 		result.addAttr('parameterU', at='double', keyable=True, dv=uPos)
 		result.addAttr('parameterV', at='double', keyable=True, dv=vPos)
@@ -265,7 +278,33 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		#... [ Update if use joint]
 		#... create joint and parent under locator
 		
-		PinLogger.debug('Line: 269')
+
+		#... [ link connection to meta node here ]
+
+		#... 1. create multi double linear
+		#... 2. get U value from loc shape
+		#... 3. assign value to mdl
+		#... 4. connect back to U parameter 
+
+		addValue_U_mdl = core.MultiDoubleLinear(f'{base_name}_mdl')
+
+		meta_node.attr('slide_path') >> addValue_U_mdl.attr('input1')
+		# addValue_U_mdl.attr('input1').value = 1
+
+
+
+		addValue_U_mdl.attr('input2').value = uPos
+
+		mc.connectAttr(f'{addValue_U_mdl.name}.output',  f'{result.name()}.parameterU')
+
+		
+
+
+
+
+
+
+
 
 		if creJnt:
 
@@ -347,7 +386,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		
 
 
-		# mc.error('Ma tum tor tomorrow')
+		
 
 
 

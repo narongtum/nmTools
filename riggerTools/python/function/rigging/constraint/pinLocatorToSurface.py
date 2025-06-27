@@ -5,13 +5,10 @@ from function.rigging.constraint import pinLocatorToSurface as pls
 reload(pls)
 '''
 
-
-
 from function.rigging.util import misc
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 reload(misc)
-
 
 import pymel.core as pm
 
@@ -133,7 +130,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 	
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-	# Make multi double linear for make u parameter to [0] [1]
+	# Make multi double linear for connect u parameter make it slide
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 	meta_node = core.MetaBlank(f'{region}_driveAllValue_meta')
@@ -291,10 +288,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 		meta_node.attr('slide_path') >> addValue_U_mdl.attr('input1')
 		# addValue_U_mdl.attr('input1').value = 1
 
-
-
 		addValue_U_mdl.attr('input2').value = uPos
-
 		mc.connectAttr(f'{addValue_U_mdl.name}.output',  f'{result.name()}.parameterU')
 
 		

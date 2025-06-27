@@ -135,7 +135,7 @@ def pin_locator_surface(	# need pxy nrb to drive locator
 
 	meta_node = core.MetaBlank(f'{region}_driveAllValue_meta')
 	# meta_node.addAttribute( dataType = 'string' , longName = 'region')
-	meta_node.addAttribute( attributeType = 'float' , longName = 'slide_path' , minValue = 0 , maxValue = 2 , defaultValue = 1 , keyable = True )
+	meta_node.addAttribute( attributeType = 'float' , longName = 'slide_path' , minValue = 0 , maxValue = 1 , defaultValue = 1 , keyable = True )
 
 
 

@@ -97,7 +97,7 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
 					parentToPriorJnt = False, parentMatrix = False,
-					curlCtrlShape = 'stick_ctrlShape'):
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True):
 
 	#... find base name
 	# name = misc.check_name_style(name = jntLst[0])[0]
@@ -259,10 +259,11 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		#... for local world use
 		localWorld_attr = curlShape_ctrl.name
 
-		#... psCon curlZro_grp to joint
-		curl_parCons = core.parentConstraint(bJntsToSnap, zroGrpCurl, mo=False)
-		suffix = mnd.NODE_short_dict.get('parentConstraint', 'unknown')
-		curl_parCons.name = f'{base_name}_{suffix}'
+		if constraintCurl:
+			#... psCon curlZro_grp to joint
+			curl_parCons = core.parentConstraint(bJntsToSnap, zroGrpCurl, mo=False)
+			suffix = mnd.NODE_short_dict.get('parentConstraint', 'unknown')
+			curl_parCons.name = f'{base_name}_{suffix}'
 		
 
 

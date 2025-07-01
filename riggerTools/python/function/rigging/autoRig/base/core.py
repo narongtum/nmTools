@@ -26,7 +26,7 @@ from maya import OpenMaya as om
 import re
 import pymel.core as pm
 
-from function.pipeline import logger 
+from function.pipeline import logger
 reload(logger)
 
 MAYA_VERSION = mc.about(v=True)
@@ -76,7 +76,7 @@ mc.listConnections( obj_target.name + '.' + 'm_quatToEuler' )[0]
 
 '''
 1. can create null grp with specific name
-2. can create controller with specific name and type 
+2. can create controller with specific name and type
 2.1 can assign side of controller
 2.2 can scale vertex of controller
 2.3 can add gimbal
@@ -96,7 +96,7 @@ mc.listConnections( obj_target.name + '.' + 'm_quatToEuler' )[0]
 # Import module
 '''
 ASCII ART
-URL: 
+URL:
 http://patorjk.com/software/taag/#p=display&f=Big&t=class%20%20%20Null
 
 rigDir = r'D:/python'
@@ -152,7 +152,7 @@ misc.autoSuffix( cube.name )
 shape = self.shape
 
 
-#... Example 4 
+#... Example 4
 # Create controller
 
 cog_ctrl = core.Dag('cog' + '_ctrl')
@@ -161,7 +161,7 @@ cog_ctrl.nmCreateController('cog_ctrlShape')
 cogZro_grp = rigTools.zeroGroup( cog_ctrl )
 cogZro_grp.rename( name + 'Ctrl' + '_zroGrp' )
 cogGmbl_ctrl = core.pkCreateGimbal( cog_ctrl )
-cog_ctrl.rotateOrder = 'xzy' 
+cog_ctrl.rotateOrder = 'xzy'
 cogGmbl_ctrl.rotateOrder = 'xzy'
 # parent constraint
 neckJnt_parCons = core.parentConstraint( neckGmbl_ctrl , neck_bJnt )
@@ -268,7 +268,7 @@ noman = {'jsonFloat':1.05, 'Int':3, 'JsonString':'string says hello'}
 # dump from dict to json
 json_noman = json.dumps(noman)
 # store value
-node.attr('Dict_test').value = json_noman 
+node.attr('Dict_test').value = json_noman
 type(json_noman)
 
 
@@ -351,7 +351,11 @@ curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 '''
 
 
-
+def findExtensionFullName(name):
+	shapenam = shapeName(name)
+	isNode = mc.nodeType(shapenam)
+	extension = mnd.NODE_short_dict.get(isNode)
+	return extension
 
 
 
@@ -369,7 +373,7 @@ def generate_named_pattern(pattern, count):
 	match = re.search(r'(#+)', pattern)
 	if not match:
 		raise ValueError("Pattern must contain at least one '#' as a placeholder.")
-	
+
 	placeholder = match.group(1)
 	width = len(placeholder)
 
@@ -396,11 +400,16 @@ print(core.generate_named_pattern(pattern2, count2))
 
 
 
+
+
+
+
+
 def list_joints_from_skincluster(skincluster):
-	
+
 	if not mc.objExists(skincluster):
 		raise RuntimeError(f"SkinCluster '{skincluster}' does not exist.")
-	
+
 	jnts = mc.skinCluster(skincluster, q=True, inf=True)
 	print(f'This is joint in skinCluster: {jnts}')
 	return jnts
@@ -408,7 +417,7 @@ def list_joints_from_skincluster(skincluster):
 
 
 
-#... Latest here using this function only 
+#... Latest here using this function only
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	import re
@@ -451,7 +460,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		isDefault = True
 		for_base_name = name.split('_')
 		base_name = '_'.join(first_name[:-1])
-		
+
 		for each in for_base_name:
 			if each.endswith('LFT'):
 				side = 'LFT'
@@ -477,7 +486,7 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	else:
 		reverse_side = None
 
-	
+
 
 	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
 	return(base_name, side, reverse_side, isDefault, nameNoSide)
@@ -508,7 +517,12 @@ def findBaseName(name):
 
 
 
-#..... Return shapeName 
+
+
+
+
+
+#..... Return shapeName
 def shapeName(ctrl):
 	try:
 		ctrlShape = mc.listRelatives( ctrl , s = True )[ 0 ]
@@ -516,6 +530,11 @@ def shapeName(ctrl):
 	except:
 		print('There are no shape name to return.')
 		pass
+
+
+
+
+
 
 
 
@@ -546,10 +565,10 @@ colorDict = {   'yellow'    : 17 ,          'red'           : 13 ,
 
 
 
-#   _  _     ______                _   _             
-#  _| || |_  |  ____|              | | (_)            
-# |_  __  _| | |__ _   _ _ __   ___| |_ _  ___  _ __  
-#  _| || |_  |  __| | | | '_ \ / __| __| |/ _ \| '_ \ 
+#   _  _     ______                _   _
+#  _| || |_  |  ____|              | | (_)
+# |_  __  _| | |__ _   _ _ __   ___| |_ _  ___  _ __
+#  _| || |_  |  __| | | | '_ \ / __| __| |/ _ \| '_ \
 # |_  __  _| | |  | |_| | | | | (__| |_| | (_) | | | |
 #   |_||_|   |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|
 
@@ -566,12 +585,12 @@ def createGimbal( obj = '' ):
 	# Create gimbal object
 	gmblCtrl = Null()
 	parentShape( tmpCtrl , gmblCtrl )
-	
-	
+
+
 	#print gmblCtrlShape
 
 	#gmblCtrlShape.name = '%sShape' % gmblCtrl.name
-	
+
 	gmblCtrl.snap( ctrl )
 	gmblCtrl.parent( ctrl )
 
@@ -583,7 +602,7 @@ def createGimbal( obj = '' ):
 
 	spName = check_name_style(ctrl.name)
 	gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
-	
+
 
 	# # Check naming condition
 	# if len(spName) == 2:
@@ -603,7 +622,7 @@ def createGimbal( obj = '' ):
 
 	# gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
 
-	# Not quite understand why recreate obj of gmblCtrl 
+	# Not quite understand why recreate obj of gmblCtrl
 	gmblCtrlShape = Dag( gmblCtrl.shape )
 
 	#print ctrlShape.attr( 'gimbal' )
@@ -612,8 +631,8 @@ def createGimbal( obj = '' ):
 	ctrl.hideArnoldNode()
 	gmblCtrl.hideArnoldNode()
 
-	
-	ctrlShape.attr( 'gimbal' ) >> gmblCtrlShape.attr( 'v' ) 
+
+	ctrlShape.attr( 'gimbal' ) >> gmblCtrlShape.attr( 'v' )
 
 	# hide attr
 	gmblCtrl.attr( 'v' ).lockHide()
@@ -636,7 +655,7 @@ def nmCreateGimbal( obj = '' ):
 	if mc.nodeType(ctrlShape) == 'nurbsCurve':
 
 		print ('This is might be Controller')
-	
+
 		shapes = wcd.getShape( ctrlShape )
 
 		# change ctrl data 75 percent smaller
@@ -650,7 +669,7 @@ def nmCreateGimbal( obj = '' ):
 		# use [0] because value is list
 		gmblCtrl = mc.curve( ctrlName, p = data[0]["points"], k = data[0]["knots"], d = data[0]["degree"], per = bool(data[0]["form"]) )
 
-		# case if 
+		# case if
 		#gmblCtrl = mc.curve(ctrlName, p = data["points"], k=data["knots"], d=data["degree"], per=bool(data["form"]))
 
 		# add gimbal attr
@@ -669,7 +688,7 @@ def nmCreateGimbal( obj = '' ):
 
 		# connect attr
 		#print  ( '%s.gimbal' % ctrlName , '%s.v' %gmblCtrl )
-		
+
 		# mc.connectAttr( '%s.gmbl' % ctrlName , '%s.v' %gmblShape )
 		# mc.setAttr( '%s.gmbl' % ctrlName , 0 )
 		mc.connectAttr( '%s.gimbal' % ctrlShape , '%s.v' %gmblShape )
@@ -697,7 +716,7 @@ def nmCreateGimbal( obj = '' ):
 def cluster( *args  , **kwargs ):
 	# [0] is cluster shapeName
 	# [1] is cluster handle
-	return Dag(  mc.cluster(*args  , **kwargs)[1] ) 
+	return Dag(  mc.cluster(*args  , **kwargs)[1] )
 
 
 
@@ -714,7 +733,7 @@ def cluster( *args  , **kwargs ):
 
 def vPlus(vec1, vec2, operator):
 	'''operator: +, -'''
-	vec = []      
+	vec = []
 	for i in range(len(vec1)):
 		if operator == '+':
 			vec.append(vec1[i]+vec2[i])
@@ -767,7 +786,7 @@ def vectorToAngle(aimVec, upVec=None, sideVec=None, aimAxis="x", upAxis=None, si
 	'''
 	axisDic = {"x": 0, "y": 1, "z": 2}
 
-	#if both side vector and up vector are defined, then side vector will be None 
+	#if both side vector and up vector are defined, then side vector will be None
 	if upVec and sideVec:
 		sideVec = None
 	elif not upVec and not sideVec:
@@ -808,8 +827,8 @@ def vectorToAngle(aimVec, upVec=None, sideVec=None, aimAxis="x", upAxis=None, si
 		M16[axisDic[upAxis]*4+i] = upVec[i]
 		M16[axisDic[sideAxis]*4+i] = sideVec[i]
 
-	#convert matrix format    
-	m = om.MMatrix(M16)              
+	#convert matrix format
+	m = om.MMatrix(M16)
 	mTransformMtx = om.MTransformationMatrix(m)
 
 	#decompose matrix to get a rotate value
@@ -825,13 +844,13 @@ def cleanAttrAnimationCurve(attribute, tols):
 	times = cmds.keyframe(attribute, q = True, tc = True)
 	inTnagent = cmds.keyTangent(attribute, q=True, inAngle=True)
 	outTnagent = cmds.keyTangent(attribute, q=True, outAngle=True)
-	
+
 	#get a secondary value
-	secValues = []  
+	secValues = []
 	for i in range(len(values)-2):
 		secValue = cmds.getAttr(attribute, t = times[i+1]+0.01)
 		secValues.append(secValue)
-	
+
 	#a useless key is a key which after being deleted, does no change to the original animation curve
 	for i in range(len(values)-2):
 		cmds.cutKey(attribute, time=(times[i+1],times[i+1]))
@@ -839,7 +858,7 @@ def cleanAttrAnimationCurve(attribute, tols):
 		if abs(newValue - secValues[i])> tols:
 			cmds.setKeyframe(attribute, t = times[i+1], v = values[i+1])
 			cmds.keyTangent(attribute, edit=True, time=(times[i+1],times[i+1]), absolute=True, outAngle=outTnagent[i+1], ia=inTnagent[i+1])
-			
+
 def cleanObjAnimationCurve(tols=0.00001):
 	#clean object's animation curve
 
@@ -847,13 +866,13 @@ def cleanObjAnimationCurve(tols=0.00001):
 	if len(objects) > 0:
 		for obj in objects:
 			allAttrs = cmds.listAttr(obj, k=True)
-		
+
 			keyedAttrs = []
 			for objAttr in allAttrs:
 				keyNO = cmds.keyframe("{0}.{1}".format(obj, objAttr), q=True, kc=True)
 				if keyNO > 0:
 					keyedAttrs.append(objAttr)
-					
+
 			for keyedAttr in keyedAttrs:
 				cleanAttrAnimationCurve("{0}.{1}".format(obj, keyedAttr), tols)
 
@@ -862,20 +881,20 @@ def cleanObjAnimationCurve(tols=0.00001):
 
 
 
-									
- #   ___   _   _   _ __  __   __   ___ 
+
+ #   ___   _   _   _ __  __   __   ___
  #  / __| | | | | | '__| \ \ / /  / _ \
  # | (__  | |_| | | |     \ V /  |  __/
  #  \___|  \__,_| |_|      \_/    \___|
-									 
+
 
 def curve( *args , **kwargs ):
 	return Dag(  mc.curve(*args , **kwargs) )
 
 def duplicateCurve( *args , **kwargs ):
 	'''
-	 takes a curve on a surface and and returns the 3D curve. 
-	 The curve on a surface could be isoparam component, 
+	 takes a curve on a surface and and returns the 3D curve.
+	 The curve on a surface could be isoparam component,
 	 trimmed edge or curve on surface object.
 	'''
 	tmp = mc.duplicateCurve( *args , **kwargs )
@@ -892,7 +911,7 @@ def nurbPlane( *args , **kwargs ):
 
 def duplicate( *args , **kwargs ):
 	tmp = mc.duplicate( *args , **kwargs )
-	crv = Dag(tmp[0]) 
+	crv = Dag(tmp[0])
 	return crv
 
 
@@ -915,18 +934,18 @@ def clearSel():
 
 #### This is base class ####
 
- #       _                  _                    
- #      | |                | |                   
- #   ___| | __ _ ___ ___   | |__   __ _ ___  ___ 
+ #       _                  _
+ #      | |                | |
+ #   ___| | __ _ ___ ___   | |__   __ _ ___  ___
  #  / __| |/ _` / __/ __|  | '_ \ / _` / __|/ _ \
  # | (__| | (_| \__ \__ \  | |_) | (_| \__ \  __/
  #  \___|_|\__,_|___/___/  |_.__/ \__,_|___/\___|
-											  
-											  
+
+
 
 class Node( object ) :
 	'''
-	Template Base class for maya 
+	Template Base class for maya
 	'''
 	# nodeId = 0
 	def __init__( self , name ) :
@@ -961,7 +980,7 @@ class Node( object ) :
 	# =============
 	def getName( self ) :
 		return self.__name
-	
+
 	def rename( self , newName ) :
 		print ('Reseting name to %s' %newName)
 		self.__name = str( mc.rename( self.__name , newName ) )
@@ -1028,7 +1047,7 @@ class Node( object ) :
 		for name in ('x','y','z'):
 			val = locals()[name]
 			if val is not None:
-				# what is this 
+				# what is this
 				opts = {name:True, 'objectSpace':True, 'absolute':True}
 				func(val, self.name, **opts)
 
@@ -1047,7 +1066,7 @@ class Node( object ) :
 
 	def matchAll( self , destination ):
 		mc.matchTransform( self.name  , destination , pivots = True , position = True , rotation = True , scale = True   )
-	
+
 	def splitName( self ): # split name with under score
 		name = self.name
 
@@ -1073,9 +1092,9 @@ class Node( object ) :
 			return rawName
 
 
-		
 
-		
+
+
 
 
 	# property add suffix exists
@@ -1085,7 +1104,7 @@ class Node( object ) :
 		isNode = mc.nodeType( self.name )
 
 		if isNode == 'transform':
-			# if transform node chek shapeNode 
+			# if transform node chek shapeNode
 			shapeName = self.shape
 			print (self.name)
 			isNode = mc.nodeType( shapeName )
@@ -1104,7 +1123,7 @@ class Node( object ) :
 
 		node_exp = []
 		if nodeType == 'None':
-			
+
 
 			for each in nodeDict:
 
@@ -1128,9 +1147,9 @@ class Node( object ) :
 				else:
 					node_exp = 'unknown'
 				continue
-	 
 
-	
+
+
 		# print 'This is shortName	:' +  node_exp
 
 		return node_exp
@@ -1145,12 +1164,12 @@ class Node( object ) :
 
 		lastname = self._findExtension()
 		print ('this is suffix name: %s' %lastname)
-		
+
 
 		# if object already last name
 		if each.endswith( lastname ):
 			print ('This is already last name it will skip.\n')
-			
+
 		else:
 			# newNam = mc.rename( each  , each +'_'+ lastname )
 			self.name = each +'_'+ lastname
@@ -1162,7 +1181,7 @@ class Node( object ) :
 
 
 
-	#... Set attr Lock 
+	#... Set attr Lock
 	#... Redundance with lockHideAttrLst in Dag class
 	def setLocked(self,attr):
 		mc.setAttr(self.name + '.' + attr, lock = True ,keyable = True)
@@ -1185,14 +1204,14 @@ class Node( object ) :
 
 
 
-#       _                   __  __      _          _   _           _      
-#      | |                 |  \/  |    | |        | \ | |         | |     
-#   ___| | __ _ ___ ___    | \  / | ___| |_ __ _  |  \| | ___   __| | ___ 
+#       _                   __  __      _          _   _           _
+#      | |                 |  \/  |    | |        | \ | |         | |
+#   ___| | __ _ ___ ___    | \  / | ___| |_ __ _  |  \| | ___   __| | ___
 #  / __| |/ _` / __/ __|   | |\/| |/ _ \ __/ _` | | . ` |/ _ \ / _` |/ _ \
 # | (__| | (_| \__ \__ \   | |  | |  __/ || (_| | | |\  | (_) | (_| |  __/
 #  \___|_|\__,_|___/___/   |_|  |_|\___|\__\__,_| |_| \_|\___/ \__,_|\___|
-# 
-#                                                                                                                                      # 
+#
+#                                                                                                                                      #
 
 
 
@@ -1234,7 +1253,7 @@ class MetaGeneric( Node ):
 		self.addAttribute( dataType = 'string' , longName = 'CtrlShape')
 		self.addAttribute( dataType = 'string' , longName = 'Color')
 
-	
+
 	def lockAllAttr(self):
 		# Get a list of all the attributes for the specified node
 		attr_list = mc.listAttr(self.name)
@@ -1245,7 +1264,6 @@ class MetaGeneric( Node ):
 
 
 
-		
 
 
 
@@ -1254,9 +1272,10 @@ class MetaGeneric( Node ):
 
 
 
- #       _                  _    _ _   _ _                    _      
- #      | |                | |  | | | (_) |                  | |     
- #   ___| | __ _ ___ ___   | |  | | |_ _| |   _ __   ___   __| | ___ 
+
+ #       _                  _    _ _   _ _                    _
+ #      | |                | |  | | | (_) |                  | |
+ #   ___| | __ _ ___ ___   | |  | | |_ _| |   _ __   ___   __| | ___
  #  / __| |/ _` / __/ __|  | |  | | __| | |  | '_ \ / _ \ / _` |/ _ \
  # | (__| | (_| \__ \__ \  | |__| | |_| | |  | | | | (_) | (_| |  __/
  #  \___|_|\__,_|___/___/   \____/ \__|_|_|  |_| |_|\___/ \__,_|\___|
@@ -1270,7 +1289,7 @@ class MetaGeneric( Node ):
 class CMuscleSmartConstraint ( Node ):
 	'''  create plusMinusAverage object  '''
 	def __init__( self , name, dv = 1):
-		
+
 		Node.__init__( self , mc.createNode('cMuscleSmartConstraint', name = name) )
 		self.addAttribute( ln = 'multiply' , k = True , defaultValue = dv )
 		self.suffix
@@ -1300,14 +1319,14 @@ class MultiplyDivine ( Node ):
 	def __init__(self, arg):
 		super(MultiplyDivine , self).__init__()
 		self.arg = arg
-'''     
+'''
 
 
 class MultiplyDivine ( Node ):
 	'''  create MultiplyDivine object  '''
 	def __init__( self , name ):
 		Node.__init__( self , mc.createNode('multiplyDivide', name = name) )
-		
+
 
 
 class PlusMinusAverage ( Node ):
@@ -1319,20 +1338,20 @@ class PlusMinusAverage ( Node ):
 			tmp_loc = Locator('startValTemp')
 			tmp_loc.attr('scaleX').value = startVal
 			tmp_loc.attr('scale.scaleX') >> self.attr('input1D[0]')
-			tmp_loc.attr('scale.scaleX') // self.attr('input1D[0]') 
+			tmp_loc.attr('scale.scaleX') // self.attr('input1D[0]')
 			mc.delete(tmp_loc.name)
 
 
 
 
-		
+
 
 
 class BlendColors ( Node ):
 	'''  create BlendColors object  '''
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode('blendColors', name = name)  )
-	
+
 
 
 
@@ -1356,7 +1375,7 @@ class MultiplyDivineWithVal ( Node ):
 		print ('set value to %d' %operator)
 
 
-	
+
 class AddDoubleLinear( Node ):
 	'''  create AddDoubleLinear object  '''
 	def __init__( self, name, input2=0):
@@ -1386,12 +1405,12 @@ class MDLWithMul( Node ):
 class Condition( Node ):
 	'''  create Condition object  '''
 	def __init__( self, name ):
-		Node.__init__( self , mc.createNode( 'condition' , name = name) ) 
+		Node.__init__( self , mc.createNode( 'condition' , name = name) )
 		# self.suffix
 
 
 class ConditionWithNum(Node):
-	def __init__(self, name,	firstT=0, secondT=0, 
+	def __init__(self, name,	firstT=0, secondT=0,
 								colorIfTrueR=0, colorIfTrueG=0, colorIfTrueB=0,
 								colorIfFalseR=1, colorIfFalseG=1, colorIfFalseB=1):
 		Node.__init__( self , mc.createNode( 'condition' , name = name) )
@@ -1415,26 +1434,26 @@ class Loft( Node ):
 class PointOnCurveInfo( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'pointOnCurveInfo' , name = name) )
-		self.suffix 
+		self.suffix
 
 
 class CurveInfo( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'curveInfo' , name = name) )
-		self.suffix 
+		self.suffix
 
 
 
 
 
 
- #      _                   __  __       _        _      
- #      | |                 |  \/  |     | |      (_)     
+ #      _                   __  __       _        _
+ #      | |                 |  \/  |     | |      (_)
  #   ___| | __ _ ___ ___    | \  / | __ _| |_ _ __ ___  __
  #  / __| |/ _` / __/ __|   | |\/| |/ _` | __| '__| \ \/ /
- # | (__| | (_| \__ \__ \   | |  | | (_| | |_| |  | |>  < 
+ # | (__| | (_| \__ \__ \   | |  | | (_| | |_| |  | |>  <
  #  \___|_|\__,_|___/___/   |_|  |_|\__,_|\__|_|  |_/_/\_\
-														
+
 
 
 # Matrix Node
@@ -1460,7 +1479,7 @@ class MultMatrixWithValue( Node ):
 
 class ComposeMatrix( Node ):
 	def __init__(self, name):
-		Node.__init__(self, mc.createNode('composeMatrix', name = name))	
+		Node.__init__(self, mc.createNode('composeMatrix', name = name))
 		self.autoSuffix()
 
 class VectorProduct( Node ):
@@ -1480,7 +1499,7 @@ class AimMatrix( Node ):
 		self.autoSuffix()
 
 
-# Add a weighted list of matrices together. 
+# Add a weighted list of matrices together.
 # https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-Basics/files/GUID-B290C3E6-95BC-4299-BC0D-169EADDE6319-htm.html
 class WtAddMatrix( Node ):
 	def __init__(self, name):
@@ -1509,7 +1528,7 @@ class WtAddMatrixWithChannal( Node):
 				self.attr(f'wt_{num}') >> self.attr(f'wtMatrix[{num}].weightIn')
 			print (num)
 		self.autoSuffix()
-		
+
 
 
 
@@ -1528,7 +1547,7 @@ class QuatProd( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('quatProd', name = name))
 		self.autoSuffix()
-	
+
 class QuatToEuler( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('quatToEuler', name = name))
@@ -1568,7 +1587,7 @@ class PointMatrixMult(Node):
 
 
 # It will cause maya crash when instanceing i dunno why
-# Because of you insert self as args so it init arg and recusive 
+# Because of you insert self as args so it init arg and recusive
 
 class SkinCluster( Node ):
 	""" skinCluster Node Object """
@@ -1595,11 +1614,11 @@ class DistanceDimension( Node ):
 		# if mc.objExists('locator1'):
 		# 	mc.rename('locator1','something1')
 		# if mc.objExists('locator2'):
-		# 	mc.rename('locator2','something2')			
+		# 	mc.rename('locator2','something2')
 
 		if loc1:
-			mc.rename( 'locator1' , loc1 ) 
-			mc.rename( 'locator2' , loc2 ) 
+			mc.rename( 'locator1' , loc1 )
+			mc.rename( 'locator2' , loc2 )
 			mc.rename( 'distanceDimension1' , distanceNam )
 		else:
 			pass
@@ -1612,7 +1631,7 @@ class DistanceNode( Node ):
 	# Newer
 	# Create distance object for connect value manual
 	def __init__( self , *args , **kwargs):
-		Node.__init__(self , mc.createNode('distanceDimShape', *args , **kwargs) ) 
+		Node.__init__(self , mc.createNode('distanceDimShape', *args , **kwargs) )
 
 
 
@@ -1621,14 +1640,14 @@ class DistanceNode( Node ):
 class MotionPath( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'motionPath' , name = name) )
-		self.suffix 
+		self.suffix
 
 
 
 class MultiplyDivide( Node ):
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode( 'multiplyDivide' , name = name) )
-		self.suffix 
+		self.suffix
 
 
 
@@ -1644,14 +1663,14 @@ class MotionPath( _motionPath ):
 
 
 
- #   _____ _                      _____                             _____                     
- #  / ____| |                    |  __ \                           / ____|                    
- # | |    | | __ _ ___ ___       | |__) |___ _ __ ___   __ _ _ __ | |    _   _ _ ____   _____ 
+ #   _____ _                      _____                             _____
+ #  / ____| |                    |  __ \                           / ____|
+ # | |    | | __ _ ___ ___       | |__) |___ _ __ ___   __ _ _ __ | |    _   _ _ ____   _____
  # | |    | |/ _` / __/ __|      |  _  // _ \ '_ ` _ \ / _` | '_ \| |   | | | | '__\ \ / / _ \
  # | |____| | (_| \__ \__ \      | | \ \  __/ | | | | | (_| | |_) | |___| |_| | |   \ V /  __/
  #  \_____|_|\__,_|___/___/      |_|  \_\___|_| |_| |_|\__,_| .__/ \_____\__,_|_|    \_/ \___|
- #                                                          | |                               
- #                                                          |_|                                                       |_|                               
+ #                                                          | |
+ #                                                          |_|                                                       |_|
 
 
 # remap plus multi-double linear new method for drive blendshape
@@ -1701,9 +1720,9 @@ class RemapCurve(Node):
 
 
 
- #       _                                 _            _____                     
- #      | |                    /\         (_)          / ____|                    
- #   ___| | __ _ ___ ___      /  \   _ __  _ _ __ ___ | |    _   _ _ ____   _____ 
+ #       _                                 _            _____
+ #      | |                    /\         (_)          / ____|
+ #   ___| | __ _ ___ ___      /  \   _ __  _ _ __ ___ | |    _   _ _ ____   _____
  #  / __| |/ _` / __/ __|    / /\ \ | '_ \| | '_ ` _ \| |   | | | | '__\ \ / / _ \
  # | (__| | (_| \__ \__ \   / ____ \| | | | | | | | | | |___| |_| | |   \ V /  __/
  #  \___|_|\__,_|___/___/  /_/    \_\_| |_|_|_| |_| |_|\_____\__,_|_|    \_/ \___|
@@ -1778,9 +1797,9 @@ class AnimCurveSomeThing( AnimCurveUU ):
 		mc.keyTangent( self , index = indx[1], itt = 'linear' , ott = 'linear' )
 
 
- #      _                           _   _        _ _                    
- #      | |                     /\  | | | |      (_) |                   
- #   ___| | __ _ ___ ___       /  \ | |_| |_ _ __ _| |__  _   _ _ __ ___ 
+ #      _                           _   _        _ _
+ #      | |                     /\  | | | |      (_) |
+ #   ___| | __ _ ___ ___       /  \ | |_| |_ _ __ _| |__  _   _ _ __ ___
  #  / __| |/ _` / __/ __|     / /\ \| __| __| '__| | '_ \| | | | '__/ _ \
  # | (__| | (_| \__ \__ \    / ____ \ |_| |_| |  | | |_) | |_| | | |  __/
  #  \___|_|\__,_|___/___/   /_/    \_\__|\__|_|  |_|_.__/ \__,_|_|  \___|
@@ -1789,23 +1808,23 @@ class AnimCurveSomeThing( AnimCurveUU ):
 
 
 class Attribute( object ) :
-	''' 
-	Template maya attr for class Attributes 
+	'''
+	Template maya attr for class Attributes
 	'''
 
 	def __init__( self , attrName = '' ) :
 		self.name = str( attrName )
 
-	
+
 	def __str__( self ) :
 		return str( self.name )
-	
+
 	def __repr__( self ) :
 		return str( self.name )
-	
+
 	def __floordiv__( self , attr = '' ) :
 		mc.disconnectAttr( self , attr )
-	
+
 	def __rshift__( self , target = '' ) :
 
 		'''
@@ -1828,7 +1847,7 @@ class Attribute( object ) :
 	# Lock and hide attribute
 	def lockHide( self ):
 		mc.setAttr( self , lock = True , keyable = False )
-		
+
 	def editAttrManual( self, lock = False , keyable = True ,channelBox = True):
 		''' do some edit lock or unlock hide or unhide'''
 		mc.setAttr( self , lock = lock , keyable = keyable ,channelBox = channelBox)
@@ -1894,14 +1913,14 @@ class Attribute( object ) :
 
 
 
- #       _                   _____              
- #      | |                 |  __ \             
- #   ___| | __ _ ___ ___    | |  | | __ _  __ _ 
+ #       _                   _____
+ #      | |                 |  __ \
+ #   ___| | __ _ ___ ___    | |  | | __ _  __ _
  #  / __| |/ _` / __/ __|   | |  | |/ _` |/ _` |
  # | (__| | (_| \__ \__ \   | |__| | (_| | (_| |
  #  \___|_|\__,_|___/___/   |_____/ \__,_|\__, |
  #                                         __/ |
- #                                        |___/ 
+ #                                        |___/
 
 
 
@@ -1915,7 +1934,7 @@ class Dag( Node ) :
 
 	def unParent(self):
 		mc.parent(self.name, world=True)
-	
+
 	#... shape properties
 	def getShape( self ) :
 		shapes = mc.listRelatives( self.name , shapes = True )
@@ -1924,13 +1943,13 @@ class Dag( Node ) :
 				return shapes[ 0 ]
 			else :
 				return shapes[ 0 ]
-	
+
 	def renameShape( self , newName ) :
 		shapes = mc.listRelatives( self.name , shapes = True )
 		if shapes :
 			for shape in shapes :
 				mc.rename( shape , newName )
-	
+
 	shape = property( getShape , None , None , None )
 
 
@@ -1949,7 +1968,7 @@ class Dag( Node ) :
 			print('This object is not have lineWidth attribute.')
 
 
-		
+
 	# =================
 	# Color part
 	# =================
@@ -1963,8 +1982,8 @@ class Dag( Node ) :
 		# use property from line 101 to getshape
 		shape = self.shape
 		print ('shapename is %s' %shape)
-		
-		
+
+
 		# color dictionary
 		colorDict = {   'yellow'    : 17 ,          'red'           : 13 ,
 						'softBlue'  : 18 ,          'blue'          : 6 ,
@@ -1973,7 +1992,7 @@ class Dag( Node ) :
 						'softGray'  : 3 ,           'darkRed'       : 4 ,
 						'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
 						'green'     : 14 ,          'none'          : 0     }
-		
+
 		try:
 			if color in colorDict.keys():
 				# if color is string Ex. 'green'
@@ -1981,7 +2000,7 @@ class Dag( Node ) :
 					print ('This is string.')
 					colorId = colorDict[color]
 					print ('Change color to %s.' %color)
-					''' 
+					'''
 					elif type (color) == type( int() ):
 					print 'This is int.'
 					colorId = color
@@ -1996,7 +2015,7 @@ class Dag( Node ) :
 				mc.setAttr( '%s.overrideEnabled'    % shape[0] , 1 )
 				mc.setAttr( '%s.overrideColor'      % shape[0] , colorId )
 
-			else :  
+			else :
 				print('what is is ')
 				mc.setAttr( '%s.overrideEnabled'    % shape , 1 )
 				mc.setAttr( '%s.overrideColor'      % shape , colorId )
@@ -2005,7 +2024,7 @@ class Dag( Node ) :
 		except:
 			mc.warning('Please check clashed name.')
 			pass
-	
+
 
 
 
@@ -2016,7 +2035,7 @@ class Dag( Node ) :
 		RGB_dict = mnd.rgbCode
 
 		if color in RGB_dict.keys():
-			
+
 				colorId = RGB_dict[color]
 				mc.setAttr(   	 '%s.useOutlinerColor' %self.name ,True   )
 				mc.setAttr (	 '%s.outlinerColor' %self.name , colorId[0],colorId[1],colorId[2]	)
@@ -2072,7 +2091,7 @@ class Dag( Node ) :
 
 	# # # # # # # # # # # # #
 	# About joint adjustment #
-	# # # # # # # # # ## # # 
+	# # # # # # # # # ## # #
 
 	def setJointColor( self , color ):
 		COLOR_dict = mnd.COLOR_dict
@@ -2100,14 +2119,14 @@ class Dag( Node ) :
 
 	# =================
 
-	# All aboit Adjust controller 
+	# All aboit Adjust controller
 
 	# =================
 
 	#... same but more no damage for curve that want to scale
 	def scaleCurve( self, scale = 1 ):
 		print ('Edit scale is %s' %scale)
-		shapes = self.getCurveData()    
+		shapes = self.getCurveData()
 		newShapes = []
 
 		for i , each in enumerate( shapes["points"] ):
@@ -2127,7 +2146,7 @@ class Dag( Node ) :
 
 
 		print ('Edit axis is %s' %axis)
-		shapes = self.getCurveData()    
+		shapes = self.getCurveData()
 		#shapes = self.shape
 		newShapes = []
 
@@ -2154,7 +2173,7 @@ class Dag( Node ) :
 		'''inside Class Dag create controller from lib'''
 		data = wcd.loadData ( path = SHAPE_LIBRARY_PATH + shapeName + '.json')
 		curveName = mc.curve ( name = self.name,  p = data["points"], k = data["knots"], d = data["degree"], per = bool(data["form"]))
-		
+
 		#... Still error fix later
 		curveShape = mc.listRelatives( self.name,  shapes = True )[ 0 ]
 
@@ -2185,12 +2204,12 @@ class Dag( Node ) :
 
 
 
-	
+
 
 
 
 	def setShape( self , crvShapeList ):
-		''' Creates a new shape on the crv transform, by using the properties in the crvShapeDict. 
+		''' Creates a new shape on the crv transform, by using the properties in the crvShapeDict.
 		return new ctrl name'''
 		crvShapes = Dag.validateCurve( self )
 
@@ -2201,7 +2220,7 @@ class Dag( Node ) :
 
 		for i, crvShapeDict in enumerate(crvShapeList):
 			tmpCrv = mc.curve( p = crvShapeDict["points"], k = crvShapeDict["knots"], d = crvShapeDict["degree"], per = bool(crvShapeDict["form"] ) )
-			
+
 			newShape = mc.listRelatives( tmpCrv, s=1 )[0]
 			mc.parent(newShape, self.name, r=1, s=1)
 
@@ -2233,13 +2252,13 @@ class Dag( Node ) :
 			'''
 
 	def setShapeExt( self , crvShapeList ):
-		''' Creates a new shape on the crv transform, by using the properties in the crvShapeDict. 
+		''' Creates a new shape on the crv transform, by using the properties in the crvShapeDict.
 			and transfer the attr before delete by set shape '''
 
-		''' found out copyCtrlShape tools is can replace curve with another shape of curve with command 
+		''' found out copyCtrlShape tools is can replace curve with another shape of curve with command
 		mc.curve( sel[1], replace ) arg  may be this method it not nesseary any more '''
 
-		
+
 
 
 		crvShapes = Dag.validateCurve( self )
@@ -2251,11 +2270,11 @@ class Dag( Node ) :
 		oldColour = mc.getAttr(crvShapes[0] + ".overrideColor")
 
 		temp_old_shape = mc.rename( crvShapes, self.name + "ShapeTemp"  )
-		
+
 
 		for i, crvShapeDict in enumerate(crvShapeList):
 			tmpCrv = mc.curve( p = crvShapeDict["points"], k = crvShapeDict["knots"], d = crvShapeDict["degree"], per = bool(crvShapeDict["form"] ) )
-			
+
 			newShape = mc.listRelatives( tmpCrv, s=1 )[0]
 			mc.parent(newShape, self.name, r=1, s=1)
 
@@ -2274,12 +2293,12 @@ class Dag( Node ) :
 			# set to old color
 			mc.setAttr(newShape + ".overrideEnabled",1)
 			mc.setAttr(newShape + ".overrideColor", oldColour )
-				
+
 
 
 	def replaceControllerShape(self, shapesData):
 
-		# replace controller to another shape 
+		# replace controller to another shape
 		# using with getCurveData method
 		# example
 		'''
@@ -2293,18 +2312,18 @@ class Dag( Node ) :
 
 
 	def transferAttr(self , sourceShape ,destinationShape ):
-		# intend create for transferAttr when use copy shape controller tools 
+		# intend create for transferAttr when use copy shape controller tools
 		# but it no neet anymore use mc.curve instead
 
 		# qury source shape node
 		old_shapeName = sourceShape
-		
+
 		new_shapeName = Dag(destinationShape)
 
 		print ('Transfer attribute of %s' %self.name)
 
 
-		
+
 		# get latest attr
 		lstAttr = mc.listAttr(old_shapeName)
 
@@ -2350,10 +2369,10 @@ class Dag( Node ) :
 					# got the connection
 					relink_connection = mc.listConnections(old_shapeName + '.' + attrName, p=True)[0]
 					mc.connectAttr( new_shapeName.name + '.' + lstAttr[attrNum + i], relink_connection , f = True)
-					
+
 				else:
 					CoreLogger.info('this is not Enum.')
-					# check if having min max value 
+					# check if having min max value
 					if mc.attributeQuery( lstAttr[attrNum + i] , node = old_shapeName, minExists = True):
 						min = mc.attributeQuery( lstAttr[attrNum + i] , node = old_shapeName, min = True)[0]
 						max = mc.attributeQuery( lstAttr[attrNum + i] , node = old_shapeName, max = True)[0]
@@ -2374,14 +2393,35 @@ class Dag( Node ) :
 			print ('There are no suit condition maybe number of attribure is mismatch(%d)' %(len(lstAttr)))
 
 
+	def lockAllAttr(self, attrs=['v', 't', 'r', 's']):
+		#... Get a list of all the attributes for the specified node
+		targets = [self.name] if isinstance(self.name, str) else self.name
+		for obj in targets:
+			obj = pm.PyNode(obj)
+			for attr in attrs:
+				if attr == 'v':
+					try:
+						obj.v.set(lock=True, keyable=False, channelBox=False)
+					except:
+						pass
+				else:
+					for axis in 'xyz':
+						try:
+							obj.attr(f'{attr}{axis}').set(lock=True, keyable=False, channelBox=False)
+						except:
+							pass
 
+
+		#... Loop through each attribute and set the lock flag to True
+		# for attr in attr_list:
+		# 	mc.setAttr(self.name + '.' + attr, lock=True)
 
 
 
 	def validateCurve( self ):
 		'''Checks whether the transform we are working with is actually a curve and returns it's shapes'''
 
-		
+
 		if mc.nodeType(self) == "transform" and mc.nodeType(mc.listRelatives(self, c=1, s=1)[0]) == "nurbsCurve":
 			crvShapes = mc.listRelatives(self, c=1, s=1)
 
@@ -2410,7 +2450,7 @@ class Dag( Node ) :
 			convert from  wcd.getShape change it becasue getShape is confuse name       '''
 		ctrlName = self.name
 		print ('ctrl name is : %s' %ctrlName)
-		crvShapes = self.shape 
+		crvShapes = self.shape
 		print ('shape name is : %s' %self.shape )
 
 		crvShapeList = []
@@ -2438,9 +2478,9 @@ class Dag( Node ) :
 		#return crvShapeDist instead
 		return crvShapeDict
 
-	
+
 	def modifiyCtrlShape( self , getCurveData , axis = [-1, -1, -1] ):
-		# inner method for change shape to another 
+		# inner method for change shape to another
 		# redundance with editCtrlShape
 		# using in nmCreate gimbal
 		newShapes = []
@@ -2448,16 +2488,16 @@ class Dag( Node ) :
 			getCurveData["points"][i] = [each[0] * axis[0], each[1] * axis[1], each[2] * axis[2]]
 		newShapes.append( getCurveData )
 		return newShapes
-	
-		
+
+
 
 	def scaleShape( self , scale = ( 1,1,1 ) ):
 		''' scale object controller '''
 		print ('Scale %s Controller.' %self.name)
 		# shapes = wcd.getShape( self.name )
-		
+
 		# shapesData = Dag(self)
-		dictData = self.getCurveData()  
+		dictData = self.getCurveData()
 		newShapes = []
 		for i, each in enumerate( dictData["points"] ):
 			dictData["points"][i] = [each[0] * scale[0], each[1] * scale[1], each[2] * scale[2]]
@@ -2469,7 +2509,7 @@ class Dag( Node ) :
 		''' rotation CV curve '''
 		if self.shape:
 			print (self.name + 'is might be a curve.')
-			cvsNo = mc.getAttr('%s.spans' %self.shape) + mc.getAttr('%s.degree' %self.shape) 
+			cvsNo = mc.getAttr('%s.spans' %self.shape) + mc.getAttr('%s.degree' %self.shape)
 			cvs = '%s.cv[%s:%s]' %(self.name , str(0) , str(cvsNo) )
 
 			mc.rotate( rotate[0] , rotate[1] , rotate[2] , cvs , r = True , os = True)
@@ -2479,7 +2519,7 @@ class Dag( Node ) :
 		''' move CV curve  '''
 		if self.shape:
 			print (self.name + 'is might be a curve.')
-			cvsNo = mc.getAttr('%s.spans' %self.shape) + mc.getAttr('%s.degree' %self.shape) 
+			cvsNo = mc.getAttr('%s.spans' %self.shape) + mc.getAttr('%s.degree' %self.shape)
 			cvs = '%s.cv[%s:%s]' %(self.name , str(0) , str(cvsNo) )
 
 			mc.move( move[0] , move[1] , move[2] , cvs , relative = True , objectSpace = True)
@@ -2488,15 +2528,15 @@ class Dag( Node ) :
 	def flipCtrlShape( self , axis = 'Y' ):
 		''' flip control shape '''
 		if axis == 'Y':
-			mul =  (-1, -1, 1) 
+			mul =  (-1, -1, 1)
 		elif axis == 'Z':
-			mul =  (-1, 1, -1) 
+			mul =  (-1, 1, -1)
 		else:
-			mul =  (1, -1, -1) 
-		
+			mul =  (1, -1, -1)
+
 		print ('flip %s Controller' %self.name )
-		# instancing 
-		shapes = Dag.getCurveData( self )   
+		# instancing
+		shapes = Dag.getCurveData( self )
 		newShapes = []
 
 
@@ -2557,9 +2597,9 @@ class Dag( Node ) :
 		pos = False
 		rot = False
 		scl = False
-		
+
 		'''
-		mc.matchTransform( self.name , target  , *args,**kwargs ) 
+		mc.matchTransform( self.name , target  , *args,**kwargs )
 
 	# cmds.matchTransform('cylinder1','cone1')
 
@@ -2573,11 +2613,11 @@ class Dag( Node ) :
 	def snapPoint( self , target , *args,**kwargs) :
 		# Match current position to target
 		mc.delete( mc.pointConstraint( target , self.name , mo=False , *args,**kwargs) )
-	
+
 	def snapOrient( self , target ) :
 		# Match current orientation to target
 		mc.delete( mc.orientConstraint( target , self.name , mo=False ) )
-	
+
 	def snapScale( self , target ) :
 		# Match current scale to target
 		mc.delete( mc.scaleConstraint( target , self.name , mo=False ) )
@@ -2618,7 +2658,7 @@ class Dag( Node ) :
 		for name in ('x','y','z'):
 			val = locals()[name]
 			if val is not None:
-				# what is this 
+				# what is this
 				opts = { name:True, 'objectSpace':True, 'absolute':True }
 				func(val, self.name, **opts)
 
@@ -2626,9 +2666,9 @@ class Dag( Node ) :
 
 	def lockHideAttrLst( self , *args ):
 		'''
-		# = = = = = = = = = = = = = = = = = 
+		# = = = = = = = = = = = = = = = = =
 		# lock and hide attr, i don't know how to use this attr in attribute class then i copy it here
-		# = = = = = = = = = = = = = = = = = 
+		# = = = = = = = = = = = = = = = = =
 		'''
 		for each in args:
 			mc.setAttr( '%s.%s' %( self, each ) , lock = True , keyable = False )
@@ -2648,9 +2688,9 @@ class Dag( Node ) :
 	# Set attr value property
 	def getPosVal( self , dist):
 		'''
-		# = = = = = = = = = = = = = = = = = 
+		# = = = = = = = = = = = = = = = = =
 		# lock and hide attr, i don't know how to use this attr in attribute class then i copy it here
-		# = = = = = = = = = = = = = = = = = 
+		# = = = = = = = = = = = = = = = = =
 		'''
 		val = mc.getAttr(self , self.name + dist)
 		# filter the condition
@@ -2672,11 +2712,11 @@ class Dag( Node ) :
 		ctrl = Dag(self.name)
 		rotOrderLst = 'xyz:yzx:zxy:xzy:yxz:zyx'
 		ctrlShape = ctrl.shape
-		
+
 		ctrlShape = Dag( ctrlShape )
 		ctrlShape.addAttribute( at = 'enum', keyable = True , en = rotOrderLst , ln = 'rotate_Order'  )
 		ctrlShape.attr('rotate_Order') >> ctrl.attr('rotateOrder')
-		
+
 		print 'Connect rotation order to shapeNode'
 	'''
 
@@ -2701,20 +2741,20 @@ class Dag( Node ) :
 			else:
 				val = rotNum
 
-			
+
 			mc.setAttr( '%s.rotate_Order' %self.name , val )
 			print ('set rotation order of %s to %s' %(self.name , rotNum))
 
 
-		
+
 		print ('Connect rotation order to shapeNode')
 
 
 		ctrlShape.attr('rotate_Order') >> self.attr('rotateOrder')
 
-		
-		
-		
+
+
+
 
 
 
@@ -2738,11 +2778,11 @@ class Dag( Node ) :
 		return Dag(  mc.curve(*args , **kwargs) )
 
 
-	def rebuildCurve(self ,constructionHistory = False , replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0, 
-					keepControlPoints = False, keepEndPoints = False, keepTangents = False , spans = 4, degree = 3, 
+	def rebuildCurve(self ,constructionHistory = False , replaceOriginal = True, rebuildType = 0, endKnots = 1, keepRange = 0,
+					keepControlPoints = False, keepEndPoints = False, keepTangents = False , spans = 4, degree = 3,
 					tol = 0.0001):
 		try:
-			mc.rebuildCurve( self.name ,ch = constructionHistory , rpo = replaceOriginal, rt = rebuildType, end = endKnots, kr = keepRange, 
+			mc.rebuildCurve( self.name ,ch = constructionHistory , rpo = replaceOriginal, rt = rebuildType, end = endKnots, kr = keepRange,
 							kcp = keepControlPoints, kep = keepEndPoints, kt = keepTangents , s = spans, d = degree, tol = tol  )
 		except:
 			mc.warning('The object maybe not Curve. Please check')
@@ -2765,17 +2805,17 @@ class Follicle( Node ):
 
 
 
- #       _                   _   _       _ _ 
+ #       _                   _   _       _ _
  #      | |                 | \ | |     | | |
  #   ___| | __ _ ___ ___    |  \| |_   _| | |
  #  / __| |/ _` / __/ __|   | . ` | | | | | |
  # | (__| | (_| \__ \__ \   | |\  | |_| | | |
- #  \___|_|\__,_|___/___/   |_| \_|\__,_|_|_|                                         
- #                                           
+ #  \___|_|\__,_|___/___/   |_| \_|\__,_|_|_|
+ #
 
 
 class Null( Dag ) :
-	''' 
+	'''
 	for create Object empty group in maya
 	'''
 	def __init__( self , name = '' ) :
@@ -2794,14 +2834,14 @@ class Null( Dag ) :
 '''
 
 
- #      _                   _   _            _     
- #      | |                 | \ | |          | |    
- #   ___| | __ _ ___ ___    |  \| |_   _ _ __| |__  
- #  / __| |/ _` / __/ __|   | . ` | | | | '__| '_ \ 
+ #      _                   _   _            _
+ #      | |                 | \ | |          | |
+ #   ___| | __ _ ___ ___    |  \| |_   _ _ __| |__
+ #  / __| |/ _` / __/ __|   | . ` | | | | '__| '_ \
  # | (__| | (_| \__ \__ \   | |\  | |_| | |  | |_) |
- #  \___|_|\__,_|___/___/   |_| \_|\__,_|_|  |_.__/ 
-												  
-												  
+ #  \___|_|\__,_|___/___/   |_| \_|\__,_|_|  |_.__/
+
+
 
 class Nurb( Dag ):
 	def __init__(self, name ):
@@ -2826,7 +2866,7 @@ class Locator( Dag ):
 
 		# this lock is cause problem that child will can not select
 		if lock:
-				
+
 			locShape.attr( 'overrideDisplayType' ).value = 1
 			locShape.attr( 'overrideEnabled' ).value = 1
 			locShape.attr( 'overrideColor' ).value = 16
@@ -2837,25 +2877,25 @@ class Locator( Dag ):
 
 		#... assign 'white color'
 		# self.setAttr('overrideEnabled', 1)
-		
 
 
 
 
 
 
-#       _                         _       _       _   
-#      | |                       | |     (_)     | |  
-#   ___| | __ _ ___ ___          | | ___  _ _ __ | |_ 
+
+#       _                         _       _       _
+#      | |                       | |     (_)     | |
+#   ___| | __ _ ___ ___          | | ___  _ _ __ | |_
 #  / __| |/ _` / __/ __|     _   | |/ _ \| | '_ \| __|
-# | (__| | (_| \__ \__ \    | |__| | (_) | | | | | |_ 
+# | (__| | (_| \__ \__ \    | |__| | (_) | | | | | |_
 #  \___|_|\__,_|___/___/     \____/ \___/|_|_| |_|\__|
 
 
 
 
 class Joint( Dag ):
-	''' 
+	'''
 	WARNING !!! joint object adjust for assign name when create
 	no need name it will cause error
 	'''
@@ -2876,25 +2916,25 @@ class Joint( Dag ):
 
 	def setLable( self, jSide , jType  ):
 		'''
-		Set joint label 
+		Set joint label
 		@param jType: joint type
 		@type jType: string
 		@param jSide: joint side
 		@type jSide: string
 		'''
-	
+
 		# color dictionary
 		sideDict = {	'CEN'		: 0 ,
 						'LFT'		: 1 ,
 						'RGT'		: 2 ,
-						'none'		: 3		} 
+						'none'		: 3		}
 
 
 		typeDict = {	'none'		: 0 ,	'finger'			: 13 ,    	'mid toe'		: 26 ,
-						'root'  	: 1 ,	'thumb'				: 14 ,    	'ring toe'		: 27 , 
-						'hip'		: 2 ,	'propA'				: 15 ,    	'pinky toe'		: 28 , 
-						'knee'		: 3 ,	'propB'				: 16 ,   	'foot thumb'	: 29 ,  
-						'foot'		: 4 ,	'propC'				: 17 ,      
+						'root'  	: 1 ,	'thumb'				: 14 ,    	'ring toe'		: 27 ,
+						'hip'		: 2 ,	'propA'				: 15 ,    	'pinky toe'		: 28 ,
+						'knee'		: 3 ,	'propB'				: 16 ,   	'foot thumb'	: 29 ,
+						'foot'		: 4 ,	'propC'				: 17 ,
 						'toe'		: 5 , 	'other'				: 18 ,
 						'spine'     : 6 ,	'index finger'		: 19 ,
 						'neck'   	: 7 ,	'mid finger'		: 20 ,
@@ -2911,12 +2951,12 @@ class Joint( Dag ):
 				print ('This is string.')
 				typeId = typeDict[jType]
 				print ('Change joint type to %s.' %jType)
-				
+
 			elif type (jType) == type( int() ):
 				print ('This is int.')
 				typeId = jType
 				print (typeId)
-				
+
 		else:
 			typeId = 0
 
@@ -2928,12 +2968,12 @@ class Joint( Dag ):
 				print ('This is string.')
 				sideId = sideDict[jSide]
 				print ('Change joint side to %s.' %jSide)
-				
+
 			elif type (jSide) == type( int() ):
 				print ('This is int.')
 				sideId = jSide
 				print (sideId)
-				
+
 		else:
 			sideId = 0
 
@@ -2963,7 +3003,7 @@ class Joint( Dag ):
 			colorId = 0
 			mc.error("Insert string keyword such as yellow")
 
-	
+
 	# why disable
 	def setJointOutlineColor( self,color ):
 		RGB_dict = mnd.rgbCode
@@ -2973,7 +3013,7 @@ class Joint( Dag ):
 			mc.setAttr(   	 '%s.useOutlinerColor' %self.name ,True   )
 			mc.setAttr (	 '%s.outlinerColor' %self.name , colorId[0],colorId[1],colorId[2]	)
 			mm.eval('AEdagNodeCommonRefreshOutliners();')
-	
+
 
 
 	def createJntShape( self , localScale = 1 ):
@@ -3003,11 +3043,11 @@ class Joint( Dag ):
 
 
 
- #       _                     _____                _             _       _   
- #      | |                   / ____|              | |           (_)     | |  
- #   ___| | __ _ ___ ___     | |     ___  _ __  ___| |_ _ __ __ _ _ _ __ | |_ 
+ #       _                     _____                _             _       _
+ #      | |                   / ____|              | |           (_)     | |
+ #   ___| | __ _ ___ ___     | |     ___  _ __  ___| |_ _ __ __ _ _ _ __ | |_
  #  / __| |/ _` / __/ __|    | |    / _ \| '_ \/ __| __| '__/ _` | | '_ \| __|
- # | (__| | (_| \__ \__ \    | |___| (_) | | | \__ \ |_| | | (_| | | | | | |_ 
+ # | (__| | (_| \__ \__ \    | |___| (_) | | | \__ \ |_| | | (_| | | | | | |_
  #  \___|_|\__,_|___/___/     \_____\___/|_| |_|___/\__|_|  \__,_|_|_| |_|\__|
 
 
@@ -3027,11 +3067,11 @@ class Constraint( Dag ):
 
 
 
- #    _____                _             _       _   
- #  / ____|              | |           (_)     | |  
- # | |     ___  _ __  ___| |_ _ __ __ _ _ _ __ | |_ 
+ #    _____                _             _       _
+ #  / ____|              | |           (_)     | |
+ # | |     ___  _ __  ___| |_ _ __ __ _ _ _ __ | |_
  # | |    / _ \| '_ \/ __| __| '__/ _` | | '_ \| __|
- # | |___| (_) | | | \__ \ |_| | | (_| | | | | | |_ 
+ # | |___| (_) | | | \__ \ |_| | | (_| | | | | | |_
  #  \_____\___/|_| |_|___/\__|_|  \__,_|_|_| |_|\__|
 
 
@@ -3051,7 +3091,7 @@ def pointConstraint( *args , **kwargs ):
 
 def aimConstraint( *args , **kwargs ):
 	return Constraint(mc.aimConstraint( *args , **kwargs )[0] )
-	
+
 def poleVectorConstraint( *args , **kwargs ):
 	return Constraint( mc.poleVectorConstraint ( *args , **kwargs)[0] )
 
@@ -3068,9 +3108,9 @@ def parentShape( parent = '' , child = '' ):
 
 
 
-#       
+#
 #	EXPERIMENT: try to use classmethod instead
-#... to use 
+#... to use
 # constr_object = Constr.psConstr('pCube1','pSphere1', maintainOffset=True)
 
 class Constr( Constraint ):
@@ -3120,13 +3160,13 @@ class ScaleConstraint( Constraint ):
 
 
 
-#         _                          _____   _    
-#        | |                        |_   _| | |   
+#         _                          _____   _
+#        | |                        |_   _| | |
 #   ___  | |   __ _   ___   ___       | |   | | __
 #  / __| | |  / _` | / __| / __|      | |   | |/ /
-# | (__  | | | (_| | \__ \ \__ \     _| |_  |   < 
+# | (__  | | | (_| | \__ \ \__ \     _| |_  |   <
 #  \___| |_|  \__,_| |___/ |___/    |_____| |_|\_\
-												
+
 
 class Ik( Dag ):
 	'''Template class for IK object'''
@@ -3183,7 +3223,7 @@ class IkRp( Ik ):
 
 
 class DoIk( Ik ):
-	''' Newer than IkRp 
+	''' Newer than IkRp
 	ikRPsolver, ikSCsolver and ikSplineSolver
 	armIk_ikh = core.DoIk( startJoint = upArmIk_jnt , endEffector = self.wristIk_jnt , solver = solverType )
 
@@ -3192,9 +3232,9 @@ class DoIk( Ik ):
 		Ik.__init__( self , mc.ikHandle( startJoint = startJoint , endEffector = endEffector , parentCurve = parentCurve,  solver = solverType) [0] )
 
 
-# it make break auto rig so create the new one instead	
+# it make break auto rig so create the new one instead
 class DoIkSpline( Ik ):
-	 
+
 	'''
 	# Newer than IkRp put the solver in to attr instead
 
@@ -3233,14 +3273,14 @@ def getUParam( pnt = [], crv = None):
 	paramPtr=paramUtill.asDoublePtr()
 	isOnCurve = curveFn.isPointOnCurve(point)
 	if isOnCurve == True:
-		
+
 		curveFn.getParamAtPoint(point , paramPtr,0.001,om.MSpace.kObject )
 	else :
 		point = curveFn.closestPoint(point,paramPtr,0.001,om.MSpace.kObject)
 		curveFn.getParamAtPoint(point , paramPtr,0.001,om.MSpace.kObject )
-	
+
 	param = paramUtill.getDouble(paramPtr)
-	print (param)  
+	print (param)
 	return param
 
 
@@ -3248,7 +3288,7 @@ def getUParam( pnt = [], crv = None):
 def getDagPath(objectName):
 	# check for objectName type
 	objectName = objectName if isinstance(objectName, list) else [objectName]
-	
+
 	oNodeList=[]
 	for o in objectName:
 		selectionList = om.MSelectionList()
@@ -3258,4 +3298,4 @@ def getDagPath(objectName):
 		oNodeList.append(oNode)
 	# if the input was a single object (not a list), then return a single result
 	# otherwise return a list
-	return oNodeList[0] if len(oNodeList) == 1 else oNodeList 
+	return oNodeList[0] if len(oNodeList) == 1 else oNodeList

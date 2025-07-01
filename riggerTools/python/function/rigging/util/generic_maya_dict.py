@@ -49,7 +49,7 @@ for each in nodeDict:
 
 alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
 
-
+#... newr version using this instead
 NODE_short_dict = {
     'nurbsSurface': 'nrb',
     'nurbsCurve': 'ctrl',

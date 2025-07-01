@@ -23,7 +23,7 @@ import maya.mel as mm
 import os
 import math
 from maya import OpenMaya as om
-
+import re
 import pymel.core as pm
 
 from function.pipeline import logger 
@@ -348,6 +348,50 @@ multMat = core.MultMatrixWithValue('something')
 
 #... Example 34: Create controller and zero grp
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
+'''
+
+
+
+
+
+
+def generate_named_pattern(pattern, count):
+	"""
+	Replace one or more '#' in a pattern string with zero-padded integers up to count.
+
+	Args:
+		pattern (str): String pattern containing one or more consecutive '#' as placeholder.
+		count (int): Number of items to generate.
+
+	Returns:
+		tuple: A tuple of formatted strings.
+	"""
+	match = re.search(r'(#+)', pattern)
+	if not match:
+		raise ValueError("Pattern must contain at least one '#' as a placeholder.")
+	
+	placeholder = match.group(1)
+	width = len(placeholder)
+
+	result = tuple(
+		pattern.replace(placeholder, str(i).zfill(width)) for i in range(1, count + 1)
+	)
+	return result
+
+
+
+'''
+# example
+pattern = 'C_tenTail##_ikJnt'
+count = 4
+print(core.generate_named_pattern(pattern, count))
+# -> ('C_tenTail01_ikJnt', 'C_tenTail02_ikJnt', 'C_tenTail03_ikJnt', 'C_tenTail04_ikJnt')
+
+pattern2 = 'L_leg#_ctrl'
+count2 = 3
+print(core.generate_named_pattern(pattern2, count2))
+# -> ('L_leg1_ctrl', 'L_leg2_ctrl', 'L_leg3_ctrl')
+
 '''
 
 

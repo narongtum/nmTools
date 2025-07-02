@@ -133,6 +133,7 @@ rig_grp.attr('size') >> still_grp.attr( 'sx' )
 
 #... Separate attribure
 '''
+node.addAttribute( at = 'enum', keyable = True , en = "++++:", longName = 'Eye_preset'  )
 '''
 
 

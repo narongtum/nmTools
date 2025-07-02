@@ -104,7 +104,8 @@ NODE_short_dict = {
     'blendMatrix': 'blendMat',
     'blendShape': 'bsh',
     'network': 'meta',
-    'setRange': 'setRange'
+    'setRange': 'setRange',
+    'deformSquash': 'defSquash' 
 }
 
 #... Example usage

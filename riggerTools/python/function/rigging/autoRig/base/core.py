@@ -131,6 +131,12 @@ rig_grp.attr('size') >> still_grp.attr( 'sx' )
 '''
 
 
+#... Separate attribure
+'''
+'''
+
+
+
 #... Example 2
 '''
 from function.rigging.autoRig.base import core
@@ -352,6 +358,9 @@ curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 
 
 def findExtensionFullName(name):
+	'''
+	aaa= core.findExtensionFullName('C_tenTail_squash_deformerHandle')
+	'''
 	shapenam = shapeName(name)
 	isNode = mc.nodeType(shapenam)
 	extension = mnd.NODE_short_dict.get(isNode)
@@ -1344,10 +1353,12 @@ class PlusMinusAverage ( Node ):
 
 
 
+class LightInfo(Node):
+		def __init__(self, name):
+			Node.__init__( self , mc.createNode('lightInfo', name = name)  )
 
 
-
-class BlendColors ( Node ):
+class BlendColors( Node ):
 	'''  create BlendColors object  '''
 	def __init__( self, name ):
 		Node.__init__( self , mc.createNode('blendColors', name = name)  )

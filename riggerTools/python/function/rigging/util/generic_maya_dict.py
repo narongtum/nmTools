@@ -178,7 +178,8 @@ NODE_dict = [
 	{	'longName': 'network'							,	'shortName': 'meta'						},
 	{	'longName': 'setRange'							,	'shortName': 'setRange'					},
 	{	'longName': 'blendWeighted'							,	'shortName': 'blendWeighted'		},	
-	{	'longName': 'animCurveUL'							,	'shortName': 'animCurveUL'}	
+	{	'longName': 'animCurveUL'							,	'shortName': 'animCurveUL'}	,
+	{	'longName': 'blendTwoAttr'							,	'shortName': 'bta'}
 ]
 
 

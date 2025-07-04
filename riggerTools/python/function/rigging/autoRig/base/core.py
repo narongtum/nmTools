@@ -1454,7 +1454,10 @@ class CurveInfo( Node ):
 		Node.__init__( self , mc.createNode( 'curveInfo' , name = name) )
 		self.suffix
 
-
+class BlendTwoAttr( Node ):
+	def __init__( self, name ):
+		Node.__init__( self , mc.createNode( 'blendTwoAttr' , name = name) )
+		self.suffix
 
 
 

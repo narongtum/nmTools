@@ -1,4 +1,4 @@
-from maya import cmds
+import maya.cmds as mc
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
 from function.rigging.de_boor import hh_de_boor_core as core
@@ -8,10 +8,20 @@ PERIODIC = 'periodic'
 INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
 
 
+def list_joints_from_skincluster(skincluster):
+    
+    if not mc.objExists(skincluster):
+        raise RuntimeError(f"SkinCluster '{skincluster}' does not exist.")
+    
+    jnts = mc.skinCluster(skincluster, q=True, inf=True)
+    print(f'This is joint in skinCluster: {jnts}')
+    return jnts
+
+
 def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True):
     original_sel = om.MGlobal.getActiveSelectionList()
 
-    verts = cmds.ls(cmds.polyListComponentConversion(mesh, toVertex=True), fl=True)
+    verts = mc.ls(mc.polyListComponentConversion(mesh, toVertex=True), fl=True)
     jnts_copy = jnt_grid[:]
 
     if d is None:
@@ -21,24 +31,24 @@ def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visu
     else:
         d_u, d_v = d
 
-    max_val_u = cmds.getAttr(f'{surface}.maxValueU')
-    max_val_v = cmds.getAttr(f'{surface}.maxValueV')
-    form_u = cmds.getAttr(f'{surface}.formU')
-    form_v = cmds.getAttr(f'{surface}.formV')
+    max_val_u = mc.getAttr(f'{surface}.maxValueU')
+    max_val_v = mc.getAttr(f'{surface}.maxValueV')
+    form_u = mc.getAttr(f'{surface}.formU')
+    form_v = mc.getAttr(f'{surface}.formV')
     kv_type = [INDEX_TO_KNOT_TYPE[form_u], INDEX_TO_KNOT_TYPE[form_v]]
 
-    vert_pa = om.MPointArray([cmds.xform(v, q=True, ws=True, t=True) for v in verts])
+    vert_pa = om.MPointArray([mc.xform(v, q=True, ws=True, t=True) for v in verts])
 
-    cmds.select(verts)
+    mc.select(verts)
     vert_sl = om.MGlobal.getActiveSelectionList()
     dag, components = vert_sl.getComponent(0)
 
     try:
-        skin_cluster = cmds.ls(cmds.listHistory(dag.fullPathName()), typ='skinCluster')[0]
+        skin_cluster = mc.ls(mc.listHistory(dag.fullPathName()), typ='skinCluster')[0]
     except:
         raise RuntimeError('No skinCluster found on mesh.')
 
-    cmds.skinPercent(skin_cluster, pruneWeights=tol)
+    mc.skinPercent(skin_cluster, pruneWeights=tol)
 
     skin_cluster_sl = om.MGlobal.getSelectionListByName(skin_cluster)
     skin_cluster_obj = skin_cluster_sl.getDependNode(0)
@@ -95,12 +105,12 @@ def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visu
             # Debug: Create locator at closest point
             if i == 0 and visualize:
                 name = f'debug_uv_loc_{j:03d}'
-                if not cmds.objExists(name):
-                    loc = cmds.spaceLocator(name=name)[0]
-                    cmds.xform(loc, ws=True, t=cp[0])
-                    cmds.setAttr(f"{loc}.localScaleX", 0.05)
-                    cmds.setAttr(f"{loc}.localScaleY", 0.05)
-                    cmds.setAttr(f"{loc}.localScaleZ", 0.05)
+                if not mc.objExists(name):
+                    loc = mc.spaceLocator(name=name)[0]
+                    mc.xform(loc, ws=True, t=cp[0])
+                    mc.setAttr(f"{loc}.localScaleX", 0.05)
+                    mc.setAttr(f"{loc}.localScaleY", 0.05)
+                    mc.setAttr(f"{loc}.localScaleZ", 0.05)
 
             wts = core.de_boor(len(modified_jnts), _d, t_n, kv, tol=tol)
 

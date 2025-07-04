@@ -113,6 +113,58 @@ def load_curve_skinweights(curve_name, json_path):
 
 
 
+def load_curve_skinweights_V2(curve_name, json_path):
+	#... check exists JSON
+	if not os.path.exists(json_path):
+		mc.warning(f"❌ File not found: {json_path}")
+		return
+
+	#... find shape and skinCluster
+	shape = mc.listRelatives(curve_name, shapes=True, fullPath=True)[0]
+
+	#... load data from JSON
+	with open(json_path, 'r') as f:
+		weight_data = json.load(f)
+
+	#... qury joint from JSON
+	joints_from_json = set()
+	for weights in weight_data.values():
+		joints_from_json.update(weights.keys())
+	joints_from_json = list(joints_from_json)
+
+	#... check if joint is in scene
+	existing_joints = [j for j in joints_from_json if mc.objExists(j)]
+	if not existing_joints:
+		mc.warning("❌ No valid joints found from JSON.")
+		return
+
+	#... if there are having skinCluster 
+	history = mc.listHistory(shape)
+	skin_clusters = [node for node in history if mc.nodeType(node) == "skinCluster"]
+
+	if skin_clusters:
+		skin_cluster = skin_clusters[0]
+	else:
+		#... rebind 
+		skin_cluster = mc.skinCluster(existing_joints, curve_name, toSelectedBones=True, normalizeWeights=1, maximumInfluences=4, bindMethod=0)[0]
+		print(f"🔄 Auto-bound skinCluster: {skin_cluster}")
+
+	#... get joint in exists skinCluster 
+	joints_in_skin = mc.skinCluster(skin_cluster, query=True, influence=True)
+
+	#... assign weight back
+	for cv_label, joint_weights in weight_data.items():
+		full_cv = f"{shape}.{cv_label}"
+		#... create value list follow joint order in skinCluster
+		values = [joint_weights.get(j, 0.0) for j in joints_in_skin]
+		mc.skinPercent(skin_cluster, full_cv, transformValue=list(zip(joints_in_skin, values)))
+
+	print(f"✅ Loaded skin weights to {curve_name} from {json_path}")
+
+
+
+
+
 def run_load_curve_skinweights():
 	#... file state print
 	fileTools.fileState()

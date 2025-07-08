@@ -269,6 +269,13 @@ node.addAttribute( dataType = 'string' , longName = 'This_si_string_test')
 node.addAttribute( attributeType = 'message' , longName = 'mulmatrix')
 node.attr('This_si_string_test').value = 'noman'
 node.addAttribute( dataType = 'string' , longName = 'Dict_test')
+#... call
+raw_str = chain_meta.attr('storeValue').value
+name_list = [n.strip() for n in raw_str.split(',')]
+
+
+
+
 
 import json
 noman = {'jsonFloat':1.05, 'Int':3, 'JsonString':'string says hello'}
@@ -1196,10 +1203,46 @@ class Node( object ) :
 	def setLocked(self,attr):
 		mc.setAttr(self.name + '.' + attr, lock = True ,keyable = True)
 
-
-
-
 	# lock = property( setLocked , None , None , None)
+
+
+	def deleteAttribute(self, attrName):
+		"""
+		Delete attribute from this node if it exists.
+		"""
+		full_attr = f"{self.name}.{attrName}"
+		if mc.objExists(full_attr):
+			mc.deleteAttr(full_attr)
+			CoreLogger.info(f"Deleted attribute: {full_attr}")
+		else:
+			CoreLogger.warning(f"Attribute does not exist: {full_attr}")
+
+
+	def disconnectAttr(self, attrName):
+		"""
+		Disconnect all incoming and outgoing connections of the given attribute.
+		"""
+		full_attr = f"{self.name}.{attrName}"
+
+		# Get source and destination connections
+		srcs = mc.listConnections(full_attr, s=True, d=False, p=True) or []
+		dsts = mc.listConnections(full_attr, s=False, d=True, p=True) or []
+
+		for src in srcs:
+			try:
+				mc.disconnectAttr(src, full_attr)
+				print(f"Disconnected {src} >> {full_attr}")
+			except:
+				print(f"Failed to disconnect {src} >> {full_attr}")
+
+		for dst in dsts:
+			try:
+				mc.disconnectAttr(full_attr, dst)
+				print(f"Disconnected {full_attr} >> {dst}")
+			except:
+				print(f"Failed to disconnect {full_attr} >> {dst}")
+
+
 
 	# END of class Node
 

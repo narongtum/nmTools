@@ -179,6 +179,7 @@ NODE_dict = [
 	{	'longName': 'setRange'							,	'shortName': 'setRange'					},
 	{	'longName': 'blendWeighted'							,	'shortName': 'blendWeighted'		},	
 	{	'longName': 'animCurveUL'							,	'shortName': 'animCurveUL'}	,
+	{	'longName': 'deformSine'							,	'shortName': 'defSine'}	,
 	{	'longName': 'blendTwoAttr'							,	'shortName': 'bta'}
 ]
 

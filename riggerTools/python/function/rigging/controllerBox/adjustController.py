@@ -165,7 +165,7 @@ def creControllerFunc( 		selected = [], scale = 1, ctrlShape = 'circle_ctrlShape
 					joint_ScalCons = core.scaleConstraint( gimbal_ctrl , each )
 					joint_ScalCons.name = rawName + '_scalCons'
 				else:
-					mtc.parentConMatrix( gimbal_ctrl, each, mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
+					mtc.parentConMatrixGPT( gimbal_ctrl, each, mo = mo, translate = translate, rotate = rotate, scale = scaleConstraint)
 					# misc.parentMatrix( gimbal_ctrl, rawNamLst[i] , mo = mo, translate = translate, rotate = rotate, scaleCon = scaleConstraint)
 
 		if parentUnder:

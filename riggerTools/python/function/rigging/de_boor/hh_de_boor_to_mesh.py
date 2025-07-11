@@ -92,6 +92,28 @@ def split_with_curve_to_mesh(verts, jnts, crv, d=None, tol=0.000001):
 
 	om.MGlobal.setActiveSelectionList(orginal_sel)
 
+def _check_and_fix_joint_order(jnts, crv):
+
+
+	if not jnts or not crv:
+		return jnts
+
+	jnt_start = mc.xform(jnts[0], q=True, ws=True, t=True)
+	jnt_end = mc.xform(jnts[-1], q=True, ws=True, t=True)
+
+	cv_start = mc.pointPosition(f'{crv}.cv[0]', w=True)
+	cv_end = mc.pointPosition(f'{crv}.cv[-1]', w=True)
+
+	def dist(a, b):
+		return sum((a[i]-b[i])**2 for i in range(3))**0.5
+
+	dist_start = dist(cv_start, jnt_start)
+	dist_end = dist(cv_end, jnt_start)
+
+	if dist_end < dist_start:
+		print('[DeBoor] Auto-reversing joint list to match curve direction.')
+		return jnts[::-1]
+	return jnts
 
 
 def split_with_curve_to_mesh_V2(verts, jnts, crv, d=None, tol=0.000001):
@@ -101,6 +123,9 @@ def split_with_curve_to_mesh_V2(verts, jnts, crv, d=None, tol=0.000001):
 
 	verts = mc.ls(mc.polyListComponentConversion(verts, toVertex=True), fl=True)
 	d = len(jnts) - 1 if d is None else d
+
+	#... insert reorder list
+	jnts = _check_and_fix_joint_order(jnts, crv)
 
 	curve_degree = mc.getAttr(f'{crv}.degree')
 	crv_spans = mc.getAttr(f'{crv}.spans')

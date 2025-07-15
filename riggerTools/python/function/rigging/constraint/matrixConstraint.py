@@ -298,6 +298,14 @@ def matrixConListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt'
 
 
 
+def _getLocalOffsetGPT(source, target):
+
+	source_world = _getDagPath(source).inclusiveMatrix()
+	target_world = _getDagPath(target).inclusiveMatrix()
+
+	# offset matrix: transforms target into local space of source
+	offset_matrix = target_world * source_world.inverse()
+	return offset_matrix
 
 
 
@@ -339,7 +347,7 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 	base_name = core.check_name_style(name=target)[0]
 
 	# Compute offset matrix
-	localOffset = _getLocalOffset(source, target)
+	localOffset = _getLocalOffsetGPT(source, target)
 	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
 
 	# Create necessary nodes
@@ -364,13 +372,23 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 		target_quatProd = core.QuatProd(base_name)
 		target_quatToEuler = core.QuatToEuler(base_name)
 
-		if obj_target.type == 'joint' and obj_source.type == 'transform':
+		# if obj_target.type == 'joint' and obj_source.type == 'transform':
+		# 	mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
+		# else:
+		# 	# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+		# 	obj_source.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+		# 	# connect rotateOrder to eulerToQuat
+		# 	obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
+
+		#  alway jointOrient if target is joint
+		if obj_target.type == 'joint':
 			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
+			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
 		else:
-			# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
 			obj_source.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-			# connect rotateOrder to eulerToQuat
 			obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
+			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
+
 
 
 		target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')

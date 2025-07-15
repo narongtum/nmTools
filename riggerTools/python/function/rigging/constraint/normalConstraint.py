@@ -232,7 +232,7 @@ def parent_localWorld(	zro_grp='L_pinStrap02_Zro_grp',  # Zero out group
 		check_obj_exists(attr_occur)
 	except ValueError as e:
 		print(e)
-		return  # Stop execution instead of raising a system exit error
+		mc.error(e)
 	
 	try:
 		# Create a null group under zero group

@@ -460,6 +460,7 @@ def fkIkDeformed(	SIDE = 'C',
 			minusOne_pma.attr('input3D[1].input3Dz').value = 1
 
 			for index, each in enumerate (squash_loc_list):
+
 				storeValue = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_storeValue{index+1:02}')
 				storeValue.attr('input3D[1].input3Dx').value = 1
 
@@ -470,10 +471,15 @@ def fkIkDeformed(	SIDE = 'C',
 				squash_meta.attr(f'squash_{index+1:02}') >> storeValue.attr('input3D[1].input3Dy')
 				squash_meta.attr(f'squash_{index+1:02}') >> storeValue.attr('input3D[1].input3Dz')
 
-				pxy_jnt = core.Dag(jntPxy_list[index])
-				storeValue.attr('output3Dx') >> pxy_jnt.attr('scaleX')
-				storeValue.attr('output3Dy') >> pxy_jnt.attr('scaleY') 
-				storeValue.attr('output3Dz') >> pxy_jnt.attr('scaleZ')
+				# pxy_jnt = core.Dag(jntPxy_list[index])
+				# storeValue.attr('output3Dx') >> pxy_jnt.attr('scaleX')
+				# storeValue.attr('output3Dy') >> pxy_jnt.attr('scaleY') 
+				# storeValue.attr('output3Dz') >> pxy_jnt.attr('scaleZ')
+
+				detailObj_loc = core.Dag(detail_loc[index])
+				storeValue.attr('output3Dx') >> detailObj_loc.attr('scaleX')
+				storeValue.attr('output3Dy') >> detailObj_loc.attr('scaleY') 
+				storeValue.attr('output3Dz') >> detailObj_loc.attr('scaleZ')
 
 		offset_X = squash_loc.attr('translateX').value
 		offset_X_forHandle = offset_X * -2
@@ -526,6 +532,10 @@ def fkIkDeformed(	SIDE = 'C',
 
 		mc.setAttr(f'{squash_nrb}.visibility', 0)
 		squash_grp.attr('visibility').value = 0
+
+	
+
+
 
 
 
@@ -630,27 +640,62 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 
+
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make scalable
+	if sineDef == False or squashDef == False:
+		if mc.objExists(place_ctrl):
+			placeObj_ctrl = core.Dag(place_ctrl)
+			for index, each in enumerate (detail_loc):
+				detail_loc = core.Dag(each)
+
+				minusOne_pma = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_minusOne')
+				placeObj_ctrl.attr('scaleX') >> detail_loc.attr('scaleX')
+				placeObj_ctrl.attr('scaleY') >> detail_loc.attr('scaleY')
+				placeObj_ctrl.attr('scaleZ') >> detail_loc.attr('scaleZ')
+
+
+
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Parent Importent grp
 
+	if not mc.objExists('tentacleStill_grp'):
+		tenStillStore_grp = core.Null('tentacleStill_grp')
+	else:
+		tenStillStore_grp = core.Dag('tentacleStill_grp')
 
-	mc.parent(nurbAll_grp.name, 'tentacleStill_grp')
-	mc.parent(ikHandle.name(), 'tentacleIkh_grp')
-	mc.parent(twist_grp_obj.name, 'tentacleStill_grp')
-	mc.parent(detail_grp.name, 'tentacleStill_grp')
+
+
+	mc.parent(nurbAll_grp.name, tenStillStore_grp.name)
+	mc.parent(twist_grp_obj.name, tenStillStore_grp.name)
+	mc.parent(detail_grp.name, tenStillStore_grp.name)
+
+
+	if not mc.objExists('tentacleIkh_grp'):
+		tenIkhStore_grp = core.Null('tentacleIkh_grp')
+	else:
+		tenIkhStore_grp = core.Dag('tentacleIkh_grp')
+
+	mc.parent(ikHandle.name(), tenIkhStore_grp)
+
 
 	if sineDef:
-		mc.parent(sine_zro_grp.name, 'tentacleStill_grp')
+		mc.parent(sine_zro_grp.name, tenStillStore_grp.name)
 		
 	if squashDef:
-		mc.parent(squash_grp.name, 'tentacleStill_grp')
+		mc.parent(squash_grp.name, tenStillStore_grp.name)
+
+	if not mc.objExists('tentacleFkJnt_grp'):
+		tenFkJnt_grp = core.Null('tentacleFkJnt_grp')
+	else:
+		tenFkJnt_grp = core.Dag('tentacleFkJnt_grp')
+
 		
-	mc.parent(f'{SIDE}_{BASE_NAME}01_masterFk_fkJnt', 'tentacleFkJnt_grp')
+	mc.parent(f'{SIDE}_{BASE_NAME}01_masterFk_fkJnt', tenFkJnt_grp.name)
 
 
 	
 	if mc.objExists(parentTo):
+		print(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
-
 		mc.parent(master_fk_zroGrp, parentTo)
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Done

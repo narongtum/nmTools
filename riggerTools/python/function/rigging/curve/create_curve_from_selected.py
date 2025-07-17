@@ -49,3 +49,9 @@ def rebuild_curve_to_degree3(curve,degree=3, spans=8):
 	)
 
 	return curve
+
+
+'''
+create_curve_from_selected(obj1, obj2)
+rebuild_curve_to_degree3(curve,degree=3, spans=8)
+'''

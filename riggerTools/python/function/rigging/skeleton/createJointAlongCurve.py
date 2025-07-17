@@ -82,7 +82,7 @@ class buildUI(object):
 
 
 
-
+			jnt_grp=[]
 			# use constance length
 			for i in range( 0, jointAmount ):
 				mc.select( cl=True )
@@ -113,6 +113,17 @@ class buildUI(object):
 
 				# set orientation
 				mc.joint(rootJnt, e=True, oj= 'yzx', sao = 'yup' , ch = True, zso = True)
+
+				jnt_grp.append(newJnt)
+
+			#... set orient of last joint
+			lastJnt = jnt_grp[-1]
+			mc.setAttr(f'{lastJnt}.jointOrientX', 0)
+			mc.setAttr(f'{lastJnt}.jointOrientY', 0)
+			mc.setAttr(f'{lastJnt}.jointOrientZ', 0)
+
+
+
 
 
 

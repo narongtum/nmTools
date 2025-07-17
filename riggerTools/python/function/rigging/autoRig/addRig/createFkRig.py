@@ -283,6 +283,8 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 						body_part = name,
 						attr_occur = localWorld_attr)
 
+	
+
 	#... create another loop here because of bJnt will wrong orient when constraint and then parent
 	#... parent joint to controller
 

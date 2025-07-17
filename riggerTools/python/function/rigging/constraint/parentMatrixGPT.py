@@ -67,6 +67,11 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 	obj_source = core.Dag(source)
 	base_name = core.check_name_style(name=target)[0]
 
+	# Match rotate order from source to target
+	# (Before connecting anything else)
+	source_ro = mc.getAttr(obj_source.name + ".rotateOrder")
+	mc.setAttr(obj_target.name + ".rotateOrder", source_ro)
+
 	# Matrix offset setup
 	localOffset = _getLocalOffset(source, target)
 	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]

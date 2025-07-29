@@ -1364,6 +1364,7 @@ class ReverseNam ( Node ):
 	''' create reverse object '''
 	def __init__( self , name):
 		Node.__init__( self ,  mc.createNode('reverse', name = name) )
+		self.suffix
 
 
 '''

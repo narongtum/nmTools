@@ -713,6 +713,9 @@ def orientLocalWorldCtrl( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = 
 
 def parentLocalWorldCtrl( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = '' , bodyPart = None ,value = 0):
 
+	#... Get basename
+	base_name = core.check_name_style(ctrl)[0]
+
 	# Switching world and local object.
 	locGrp = core.Null()
 	worGrp = core.Null()
@@ -723,23 +726,31 @@ def parentLocalWorldCtrl( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = 
 	oldLoc = str( locGrp.name ) 
 	oldWor = str( worGrp.name )
 
-	if bodyPart == None:
-		
-		locGrp.name =  'local'
-		worGrp.name =  'world'
+	if bodyPart:
+		locGrp.name = bodyPart +'_local_grp'
+		worGrp.name = bodyPart + '_world_grp'
+	
 	else:# Assign new name
-		locGrp.name = bodyPart +'_local'
-		worGrp.name = bodyPart + '_world'
+		locGrp.name =  'local_grp'
+		worGrp.name =  'world_grp'
 
+	
 
-	# Orient constraint
+	print(base_name)
+
+	#... Parent constraint
 	worldGrpCons = core.parentConstraint( worldObj , worGrp , mo = True )
+	worldGrpCons.name = f'world_{base_name}_psCons'
 	baseGrpBaseCons = core.parentConstraint( locGrp , worGrp , baseGrp )
-	reverseNode_rev = core.Reverse()
+	baseGrpBaseCons.name = f'local_{base_name}_psCons'
+	reverseNode_rev = core.ReverseNam(f'{base_name}')
+
+	# mc.error('BREAK.........')
+
 
 	# Return to Default name
-	locGrp.name = oldLoc 
-	worGrp.name = oldWor 
+	# locGrp.name = oldLoc 
+	# worGrp.name = oldWor 
 
 
 
@@ -758,6 +769,8 @@ def parentLocalWorldCtrl( ctrl = '' , localObj = '' , worldObj = '' , baseGrp = 
 	locGrp.parent( localObj )
 	worGrp.parent( localObj )
 	core.clearSel()
+
+	print('DONE')
 
 	return locGrp , worGrp , worldGrpCons , baseGrpBaseCons , reverseNode_rev
 

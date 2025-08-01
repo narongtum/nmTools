@@ -1,3 +1,5 @@
+
+#... Fk first and then Ik and then Deformer
 #... IK spine Rig for tentacle make deformer before Ik spine
 #... make stretchy by using arcLength
 #... increade detail joint to 24
@@ -56,9 +58,11 @@ def fkIkDeformed(	SIDE = 'C',
 					smoothweight = True, 
 					squashDef = True,
 					sineDef = False, 
+					makeTwistDef = False,
 					priorJnt = '', 
 					parentTo = '',
-					place_ctrl =''):
+					place_ctrl =''
+					):
 
 
 	#... Create Null grp
@@ -113,7 +117,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................  create IK controller
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................  create IK spine controller
 
 
 
@@ -151,6 +155,8 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 
+
+
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. skinweight joint to curve
 	print('\n#.................................... skinweight joint to curve')
 
@@ -182,50 +188,51 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make twist deformer
-	twist_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','twist'))[0]
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make twist deformer( cancle using advanceTwist in ikh instead )
+	if makeTwistDef == True:
+		twist_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','twist'))[0]
 
-	master_ik_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ikJnt', COUNT_MAIN)
+		master_ik_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ikJnt', COUNT_MAIN)
 
-	twist_jnt_list=[]
-	for each in master_ik_jnt:
-		master_ik_jnt = core.Dag(each)
-		baseName = core.check_name_style(master_ik_jnt.name)[0]
-		twist_jnt = core.Joint(baseName.replace('masterIk','twist') + '_ikJnt')
-		twist_jnt.maSnap(master_ik_jnt)
-		twist_jnt_list.append(twist_jnt)
-		twist_jnt.freeze()
+		twist_jnt_list=[]
+		for each in master_ik_jnt:
+			master_ik_jnt = core.Dag(each)
+			baseName = core.check_name_style(master_ik_jnt.name)[0]
+			twist_jnt = core.Joint(baseName.replace('masterIk','twist') + '_ikJnt')
+			twist_jnt.maSnap(master_ik_jnt)
+			twist_jnt_list.append(twist_jnt)
+			twist_jnt.freeze()
 
-	#... beware of set rotate order
-	PATTERN = '{SIDE}_{BASE_NAME}{index}_twist_ikJnt'
-	twist_jnt = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
-	skin_name = f'{SIDE}_{BASE_NAME}_twist_skc'
+		#... beware of set rotate order
+		PATTERN = '{SIDE}_{BASE_NAME}{index}_twist_ikJnt'
+		twist_jnt = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
+		skin_name = f'{SIDE}_{BASE_NAME}_twist_skc'
 
-	skin_cluster = mc.skinCluster(twist_jnt_list, twist_def_nrb, toSelectedBones=True, name = skin_name)[0]
+		skin_cluster = mc.skinCluster(twist_jnt_list, twist_def_nrb, toSelectedBones=True, name = skin_name)[0]
 
-	PATTERN = '{SIDE}_{BASE_NAME}{index}_masterIk_ctrl'
-	master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
+		PATTERN = '{SIDE}_{BASE_NAME}{index}_masterIk_ctrl'
+		master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
 
-	for index, each in enumerate (master_ik_ctrl):
-		ik_ctrl = core.Dag(each)
-		twist_jnt = core.Dag(twist_jnt_list[index])
+		for index, each in enumerate (master_ik_ctrl):
+			ik_ctrl = core.Dag(each)
+			twist_jnt = core.Dag(twist_jnt_list[index])
 
-		ik_ctrl.attr('rotateY') >> twist_jnt.attr('rotateY')
+			ik_ctrl.attr('rotateY') >> twist_jnt.attr('rotateY')
 
-	# mc.blendShape(f'{SIDE}_{BASE_NAME}_bsh', e=True, t=(detail_nrb, 2, twist_def_nrb, 1.0))
-	mc.blendShape(f'{SIDE}_{BASE_NAME}_bsh', e=True, t=(f'{SIDE}_{BASE_NAME}_combineFkIk_nrb', 1, twist_def_nrb, 1.0))
-	mc.setAttr(f'{SIDE}_{BASE_NAME}_bsh.{twist_def_nrb}',1)
+		# mc.blendShape(f'{SIDE}_{BASE_NAME}_bsh', e=True, t=(detail_nrb, 2, twist_def_nrb, 1.0))
+		mc.blendShape(f'{SIDE}_{BASE_NAME}_bsh', e=True, t=(f'{SIDE}_{BASE_NAME}_combineFkIk_nrb', 1, twist_def_nrb, 1.0))
+		mc.setAttr(f'{SIDE}_{BASE_NAME}_bsh.{twist_def_nrb}',1)
 
-	#.................................... create group hirechy
+		#.................................... create group hirechy
 
-	twist_grp_obj = core.Null(f'{SIDE}_{BASE_NAME}Twist_rigGrp')
-	twist_grp_obj.lockAllAttr(attrs=['t', 'r', 's'])
+		twist_grp_obj = core.Null(f'{SIDE}_{BASE_NAME}Twist_rigGrp')
+		twist_grp_obj.lockAllAttr(attrs=['t', 'r', 's'])
 
-	for each in twist_jnt_list:
-		mc.parent(each, twist_grp_obj.name)
+		for each in twist_jnt_list:
+			mc.parent(each, twist_grp_obj.name)
 
-	mc.setAttr(f'{twist_def_nrb}.visibility', 0)
-	mc.setAttr(f'{combineFkIk_nrb}.visibility', 0)
+		mc.setAttr(f'{twist_def_nrb}.visibility', 0)
+		mc.setAttr(f'{combineFkIk_nrb}.visibility', 0)
 
 
 
@@ -446,7 +453,10 @@ def fkIkDeformed(	SIDE = 'C',
 
 		#... Connect scale value to placement_ctrl
 
-		if mc.objExists(place_ctrl):
+		if not mc.objExists(place_ctrl):
+			print('Error, please specify placement controller.')
+			return False
+		else:
 			placeObj_ctrl = core.Dag(place_ctrl)
 
 			minusOne_pma = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_minusOne')
@@ -613,7 +623,8 @@ def fkIkDeformed(	SIDE = 'C',
 
 	mc.setAttr(f'{ik_nrb}.visibility',0)
 
-	mc.parent(twist_def_nrb, nurbAll_grp.name)
+	# mc.parent(twist_def_nrb, nurbAll_grp.name)
+
 	mc.parent(ik_nrb, nurbAll_grp.name)
 	mc.parent(combineFkIk_nrb, nurbAll_grp.name)
 	
@@ -632,6 +643,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................Hide Ik ctrl vis
 
+	master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
 
 	for each in master_ik_ctrl:
 		master_ik_ctrlShape = core.Dag(core.shapeName(each))
@@ -665,7 +677,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 	mc.parent(nurbAll_grp.name, tenStillStore_grp.name)
-	mc.parent(twist_grp_obj.name, tenStillStore_grp.name)
+	# mc.parent(twist_grp_obj.name, tenStillStore_grp.name)
 	mc.parent(detail_grp.name, tenStillStore_grp.name)
 
 
@@ -697,6 +709,11 @@ def fkIkDeformed(	SIDE = 'C',
 		print(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		mc.parent(master_fk_zroGrp, parentTo)
+
+
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist 
+
+
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Done
 	core.makeHeader('DONE')

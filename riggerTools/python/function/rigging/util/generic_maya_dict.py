@@ -47,6 +47,29 @@ for each in nodeDict:
 '''
 
 
+
+
+dForwardAxis_dict = {	'x+':'0',
+						'x-':'1',
+						'y+':'2',
+						'y-':'3',
+						'z+':'4',
+						'z-':'5',	}
+
+dWorldUpAxis_dict = {	'y+':'0',
+						'y-':'1',
+						'yc':'2',
+						'z+':'3',
+						'z-':'4',
+						'zc':'5',
+						'x+':'6',
+						'x-':'7',
+						'xc':'8'	}
+
+
+
+
+
 alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
 
 #... newr version using this instead

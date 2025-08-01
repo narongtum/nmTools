@@ -8,6 +8,32 @@
 '''
 from function.rigging.autoRig.addRig import tentacle_fkIkDeformedRig as tenFkIkRig
 reload(tenFkIkRig)
+
+#... Main tail
+tenFkIkRig.fkIkDeformed(
+			SIDE = 'C',
+			BASE_NAME = 'tenTail',
+			SCALE = 20,
+			COUNT_DETAIL = 24,
+			COUNT_MAIN = 9,
+			stickShape = 'stickCircle_Y_long_ctrlShape',
+			mesh = 'tailSpike_ply',
+			smoothweight = True,
+			sineDef = True,
+			squashDef = True,
+			priorJnt = 'root', 
+			parentTo = 'ctrl_grp',
+			place_ctrl ='placement_ctrl',
+			#... for setup adv twist 
+			enableTwist = True			,
+			worldUpType = 4,
+		    forwardAxis = 'y+',
+		    worldUpAxis = 'z+',
+		    worldUpVector = (0, 0, 1),
+		    worldUpVectorEnd = (0, 0, 1),
+		    upObject ='placement_ctrl',
+		    upObjectEnd ='C_tenTail08_masterIk_ctrl'			
+			)
 '''
 
 import maya.cmds as mc
@@ -61,8 +87,17 @@ def fkIkDeformed(	SIDE = 'C',
 					makeTwistDef = False,
 					priorJnt = '', 
 					parentTo = '',
-					place_ctrl =''
-					):
+					place_ctrl ='',
+					#... for setup adv twist
+					enableTwist = False			,
+					forwardAxis='z+',
+					worldUpAxis='y+',
+					worldUpVector=(0, 0, 1),
+					worldUpVectorEnd=(0, 0, 1),
+					worldUpType=4,
+					upObject='C_tenTailStart_ctrl',
+					upObjectEnd='C_tenTailEnd_ctrl'			
+				):
 
 
 	#... Create Null grp
@@ -142,23 +177,37 @@ def fkIkDeformed(	SIDE = 'C',
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. create Ik handle
 	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
 
-	ikHandle, effector = pm.ikHandle(
-		sj=ik_detail_jnt[0],
-		ee=ik_detail_jnt[-1],
-		solver='ikSplineSolver',
-		curve=spine_crv,
-		createCurve=False,
-		parentCurve=False)
 
-	ikHandle.rename(f'{SIDE}_{BASE_NAME}_ikh')
-	effector.rename(f'{SIDE}_{BASE_NAME}_eff')
+	ikHandle = core.DoIkSpline( 	startJoint = ik_detail_jnt[0] , 
+							endEffector = ik_detail_jnt[-1] ,  
+							solverType = 'ikSplineSolver' ,
+							createCurve = False,
+							curveName = spine_crv, 
+							parentCurve = False)
+
+
+	ikHandle.name = f'{SIDE}_{BASE_NAME}_ikh'
+	ikHandle.eff = f'{SIDE}_{BASE_NAME}_eff'
+
+
+	# ikHandle, effector = pm.ikHandle(
+	# 	sj=ik_detail_jnt[0],
+	# 	ee=ik_detail_jnt[-1],
+	# 	solver='ikSplineSolver',
+	# 	curve=spine_crv,
+	# 	createCurve=False,
+	# 	parentCurve=False)
+
+	# ikHandle.rename(f'{SIDE}_{BASE_NAME}_ikh')
+	# effector.rename(f'{SIDE}_{BASE_NAME}_eff')
 
 
 
 
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. skinweight joint to curve
-	print('\n#.................................... skinweight joint to curve')
+	TentacleRig.info('\n#.................................... skinweight joint to curve')
+
 
 
 	skin_name = f'{SIDE}_{BASE_NAME}_ikCrv_skc'
@@ -172,7 +221,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 
-	print('#.................................... skinweight joint to ik_nrb curve for make match blendshape')
+	TentacleRig.info('#.................................... skinweight joint to ik_nrb curve for make match blendshape')
 
 	PATTERN = '{SIDE}_{BASE_NAME}{index}_ikJnt'
 	# count = 9
@@ -189,6 +238,8 @@ def fkIkDeformed(	SIDE = 'C',
 
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make twist deformer( cancle using advanceTwist in ikh instead )
+	'''
+
 	if makeTwistDef == True:
 		twist_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','twist'))[0]
 
@@ -233,6 +284,8 @@ def fkIkDeformed(	SIDE = 'C',
 
 		mc.setAttr(f'{twist_def_nrb}.visibility', 0)
 		mc.setAttr(f'{combineFkIk_nrb}.visibility', 0)
+		
+	'''
 
 
 
@@ -327,7 +380,8 @@ def fkIkDeformed(	SIDE = 'C',
 		jnts = jnts[::-1]  # or jnts.reverse()
 		hm.split_with_curve_to_mesh_V2(mesh, jnts, spine_crv.name, d=3, tol=0.1)
 	else:
-		print('Do nothing pass.')
+		TentacleRig.info('Do nothing pass.')
+		# print('Do nothing pass.')
 
 
 
@@ -454,7 +508,8 @@ def fkIkDeformed(	SIDE = 'C',
 		#... Connect scale value to placement_ctrl
 
 		if not mc.objExists(place_ctrl):
-			print('Error, please specify placement controller.')
+			# print('Error, please specify placement controller.')
+			TentacleRig.info('Error, please specify placement controller.')
 			return False
 		else:
 			placeObj_ctrl = core.Dag(place_ctrl)
@@ -686,8 +741,8 @@ def fkIkDeformed(	SIDE = 'C',
 	else:
 		tenIkhStore_grp = core.Dag('tentacleIkh_grp')
 
-	mc.parent(ikHandle.name(), tenIkhStore_grp)
-
+	# mc.parent(ikHandle.name(), tenIkhStore_grp)
+	mc.parent(ikHandle.name, tenIkhStore_grp)
 
 	if sineDef:
 		mc.parent(sine_zro_grp.name, tenStillStore_grp.name)
@@ -707,11 +762,23 @@ def fkIkDeformed(	SIDE = 'C',
 	
 	if mc.objExists(parentTo):
 		print(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
+		
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		mc.parent(master_fk_zroGrp, parentTo)
 
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist 
+	if enableTwist:
+		ikHandle.enableTwistControl(
+									forwardAxis=forwardAxis,
+									worldUpAxis=worldUpAxis,
+									worldUpVector=worldUpVector,
+									worldUpVectorEnd=worldUpVectorEnd,
+									worldUpType=worldUpType,
+									upObject=upObject,
+									upObjectEnd=upObjectEnd
+								)
+
 
 
 

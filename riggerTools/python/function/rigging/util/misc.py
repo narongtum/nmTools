@@ -72,6 +72,26 @@ else:
 # importlib.reload( ext )
 
 
+import maya.cmds as mc
+
+def select_hierarchy(root):
+	"""
+	Select the given root and all its descendants.
+	Args:
+		root (str): The name of the root object.
+	"""
+	if not mc.objExists(root):
+		raise ValueError(f"Object '{root}' does not exist.")
+
+	# Get all descendants
+	descendants = mc.listRelatives(root, allDescendents=True, fullPath=False) or []
+	# Include the root
+	full_hierarchy = [root] + descendants
+
+	mc.select(full_hierarchy, replace=True)
+	return full_hierarchy
+
+
 
 def check_case_sentitive(group_name):
 

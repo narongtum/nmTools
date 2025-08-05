@@ -22,10 +22,10 @@ tenFkIkRig.fkIkDeformed(
 			smoothweight = True,
 			sineDef = True,
 			squashDef = True,
-			priorJnt = 'root', 
+			priorJnt = 'root',
 			parentTo = 'ctrl_grp',
 			place_ctrl ='placement_ctrl',
-			#... for setup adv twist 
+			#... for setup adv twist
 			enableTwist = True			,
 			worldUpType = 4,
 		    forwardAxis = 'y+',
@@ -33,7 +33,7 @@ tenFkIkRig.fkIkDeformed(
 		    worldUpVector = (0, 0, 1),
 		    worldUpVectorEnd = (0, 0, 1),
 		    upObject ='placement_ctrl',
-		    upObjectEnd ='C_tenTail08_masterIk_ctrl'			
+		    upObjectEnd ='C_tenTail08_masterIk_ctrl'
 			)
 '''
 
@@ -67,7 +67,7 @@ from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
 import logging
-from function.pipeline import logger 
+from function.pipeline import logger
 reload(logger)
 
 class TentacleRig(logger.MayaLogger):
@@ -75,18 +75,17 @@ class TentacleRig(logger.MayaLogger):
 
 TentacleRig.set_level(logging.DEBUG)
 
-
-def fkIkDeformed(	SIDE = 'C', 
-					BASE_NAME = 'tenTail', 
-					SCALE = 20, 
-					COUNT_DETAIL = 24, COUNT_MAIN = 9, 
+def fkIkDeformed(	SIDE = 'C',
+					BASE_NAME = 'tenTail',
+					SCALE = 20,
+					COUNT_DETAIL = 24, COUNT_MAIN = 9,
 					stickShape = 'stickCircle_Y_long_ctrlShape',
-					mesh = 'Body', 
-					smoothweight = True, 
+					mesh = 'Body',
+					smoothweight = True,
 					squashDef = True,
-					sineDef = False, 
+					sineDef = False,
 					makeTwistDef = False,
-					priorJnt = '', 
+					priorJnt = '',
 					parentTo = '',
 					place_ctrl ='',
 					#... for setup adv twist
@@ -97,14 +96,12 @@ def fkIkDeformed(	SIDE = 'C',
 					worldUpVectorEnd=(0, 0, 1),
 					worldUpType=4,
 					upObject='C_tenTailStart_ctrl',
-					upObjectEnd='C_tenTailEnd_ctrl'			
+					upObjectEnd='C_tenTailEnd_ctrl'
 				):
-
 
 	#... Create Null grp
 	nurbAll_grp = core.Null(f'{SIDE}_{BASE_NAME}AllNurbe_grp')
 	nurbAll_grp.lockAllAttr(attrs=['t', 'r', 's'])
-
 
 	ik_detail_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
 	spine_crv = f'{SIDE}_{BASE_NAME}_ikSpine_crv'
@@ -113,7 +110,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make FK controller
 	core.makeHeader('Make FK controller')
-
 
 	ik_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ikJnt', COUNT_DETAIL)
 	bJnts_list = []
@@ -134,8 +130,6 @@ def fkIkDeformed(	SIDE = 'C',
 		if num !=0:
 			mc.parent(bJnts_list[num], bJnts_list[num-1])
 
-
-
 	fk_rig = createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = '',
 						jntLst = bJnts_list,
 						charScale = 1*SCALE, priorJnt = '',side = SIDE,
@@ -144,52 +138,36 @@ def fkIkDeformed(	SIDE = 'C',
 						parentToPriorJnt = False, parentMatrix = False,
 						curlCtrlShape = stickShape)
 
-
 	TentacleRig.debug(f'{fk_rig[5]}')
 
 	# mc.error('BREAK')
 
-
-
-
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................  create IK spine controller
-
-
 
 	PATTERN = '{SIDE}_{BASE_NAME}{index}_masterIk_ikJnt'
 	joints = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
 
-
-
 	main_ik_ctrl = adjust.creControllerFunc( 		selected = joints, scale = 5*SCALE, ctrlShape = 'cube_ctrlShape', color = 'yellow',
 								constraint = True, matrixConst = False, mo = False, translate=True,
 								rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
-
-
 
 	master_ik_zroGrp = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIkZro_grp', COUNT_MAIN)
 	master_fk_gmbl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterFk_gmbCtrl', COUNT_MAIN)
 	for index, each in enumerate (master_fk_gmbl):
 		mc.parent(master_ik_zroGrp[index], each)
 
-
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. create Ik handle
 	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
 
-
-	ikHandle = core.DoIkSpline( 	startJoint = ik_detail_jnt[0] , 
-							endEffector = ik_detail_jnt[-1] ,  
+	ikHandle = core.DoIkSpline( 	startJoint = ik_detail_jnt[0] ,
+							endEffector = ik_detail_jnt[-1] ,
 							solverType = 'ikSplineSolver' ,
 							createCurve = False,
-							curveName = spine_crv, 
+							curveName = spine_crv,
 							parentCurve = False)
-
 
 	ikHandle.name = f'{SIDE}_{BASE_NAME}_ikh'
 	ikHandle.eff = f'{SIDE}_{BASE_NAME}_eff'
-
 
 	# ikHandle, effector = pm.ikHandle(
 	# 	sj=ik_detail_jnt[0],
@@ -202,25 +180,15 @@ def fkIkDeformed(	SIDE = 'C',
 	# ikHandle.rename(f'{SIDE}_{BASE_NAME}_ikh')
 	# effector.rename(f'{SIDE}_{BASE_NAME}_eff')
 
-
-
-
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. skinweight joint to curve
 	TentacleRig.info('\n#.................................... skinweight joint to curve')
-
-
 
 	skin_name = f'{SIDE}_{BASE_NAME}_ikCrv_skc'
 	skin_cluster = mc.skinCluster(joints, spine_crv, toSelectedBones=True, name = skin_name)[0]
 
-
 	#... smooth weight ( not work too soft)
 	# jnts = hh.list_joints_from_skincluster(skin_name)
 	# hh.split_curve_cvs_with_de_boor_v4(jnts, spine_crv, degree=3, falloff_mode='linear', falloff_width=0.01)
-
-
-
 
 	TentacleRig.info('#.................................... skinweight joint to ik_nrb curve for make match blendshape')
 
@@ -231,12 +199,9 @@ def fkIkDeformed(	SIDE = 'C',
 	skin_name = f'{SIDE}_{BASE_NAME}_ikNrb_skc'
 	skin_cluster = mc.skinCluster(joints, ik_nrb, toSelectedBones=True, name = skin_name)[0]
 
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Blendshape ik nurbe to combin nurvbe
 	combineFkIk_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','combineFkIk'))[0]
 	mc.blendShape(ik_nrb, combineFkIk_nrb, frontOfChain = True, name = f'{SIDE}_{BASE_NAME}_bsh', w=[(0, 1)] )
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make twist deformer( cancle using advanceTwist in ikh instead )
 	'''
@@ -285,16 +250,8 @@ def fkIkDeformed(	SIDE = 'C',
 
 		mc.setAttr(f'{twist_def_nrb}.visibility', 0)
 		mc.setAttr(f'{combineFkIk_nrb}.visibility', 0)
-		
+
 	'''
-
-
-
-
-
-
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create Detail Joint
 	core.makeHeader('Create Detail Joint')
@@ -307,9 +264,7 @@ def fkIkDeformed(	SIDE = 'C',
 		ik_jnt = core.Dag(ik_detail_jnt[num])
 		locator.maSnap(ik_jnt)
 
-
-
-	tenTail_resultDef_nrb_grp = pls.pin_locator_surface(	
+	tenTail_resultDef_nrb_grp = pls.pin_locator_surface(
 							nurbs = combineFkIk_nrb,
 							region = f'{BASE_NAME}_combineFkik',
 							side = SIDE,
@@ -321,8 +276,6 @@ def fkIkDeformed(	SIDE = 'C',
 							priorJnt = '',
 							scale = 20	)
 
-
-
 	#... parent joint under pin
 
 	detail_gmbl_ctrl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_gmbCtrl', COUNT_DETAIL)
@@ -333,7 +286,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create bind joint from detail joint
 
-	
 	bind_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_bJnt', COUNT_DETAIL)
 	for index, each in enumerate(bind_jnt_list):
 		pxy_jnt = core.Dag(detail_jnt[index])
@@ -346,7 +298,7 @@ def fkIkDeformed(	SIDE = 'C',
 		mc.parent(bind_jnt_list[i], bind_jnt_list[i-1])
 
 	skin_cluster = mc.skinCluster(bind_jnt_list, mesh, toSelectedBones=True, name = f'{SIDE}_{BASE_NAME}{mesh}_skc')[0]
-	
+
 	jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_pxyJnt', COUNT_DETAIL)
 
 	if mc.objExists(priorJnt):
@@ -364,10 +316,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 	for each in detail_loc:
 		mc.parent(each, detail_grp)
-		
-		
 
-		
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Splite weight to mesh
 
 	if smoothweight == True:
@@ -383,8 +332,6 @@ def fkIkDeformed(	SIDE = 'C',
 	else:
 		TentacleRig.info('Do nothing pass.')
 		# print('Do nothing pass.')
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make stretchy version 2
 
@@ -418,9 +365,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 	minorIK_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
 
-
-
-
 	for index,each in enumerate(minorIK_jnt_list):
 		minorIK_jnt = core.Dag(each)
 		baseName = core.check_name_style(each)[0]
@@ -430,22 +374,14 @@ def fkIkDeformed(	SIDE = 'C',
 		length_store.attr('output') >> multiStartVal_adl.attr('input1')
 		multiStartVal_adl.attr('output') >> minorIK_jnt.attr('translateY')
 
-
-
 	stick_ctrl.attr('stretchy') >> envelope_bta.attr('attributesBlender')
-
-
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make Squash Tentacle(optional)
 	if squashDef:
 		squash_nrb = mc.duplicate(ik_nrb, n = ik_nrb.replace('ik', 'squash'))[0]
 		squash_loc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash##_loc', COUNT_DETAIL)
 
-
 		mc.parent(squash_nrb, nurbAll_grp)
-
 
 		for num in range(0,COUNT_DETAIL):
 			locator = core.Locator(squash_loc_list[num])
@@ -471,8 +407,6 @@ def fkIkDeformed(	SIDE = 'C',
 		mc.setAttr(f"{SIDE}_{BASE_NAME}_squash_nrb.ry", lock=False )
 		mc.setAttr(f"{SIDE}_{BASE_NAME}_squash_nrb.rz", lock=False )
 
-
-
 		#... Depen on size and orientation of Nurbe
 		mc.setAttr(f"{squash_nrb}.rotateX", 90 )
 		mc.setAttr(f"{squash_nrb}.rotateZ", 180 )
@@ -485,8 +419,6 @@ def fkIkDeformed(	SIDE = 'C',
 		squash_meta = core.MetaBlank(f'{SIDE}_{BASE_NAME}_squash_xVal')
 		squash_deformer, squash_handle = mc.nonLinear(squash_nrb, type='squash', name = f'{SIDE}_{BASE_NAME}_squash_deformer' )
 		jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_pxyJnt', COUNT_DETAIL)
-
-
 
 		for index, each in enumerate (squash_loc_list):
 			mc.setAttr(f'{each}Shape.parameterV', 1)
@@ -539,12 +471,12 @@ def fkIkDeformed(	SIDE = 'C',
 
 				# pxy_jnt = core.Dag(jntPxy_list[index])
 				# storeValue.attr('output3Dx') >> pxy_jnt.attr('scaleX')
-				# storeValue.attr('output3Dy') >> pxy_jnt.attr('scaleY') 
+				# storeValue.attr('output3Dy') >> pxy_jnt.attr('scaleY')
 				# storeValue.attr('output3Dz') >> pxy_jnt.attr('scaleZ')
 
 				detailObj_loc = core.Dag(detail_loc[index])
 				storeValue.attr('output3Dx') >> detailObj_loc.attr('scaleX')
-				storeValue.attr('output3Dy') >> detailObj_loc.attr('scaleY') 
+				storeValue.attr('output3Dy') >> detailObj_loc.attr('scaleY')
 				storeValue.attr('output3Dz') >> detailObj_loc.attr('scaleZ')
 
 		offset_X = squash_loc.attr('translateX').value
@@ -556,8 +488,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 		TentacleRig.debug(f'This is storeValue: {storeValue.name}')
 		# mc.error('BREAK')
-
-
 
 		squashLoc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash##_loc', COUNT_DETAIL)
 
@@ -595,16 +525,8 @@ def fkIkDeformed(	SIDE = 'C',
 		stick_ctrlShape.attr('low_bound')>> squash_deformer.attr('lowBound')
 		stick_ctrlShape.attr('high_bound')>> squash_deformer.attr('highBound')
 
-
 		mc.setAttr(f'{squash_nrb}.visibility', 0)
 		squash_grp.attr('visibility').value = 0
-
-	
-
-
-
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. create sine wave deformer
 	if sineDef:
@@ -634,7 +556,6 @@ def fkIkDeformed(	SIDE = 'C',
 		stick_ctrlShape.attr('amplitude').value = 0.3
 		stick_ctrlShape.attr('wavelength').value = 1.5
 
-
 		#... store value for upcomming connection
 		offset_store_val = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_offsetStoreVal_pma')
 		amp_store_val = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_ampStoreVal_pma')
@@ -652,10 +573,8 @@ def fkIkDeformed(	SIDE = 'C',
 		amp_store_val.attr('output1D') >> sine_deformer.attr('amplitude')
 		length_store_val.attr('output1D') >> sine_deformer.attr('wavelength')
 
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Cleanup
 	stick_ctrlShape.deleteAttribute('Detail')
-
 
 	#stick_ctrlShape=core.Dag('C_tenTail01_masterFkCurl_ctrlShape')
 
@@ -665,7 +584,6 @@ def fkIkDeformed(	SIDE = 'C',
 	stick_ctrlShape.addAttribute( attributeType = 'float' , longName = 'ten_Detail', minValue = 0, maxValue = 1, defaultValue = 0, keyable = True )
 	masterFk_zrpGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkZro_grp')
 
-
 	masterFk_zrpGrp.disconnectAttr('visibility')
 	stick_ctrlShape.attr('ten_FKIK') >> masterFk_zrpGrp.attr('visibility')
 	stick_ctrlShape.attr('ten_Detail') >> detail_grp.attr('visibility')
@@ -674,8 +592,6 @@ def fkIkDeformed(	SIDE = 'C',
 	if sineDef:
 		mc.setAttr(f'{sine_def_nrb}.visibility',0)
 		mc.parent(sine_def_nrb, nurbAll_grp.name)
-	
-
 
 	mc.setAttr(f'{ik_nrb}.visibility',0)
 
@@ -683,8 +599,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 	mc.parent(ik_nrb, nurbAll_grp.name)
 	mc.parent(combineFkIk_nrb, nurbAll_grp.name)
-	
-	
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create meta node
 	if sineDef:
@@ -706,9 +620,6 @@ def fkIkDeformed(	SIDE = 'C',
 
 		stick_ctrlShape.attr('ten_IK') >> master_ik_ctrlShape.attr('visibility')
 
-
-
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make scalable
 	if sineDef == False or squashDef == False:
 		if mc.objExists(place_ctrl):
@@ -721,8 +632,6 @@ def fkIkDeformed(	SIDE = 'C',
 				placeObj_ctrl.attr('scaleY') >> detail_loc.attr('scaleY')
 				placeObj_ctrl.attr('scaleZ') >> detail_loc.attr('scaleZ')
 
-
-
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Parent Importent grp
 
 	if not mc.objExists('tentacleStill_grp'):
@@ -730,12 +639,9 @@ def fkIkDeformed(	SIDE = 'C',
 	else:
 		tenStillStore_grp = core.Dag('tentacleStill_grp')
 
-
-
 	mc.parent(nurbAll_grp.name, tenStillStore_grp.name)
 	# mc.parent(twist_grp_obj.name, tenStillStore_grp.name)
 	mc.parent(detail_grp.name, tenStillStore_grp.name)
-
 
 	if not mc.objExists('tentacleIkh_grp'):
 		tenIkhStore_grp = core.Null('tentacleIkh_grp')
@@ -747,7 +653,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 	if sineDef:
 		mc.parent(sine_zro_grp.name, tenStillStore_grp.name)
-		
+
 	if squashDef:
 		mc.parent(squash_grp.name, tenStillStore_grp.name)
 
@@ -756,19 +662,15 @@ def fkIkDeformed(	SIDE = 'C',
 	else:
 		tenFkJnt_grp = core.Dag('tentacleFkJnt_grp')
 
-		
 	mc.parent(f'{SIDE}_{BASE_NAME}01_masterFk_fkJnt', tenFkJnt_grp.name)
 
-
-	
 	if mc.objExists(parentTo):
 		print(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
-		
+
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		mc.parent(master_fk_zroGrp, parentTo)
 
-
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist 
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist
 	if enableTwist:
 		ikHandle.enableTwistControl(
 									forwardAxis=forwardAxis,
@@ -779,9 +681,6 @@ def fkIkDeformed(	SIDE = 'C',
 									upObject=upObject,
 									upObjectEnd=upObjectEnd
 								)
-
-
-
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Done
 	core.makeHeader('DONE')

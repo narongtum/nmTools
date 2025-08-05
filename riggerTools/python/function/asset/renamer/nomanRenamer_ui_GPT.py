@@ -311,7 +311,9 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					lastname = misc._findExtension(each)
 					# lastname = '_ply'
 
-					mc.rename(each ,each +  '_' + lastname )
+					new_name = each + '_' + lastname
+					logger.info(f'Renamed {each} to {new_name}')
+					mc.rename(each, new_name)
 
 				suffix_txt = self.suffix_txtField.text()	
 				self.suffix_txtField.setText( '_' + lastname )
@@ -343,13 +345,21 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		if sel:
 			rename_dict = {}
 			addSight = []
+			digit = 0
 			sharp = []
 
 			alphabet = (	'A','B','C','D','E','F','G','H','I','J','K','M','N',
 					'O','P','Q','R','S','T','U','V','W','X','Y','Z'			)
 
-			for each in newName:
-				if each == '@':
+			digit = 0
+		for char in newName:
+			if char == '@':
+				addSight.append(char)
+			elif char == '#':
+				sharp.append(char)
+				digit += 1
+
+		# old loop replacedif each == '@':
 					addSight.append(each)
 				elif each == '#':
 					sharp.append(each)			
@@ -395,8 +405,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					num = 1
 
 
-					for each in range(amount,-1,-1):
-						numIdx = each
+					for i in range(amount, -1, -1):
+						numIdx = i
 						if digit:
 							logger.info('this is digit number: %s' %digit)
 							numName = each+1
@@ -499,26 +509,28 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 			# this redundance code with naRenamer
 			addSight = []
+			digit = 0
 			sharp = []
 			for each in newName:
 				if each == '@':
 					addSight.append(each)
 				elif each == '#':
 					sharp.append(each)			
-					digit = len(sharp)
+					digit += 1
 			# this redundance code with naRenamer
 
 			amount = len(sel)-1
 			betIdx = 0
 			num = 1
-			for each in range(amount,-1,-1):
-				numIdx = each
+			for i in range(amount, -1, -1):
+				numIdx = i
 				numName = each+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
 				newVal = replace_sharp_pattern(newName, numName)
 				newBet = newVal.replace( '@' , alphabet[betIdx] )
-				mc.rename( sel[numIdx] , newBet )		
+				logger.info(f'Renamed {sel[numIdx]} to {newBet}')
+				mc.rename(sel[numIdx], newBet)		
 
 		mc.select(clear=True)
 		
@@ -536,7 +548,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		rename_dict = {}
 		effHirechy = True
 		addSight = []
-		sharp = []
+			digit = 0
+			sharp = []
 		
 		self.base_txt = self.base_txtField.text()
 		newName = self.base_txt
@@ -546,7 +559,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				addSight.append(each)
 			elif each == '#':
 				sharp.append(each)		
-				digit = len(sharp)
+				digit += 1
 
 		# alphabet = app.alphabet
 		sel = mc.ls(sl=True)
@@ -562,8 +575,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			amount = len(sel)-1
 			betIdx = 0
 			num = 1
-			for each in range(amount,-1,-1):
-				numIdx = each
+			for i in range(amount, -1, -1):
+				numIdx = i
 				numName = each+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
@@ -573,7 +586,9 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				# option for use underscore as separater
 				# pName = '_'.join( [pre_txt , newBet , suffix_txt] )
 
-				mc.rename( sel[numIdx] , pre_txt + newBet + suffix_txt )
+				final_name = pre_txt + newBet + suffix_txt
+				logger.info(f'Renamed {sel[numIdx]} to {final_name}')
+				mc.rename(sel[numIdx], final_name)
 
 		mc.select(clear=True)
 

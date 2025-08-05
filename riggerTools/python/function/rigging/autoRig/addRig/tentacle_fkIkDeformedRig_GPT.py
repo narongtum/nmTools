@@ -1,10 +1,7 @@
 
-#... Fk first and then Ik and then Deformer
-#... IK spine Rig for tentacle make deformer before Ik spine
-#... make stretchy by using arcLength
-#... increade detail joint to 24
-#... make sin wave for tail
-#... TODO collect ikh name to stick
+# ------------------- Fk First And Then Ik And Then Deformer -------------------... IK spine Rig for tentacle make deformer before Ik spine
+# ------------------- Make Stretchy By Using Arclength -------------------... increade detail joint to 24
+# ------------------- Make Sin Wave For Tail -------------------... TODO collect ikh name to stick
 
 '''
 from function.rigging.autoRig.addRig import tentacle_fkIkDeformedRig as tenFkIkRig
@@ -103,15 +100,19 @@ def fkIkDeformed(	SIDE = 'C',
 	nurbAll_grp = core.Null(f'{SIDE}_{BASE_NAME}AllNurbe_grp')
 	nurbAll_grp.lockAllAttr(attrs=['t', 'r', 's'])
 
-	ik_detail_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
+	ik_detail_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_ikJnt', COUNT_DETAIL)
 	spine_crv = f'{SIDE}_{BASE_NAME}_ikSpine_crv'
 	ik_nrb = f'{SIDE}_{BASE_NAME}_ik_nrb'
-	ik_nrb_shape = mc.listRelatives(ik_nrb, shapes=True)[0]
+	shapes = mc.listRelatives(ik_nrb, shapes=True) or []
+		if not shapes:
+			TentacleRig.error(f"{ik_nrb} has no shape.")
+			return False
+		ik_nrb_shape = shapes[0]
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make FK controller
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Make FK controller
 	core.makeHeader('Make FK controller')
 
-	ik_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ikJnt', COUNT_DETAIL)
+	ik_joints = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_masterIk_ikJnt', COUNT_DETAIL)
 	bJnts_list = []
 
 	for num in range(0, COUNT_MAIN):
@@ -120,7 +121,7 @@ def fkIkDeformed(	SIDE = 'C',
 		ik_jnt = core.Dag(ik_joints[num])
 		fk_jnt = core.Joint(ik_joints[num].replace('masterIk_ikJnt', 'masterFk_fkJnt'))
 		fk_jnt.maSnap(ik_jnt)
-		fk_jnt.attr('radius').value = 2
+		fk_jnt.attr('radius').set(2)
 		fk_jnt.setJointColor('gray')
 		bJnts_list.append(fk_jnt.name)
 
@@ -140,24 +141,22 @@ def fkIkDeformed(	SIDE = 'C',
 
 	TentacleRig.debug(f'{fk_rig[5]}')
 
-	# mc.error('BREAK')
+	# ------------------- Mc.Error('Break') ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # ..................  create IK spine controller
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................  create IK spine controller
-
-	PATTERN = '{SIDE}_{BASE_NAME}{index}_masterIk_ikJnt'
+	MASTER_IK_PATTERN = '{SIDE}_{BASE_NAME}{index}_masterIk_ikJnt'
 	joints = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
 
 	main_ik_ctrl = adjust.creControllerFunc( 		selected = joints, scale = 5*SCALE, ctrlShape = 'cube_ctrlShape', color = 'yellow',
 								constraint = True, matrixConst = False, mo = False, translate=True,
 								rotate = True, scaleConstraint = True, rotateOrder = 'xzy', parentUnder = False)
 
-	master_ik_zroGrp = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIkZro_grp', COUNT_MAIN)
-	master_fk_gmbl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterFk_gmbCtrl', COUNT_MAIN)
+	master_ik_zroGrp = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_masterIkZro_grp', COUNT_MAIN)
+	master_fk_gmbl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_masterFk_gmbCtrl', COUNT_MAIN)
 	for index, each in enumerate (master_fk_gmbl):
 		mc.parent(master_ik_zroGrp[index], each)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. create Ik handle
-	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. create Ik handle
+	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_ikJnt', COUNT_DETAIL)
 
 	ikHandle = core.DoIkSpline( 	startJoint = ik_detail_jnt[0] ,
 							endEffector = ik_detail_jnt[-1] ,
@@ -169,47 +168,39 @@ def fkIkDeformed(	SIDE = 'C',
 	ikHandle.name = f'{SIDE}_{BASE_NAME}_ikh'
 	ikHandle.eff = f'{SIDE}_{BASE_NAME}_eff'
 
-	# ikHandle, effector = pm.ikHandle(
-	# 	sj=ik_detail_jnt[0],
-	# 	ee=ik_detail_jnt[-1],
-	# 	solver='ikSplineSolver',
-	# 	curve=spine_crv,
-	# 	createCurve=False,
-	# 	parentCurve=False)
-
-	# ikHandle.rename(f'{SIDE}_{BASE_NAME}_ikh')
-	# effector.rename(f'{SIDE}_{BASE_NAME}_eff')
-
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. skinweight joint to curve
+	# ------------------- Ikhandle, Effector = Pm.Ikhandle( ------------------- 	sj=ik_detail_jnt[0],
+	# ------------------- Ee=Ik_Detail_Jnt[-1], ------------------- 	solver='ikSplineSolver',
+	# ------------------- Curve=Spine_Crv, ------------------- 	createCurve=False,
+	# ------------------- Parentcurve=False) ------------------- ikHandle.rename(f'{SIDE}_{BASE_NAME}_ikh')
+	# ------------------- Effector.Rename(F'{Side}_{Base_Name}_Eff') ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # .................. skinweight joint to curve
 	TentacleRig.info('\n#.................................... skinweight joint to curve')
 
 	skin_name = f'{SIDE}_{BASE_NAME}_ikCrv_skc'
 	skin_cluster = mc.skinCluster(joints, spine_crv, toSelectedBones=True, name = skin_name)[0]
 
-	#... smooth weight ( not work too soft)
-	# jnts = hh.list_joints_from_skincluster(skin_name)
+	# ------------------- Smooth Weight ( Not Work Too Soft) ------------------- jnts = hh.list_joints_from_skincluster(skin_name)
 	# hh.split_curve_cvs_with_de_boor_v4(jnts, spine_crv, degree=3, falloff_mode='linear', falloff_width=0.01)
 
 	TentacleRig.info('#.................................... skinweight joint to ik_nrb curve for make match blendshape')
 
-	PATTERN = '{SIDE}_{BASE_NAME}{index}_ikJnt'
+	IK_JOINT_PATTERN = '{SIDE}_{BASE_NAME}{index}_ikJnt'
 	# count = 9
 	joints = [PATTERN.format(SIDE=SIDE,BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_DETAIL + 1)]
 
 	skin_name = f'{SIDE}_{BASE_NAME}_ikNrb_skc'
 	skin_cluster = mc.skinCluster(joints, ik_nrb, toSelectedBones=True, name = skin_name)[0]
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Blendshape ik nurbe to combin nurvbe
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Blendshape ik nurbe to combin nurvbe
 	combineFkIk_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','combineFkIk'))[0]
 	mc.blendShape(ik_nrb, combineFkIk_nrb, frontOfChain = True, name = f'{SIDE}_{BASE_NAME}_bsh', w=[(0, 1)] )
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make twist deformer( cancle using advanceTwist in ikh instead )
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. make twist deformer( cancle using advanceTwist in ikh instead )
 	'''
 
 	if makeTwistDef == True:
 		twist_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','twist'))[0]
 
-		master_ik_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ikJnt', COUNT_MAIN)
+		master_ik_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_masterIk_ikJnt', COUNT_MAIN)
 
 		twist_jnt_list=[]
 		for each in master_ik_jnt:
@@ -253,10 +244,10 @@ def fkIkDeformed(	SIDE = 'C',
 
 	'''
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create Detail Joint
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Create Detail Joint
 	core.makeHeader('Create Detail Joint')
-	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
-	locs = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_loc', COUNT_DETAIL)
+	ik_detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_ikJnt', COUNT_DETAIL)
+	locs = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_loc', COUNT_DETAIL)
 
 	for num in range(0,COUNT_DETAIL):
 		print(locs[num])
@@ -278,19 +269,19 @@ def fkIkDeformed(	SIDE = 'C',
 
 	#... parent joint under pin
 
-	detail_gmbl_ctrl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_gmbCtrl', COUNT_DETAIL)
-	detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_pxyJnt', COUNT_DETAIL)
+	detail_gmbl_ctrl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_gmbCtrl', COUNT_DETAIL)
+	detail_jnt = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_pxyJnt', COUNT_DETAIL)
 
 	for num in range(0,COUNT_DETAIL):
 		mc.parent(detail_jnt[num], detail_gmbl_ctrl[num])
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create bind joint from detail joint
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Create bind joint from detail joint
 
-	bind_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_bJnt', COUNT_DETAIL)
+	bind_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_bJnt', COUNT_DETAIL)
 	for index, each in enumerate(bind_jnt_list):
 		pxy_jnt = core.Dag(detail_jnt[index])
 		bind_jnt = rigTools.jointAt( pxy_jnt )
-		bind_jnt.attr('radius').value = 0.5
+		bind_jnt.attr('radius').set(0.5)
 		bind_jnt.name = each
 
 	#... parent to hirechy
@@ -299,25 +290,24 @@ def fkIkDeformed(	SIDE = 'C',
 
 	skin_cluster = mc.skinCluster(bind_jnt_list, mesh, toSelectedBones=True, name = f'{SIDE}_{BASE_NAME}{mesh}_skc')[0]
 
-	jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_pxyJnt', COUNT_DETAIL)
+	jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_pxyJnt', COUNT_DETAIL)
 
 	if mc.objExists(priorJnt):
 		mc.parent(bind_jnt_list[0], priorJnt)
 
 		for index, each in enumerate(bind_jnt_list):
-			# ... pair constraint to pxyJnt
-			# mtc.parentConMatrixGPT(locs[index], each, mo = True, translate = True, rotate = True, scale = True)
+			# ------------------- Pair Constraint To Pxyjnt ------------------- mtc.parentConMatrixGPT(locs[index], each, mo = True, translate = True, rotate = True, scale = True)
 			mtc.parentConMatrixGPT(jntPxy_list[index], each, mo = True, translate = True, rotate = True, scale = True)
 
 	#... parent to grp
 	detail_grp = core.Null(f'{SIDE}_{BASE_NAME}_detailJnt_grp')
 	detail_grp.lockAllAttr(attrs=['t', 'r', 's'])
-	detail_loc = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_loc', COUNT_DETAIL)
+	detail_loc = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_loc', COUNT_DETAIL)
 
 	for each in detail_loc:
 		mc.parent(each, detail_grp)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Splite weight to mesh
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Splite weight to mesh
 
 	if smoothweight == True:
 		spine_crv = core.Dag(spine_crv)
@@ -331,11 +321,7 @@ def fkIkDeformed(	SIDE = 'C',
 		hm.split_with_curve_to_mesh_V2(mesh, jnts, spine_crv.name, d=3, tol=0.1)
 	else:
 		TentacleRig.info('Do nothing pass.')
-		# print('Do nothing pass.')
-
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make stretchy version 2
-
-	# stick_ctrl = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkCurl_ctrl')
+		# ------------------- Print('Do Nothing Pass.') ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # ------------------- Make Stretchy Version 2 ------------------- stick_ctrl = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkCurl_ctrl')
 	stick_ctrl = core.Dag(fk_rig[5])
 
 	stick_ctrlShape = core.Dag(stick_ctrl.shape)
@@ -349,21 +335,21 @@ def fkIkDeformed(	SIDE = 'C',
 	crv_length = curveInfo.attr('arcLength').value
 	length_ratio_mdv = core.MultiplyDivineWithVal(f'{SIDE}_{BASE_NAME}_length_ratio_mdv',2)
 	curveInfo.attr('arcLength') >> length_ratio_mdv.attr('input1X')
-	length_ratio_mdv.attr('input2X').value = crv_length
-	length_ratio_mdv.attr('input1Y').value = 1
+	length_ratio_mdv.attr('input2X').set(crv_length)
+	length_ratio_mdv.attr('input1Y').set(1)
 	#mc.setAttr(f'{length_ratio_mdv.name}.input2X', lock = True)
 	length_ratio_mdv.setLocked('input2X')
 	length_ratio_mdv.setLocked('input1Y')
 	length_ratio_mdv.setLocked('input2Y')
 
 	length_store = core.MultiDoubleLinear(f'{SIDE}_{BASE_NAME}_length_store')
-	length_store.attr('input2').value = 1
+	length_store.attr('input2').set(1)
 	envelope_bta = core.BlendTwoAttr(f'{SIDE}_{BASE_NAME}_length_store')
 	length_ratio_mdv.attr('outputY') >> envelope_bta.attr('input[0]')
 	length_ratio_mdv.attr('outputX') >> envelope_bta.attr('input[1]')
 	envelope_bta.attr('output') >> length_store.attr('input1')
 
-	minorIK_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_ikJnt', COUNT_DETAIL)
+	minorIK_jnt_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}# -------------------  -------------------_ikJnt', COUNT_DETAIL)
 
 	for index,each in enumerate(minorIK_jnt_list):
 		minorIK_jnt = core.Dag(each)
@@ -376,10 +362,10 @@ def fkIkDeformed(	SIDE = 'C',
 
 	stick_ctrl.attr('stretchy') >> envelope_bta.attr('attributesBlender')
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Make Squash Tentacle(optional)
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Make Squash Tentacle(optional)
 	if squashDef:
 		squash_nrb = mc.duplicate(ik_nrb, n = ik_nrb.replace('ik', 'squash'))[0]
-		squash_loc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash##_loc', COUNT_DETAIL)
+		squash_loc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash# -------------------  -------------------_loc', COUNT_DETAIL)
 
 		mc.parent(squash_nrb, nurbAll_grp)
 
@@ -418,7 +404,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 		squash_meta = core.MetaBlank(f'{SIDE}_{BASE_NAME}_squash_xVal')
 		squash_deformer, squash_handle = mc.nonLinear(squash_nrb, type='squash', name = f'{SIDE}_{BASE_NAME}_squash_deformer' )
-		jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail##_pxyJnt', COUNT_DETAIL)
+		jntPxy_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}_detail# -------------------  -------------------_pxyJnt', COUNT_DETAIL)
 
 		for index, each in enumerate (squash_loc_list):
 			mc.setAttr(f'{each}Shape.parameterV', 1)
@@ -448,19 +434,19 @@ def fkIkDeformed(	SIDE = 'C',
 			placeObj_ctrl = core.Dag(place_ctrl)
 
 			minusOne_pma = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_minusOne')
-			minusOne_pma.attr('operation').value = 2
+			minusOne_pma.attr('operation').set(2)
 			placeObj_ctrl.attr('scaleX') >> minusOne_pma.attr('input3D[0].input3Dx')
 			placeObj_ctrl.attr('scaleY') >> minusOne_pma.attr('input3D[0].input3Dy')
 			placeObj_ctrl.attr('scaleZ') >> minusOne_pma.attr('input3D[0].input3Dz')
 
-			minusOne_pma.attr('input3D[1].input3Dx').value = 1
-			minusOne_pma.attr('input3D[1].input3Dy').value = 1
-			minusOne_pma.attr('input3D[1].input3Dz').value = 1
+			minusOne_pma.attr('input3D[1].input3Dx').set(1)
+			minusOne_pma.attr('input3D[1].input3Dy').set(1)
+			minusOne_pma.attr('input3D[1].input3Dz').set(1)
 
 			for index, each in enumerate (squash_loc_list):
 
 				storeValue = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_storeValue{index+1:02}')
-				storeValue.attr('input3D[1].input3Dx').value = 1
+				storeValue.attr('input3D[1].input3Dx').set(1)
 
 				minusOne_pma.attr('output3Dx') >> storeValue.attr('input3D[0].input3Dx')
 				minusOne_pma.attr('output3Dy') >> storeValue.attr('input3D[0].input3Dy')
@@ -469,10 +455,8 @@ def fkIkDeformed(	SIDE = 'C',
 				squash_meta.attr(f'squash_{index+1:02}') >> storeValue.attr('input3D[1].input3Dy')
 				squash_meta.attr(f'squash_{index+1:02}') >> storeValue.attr('input3D[1].input3Dz')
 
-				# pxy_jnt = core.Dag(jntPxy_list[index])
-				# storeValue.attr('output3Dx') >> pxy_jnt.attr('scaleX')
-				# storeValue.attr('output3Dy') >> pxy_jnt.attr('scaleY')
-				# storeValue.attr('output3Dz') >> pxy_jnt.attr('scaleZ')
+				# ------------------- Pxy_Jnt = Core.Dag(Jntpxy_List[Index]) ------------------- storeValue.attr('output3Dx') >> pxy_jnt.attr('scaleX')
+				# ------------------- Storevalue.Attr('Output3Dy') >> Pxy_Jnt.Attr('Scaley') ------------------- storeValue.attr('output3Dz') >> pxy_jnt.attr('scaleZ')
 
 				detailObj_loc = core.Dag(detail_loc[index])
 				storeValue.attr('output3Dx') >> detailObj_loc.attr('scaleX')
@@ -489,9 +473,7 @@ def fkIkDeformed(	SIDE = 'C',
 		TentacleRig.debug(f'This is storeValue: {storeValue.name}')
 		# mc.error('BREAK')
 
-		squashLoc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash##_loc', COUNT_DETAIL)
-
-		#... Cleanup grp
+		squashLoc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash# ------------------- _Loc', Count_Detail) -------------------... Cleanup grp
 		squash_grp = core.Null(f'{SIDE}_{BASE_NAME}_squashLoc_grp')
 		squash_grp.lockAllAttr(attrs=['t', 'r', 's'])
 
@@ -526,15 +508,15 @@ def fkIkDeformed(	SIDE = 'C',
 		stick_ctrlShape.attr('high_bound')>> squash_deformer.attr('highBound')
 
 		mc.setAttr(f'{squash_nrb}.visibility', 0)
-		squash_grp.attr('visibility').value = 0
+		squash_grp.attr('visibility').set(0)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. create sine wave deformer
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. create sine wave deformer
 	if sineDef:
 		sine_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','sine'))[0]
 		sine_deformer, sine_handle = mc.nonLinear(sine_def_nrb, type='sine', name = f'{SIDE}_{BASE_NAME}_sineDef' )
 		sine_zro_grp = core.Null(f'{SIDE}_{BASE_NAME}_sineDefZroGrp')
 		mc.parent(sine_handle, sine_zro_grp.name)
-		sine_zro_grp.attr('visibility').value = 0
+		sine_zro_grp.attr('visibility').set(0)
 		sine_zro_grp.lockAllAttr(attrs=['t', 'r', 's'])
 
 		#... BlendShape change 2 to 3
@@ -552,9 +534,9 @@ def fkIkDeformed(	SIDE = 'C',
 
 		sine_deformer = core.Dag(sine_deformer)
 		#... set starter volumne
-		stick_ctrlShape.attr('envelope').value = 0
-		stick_ctrlShape.attr('amplitude').value = 0.3
-		stick_ctrlShape.attr('wavelength').value = 1.5
+		stick_ctrlShape.attr('envelope').set(0)
+		stick_ctrlShape.attr('amplitude').set(0.3)
+		stick_ctrlShape.attr('wavelength').set(1.5)
 
 		#... store value for upcomming connection
 		offset_store_val = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_offsetStoreVal_pma')
@@ -573,7 +555,7 @@ def fkIkDeformed(	SIDE = 'C',
 		amp_store_val.attr('output1D') >> sine_deformer.attr('amplitude')
 		length_store_val.attr('output1D') >> sine_deformer.attr('wavelength')
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Cleanup
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Cleanup
 	stick_ctrlShape.deleteAttribute('Detail')
 
 	#stick_ctrlShape=core.Dag('C_tenTail01_masterFkCurl_ctrlShape')
@@ -587,7 +569,7 @@ def fkIkDeformed(	SIDE = 'C',
 	masterFk_zrpGrp.disconnectAttr('visibility')
 	stick_ctrlShape.attr('ten_FKIK') >> masterFk_zrpGrp.attr('visibility')
 	stick_ctrlShape.attr('ten_Detail') >> detail_grp.attr('visibility')
-	stick_ctrlShape.attr('ten_FKIK').value = 1
+	stick_ctrlShape.attr('ten_FKIK').set(1)
 
 	if sineDef:
 		mc.setAttr(f'{sine_def_nrb}.visibility',0)
@@ -600,18 +582,16 @@ def fkIkDeformed(	SIDE = 'C',
 	mc.parent(ik_nrb, nurbAll_grp.name)
 	mc.parent(combineFkIk_nrb, nurbAll_grp.name)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Create meta node
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Create meta node
 	if sineDef:
 		chain_meta = core.Dag(fk_rig[-1])
 		chain_meta.addAttribute( dataType = 'string' , longName = 'storeValue')
-		chain_meta.attr('storeValue').value = f'{offset_store_val.name}, {amp_store_val.name}, {length_store_val.name}'
+		chain_meta.attr('storeValue').set(f'{offset_store_val.name}, {amp_store_val.name}, {length_store_val.name}')
 		chain_meta.setLocked('storeValue')
 		chain_meta.addAttribute( dataType = 'string' , longName = 'stickName')
-		chain_meta.attr('stickName').value = stick_ctrl.name
+		chain_meta.attr('stickName').set(stick_ctrl.name)
 		chain_meta.setLocked('stickName')
-		#stick_ctrl.attr('message') >> chain_meta.attr('Rig_Prior')
-
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................Hide Ik ctrl vis
+		# ------------------- Stick_Ctrl.Attr('Message') >> Chain_Meta.Attr('Rig_Prior') ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # ..................Hide Ik ctrl vis
 
 	master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
 
@@ -620,19 +600,19 @@ def fkIkDeformed(	SIDE = 'C',
 
 		stick_ctrlShape.attr('ten_IK') >> master_ik_ctrlShape.attr('visibility')
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. make scalable
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. make scalable
 	if sineDef == False or squashDef == False:
 		if mc.objExists(place_ctrl):
 			placeObj_ctrl = core.Dag(place_ctrl)
-			for index, each in enumerate (detail_loc):
-				detail_loc = core.Dag(each)
+			for index, each in enumerate(detail_loc):
+		loc = core.Dag(each)
 
 				minusOne_pma = core.PlusMinusAverage(f'{SIDE}_{BASE_NAME}_minusOne')
-				placeObj_ctrl.attr('scaleX') >> detail_loc.attr('scaleX')
-				placeObj_ctrl.attr('scaleY') >> detail_loc.attr('scaleY')
-				placeObj_ctrl.attr('scaleZ') >> detail_loc.attr('scaleZ')
+				placeObj_ctrl.attr('scaleX') >> loc.attr('scaleX')
+				placeObj_ctrl.attr('scaleY') >> loc.attr('scaleY')
+				placeObj_ctrl.attr('scaleZ') >> loc.attr('scaleZ')
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Parent Importent grp
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Parent Importent grp
 
 	if not mc.objExists('tentacleStill_grp'):
 		tenStillStore_grp = core.Null('tentacleStill_grp')
@@ -670,7 +650,7 @@ def fkIkDeformed(	SIDE = 'C',
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		mc.parent(master_fk_zroGrp, parentTo)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Set IK twist
 	if enableTwist:
 		ikHandle.enableTwistControl(
 									forwardAxis=forwardAxis,
@@ -682,5 +662,5 @@ def fkIkDeformed(	SIDE = 'C',
 									upObjectEnd=upObjectEnd
 								)
 
-	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Done
+	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Done
 	core.makeHeader('DONE')

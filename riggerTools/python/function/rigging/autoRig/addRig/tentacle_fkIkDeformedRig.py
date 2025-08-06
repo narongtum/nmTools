@@ -699,8 +699,9 @@ def fkIkDeformed(	SIDE = 'C',
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ..................Hide Ik ctrl vis
 
-	master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
-
+	# master_ik_ctrl = [PATTERN.format(SIDE=SIDE, BASE_NAME=BASE_NAME, index=str(i).zfill(2)) for i in range(1, COUNT_MAIN + 1)]
+	master_ik_ctrl = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}##_masterIk_ctrl', COUNT_DETAIL)
+	
 	for each in master_ik_ctrl:
 		master_ik_ctrlShape = core.Dag(core.shapeName(each))
 
@@ -759,14 +760,17 @@ def fkIkDeformed(	SIDE = 'C',
 		
 	mc.parent(f'{SIDE}_{BASE_NAME}01_masterFk_fkJnt', tenFkJnt_grp.name)
 
-
-	
 	if mc.objExists(parentTo):
 		print(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		
 		master_fk_zroGrp = core.Dag(f'{SIDE}_{BASE_NAME}01_masterFkRig_grp')
 		mc.parent(master_fk_zroGrp, parentTo)
 
+
+	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Assign ikh to stick
+	stick_ctrl.addAttribute( attributeType = 'message' , longName = 'ikh_msg')
+	# stick_ctrl.attr('message') >> stick_ctrl.attr('ikHandle')
+	ikHandle.attr('message') >> stick_ctrl.attr('ikh_msg')
 
 	# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # .................. Set IK twist 
 	if enableTwist:

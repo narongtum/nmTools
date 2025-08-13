@@ -3301,13 +3301,91 @@ class DoIkSpline( Ik ):
 	ikRPsolver, ikSCsolver , ikSplineSolver
 
 	[in case using ikSplineSolver with specific crv]
-	spineIK_spinCrv= core.DoIk( startJoint = bind_jnt[0] ,endEffector = bind_jnt[-1] ,solverType = 'ikSplineSolver',createCurve = False,curvName =  spine_crv ,parentCurve = False )
+	spineIK_spinCrv = core.DoIkSpline( startJoint = ik_detail_jnt[0] , endEffector = ik_detail_jnt[-1] ,  solverType = 'ikSplineSolver' ,createCurve = False,curveName = 'C_tenTail_ikSpine_crv', parentCurve = False)
 
 	armIk_ikh = core.DoIk( startJoint = upArmIk_jnt , endEffector = self.wristIk_jnt , solver = solverType )
 
+	[sample]
+
+	ikh = core.DoIkSpline( 	startJoint = ik_detail_jnt[0] , 
+							endEffector = ik_detail_jnt[-1] ,  
+							solverType = 'ikSplineSolver' ,
+							createCurve = False,
+							curveName = 'C_tenTail_ikSpine_crv', 
+							parentCurve = False)
+
+	ikh.name = 'hahaYow'
+	ikh.eff = 'thisEff'
+
+	ikh.enableTwistControl(
+		forwardAxis='z+',
+		worldUpAxis='y+',
+		worldUpVector=(0, 0, 1),
+		worldUpVectorEnd=(0, 0, 1),
+		worldUpType=4,
+		upObject='C_tenTailStart_ctrl',
+		upObjectEnd='C_tenTailEnd_ctrl'
+)
+
+
 	'''
-	def __init__( self , startJoint = '' ,endEffector = '' ,solverType = ''  ,createCurve = False, parentCurve = False):# cut the "name" attr because it will crash dunno why
-		Ik.__init__( self , mc.ikHandle( startJoint = startJoint , endEffector = endEffector ,  solver = solverType ,createCurve = createCurve,parentCurve = parentCurve) [0] )
+	def __init__( self , startJoint = '' ,endEffector = '' ,solverType = ''  ,createCurve = False, curveName = '', parentCurve = False):# cut the "name" attr because it will crash dunno why
+		Ik.__init__( self , mc.ikHandle( startJoint = startJoint , endEffector = endEffector ,  solver = solverType ,createCurve = createCurve,curve = curveName, parentCurve = parentCurve) [0] )
+
+
+	def enableTwistControl(self,
+					   forwardAxis='z+',            # ex: 'x+', 'z-', etc.
+					   worldUpAxis='y+',            # ex: 'y-', 'zc', etc.
+					   worldUpVector=(0, 0, 1),
+					   worldUpVectorEnd=(0, 0, 1),
+					   worldUpType=4, #... 4 is object rotation start, end 
+					   upObject=None,
+					   upObjectEnd=None):
+		"""
+		Enable Advanced Twist Control for ikSpline with axis string support like 'z+', 'y-', etc.
+		"""
+
+		# Define axis dictionaries
+		dForwardAxis_dict = {
+			'x+': 0, 'x-': 1,
+			'y+': 2, 'y-': 3,
+			'z+': 4, 'z-': 5,
+		}
+
+		dWorldUpAxis_dict = {
+			'y+': 0, 'y-': 1, 'yc': 2,
+			'z+': 3, 'z-': 4, 'zc': 5,
+			'x+': 6, 'x-': 7, 'xc': 8,
+		}
+
+		# Convert string axis to int if necessary
+		if isinstance(forwardAxis, str):
+			forwardAxis = dForwardAxis_dict.get(forwardAxis, 4)  # default 'z+'
+		if isinstance(worldUpAxis, str):
+			worldUpAxis = dWorldUpAxis_dict.get(worldUpAxis, 0)  # default 'y+'
+
+		# Apply attributes
+		self.attr('dTwistControlEnable').value = 1
+		self.attr('dForwardAxis').value = forwardAxis
+		self.attr('dWorldUpAxis').value = worldUpAxis
+		self.attr('dWorldUpType').value = worldUpType
+
+		self.attr('dWorldUpVectorX').value = worldUpVector[0]
+		self.attr('dWorldUpVectorY').value = worldUpVector[1]
+		self.attr('dWorldUpVectorZ').value = worldUpVector[2]
+
+		self.attr('dWorldUpVectorEndX').value = worldUpVectorEnd[0]
+		self.attr('dWorldUpVectorEndY').value = worldUpVectorEnd[1]
+		self.attr('dWorldUpVectorEndZ').value = worldUpVectorEnd[2]
+
+		# Optional up objects
+		if upObject and mc.objExists(upObject):
+			mc.connectAttr(f'{upObject}.worldMatrix[0]', f'{self}.dWorldUpMatrix', force=True)
+
+		if upObjectEnd and mc.objExists(upObjectEnd):
+			mc.connectAttr(f'{upObjectEnd}.worldMatrix[0]', f'{self}.dWorldUpMatrixEnd', force=True)
+
+
 
 
 class IkSpring( Ik ):

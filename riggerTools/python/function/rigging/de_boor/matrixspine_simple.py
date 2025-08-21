@@ -1,5 +1,6 @@
 #... 24.02.Feb.13.Tue.09_De boor matrix spine_Chris bag
 #... 24.05.May.07.Tue.10_Change attr link to wtMatrix
+#... move to de_boor module 
 
 
 """

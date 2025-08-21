@@ -1,3 +1,5 @@
+#... move to de_boor module 
+
 """
 Functions for generating spline weights.
 

@@ -1,12 +1,14 @@
 #... using wtAddMatrix for make something like rivet
 #... this is latest file
-# D:\sysTools\nmTools_github\riggerTools\python\function\rigging\autoRig\addRig
+#... move to constraint module 
+
+# D:\sysTools\nmTools_github\riggerTools\python\function\rigging\constraint
 
 
 
 
 '''
-from function.rigging.autoRig.addRig import rivetWithAddMatrix as rwm
+from function.rigging.constraint import rivetWithAddMatrix as rwm
 reload(rwm)
 
 rwm.rivetMatrix( 	skinCluster = 'SK_DM011_skc', 

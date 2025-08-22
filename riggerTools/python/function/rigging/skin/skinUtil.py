@@ -61,21 +61,23 @@ def renameSkinCluster():
 #... rename all bindpose in scene
 def _renameAllBindpose(ext = '_bindPose'):
 	dagPoseList = mc.ls(type = 'dagPose')
-	num = 1
 	for each in dagPoseList:
 		if ext not in each:
 			skc_name  = mc.listConnections(each, type='skinCluster')[0]
-			try:
-				newName = mc.rename(each, f"{skc_name}{num:02d}{ext}")
-				print ('changing name to %s'%newName)
-				num = num + 1
+			if skc_name:
+				try:
+					newName = mc.rename(each, f"{skc_name}{num:02d}{ext}")
+					print(f'Changing name to {newName}')
+					num = num + 1
 
-			except:
-				print ('%s has something wrong skiped.' %geoName)
-				num = num + 1
-				pass
+				except Exception as e:
+					print(f'{each} rename failed: {e}')
+					num = num + 1
+					continue
+			else:
+				print(f'{each} has no skinCluster connection, skipped.')
 		else:
-			print ('%s already change name' %each)
+			print(f'{each} already renamed')
 			continue
 
 			

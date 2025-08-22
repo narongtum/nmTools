@@ -1,36 +1,23 @@
+'''
+from function.rigging.de_boor import hh_skincluster_curve as hhskcc
+reload(hhskcc)
+'''
+
+
+
+
 from maya import cmds
 from maya.api import OpenMaya as om
 from maya.api import OpenMayaAnim as oma
 
-from function.rigging.de_boor import hh_de_boor_core as core
-
-import importlib
-importlib.reload(core)
-
-
-
-
-"""
-#... direct run
-
-from function.rigging.de_boor import hh_skincluster_curve
-reload(hh_skincluster_curve)
-
-mc.skinCluster(jnts, msh)
-hh_skincluster_curve.split_with_curve(msh, jnts, crv)
-
-"""
-
-
-
-
-
+from function.framework.reloadWrapper import reloadWrapper as reload
+from function.rigging.de_boor import de_boor_core as core
+reload(core)
 
 
 OPEN = 'open'
 PERIODIC = 'periodic'
 INDEX_TO_KNOT_TYPE = {0: OPEN, 2: PERIODIC}
-
 
 
 def split_with_curve(verts, jnts, crv, d=None, tol=0.000001):

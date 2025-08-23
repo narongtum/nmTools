@@ -61,10 +61,13 @@ class Constraint(logger.MayaLogger):
 from function.rigging.util import misc
 reload(misc)
 
-
-
-
-
+'''
+from function.rigging.util import misc as misc
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+sel = mc.ls(sl=True)
+mtc.del_selected_matrix(selected = sel)
+'''
 
 
 #.... Cut from Util.Misc

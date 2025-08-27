@@ -375,14 +375,6 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 		target_quatProd = core.QuatProd(base_name)
 		target_quatToEuler = core.QuatToEuler(base_name)
 
-		# if obj_target.type == 'joint' and obj_source.type == 'transform':
-		# 	mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
-		# else:
-		# 	# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-		# 	obj_source.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-		# 	# connect rotateOrder to eulerToQuat
-		# 	obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
-
 		#  alway jointOrient if target is joint
 		if obj_target.type == 'joint':
 			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
@@ -392,9 +384,6 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 			obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
 			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
 
-
-
-		target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
 		decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
 		target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')
 		target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')

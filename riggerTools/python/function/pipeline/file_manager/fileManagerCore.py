@@ -1681,11 +1681,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			maya_type = 'mayaBinary'
 
 		if mode == 'global':
-			print('This is global file.')
+			FileManagerLog.debug('This is global file.')
 			#... get Specific name when publish
 			if mc.objExists("rig_grp.enable") == True:
 				if mc.getAttr("rig_grp.asset_name") != '':
-					FileManagerLog.debug('asset_name no data skipped')
+					FileManagerLog.debug('\nAsset_name no data skipped')
 
 					if mc.getAttr("rig_grp.enable") == True:
 						if mc.getAttr("rig_grp.asset_name") != None:
@@ -2807,8 +2807,8 @@ def do_local_commit():
 	adjust.ctrlWidth(Width = 3)
 
 	# #... Move node to target
-	# FileManagerLog.debug('Do Delete delete_grp.')
-	# fileTools.doDeleteGrp()	
+	FileManagerLog.debug('Do Delete delete_grp.')
+	fileTools.doDeleteGrp()	
 
 	# #... Add delete suffix and prefix 
 	# fileTools.doDeleteSuffixExt(suffix ='_X')

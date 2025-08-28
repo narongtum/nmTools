@@ -504,9 +504,13 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 		reverse_side = None
 
 
+	#... replace inveset side and return
+	name_reverse_side = name.replace(side,reverse_side)
+
+
 
 	print('Base name is: {0} \nSide name is: {1} \nOpposide is {2}'.format(base_name, side, reverse_side))
-	return(base_name, side, reverse_side, isDefault, nameNoSide)
+	return(base_name, side, reverse_side, isDefault, nameNoSide, name_reverse_side)
 
 
 

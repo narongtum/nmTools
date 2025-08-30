@@ -82,7 +82,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-CORE_VERSION = '0.9.300'
+CORE_VERSION = '0.9.301'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -973,6 +973,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... Publish global file that Maya currenly open
 
 		try:
+			original_scene_path = mc.file(q=True, sn=True)
 			asset_path = self._get_full_path()
 			department_text = self.asset_department_listWidget.currentItem().text()
 
@@ -1023,6 +1024,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				#... update return logmsg for SVN
 				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
 
+				# --- back to original scene BEFORE saving ---
+				mc.file(original_scene_path, o=True, f=True)
+				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
+
 				# 3.Add SVN
 				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
 
@@ -1039,6 +1044,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				# 2.Maya Save
 				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
 				self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
+
+				# --- back to original scene BEFORE saving ---
+				mc.file(original_scene_path, o=True, f=True)
+				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 				# 3.Update localWidget viewport
 				self.load_global_commit(global_path)
@@ -1062,7 +1071,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# TODO: Create check what is type of this file
 
 		# Get full path that current open in maya
-		maya_file_path = mc.file( query=True , sn=True )
+		original_scene_path  = mc.file( query=True , sn=True )
 
 
 		full_path = self._get_full_path()
@@ -1070,9 +1079,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		full_path = os.path.join(full_path, department_text, STATIC_FOLDER[2])
 
 
-		if maya_file_path:
+		if original_scene_path :
 			# try:
-			file_ext = os.path.basename(maya_file_path)
+			file_ext = os.path.basename(original_scene_path )
 			FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
 
 			# Splits a pathname into a pair (root, ext)
@@ -1139,9 +1148,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
 				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
 				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
-
 				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
-				# mc.error('WHAT')
+
+				# --- back to original scene BEFORE saving ---
+				mc.file(original_scene_path, o=True, f=True)
+				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 				#... update return logmsg for SVN
 				# 3. Add SVN
@@ -1166,6 +1177,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# 3. Update localWidget viewport
 				self.load_local_commit(full_path)
+
+				# --- back to original scene BEFORE saving ---
+				mc.file(original_scene_path, o=True, f=True)
+				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 			elif result == QMessageBox.Rejected:
 					print('Cancel button clicked')

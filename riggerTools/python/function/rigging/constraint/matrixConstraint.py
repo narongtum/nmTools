@@ -109,6 +109,217 @@ def delMatrixConst(selected):
 
 
 
+def parentConMatrixSpaceSwitchGPT(source,
+							   target,
+							   mo=True,
+							   create_attr=True,
+							   attr_name='spaceSwitch',
+							   default_space='LOCAL'):
+	"""
+	Matrix-based Parent/World (no-rotation) space switch.
+
+	What you get
+	------------
+	- LOCAL space (parent space): behaves like a normal parentConstraint
+	  -> follows parent's translation AND rotation
+	- WORLD space (head-up / no-rotation): follows world translation of source
+	  -> keeps rotation identity (0,0,0) in world, so the head stays upright
+
+	How it works (nodes)
+	--------------------
+	LOCAL branch:
+		local_mmx = multMatrix( [offset?] * source.worldMatrix * target.parentInverseMatrix )
+		local_dcmp = decomposeMatrix(local_mmx.matrixSum)
+
+	WORLD branch (no-rotation):
+		tmp_mmx   = multMatrix( [offset?] * source.worldMatrix )               # world matrix with offset
+		tmp_dcmp  = decomposeMatrix(tmp_mmx.matrixSum)                         # extract world translate (T_w)
+		world_cmp = composeMatrix( translate = tmp_dcmp.outputTranslate,       # rotation=0, scale=1
+								   rotate=(0,0,0), scale=(1,1,1) )
+		world_mmx = multMatrix( world_cmp.outputMatrix * target.parentInverseMatrix )
+		(no dcmp here; it blends at matrix-level)
+
+	Switch/blend:
+		wt = wtAddMatrix()  # or blendMatrix if you prefer/available
+		- wt.wtMatrix[0].matrixIn = local_mmx.matrixSum
+		- wt.wtMatrix[1].matrixIn = world_mmx.matrixSum
+		- drive weights with a single float attribute on target: 0=LOCAL, 1=WORLD
+		  (use a 'reverse' node to get (1 - space) for the LOCAL weight)
+
+	Output:
+		final_dcmp = decomposeMatrix(wt.matrixSum)
+		- final_dcmp.outputTranslate -> target.translate
+		- final_dcmp.outputScale     -> target.scale
+		- rotation:
+			* if target is a joint: compensate jointOrient
+				q = final_dcmp.outputQuat * inverse( jointOrient )
+				euler(q) -> target.rotate
+			* else (transform): final_dcmp.outputRotate -> target.rotate
+
+	Parameters
+	----------
+	source : str
+		Driver transform.
+	target : str
+		Driven transform or joint.
+	mo : bool
+		Maintain offset at creation time.
+	create_attr : bool
+		Create user control attribute on target to switch spaces.
+	attr_name : str
+		Name of the switch attribute (0..1). 0=LOCAL, 1=WORLD.
+	default_space : str
+		'LOCAL' or 'WORLD' (initial attribute value).
+
+	Returns
+	-------
+	dict of node names for debugging.
+	"""
+
+	if not source:
+		print('Source is not selected.')
+		return {}
+
+	# -- Core wrappers
+	obj_tgt = core.Dag(target)
+	obj_src = core.Dag(source)
+	base    = core.check_name_style(name=target)[0]
+
+	# -- Compute local offset (target in source local space)
+	#    NOTE: we reuse your GPT version (row-major extraction)
+	local_offset = _getLocalOffsetGPT(source, target)
+	offMat = [local_offset(i, j) for i in range(4) for j in range(4)]
+
+	# ------------------------------------------------------------------
+	# LOCAL branch
+	# ------------------------------------------------------------------
+	local_mmx  = core.MultMatrix(base + '_Local')
+	local_dcmp = core.DecomposeMatrix(base + '_Local')
+
+	if mo:
+		mc.setAttr(local_mmx.name + '.matrixIn[0]', offMat, type='matrix')
+		obj_src.attr('worldMatrix[0]')                >> local_mmx.attr('matrixIn[1]')
+		obj_tgt.attr('parentInverseMatrix[0]')       >> local_mmx.attr('matrixIn[2]')
+	else:
+		obj_src.attr('worldMatrix[0]')                >> local_mmx.attr('matrixIn[0]')
+		obj_tgt.attr('parentInverseMatrix[0]')       >> local_mmx.attr('matrixIn[1]')
+
+	local_mmx.attr('matrixSum')                       >> local_dcmp.attr('inputMatrix')
+
+	# ------------------------------------------------------------------
+	# WORLD (no-rotation) branch
+	#   1) Build a world-space matrix with the SAME world translation as LOCAL,
+	#      but zero rotation, unit scale.
+	#   2) Convert it into target's parent space via parentInverseMatrix.
+	# ------------------------------------------------------------------
+	tmp_mmx   = core.MultMatrix(base + '_WorldTmp')     # [offset?]*source.world
+	tmp_dcmp  = core.DecomposeMatrix(base + '_WorldTmp')
+
+	if mo:
+		mc.setAttr(tmp_mmx.name + '.matrixIn[0]', offMat, type='matrix')
+		obj_src.attr('worldMatrix[0]')                 >> tmp_mmx.attr('matrixIn[1]')
+	else:
+		obj_src.attr('worldMatrix[0]')                 >> tmp_mmx.attr('matrixIn[0]')
+
+	tmp_mmx.attr('matrixSum')                          >> tmp_dcmp.attr('inputMatrix')
+
+	world_cmp = core.ComposeMatrix(base + '_WorldCMP')  # build identity-rot/sca in WORLD, with T_w
+	tmp_dcmp.attr('outputTranslate')                    >> world_cmp.attr('inputTranslate')
+	# rotation stays (0,0,0); scale stays (1,1,1)
+
+	world_mmx = core.MultMatrix(base + '_World')
+	world_cmp.attr('outputMatrix')                      >> world_mmx.attr('matrixIn[0]')
+	obj_tgt.attr('parentInverseMatrix[0]')              >> world_mmx.attr('matrixIn[1]')
+
+	# ------------------------------------------------------------------
+	# Switch / Blend
+	#   wtAddMatrix with two inputs:
+	#     - index 0: LOCAL matrix (weight = 1 - space)
+	#     - index 1: WORLD matrix (weight = space)
+	#   Use a 'reverse' node to generate (1 - space)
+	# ------------------------------------------------------------------
+	wt = core.WtAddMatrix(base + '_SpaceBlend')
+
+	# pipe matrices
+	local_mmx.attr('matrixSum')                         >> wt.attr('wtMatrix[0].matrixIn')
+	world_mmx.attr('matrixSum')                         >> wt.attr('wtMatrix[1].matrixIn')
+
+	# target attribute 0..1
+	if create_attr and not mc.objExists(obj_tgt.name + '.' + attr_name):
+		mc.addAttr(obj_tgt.name, ln=attr_name, at='double', min=0, max=1, dv=0.0, k=True)
+
+	# default value
+	if default_space.upper() == 'WORLD':
+		mc.setAttr(obj_tgt.name + '.' + attr_name, 1.0)
+	else:
+		mc.setAttr(obj_tgt.name + '.' + attr_name, 0.0)
+
+	# reverse node -> (1 - space)
+	rev = mc.createNode('reverse', n=base + '_SpaceRev')
+	mc.connectAttr(obj_tgt.name + '.' + attr_name, rev + '.inputX', f=True)
+
+	# drive weights
+	# LOCAL weight = (1 - space)
+	mc.connectAttr(rev + '.outputX', wt.name + '.wtMatrix[0].weightIn', f=True)
+	# WORLD weight = space
+	mc.connectAttr(obj_tgt.name + '.' + attr_name, wt.name + '.wtMatrix[1].weightIn', f=True)
+
+	# ------------------------------------------------------------------
+	# Final decompose → connect to target
+	# ------------------------------------------------------------------
+	final_dcmp = core.DecomposeMatrix(base + '_SpaceResult')
+	wt.attr('matrixSum')                                >> final_dcmp.attr('inputMatrix')
+
+	# Translate / Scale (same for joint & transform)
+	final_dcmp.attr('outputTranslate')                  >> obj_tgt.attr('translate')
+	final_dcmp.attr('outputScale')                      >> obj_tgt.attr('scale')
+
+	# Rotation (joint needs jointOrient compensation)
+	if obj_tgt.type == 'joint':
+		q_e2q  = core.EulerToQuat(base + '_JO')
+		q_inv  = core.QuatInvert(base + '_JO')
+		q_prod = core.QuatProd(base + '_JO')
+		q_q2e  = core.QuatToEuler(base + '_JO')
+
+		# convert jointOrient (Euler) to quat and invert
+		mc.connectAttr(obj_tgt.name + '.jointOrient', q_e2q.name + '.inputRotate', f=True)
+		q_e2q.attr('outputQuat')                        >> q_inv.attr('inputQuat')
+
+		# decompose quat * inv(jointOrient)
+		final_dcmp.attr('outputQuat')                   >> q_prod.attr('input1Quat')
+		q_inv.attr('outputQuat')                        >> q_prod.attr('input2Quat')
+
+		# back to Euler
+		q_prod.attr('outputQuat')                       >> q_q2e.attr('inputQuat')
+		q_q2e.attr('outputRotate')                      >> obj_tgt.attr('rotate')
+
+		# keep rotate order consistent (match source)
+		src_ro = mc.getAttr(str(source) + '.rotateOrder')
+		obj_tgt.attr('rotateOrder').value = src_ro
+		if not mc.listConnections(obj_tgt.attr('rotateOrder'), d=False, s=True):
+			obj_tgt.attr('rotateOrder') >> q_q2e.attr('inputRotateOrder')
+	else:
+		# simple transforms: use euler directly
+		final_dcmp.attr('outputRotate')                 >> obj_tgt.attr('rotate')
+		src_ro = mc.getAttr(str(source) + '.rotateOrder')
+		obj_tgt.attr('rotateOrder').value = src_ro
+
+	# --- Optional: message links for clean-up tools
+	if not mc.objExists(obj_tgt.name + '.m_spaceSwitch'):
+		obj_tgt.addAttribute(attributeType='message', longName='m_spaceSwitch')
+		final_dcmp.attr('message') >> obj_tgt.attr('m_spaceSwitch')
+
+	Constraint.info('Space switch (LOCAL/WORLD) setup complete.')
+	return {
+		'local_mmx': local_mmx.name,
+		'local_dcmp': local_dcmp.name,
+		'tmp_mmx': tmp_mmx.name,
+		'tmp_dcmp': tmp_dcmp.name,
+		'world_cmp': world_cmp.name,
+		'world_mmx': world_mmx.name,
+		'wt_add': wt.name,
+		'final_dcmp': final_dcmp.name,
+	}
 
 
 

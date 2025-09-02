@@ -11,7 +11,7 @@ from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtCore import QDir, QSortFilterProxyModel
 
 import maya.OpenMaya as om
-import maya.OpenMayaUI as omui
+import maya.OpenMayaUI as OpenMayaUI
 
 import subprocess
 import sys
@@ -82,7 +82,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-CORE_VERSION = '0.9.301'
+CORE_VERSION = '0.9.5'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -103,7 +103,7 @@ if os.path.exists(file_path):
 	#... Top folder name
 	BASE_FOLDER = config.BASE_FOLDER
 	ASSET_TOP_FOLDER = config.ASSET_TOP_FOLDER
-	SCENE_TOP_FOLDER = config.ASSET_TOP_FOLDER
+	SCENE_TOP_FOLDER = config.SCENE_TOP_FOLDER
 	#... Directory name
 	DEPT_NAME = config.DEPT_NAME
 	DEPT_EMPTY = config.DEPT_EMPTY
@@ -170,7 +170,7 @@ else:
 
 
 
-import maya.OpenMayaUI as OpenMayaUI
+# import maya.OpenMayaUI as OpenMayaUI
 
 #... get this window alway on top
 #... chad vernon said about parent window on top at 1:16 (crateing the remapping dialog)
@@ -184,10 +184,10 @@ def getMayaMainWindow():
 
 
 #... try for enable filter widget
-class FilterProxyModel(QtCore.QSortFilterProxyModel):
-	def __init__(self, parent=None):
-		super(FilterProxyModel, self).__init__(parent)
-		self._pattern = ""
+# class FilterProxyModel(QtCore.QSortFilterProxyModel):
+# 	def __init__(self, parent=None):
+# 		super(FilterProxyModel, self).__init__(parent)
+# 		self._pattern = ""
 
 	@property
 	def pattern(self):
@@ -230,7 +230,20 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		super(FileManager, self).__init__(parent=parent)
 		self.setupUi(self)
 		self.path = None
-		FileManagerLog.debug('Run this first...')
+		FileManagerLog.debug('# --- Asset file system model + proxy for filtering ---')
+
+		# --- Asset file system model + proxy for filtering ---
+		self.asset_fs_model = QtWidgets.QFileSystemModel(self)   # source model for Asset tree
+		self.asset_proxy    = QtCore.QSortFilterProxyModel(self) # single, persistent proxy
+		# show only column 0 (name) filtering; case-insensitive
+		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
+		self.asset_proxy.setFilterKeyColumn(0)
+
+		# If your PySide2/Qt >= 5.10, this enables filtering into children
+		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
+			self.asset_proxy.setRecursiveFilteringEnabled(True)
+
+
 
 		# Define model as an instance variable
 		# self.model = None
@@ -331,8 +344,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_local_view_listWidget.customContextMenuRequested.connect(self.handle_right_click_local_widget)
 
 		#... Set up context menu
-		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
-		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+		self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... moveto __init__
+		self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... moveto __init__
 
 		#... Handle double click
 		self.asset_version_view_listWidget.itemDoubleClicked.connect(self.handle_double_click)
@@ -346,6 +359,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		# Connect the function to the clicked signal button
 		self.asset_commit_BTN.clicked.connect(self.push_btn_global_publish)
+
+		self.check_exists_maya()
 
 	def is_scene_open(self):
 		current_scene = mc.file(query=True, sceneName=True)
@@ -402,52 +417,89 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		print("Print B")
 
 	def replaceSelectedReference(self):
-		#... Step
-		# 1. user want to replace reference in current scene
-		# 2. select global commit in UI
-		# 3. select some of ctrl in scene
-		# 4. run method replaceSelectedReference to switch
+		"""
+		Replace the currently selected reference(s) in the scene with the file
+		chosen in the Global Commit list widget, under the asset selected in the tree.
+		Steps (original intention preserved):
+		  1) User selects a Global Commit in the UI
+		  2) User selects one or more controls (any DAG nodes) in the scene
+		  3) Run this method to switch the referenced file
+		"""
+		# --- 1) Read selected commit item from the global widget
+		item = self.asset_global_listWidget.currentItem()
+		if not item:
+			QMessageBox.warning(self, "No Selection",
+								"Please select a global commit file from the UI.")
+			return False
+		asset_name = item.text()  # file name with extension
 
-
-		#... Get what user selected asset from global widget
-		try:
-			asset = self.asset_global_listWidget.currentItem().text()
-			# asset = self.asset_global_listWidget.currentItem()
-		except:
-			QMessageBox.warning(self, "No Selection", "Please select a global commit file from the UI.")
-			return False  # Terminate early if no selection
-
-
-		#... Get what user selected from treeview widget
-		index = self.asset_dir_TREEVIEW.currentIndex()
-		file_path = self.model.filePath(index)
-		new_asset_path = f'{file_path}/commit/{asset}'
-
-		#...select run
-		sel = mc.ls(sl=True)[0]
-		refNodes = []
-		refNode = mc.referenceQuery(sel, isNodeReferenced=True)
-		if refNode:
-			topRefNode = mc.referenceQuery(sel, referenceNode=True, topReference=True)
-			if not topRefNode in refNodes:
-				refNodes.append(topRefNode)
-
-		reply = QMessageBox.question(
-												self ,
-												'Confirm' ,
-												f'Selected reference object will be replaced with {asset}. Do you want to replace?' ,
-												QMessageBox.Yes | QMessageBox.No 
-											)
-		if reply == QMessageBox.Yes:
-			for refNode in refNodes:
-				mc.file(new_asset_path, loadReference=refNode, type='mayaAscii', options='v=0')
-			return True
-		
-		elif reply == QMessageBox.No:
+		# --- 2) Resolve the asset root from the treeview (proxy -> source -> path)
+		proxy_index = self.asset_dir_TREEVIEW.currentIndex()
+		if not proxy_index.isValid():
+			QMessageBox.warning(self, "No Asset Selected",
+								"Please select an asset in the tree view.")
 			return False
 
-		FileManagerLog.debug(f'\t1.Get what asset that user choose: {global_path}')
-		FileManagerLog.debug('\t2.Replace reference. with current selected object in scene.')
+		src_index = self._asset_proxy_to_source(proxy_index)  # map proxy -> source
+		asset_root = self.asset_fs_model.filePath(src_index)  # source model filePath
+		asset_root = os.path.normpath(asset_root)
+
+		# Build absolute path to the picked commit file
+		# STATIC_FOLDER[2] should be the 'Commit' folder name from your config
+		commit_dir_name = STATIC_FOLDER[2]
+		new_asset_path = os.path.normpath(os.path.join(asset_root, commit_dir_name, asset_name))
+
+		if not os.path.exists(new_asset_path):
+			QMessageBox.warning(self, "File Missing",
+								f"Cannot find commit file:\n{new_asset_path}")
+			return False
+
+		# --- 3) Find top reference nodes from current selection
+		sel_list = mc.ls(sl=True, long=True) or []
+		if not sel_list:
+			QMessageBox.warning(self, "No Scene Selection",
+								"Please select at least one object that belongs to a reference.")
+			return False
+
+		top_ref_nodes = []
+		for node in sel_list:
+			if mc.referenceQuery(node, isNodeReferenced=True):
+				top_ref = mc.referenceQuery(node, referenceNode=True, topReference=True)
+				if top_ref and top_ref not in top_ref_nodes:
+					top_ref_nodes.append(top_ref)
+
+		if not top_ref_nodes:
+			QMessageBox.warning(self, "No References Found",
+								"Selected objects are not part of any reference.")
+			return False
+
+		# --- 4) Confirm replacement
+		reply = QMessageBox.question(
+			self, "Confirm",
+			f"Selected reference object(s) will be replaced with:\n  {asset_name}\n\nProceed?",
+			QMessageBox.Yes | QMessageBox.No
+		)
+		if reply != QMessageBox.Yes:
+			return False
+
+		# --- 5) Pick maya file type based on extension
+		_, ext = os.path.splitext(new_asset_path)
+		maya_type = "mayaAscii" if ext.lower() == ".ma" else "mayaBinary"
+
+		# --- 6) Do the actual replacement
+		for ref_node in top_ref_nodes:
+			try:
+				mc.file(new_asset_path, loadReference=ref_node, type=maya_type, options="v=0")
+			except Exception as e:
+				FileManagerLog.error("Failed to replace reference '%s' with '%s': %s",
+									 ref_node, new_asset_path, e)
+				QMessageBox.critical(self, "Replace Failed",
+									 f"Failed to replace reference:\n{ref_node}\n\n{e}")
+				return False
+
+		FileManagerLog.debug("Replaced references with: %s", new_asset_path)
+		return True
+
 
 
 
@@ -458,19 +510,38 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		run_ui.run_file_exporter()
 
 
-
-
-
-
-
-	# def filter_model(self, text):
-	# 	self.proxyModel.pattern = text
-
+	'''
 	def filter_model(self, text):
-		# Apply the filter to the proxy model
+		#... Apply the filter to the proxy model
 		search_pattern = f"*{text}*"  # Wildcards allow partial matches
 		self.proxyModel = QtCore.QSortFilterProxyModel()
 		self.proxyModel.setFilterWildcard(search_pattern)
+		'''
+
+	def filter_model(self, text):
+		# English: Reuse the single persistent proxy already wired to the view.
+		# Do NOT create a new proxy each keystroke, or the view loses its model state.
+		pattern = text.strip()
+		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
+		self.asset_proxy.setFilterKeyColumn(0)  # filter by "Name" column
+
+		# English: Prefer FixedString for simple contains; use wildcard if you really need it.
+		# With QSortFilterProxyModel default, setFilterFixedString matches substrings.
+		self.asset_proxy.setFilterFixedString(pattern)
+
+		# English: If Qt >= 5.10, ensure recursive filtering is on so parent folders with
+		# matching descendants remain visible.
+		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
+			self.asset_proxy.setRecursiveFilteringEnabled(True)
+
+	def _path_from_treeview_index(self, proxy_index):
+		"""English: Map a QTreeView proxy index to absolute filesystem path."""
+		if not proxy_index.isValid():
+			return None
+		src_index = self._asset_proxy_to_source(proxy_index)  # your existing helper
+		return self.asset_fs_model.filePath(src_index)
+
+
 
 	def handle_double_click(self, item):
 		# Double click is mean open
@@ -641,13 +712,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		reference_action.triggered.connect(self.handle_reference_global_widget)
 		contextMenu.addAction(reference_action)
 
-		# Disconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_global_listWidget.customContextMenuRequested.disconnect(self.handle_right_click_global_widget)
+		#... Disconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_global_listWidget.customContextMenuRequested.disconnect(self.handle_right_click_global_widget)
 
 		contextMenu.exec_(self.asset_global_listWidget.mapToGlobal(position))
 
-		# Reconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_global_listWidget.customContextMenuRequested.connect(self.handle_right_click_global_widget)
+		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_global_listWidget.customContextMenuRequested.connect(self.handle_right_click_global_widget)
 
 
 	def handle_reference_global_widget(self):
@@ -710,13 +781,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		reference_action.triggered.connect(self.handle_reference_local_widget)
 		contextMenu.addAction(reference_action)
 
-		# Disconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_local_view_listWidget.customContextMenuRequested.disconnect(self.handle_right_click_local_widget)
+		#... Disconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_local_view_listWidget.customContextMenuRequested.disconnect(self.handle_right_click_local_widget)
 
 		contextMenu.exec_(self.asset_local_view_listWidget.mapToGlobal(position))
 
-		# Reconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_local_view_listWidget.customContextMenuRequested.connect(self.handle_right_click_local_widget)
+		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_local_view_listWidget.customContextMenuRequested.connect(self.handle_right_click_local_widget)
 
 
 
@@ -828,14 +899,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-		# Disconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_version_view_listWidget.customContextMenuRequested.disconnect(self.show_step_context)
+		#... Disconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_version_view_listWidget.customContextMenuRequested.disconnect(self.show_step_context)
 
 		# Show the context menu at the specified position
 		contextMenu.exec_(self.asset_version_view_listWidget.mapToGlobal(position))
 
-		# Reconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
+		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_version_view_listWidget.customContextMenuRequested.connect(self.show_step_context)
 
 
 	#... right click at version widget
@@ -882,8 +953,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			# Try to find another method for list that include more '_' in name
 			current_index = self.asset_dir_TREEVIEW.currentIndex()
-			full_path = self.model.filePath(current_index)
+			# full_path = self.model.filePath(current_index)
 
+			src_index = self._asset_proxy_to_source(current_index)           # map to source
+			full_path = self.asset_fs_model.filePath(src_index)              # use source model
 			full_path = os.path.normpath(full_path)
 
 			full_path = full_path.split('\\')
@@ -1235,145 +1308,146 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def check_exists_maya(self):
+		"""
+		Check the currently opened Maya scene and sync the UI to the proper node in the file manager.
+		Keeps the original flow:
+		  - If the scene is under .../<ASSET>/<DEPT>/Version/...  -> update browser & populate versions
+		  - If the scene is under .../<ASSET>/<DEPT>/Commit/...   -> detect Global vs Local commit
+		Returns:
+		  True  -> UI updated successfully for a managed path
+		  False -> Scene not under a managed path or something is invalid
+		"""
 
-		'''
-		Check the curenty maya file that already open is in the proper file manager path
-		'''
+		# 1) Get current scene path
+		maya_file_path = mc.file(query=True, sn=True)
+		if not maya_file_path:
+			FileManagerLog.debug("No scene loaded (or never saved).")
+			return False
 
-		maya_file_path = mc.file( query=True , sn=True )
+		maya_file_path = os.path.normpath(maya_file_path)
 
-		if maya_file_path:
+		# 2) Inspect parent folder name
+		folder_path   = os.path.dirname(maya_file_path)
+		parent_folder = os.path.basename(folder_path)
 
-			folder_path = os.path.dirname(maya_file_path)
+		# --- CASE A: opened from 'Version' folder --------------------------------
+		#   .../<ASSET>/<DEPT>/Version/<step>/<file.ma>
+		if parent_folder == STATIC_FOLDER[1]:  # 'Version'
+			FileManagerLog.debug("The folder containing named 'Version'.")  # :contentReference[oaicite:1]{index=1}
 
-			parent_folder = os.path.basename(folder_path)
+			# climb up:
+			#   folder_path      -> .../<ASSET>/<DEPT>/Version
+			#   asset_path       -> .../<ASSET>
+			version_parent = os.path.dirname(folder_path)
+			asset_path     = os.path.dirname(version_parent)
 
-			
-
-			#... ensures that the code works correctly regardless of the underlying operating system.
-
-			#... There open in 'VERSION' folder
-
-			if parent_folder == STATIC_FOLDER[1]:
-				FileManagerLog.debug("The folder containing named 'Version'.")
-
-				folder_path = os.path.dirname(folder_path)
-				asset_path = os.path.dirname(folder_path)
-
-				# Department path
-				asset_name = os.path.basename(asset_path)
-
-				if os.path.exists(os.path.join(asset_path, 'data.json')):
-					FileManagerLog.debug('This file is valid Go on ')
-
-					self.update_to_browser(asset_path)
-
-					self.populate_version_from_open_scene(asset_path)
-
-
-					
-
-			#... If open in 'COMMIT' folder
-
-			elif parent_folder == STATIC_FOLDER[2]:
-				FileManagerLog.debug("	Their is Commit file.")
-
-				#... check is global or local commit file
-				back_folder_path = os.path.dirname(folder_path)
-				FileManagerLog.debug("	back_folder_path path is >>> {0}".format(back_folder_path))
-
-				#... Check valid data
-				if os.path.exists(os.path.join(back_folder_path, 'data.json')):
-
-					#... This is global commit
-					FileManagerLog.debug('	1143 -This file is Global Commit >>> {0}'.format(back_folder_path))
-
-					#... Show Asset name at global widget
-					#... Make auto selected Asset name for make script continue to work
-					asset_index = self.model.index(back_folder_path)
-					self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(asset_index, QtCore.QItemSelectionModel.ClearAndSelect)
-					# Make the treeView scroll to the selected item
-					self.asset_dir_TREEVIEW.scrollTo(asset_index, QtWidgets.QAbstractItemView.PositionAtTop)
-
-					#... Show file on global widget
-					self.load_global_commit(folder_path)
-
-
-
-
-
-				else:
-					FileManagerLog.debug('This file Local Commit')
-
-					# Extract the desired part of the path
-					assetName_path = os.path.dirname(back_folder_path)
-
-
-					#... Select Asset Name
-					FileManagerLog.debug('	1167-	This is assetName_path >>> {0}'.format(assetName_path))
-					asset_index = self.model.index(assetName_path)
-					self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(asset_index, QtCore.QItemSelectionModel.ClearAndSelect)
-					self.asset_dir_TREEVIEW.scrollTo(asset_index, QtWidgets.QAbstractItemView.PositionAtTop)
-
-					#... Select Department Name
-
-					#... normalize path first
-					back_folder_path = os.path.normpath(back_folder_path)
-					path_elements = back_folder_path.split(os.path.sep)
-					FileManagerLog.debug('	1177-	This is Department Name >>> {0}'.format(path_elements[-1]))
-
-					#... Add department here
-					self.asset_department_listWidget.addItem(path_elements[-1])
-					department_item = self.asset_department_listWidget.findItems(path_elements[-1], QtCore.Qt.MatchExactly)
-					self.asset_department_listWidget.setCurrentItem(department_item[0])
-
-					#... Populate asset Info
-					data_file = os.path.join(assetName_path, 'data.json')
-					with open(data_file, "r") as file:
-						json_data = json.load(file)
-					self.assetInfo_list_listWidget.addItem(json_data['comment'])
-
-					#... Populate thumbnail
-					thumbnail_path = os.path.join(assetName_path, THUMBNAIL_NAME)
-					self.display_images(thumbnail_path)
-
-					global_path = os.path.join(assetName_path, STATIC_FOLDER[2])
-					self.load_global_commit(global_path)
-
-
-					self.load_local_commit(folder_path)
-					#... Make auto selected asset name for make script continue to work
-
-
+			# sanity
+			if os.path.exists(os.path.join(asset_path, 'data.json')):
+				FileManagerLog.debug('This file is valid. Go on.')
+				# keep your original behavior
+				self.update_to_browser(asset_path)                        # :contentReference[oaicite:2]{index=2}
+				self.populate_version_from_open_scene(asset_path)         # :contentReference[oaicite:3]{index=3}
+				return True
 			else:
-				pass
+				FileManagerLog.warning("Invalid asset structure (missing data.json): %s", asset_path)
+				return False
+
+		# --- CASE B: opened from 'Commit' folder ---------------------------------
+		#   .../<ASSET>/<DEPT>/Commit/<something>/<file.ma>
+		elif parent_folder == STATIC_FOLDER[2]:  # 'Commit'
+			FileManagerLog.debug("There is a Commit file.")  # :contentReference[oaicite:4]{index=4}
+
+			back_folder_path = os.path.normpath(os.path.dirname(folder_path))  # one level up from 'Commit/...'
+			FileManagerLog.debug("back_folder_path >>> %s", back_folder_path)  # :contentReference[oaicite:5]{index=5}
+
+			# B1) Global Commit: .../<ASSET> has data.json
+			if os.path.exists(os.path.join(back_folder_path, 'data.json')):    # :contentReference[oaicite:6]{index=6}
+				FileManagerLog.debug("This file is Global Commit >>> %s", back_folder_path)
+
+				# Select the asset folder in the tree (source -> proxy mapping!)
+				src_index = self.asset_fs_model.index(back_folder_path)
+				if src_index.isValid():
+					proxy_index = self.asset_proxy.mapFromSource(src_index)
+					sel = self.asset_dir_TREEVIEW.selectionModel()
+					sel.setCurrentIndex(
+						proxy_index,
+						QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current
+					)
+					self.asset_dir_TREEVIEW.scrollTo(
+						proxy_index, QtWidgets.QAbstractItemView.PositionAtTop
+					)
+				else:
+					FileManagerLog.warning("Invalid index for back_folder_path: %s", back_folder_path)
+
+				# Populate the global-commit widget with files under the *Commit* folder we opened from
+				self.load_global_commit(folder_path)                         # :contentReference[oaicite:7]{index=7}
+				return True
+
+			# B2) Local Commit: .../<ASSET>/<DEPT>/Commit/<local> (no data.json at back_folder_path)
+			else:
+				FileManagerLog.debug("This file is Local Commit.")
+				assetName_path = os.path.normpath(os.path.dirname(back_folder_path))  # climb to <ASSET>
+
+				if os.path.exists(os.path.join(assetName_path, 'data.json')):
+					# highlight the <ASSET> in the tree
+					src_index = self.asset_fs_model.index(assetName_path)
+					if src_index.isValid():
+						proxy_index = self.asset_proxy.mapFromSource(src_index)
+						sel = self.asset_dir_TREEVIEW.selectionModel()
+						sel.setCurrentIndex(
+							proxy_index,
+							QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current
+						)
+						self.asset_dir_TREEVIEW.scrollTo(
+							proxy_index, QtWidgets.QAbstractItemView.PositionAtTop
+						)
+					else:
+						FileManagerLog.warning("Invalid index for assetName_path: %s", assetName_path)
+
+					# then load the local-commit list from the folder we opened
+					self.load_local_commit(back_folder_path)
+					return True
+				else:
+					FileManagerLog.warning("Invalid local commit structure (missing data.json): %s", assetName_path)
+					return False
+
+		# --- CASE C: not under Version/Commit managed folders ---------------------
+		else:
+			FileManagerLog.debug("The current file is not under managed Version/Commit paths.")
+			return False
+
 
 	#... If user already open scene 
 	def update_to_browser(self, file_path):
 		'''
-		Check the curenty maya file that already open is in the proper file manager path
+		Check the currently opened maya file is inside proper file manager path
+		and select that node in the tree.
 		'''
+		FileManagerLog.debug("The Scene is already open: {0}".format(file_path))
 
-		FileManagerLog.debug("	The Scene is already open: {0}".format(file_path))
+		# 1) build source index from the real filesystem model
+		src_index = self.asset_fs_model.index(file_path)
 
-		# Convert the desired directory path to a model index
-		index = self.model.index(file_path)
+		# 2) map to proxy index (the view is bound to the proxy)
+		if src_index.isValid():
+			proxy_index = self.asset_proxy.mapFromSource(src_index)
 
-		if index.isValid():
-			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(index, QtCore.QItemSelectionModel.ClearAndSelect)
+			# 3) drive selection on the view using the proxy index
+			self.asset_dir_TREEVIEW.setCurrentIndex(proxy_index)
+			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
+				proxy_index, QtCore.QItemSelectionModel.ClearAndSelect
+			)
+			self.asset_dir_TREEVIEW.scrollTo(
+				proxy_index, QtWidgets.QAbstractItemView.PositionAtTop
+			)
+		else:
+			FileManagerLog.warning("update_to_browser: invalid index for %s", file_path)
 
-			#... Make the treeView scroll to the selected item
-			self.asset_dir_TREEVIEW.scrollTo(index, QtWidgets.QAbstractItemView.PositionAtTop)
+
+
 
 			
-		## Expand the QTreeView to the parent item of the desired directory
-		# self.asset_dir_TREEVIEW.expand(index.parent())
-
-		## Get the model index of the desired directory
-		# desired_index = self.model.index(file_path)
-
-		## Select the item at the model index
-		# self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(desired_index, QtCore.QItemSelectionModel.ClearAndSelect)
+		
 
 
 
@@ -1401,7 +1475,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			# Convert the desired directory path to a model index
 			FileManagerLog.debug('	922 - This is file_path >>> {0}'.format(file_path))
-			asset_index  = self.model.index(file_path)
+
+			# asset_index  = self.model.index(file_path)
+
+			asset_index = self.asset_fs_model.index(file_path)
+			if asset_index.isValid():
+				proxy_index = self.asset_proxy.mapFromSource(asset_index)
+				self.asset_dir_TREEVIEW.setCurrentIndex(proxy_index)
+				self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
+					proxy_index, QtCore.QItemSelectionModel.ClearAndSelect
+				)
+				self.asset_dir_TREEVIEW.scrollTo(proxy_index, QtWidgets.QAbstractItemView.PositionAtTop)
+
+
 
 			# Create a QItemSelection for the asset item
 			selection = QtCore.QItemSelection(asset_index, asset_index)
@@ -1669,6 +1755,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				return
 		#... open maya file
 		mc.file(file_path, o=True, f=True)
+		self.check_exists_maya()
 		# add recent file when open
 		# self.addRecenfile( file_path )
 
@@ -1785,13 +1872,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		showInExplorer_action.triggered.connect(self.show_job_explorer)
 		contextMenu.addAction(showInExplorer_action)
 
-		# Disconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_department_listWidget.customContextMenuRequested.disconnect(self.show_job_context_menu)
+		#... Disconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_department_listWidget.customContextMenuRequested.disconnect(self.show_job_context_menu)
 
 		contextMenu.exec_(self.asset_department_listWidget.mapToGlobal(position))
 
-		# Reconnect the signal-slot connection for the customContextMenuRequested signal
-		self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
+		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
+		# self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
 
 
 
@@ -1979,26 +2066,27 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_version_view_listWidget.clear()
 		self.assetInfo_list_listWidget.clear()
 
-
 		# Get the file name and path from the model
-		file_path = self.model.filePath(index)
+		# file_path = self.model.filePath(index)
+		src_index = self._asset_proxy_to_source(index)
+		file_path = self.asset_fs_model.filePath(src_index) # for make filter
 		FileManagerLog.debug('This is file path: {0}'.format(file_path))
-
-
-
 
 		#  Checks if the item is a file or not.
 		if os.path.isfile(file_path):
-			FileManagerLog.debug('This is file for sure')
+			FileManagerLog.debug('It is a file, nothing to populate for departments')
 
 			return
 		else:
 			FileManagerLog.debug('This is folder for sure')
+			# self.load_asset_departments(file_path) # <-- moved out from the data.json guard
 			data_file = os.path.join(file_path, 'data.json')
 			self.display_images(None)
 
 			# Check if having 'data.json' mean is asset folder for sure
 			if os.path.exists(data_file):
+				# safe-blocks that truly need data.json (comment, thumb, global list)
+				# Global commits
 				FileManagerLog.debug('That is "ASSET" we looking for.')
 				self.load_asset_departments(file_path)
 
@@ -2049,8 +2137,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def on_treeview_SCENE_clicked(self, index):
-		file_path = self.model.filePath(index)
-		FileManagerLog.debug('This is scene file path {0}'.format(file_path))			
+		# Use scene model (no proxy on scene tree)
+		file_path = self.scene_fs_model.filePath(index)
+		FileManagerLog.debug('This is scene file path %s', file_path)
+	
 
 
 
@@ -2184,9 +2274,12 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def _get_full_path(self):
+
 		# Construct the full path based on the selected text on treeview
-		current_index = self.asset_dir_TREEVIEW.currentIndex()
-		full_path = self.model.filePath(current_index)
+		current_index = self.asset_dir_TREEVIEW.currentIndex()# proxy index
+		src_index = self._asset_proxy_to_source(current_index)           # map to source
+		full_path = self.asset_fs_model.filePath(src_index)              # use source model
+		# full_path = self.model.filePath(current_index)
 		full_path = os.path.normpath(full_path)
 		FileManagerLog.debug("Return full path: {0}".format(full_path) )
 		return full_path
@@ -2200,7 +2293,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	def get_deep_path(self):
 		# Return full path to work file and extension		
 		current_index = self.asset_dir_TREEVIEW.currentIndex()
-		full_path = self.model.filePath(current_index)
+		# full_path = self.model.filePath(current_index)
+		src_index = self._asset_proxy_to_source(current_index)           # map to source
+		full_path = self.asset_fs_model.filePath(src_index)              # use source model
 		department_text = self.asset_department_listWidget.currentItem().text()
 
 		# Get current selected in Version listWidget
@@ -2250,33 +2345,72 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Look for the data.json file in the folder
 		data_file = os.path.join(folder_path, 'data.json')
 
-	
 
-		'''
-		# Choice 1: read department name from dict
-		if os.path.isfile(data_file):
-			with open(data_file, 'r') as f:
-				data = json.load(f)
-				if 'department_name' in data:
-					# Add the departments to the list widget
-					departments = data['department_name']
-					FileManagerLog.info('\n146')
-					self.asset_department_listWidget.addItems(departments)
-		'''
+		# Fallback: list only subfolders even if data.json is missing
+		items = []
+		for name in os.listdir(folder_path):
+			# Skip excluded names and non-directories
+			if name in EXCLUDE_VIEW_ITEM:
+				continue
+			full = os.path.join(folder_path, name)
+			if os.path.isdir(full):
+				items.append(name)
 
-		# Choice 2: read folder list in dir
-		if os.path.isfile(data_file):
-			departments = []
-			items = os.listdir(folder_path)
-			FileManagerLog.debug('this is item {0}'.format(items))
-			# Exclude unwanted item
-			items_excluded = [dept for dept in items if dept not in EXCLUDE_VIEW_ITEM ]
-			self.asset_department_listWidget.addItems(items_excluded)
+		# If you still want to prefer reading from data.json when present,
+		# you can optionally override items here by reading department_name from JSON.
+		# But at minimum, show the folder list.
+		if items:
+			self.asset_department_listWidget.addItems(sorted(items))
 
 
 
 	def populate_ASSET_treeView(self):
 
+		#... GPT start
+		# init the source model
+		self.asset_fs_model.setRootPath(self.path)
+
+		# set source model to proxy, then proxy to view
+		self.asset_proxy.setSourceModel(self.asset_fs_model)
+		self.asset_dir_TREEVIEW.setModel(self.asset_proxy)
+
+		self.asset_filter_lineEdit.setPlaceholderText('Search...')
+		# connect textChanged ONLY to proxy; no need to recreate proxy each time
+		self.asset_filter_lineEdit.textChanged.connect(
+			lambda text: self.asset_proxy.setFilterWildcard(f"*{text}*")
+		)
+
+		# update self.path for the selected drive/project
+		self.path = os.path.join(self.drive_comboBox.currentText(),
+								 BASE_FOLDER,
+								 self.project_comboBox.currentText(),
+								 ASSET_TOP_FOLDER)
+
+		# this was previously self.model; now use self.asset_fs_model for filters
+		self.asset_fs_model.setNameFilters(HIDE_FORMAT)
+		self.asset_fs_model.setNameFilterDisables(False)
+
+		# map root index: source -> proxy
+		src_root = self.asset_fs_model.index(self.path)
+		proxy_root = self.asset_proxy.mapFromSource(src_root)
+		self.asset_dir_TREEVIEW.setRootIndex(proxy_root)
+
+		# sorting still works on proxy
+		self.asset_dir_TREEVIEW.setSortingEnabled(True)
+		self.asset_dir_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
+		self.asset_dir_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+		self.asset_dir_TREEVIEW.header().setSortIndicatorShown(True)
+
+		# hide extra columns (the view is on proxy but column config applies)
+		self.asset_dir_TREEVIEW.setColumnHidden(1, True)
+		self.asset_dir_TREEVIEW.setColumnHidden(2, True)
+		self.asset_dir_TREEVIEW.setColumnHidden(3, True)
+
+		# keep the rest of your logging as-is
+
+		#... GPT end
+
+		'''
 
 		print('\tChange project name')
 		#...initializing model and populate the tree view
@@ -2338,110 +2472,108 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Show department listWidget when selected asset
 		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
 		# print("\nShow department...")
+
+		'''
 	
+	def _asset_proxy_to_source(self, index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+		"""Map a QModelIndex from asset_dir_TREEVIEW (proxy) back to source (QFileSystemModel)."""
+		model = self.asset_dir_TREEVIEW.model()
+		return model.mapToSource(index) if isinstance(model, QtCore.QSortFilterProxyModel) else index
 
 
+	# --- fileManagerCore.py ---
 	def populate_SCENE_treeView(self):
+		# compute scene root path first
+		self.path = os.path.join(
+			self.drive_comboBox.currentText(), BASE_FOLDER,
+			self.project_comboBox.currentText(), SCENE_TOP_FOLDER
+		)
 
-		# # initializing model and populate the tree view
-		self.model = QtWidgets.QFileSystemModel()
-		self.model.setRootPath(self.path)
-		self.dir_scene_TREEVIEW.setModel(self.model)
+		# Dedicated model for SCENE tab (not shared with Asset)
+		self.scene_fs_model = QtWidgets.QFileSystemModel(self)
+		self.scene_fs_model.setRootPath(self.path)
+		self.scene_fs_model.setNameFilters(HIDE_FORMAT)
+		self.scene_fs_model.setNameFilterDisables(False)
 
-		# GPT comment update the self.path variable and call model.setRootPath() before updating the tree view 
-		# Update the `self.path` variable whenever the user selects a new project
-		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), SCENE_TOP_FOLDER)
+		self.dir_scene_TREEVIEW.setModel(self.scene_fs_model)
+		self.dir_scene_TREEVIEW.setRootIndex(self.scene_fs_model.index(self.path))
 
-		self.check_exists_maya()
-
-
-		# Hide some file formats, such as ".pyc" and ".o" files
-		self.model.setNameFilters(HIDE_FORMAT)
-		self.model.setNameFilterDisables(False)
-
-		# Set the model on the tree view
-		self.dir_scene_TREEVIEW.setModel(self.model)
-		self.dir_scene_TREEVIEW.setRootIndex(self.model.index(self.path))
-		print("Model root path:...\t\t\t", self.model.rootPath())
-
-		# Sort the items alphabetically from A to Z and allow sorting in both directions
 		self.dir_scene_TREEVIEW.setSortingEnabled(True)
 		self.dir_scene_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
 		self.dir_scene_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
 		self.dir_scene_TREEVIEW.header().setSortIndicatorShown(True)
-
-		#... Hide the second, third and fourth columns
-		self.dir_scene_TREEVIEW.setColumnHidden(1, True) # size
-		self.dir_scene_TREEVIEW.setColumnHidden(2, True) # type
-		# self.dir_scene_TREEVIEW.setColumnHidden(3, True) # date modified
+		self.dir_scene_TREEVIEW.setColumnHidden(1, True)
+		self.dir_scene_TREEVIEW.setColumnHidden(2, True)
+		# self.dir_scene_TREEVIEW.setColumnHidden(3, True)  # if you want
 
 
-		#... Set up context menu
-		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
-		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
+		FileManagerLog.info("Populating SCENE tree view.")
+		FileManagerLog.info(f"populate_treeView project path:\t{self.path}")
+		FileManagerLog.info(f"Model root path:\t{self.scene_fs_model.rootPath()}")
 
-		#... Print some information for debugging purposes
-
-		FileManagerLog.info("Populating tree view with file system model...")
-		FileManagerLog.info("populate_treeView project path:...\t\t\t{0}".format(self.path))
-		FileManagerLog.info("Model root path:...\t\t\t{0}".format(self.model.rootPath()	))
-
-		# Show department listWidget when selected asset
-		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
-		# print("\nShow department...")
 
 
 
 
 
 	def show_context_menu(self, point):
-		# Disconnect the asset_dir_TREEVIEW signal
-		self.asset_dir_TREEVIEW.clicked.disconnect(self.on_treeview_clicked)
+		# ... Try to disconnect safely; ignore if not connected
+		# try:
+		# 	self.asset_dir_TREEVIEW.clicked.disconnect(self.on_treeview_clicked)
+		# except (TypeError, RuntimeError):
+		# 	pass  # Signal wasn't connected; that's fine
+		
 
-		# Get the index of the item that was clicked
-		index = self.asset_dir_TREEVIEW.indexAt(point)
+		#... Get the index of the item that was clicked
+		proxy_index = self.asset_dir_TREEVIEW.indexAt(point)
 
-		# Create a context menu
+		#... Create a context menu
 		menu = QtWidgets.QMenu(self)
 
-		# Add a "Create entite" action to the menu
+		#... Add a "Create entite" action to the menu
 		new_entitie_action = menu.addAction("Create Entite...")
 
-		 # Add a "Create asset" action to the menu
+		 #... Add a "Create asset" action to the menu
 		new_asset_action = menu.addAction("Create Asset...")
 
-		# Add a "Show in explorer" action to the menu
+		#... Add a "Show in explorer" action to the menu
 		show_in_explorer_action = menu.addAction("Show in Explorer")
 
-		# Check if the context menu is already open
+		#... Check if the context menu is already open
 		if menu.isVisible():
 			# Close the context menu
 			menu.close()
 
-		# Show the context menu and get the chosen action
+		#... Show the context menu and get the chosen action
 		chosen_action = menu.exec_(self.asset_dir_TREEVIEW.mapToGlobal(point)) 
 
 
 		
-		# If "New entite" was chosen, create a new entite
+		#... If "New entite" was chosen, create a new entite
 		if chosen_action == new_entitie_action:
-			self.create_entite(index)
+			self.create_entite(proxy_index)
 
-		# If "New asset" was chosen, create a new asset
+		#... If "New asset" was chosen, create a new asset
 		if chosen_action == new_asset_action:
-			self.create_asset(index)
+			self.create_asset(proxy_index)
 
-		# If "Show in explorer" was chosen, open the folder in the file explorer
+		#... If "Show in explorer" was chosen, open the folder in the file explorer
 		if chosen_action == show_in_explorer_action:
 			# Get the filepath of the selected item
-			filepath = self.asset_dir_TREEVIEW.model().filePath(index)
+			# filepath = self.asset_dir_TREEVIEW.model().filePath(proxy_index)
+			proxy_index = self.asset_dir_TREEVIEW.currentIndex()
+			filepath = self._path_from_treeview_index(proxy_index)
+
 
 			# Open the folder in the file explorer
 			if os.path.isdir(filepath):
 				os.startfile(filepath)
 
-		# Reconnect the asset_dir_TREEVIEW signal after the chosen action is handled
-		self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
+		#... Reconnect safely
+			try:
+				self.asset_dir_TREEVIEW.clicked.connect(self.on_treeview_clicked)
+			except (TypeError, RuntimeError):
+				pass
 
 
 	def create_entite(self, index):

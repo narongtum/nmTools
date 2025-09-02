@@ -436,30 +436,45 @@ def list_joints_from_skincluster(skincluster):
 
 #... Latest here using this function only
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
+	#... check input
+
+	if isinstance(name, str):
+		print("This is a string")
+		name_split = name.split('_')
+
+	elif not isinstance(name, type):
+		print("This is an instance of some class")
+		nameStr = name.name
+		name_split = nameStr.split('_')
+
+
+	else:
+		print("This is a class itself")
 
 	import re
 
-	first_name = name.split('_')
-	if len(first_name) == 1:
-		mc.error(f'Naming is not have underscore {first_name}. terminate')
+
+	
+	if len(name_split) == 1:
+		mc.error(f'Naming is not have underscore {name_split}. terminate')
 
 	side = None
 	isDefault = True
 
 	#... 1. Capital Lead Style  'L_something_something_ext'
 
-	if len(first_name[0]) == 1:
+	if len(name_split[0]) == 1:
 		print('\nThis is naming C_R_L_ style')
-		base_name = '_'.join(first_name[:-1])
+		base_name = '_'.join(name_split[:-1])
 
 		isDefault = False
 
 		#... check side condition
-		if first_name[0] == 'L':
+		if name_split[0] == 'L':
 			side = 'L'
-		elif first_name[0] == 'R':
+		elif name_split[0] == 'R':
 			side = 'R'
-		elif first_name[0] == 'C':
+		elif name_split[0] == 'C':
 			side = 'C'
 		else:
 			side = None
@@ -475,10 +490,10 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	else:
 		print('This is naming LFT RGT Style')
 		isDefault = True
-		for_base_name = name.split('_')
-		base_name = '_'.join(first_name[:-1])
+		# for_base_name = name.split('_')
+		base_name = '_'.join(name_split[:-1])
 
-		for each in for_base_name:
+		for each in name_split:
 			if each.endswith('LFT'):
 				side = 'LFT'
 			elif each.endswith('RGT'):
@@ -503,9 +518,12 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	else:
 		reverse_side = None
 
+	if reverse_side != None:
+		#... replace inveset side and return
+		name_reverse_side = base_name.replace(side, reverse_side)
+	else:
+		name_reverse_side = None
 
-	#... replace inveset side and return
-	name_reverse_side = name.replace(side,reverse_side)
 
 
 
@@ -625,23 +643,6 @@ def createGimbal( obj = '' ):
 	gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
 
 
-	# # Check naming condition
-	# if len(spName) == 2:
-	# 	gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
-	# elif len(spName) == 3:
-	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] +'_gmb' + 'Ctrl' )
-	# elif len(spName) == 4:
-	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] +'_gmb' + 'Ctrl' )
-	# elif len(spName) == 5:
-	# 	gmblCtrl.rename( spName[0] + '_' + spName[1] + '_' + spName[2] + spName[3] +'_gmb' + 'Ctrl' )
-	# else:
-	# 	mc.warning('\nelement is too much')
-	# 	gmblCtrl.rename( ctrl.name +'_gmbCtrl' )
-
-
-
-
-	# gmblCtrl.rename(spName[0] + '_gmb' + 'Ctrl')
 
 	# Not quite understand why recreate obj of gmblCtrl
 	gmblCtrlShape = Dag( gmblCtrl.shape )

@@ -296,7 +296,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 				#... make set current drive that scene open
-				current_drive = path_elements[0] + '\\'
+				# current_drive = path_elements[0] + '\\'
+				current_drive = os.path.splitdrive(current_scene_path)[0] + os.sep
 				if current_drive in DRIVES:
 					FileManagerLog.debug(f'# line: 275 # # Set Drive to: {current_drive}')
 					current_drive_index = DRIVES.index(current_drive)
@@ -519,13 +520,13 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		'''
 
 	def filter_model(self, text):
-		# English: Reuse the single persistent proxy already wired to the view.
+		# Reuse the single persistent proxy already wired to the view.
 		# Do NOT create a new proxy each keystroke, or the view loses its model state.
 		pattern = text.strip()
 		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
 		self.asset_proxy.setFilterKeyColumn(0)  # filter by "Name" column
 
-		# English: Prefer FixedString for simple contains; use wildcard if you really need it.
+		# Prefer FixedString for simple contains; use wildcard if you really need it.
 		# With QSortFilterProxyModel default, setFilterFixedString matches substrings.
 		self.asset_proxy.setFilterFixedString(pattern)
 
@@ -533,6 +534,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# matching descendants remain visible.
 		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
 			self.asset_proxy.setRecursiveFilteringEnabled(True)
+		FileManagerLog.debug("Filter applied: '%s'", pattern)
 
 	def _path_from_treeview_index(self, proxy_index):
 		"""English: Map a QTreeView proxy index to absolute filesystem path."""
@@ -2066,13 +2068,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.asset_version_view_listWidget.clear()
 		self.assetInfo_list_listWidget.clear()
 
-		# Get the file name and path from the model
+		#... Get the file name and path from the model
 		# file_path = self.model.filePath(index)
 		src_index = self._asset_proxy_to_source(index)
 		file_path = self.asset_fs_model.filePath(src_index) # for make filter
-		FileManagerLog.debug('This is file path: {0}'.format(file_path))
 
-		#  Checks if the item is a file or not.
+		if os.path.exists(file_path):
+			FileManagerLog.debug('This is file path: {0}'.format(file_path))
+		else:
+			FileManagerLog.debug('File path not found: {0}'.format(file_path))
+
+		#... Checks if the item is a file or not.
 		if os.path.isfile(file_path):
 			FileManagerLog.debug('It is a file, nothing to populate for departments')
 

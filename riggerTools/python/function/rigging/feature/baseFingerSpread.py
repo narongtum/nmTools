@@ -6,7 +6,7 @@ reload(dc)
 
 import maya.cmds as mc
 
-def baseFingerSpread( nameSpace = '',  tmpJnt = 'baseSpreadLFT_tmpJnt' , stick = 'LWRstickNamLFT' , fingerGrpNam = 'LWRfingerLFT', jointNum = 3): # only for 5 finger spread
+def baseFingerSpread( nameSpace = '',  tmpJnt = 'baseSpreadLFT_tmpJnt' , stick = 'LWRstickNamLFT' , fingerGrpNam = 'LWRfingerLFT', jointNum = 3, fingerGrp = ['index', 'middle', 'ring', 'pinky']): # only for 5 finger spread
 	
 	realTempJnt = nameSpace + tmpJnt
 	bsName = realTempJnt.split('_')[0]
@@ -14,11 +14,22 @@ def baseFingerSpread( nameSpace = '',  tmpJnt = 'baseSpreadLFT_tmpJnt' , stick =
 	side = bsName[-3:]
 
 
-	# edit incase finger joint number is 4
+	#... edit incase finger joint number is 4
+	# if jointNum == 3:
+	# 	fingers = ['index01', 'middle01', 'ring01', 'pinky01']
+	# elif jointNum == 4:
+	# 	fingers = ('indexBase', 'middleBase', 'ringBase', 'pinkyBase')
+
+
+
 	if jointNum == 3:
-		fingers = ['index01', 'middle01', 'ring01', 'pinky01']
+	    suffix = '01'
+	    fingers = [f + suffix for f in fingerGrp]
+
 	elif jointNum == 4:
-		fingers = ('indexBase', 'middleBase', 'ringBase', 'pinkyBase')
+	    suffix = 'Base'
+	    fingers = [f + suffix for f in fingerGrp]
+
 
 	# Setup
 	bsZroGrp = mc.group( n = bsName + 'Zro_grp', em = True )
@@ -38,6 +49,7 @@ def baseFingerSpread( nameSpace = '',  tmpJnt = 'baseSpreadLFT_tmpJnt' , stick =
 	mc.setAttr( mdv + '.i2y', -0.5 )
 	mc.setAttr( mdv + '.i2z', -2 )
 	
+
 	for finger in fingers:
 		conGrp = mc.group( name = nameSpace + finger + side + 'Con_grp', em = True )
 
@@ -45,11 +57,11 @@ def baseFingerSpread( nameSpace = '',  tmpJnt = 'baseSpreadLFT_tmpJnt' , stick =
 		mc.parent( conGrp, bsZroGrp )
 		mc.parent( nameSpace + finger + side + 'Zro_grp' )
 
-		if finger == fingers[0]:
+		if finger == 'index':
 			mc.connectAttr( mdv + '.ox' , conGrp + '.rz' )
-		elif finger == fingers[2]:
+		elif finger == 'ring':
 			mc.connectAttr( mdv + '.oy' , conGrp + '.rz' )
-		elif finger == fingers[3]:
+		elif finger == 'pinky':
 			mc.connectAttr( mdv + '.oz' , conGrp + '.rz' )
 
 	mc.delete( realTempJnt )

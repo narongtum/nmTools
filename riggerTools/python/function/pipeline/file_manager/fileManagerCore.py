@@ -82,7 +82,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-CORE_VERSION = '0.9.5'
+CORE_VERSION = '0.9.6'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -1757,8 +1757,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				return
 		#... open maya file
 		mc.file(file_path, o=True, f=True)
+
+		#... Detect the correct Maya file type for recent menu
+		_, ext = os.path.splitext(file_path)
+		ext = ext.lower()
+		maya_ext = 'ma' if ext == '.ma' else 'mb' if ext == '.mb' else 'ma'
+
+		#... Add to Maya "Recent Files" and rebuild the File menu UI
+		self.maya_add_recen_file(file_path, maya_ext)
+		import maya.mel as mel
+		mel.eval('buildRecentFileMenu;')  # force refresh Recent Files menu
+	
 		self.check_exists_maya()
-		# add recent file when open
+		#... add recent file when open
 		# self.addRecenfile( file_path )
 
 
@@ -2371,115 +2382,57 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def populate_ASSET_treeView(self):
+		"""Init the Asset tree view.
 
-		#... GPT start
-		# init the source model
-		self.asset_fs_model.setRootPath(self.path)
-
-		# set source model to proxy, then proxy to view
-		self.asset_proxy.setSourceModel(self.asset_fs_model)
-		self.asset_dir_TREEVIEW.setModel(self.asset_proxy)
-
-		self.asset_filter_lineEdit.setPlaceholderText('Search...')
-		# connect textChanged ONLY to proxy; no need to recreate proxy each time
-		self.asset_filter_lineEdit.textChanged.connect(
-			lambda text: self.asset_proxy.setFilterWildcard(f"*{text}*")
+		English:
+		- Compute self.path FIRST from Drive/Project.
+		- Then set QFileSystemModel rootPath.
+		- Bind source -> proxy -> view and set the view's root index.
+		"""
+		# 1) Build the absolute project root for the Asset tab
+		self.path = os.path.join(
+			self.drive_comboBox.currentText(),
+			BASE_FOLDER,
+			self.project_comboBox.currentText(),
+			ASSET_TOP_FOLDER
 		)
 
-		# update self.path for the selected drive/project
-		self.path = os.path.join(self.drive_comboBox.currentText(),
-								 BASE_FOLDER,
-								 self.project_comboBox.currentText(),
-								 ASSET_TOP_FOLDER)
+		# 2) Point the QFileSystemModel at that root
+		self.asset_fs_model.setRootPath(self.path)
 
-		# this was previously self.model; now use self.asset_fs_model for filters
-		self.asset_fs_model.setNameFilters(HIDE_FORMAT)
-		self.asset_fs_model.setNameFilterDisables(False)
-
-		# map root index: source -> proxy
+		# 3) Wire model chain and set the view root
+		self.asset_proxy.setSourceModel(self.asset_fs_model)
+		self.asset_dir_TREEVIEW.setModel(self.asset_proxy)
 		src_root = self.asset_fs_model.index(self.path)
 		proxy_root = self.asset_proxy.mapFromSource(src_root)
 		self.asset_dir_TREEVIEW.setRootIndex(proxy_root)
 
-		# sorting still works on proxy
-		self.asset_dir_TREEVIEW.setSortingEnabled(True)
-		self.asset_dir_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
-		self.asset_dir_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
-		self.asset_dir_TREEVIEW.header().setSortIndicatorShown(True)
+		# 4) Filters (unchanged)
+		self.asset_filter_lineEdit.setPlaceholderText('Search.')
+		self.asset_filter_lineEdit.textChanged.connect(
+			lambda text: self.asset_proxy.setFilterWildcard(f"*{text}*")
+		)
 
-		# hide extra columns (the view is on proxy but column config applies)
-		self.asset_dir_TREEVIEW.setColumnHidden(1, True)
-		self.asset_dir_TREEVIEW.setColumnHidden(2, True)
-		self.asset_dir_TREEVIEW.setColumnHidden(3, True)
+		# 5) Hide patterns etc.
+		self.asset_fs_model.setNameFilters(HIDE_FORMAT)
 
-		# keep the rest of your logging as-is
-
-		#... GPT end
-
-		'''
-
-		print('\tChange project name')
-		#...initializing model and populate the tree view
-		self.model = QtWidgets.QFileSystemModel()
-		self.model.setRootPath(self.path)
-		self.asset_dir_TREEVIEW.setModel(self.model)
-
-		self.asset_filter_lineEdit.setPlaceholderText('Search...')
-		self.asset_filter_lineEdit.textChanged.connect(self.filter_model)
+		# Show only folders (no files) in the asset tree
+		self.asset_fs_model.setFilter(QtCore.QDir.NoDotAndDotDot | QtCore.QDir.AllDirs)
 
 
-		#... Update the `self.path` variable with the selected project path
-		self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), ASSET_TOP_FOLDER)
+		#... Hide extra columns in the asset tree view.
+		#... QFileSystemModel columns: 0=Name, 1=Size, 2=Type, 3=Date Modified
+		header = self.asset_dir_TREEVIEW.header()
+		self.asset_dir_TREEVIEW.setColumnHidden(1, True)  #.. Size
+		self.asset_dir_TREEVIEW.setColumnHidden(2, True)  #.. Type
+		self.asset_dir_TREEVIEW.setColumnHidden(3, True)  #.. Date Modified
 
-		self.check_exists_maya()
+		#... Optional: make the Name column fill the width nicely
+		if hasattr(header, "setSectionResizeMode"):
+		    header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+		else:
+		    header.setResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
-		# self.update_project_name()
-
-
-
-		#.... Hide some file formats, such as ".pyc" and ".o" files from tree view
-		self.model.setNameFilters(HIDE_FORMAT)
-		self.model.setNameFilterDisables(False)
-		print(f"Hide file extension {HIDE_FORMAT} for me please")
-
-
-		# Set the model on the tree view
-		self.asset_dir_TREEVIEW.setModel(self.model)
-		self.asset_dir_TREEVIEW.setRootIndex(self.model.index(self.path))
-		print("Model root path:...\t\t\t", self.model.rootPath())
-
-
-
-
-		# Sort the items alphabetically from A to Z and allow sorting in both directions
-		self.asset_dir_TREEVIEW.setSortingEnabled(True)
-		self.asset_dir_TREEVIEW.sortByColumn(0, QtCore.Qt.AscendingOrder)
-		self.asset_dir_TREEVIEW.header().setSortIndicator(0, QtCore.Qt.AscendingOrder)
-		self.asset_dir_TREEVIEW.header().setSortIndicatorShown(True)
-
-
-
-		# Hide the second, third and fourth columns
-		self.asset_dir_TREEVIEW.setColumnHidden(1, True) # size
-		self.asset_dir_TREEVIEW.setColumnHidden(2, True) # type
-		self.asset_dir_TREEVIEW.setColumnHidden(3, True) # date modified
-
-
-		# Set up context menu
-		# self.asset_dir_TREEVIEW.setContextMenuPolicy(QtCore.Qt.CustomContextMenu) #... repetitive code with __init__
-		# self.asset_dir_TREEVIEW.customContextMenuRequested.connect(self.show_context_menu) #... repetitive code with __init__
-
-		# Print some information for debugging purposes
-
-		FileManagerLog.info("Populating tree view with file system model...")
-		FileManagerLog.info("populate Asset project path:...\t\t\t{0}".format(self.path))
-		FileManagerLog.info("Model root path:...\t\t\t{0}".format(self.model.rootPath()	))
-
-		# Show department listWidget when selected asset
-		# self.asset_department_listWidget.addItems(['Model', 'Rig', 'ConceptArt', 'Texture', 'VFX', 'Anim'])
-		# print("\nShow department...")
-
-		'''
 	
 	def _asset_proxy_to_source(self, index: QtCore.QModelIndex) -> QtCore.QModelIndex:
 		"""Map a QModelIndex from asset_dir_TREEVIEW (proxy) back to source (QFileSystemModel)."""
@@ -2583,26 +2536,51 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def create_entite(self, index):
-		# Get the filepath of the selected item
-		parent_dir = self.asset_dir_TREEVIEW.model().filePath(index)
-		print("Parent_dir:", parent_dir)
+		"""Create a sibling folder at the same level as the right-clicked item.
+		English: Always resolve an ABSOLUTE parent directory; handle empty area.
+		"""
+		model = self.asset_dir_TREEVIEW.model()
 
-		# Get the parent directory of the new entite
-		# parent_dir = self.asset_dir_TREEVIEW.model().filepath(index)
+		# If user right-clicked empty area, use the tree view's root
+		if not index or not index.isValid():
+			root_proxy = self.asset_dir_TREEVIEW.rootIndex()
+			if isinstance(model, QtCore.QSortFilterProxyModel):
+				parent_dir = self.asset_fs_model.filePath(model.mapToSource(root_proxy))
+			else:
+				parent_dir = model.filePath(root_proxy)
+		else:
+			# Map proxy -> source and use the PARENT for a sibling-level create
+			if isinstance(model, QtCore.QSortFilterProxyModel):
+				src_index = model.mapToSource(index)
+				parent_src = src_index.parent()
+				parent_dir = self.asset_fs_model.filePath(parent_src) if parent_src.isValid() else self.asset_fs_model.rootPath()
+			else:
+				parent_dir = model.filePath(index.parent())
 
-		# Prompt the user to enter a entite name
-		entitie_name, ok = QtWidgets.QInputDialog.getText(self, "New Entite", "Enter folder name:")
+		# Final guard: force absolute (never empty)
+		parent_dir = parent_dir or self.asset_fs_model.rootPath() or self.path
+		if not parent_dir:
+			QMessageBox.warning(self, "No Root", "Please select a project/drive first.")
+			return
 
-		# If the user entered a name, create the folder
-		if ok and entitie_name:
-			# Create full path to new folder
-			new_folder_path = os.path.join(parent_dir, entitie_name)
+		print("Create-entite parent_dir (sibling level):", parent_dir)
 
-			# Create new folder
-			os.makedirs(new_folder_path)
+		name, ok = QtWidgets.QInputDialog.getText(self, "New Entite", "Enter folder name:")
+		if not (ok and name):
+			return
+		new_folder_path = os.path.normpath(os.path.join(parent_dir, name))
+		os.makedirs(new_folder_path, exist_ok=True)
 
-			# Refresh the view to show the new folder
-			self.asset_dir_TREEVIEW.update()
+		# Refresh model and select the new folder
+		src_new = self.asset_fs_model.index(new_folder_path)
+		proxy_new = self.asset_proxy.mapFromSource(src_new)
+		self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
+			proxy_new, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current
+		)
+		self.asset_dir_TREEVIEW.scrollTo(proxy_new)
+
+
+
 
 
 	def get_full_entity_name(self, base_path):
@@ -2665,39 +2643,36 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def create_asset(self, index):
-		# Get the parent directory of the new asset
-		parent_dir = self.asset_dir_TREEVIEW.model().filePath(index)
+		"""Create a new asset folder (with department sub-structure).
+		English: Always map proxy index to source before resolving file paths.
+		"""
+		if not index or not index.isValid():
+			index = self.asset_dir_TREEVIEW.currentIndex()
 
-		# Prompt the user to enter an asset name
+		parent_dir = self._path_from_treeview_index(index)
+
+		# If clicked on a file, switch to its parent directory
+		if parent_dir and os.path.isfile(parent_dir):
+			parent_dir = os.path.dirname(parent_dir)
+
 		asset_name, ok = QtWidgets.QInputDialog.getText(self, "Create Asset", "Enter asset name:")
-
-		# If the user entered a name, create the asset folders
 		if ok and asset_name:
-
-			# Create full path to new asset folder
 			new_asset_path = os.path.join(parent_dir, asset_name)
-
-			# If asset exists
 			if not os.path.exists(new_asset_path):
-				FileManagerLog.debug("\tThere are no folder in here Continue.")
+				FileManagerLog.debug("\tNo existing folder here. Continue.")
+				new_asset_path = os.path.normpath(new_asset_path).replace('\\', '/')
 
-				# Normalize path
-				new_asset_path = os.path.normpath(new_asset_path)
-				new_asset_path = new_asset_path.replace('\\', '/')
-
-				# Create asset folders
-				# Iterate over jobs and create the directories
+				# Create department/job structure
 				for job in DEPT_NAME:
 					job_path = os.path.join(new_asset_path, job)
-					os.makedirs(job_path, exist_ok = True)
+					os.makedirs(job_path, exist_ok=True)
 					for job_type in JOB_TEMPLATE:
-						job_each_path = os.path.join(job_path, job_type)
-						os.makedirs(job_each_path, exist_ok=True)
+						os.makedirs(os.path.join(job_path, job_type), exist_ok=True)
 
 				if DEPT_EMPTY:
 					for job in DEPT_EMPTY:
-						job_path = os.path.join(new_asset_path, job)
-						os.makedirs(job_path, exist_ok = True)
+						os.makedirs(os.path.join(new_asset_path, job), exist_ok=True)
+				# Continue with JSON metadata, SVN list, etc. (unchanged below)	
 
 				# Store entity data to json file here
 				# new_asset_path 

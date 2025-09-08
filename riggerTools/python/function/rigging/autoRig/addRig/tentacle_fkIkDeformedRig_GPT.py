@@ -25,12 +25,12 @@ tenFkIkRig.fkIkDeformed(
 			#... for setup adv twist
 			enableTwist = True			,
 			worldUpType = 4,
-		    forwardAxis = 'y+',
-		    worldUpAxis = 'z+',
-		    worldUpVector = (0, 0, 1),
-		    worldUpVectorEnd = (0, 0, 1),
-		    upObject ='placement_ctrl',
-		    upObjectEnd ='C_tenTail08_masterIk_ctrl'
+			forwardAxis = 'y+',
+			worldUpAxis = 'z+',
+			worldUpVector = (0, 0, 1),
+			worldUpVectorEnd = (0, 0, 1),
+			upObject ='placement_ctrl',
+			upObjectEnd ='C_tenTail08_masterIk_ctrl'
 			)
 '''
 
@@ -104,10 +104,10 @@ def fkIkDeformed(	SIDE = 'C',
 	spine_crv = f'{SIDE}_{BASE_NAME}_ikSpine_crv'
 	ik_nrb = f'{SIDE}_{BASE_NAME}_ik_nrb'
 	shapes = mc.listRelatives(ik_nrb, shapes=True) or []
-		if not shapes:
-			TentacleRig.error(f"{ik_nrb} has no shape.")
-			return False
-		ik_nrb_shape = shapes[0]
+	if not shapes:
+		TentacleRig.error(f"{ik_nrb} has no shape.")
+		return False
+	ik_nrb_shape = shapes[0]
 
 	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Make FK controller
 	core.makeHeader('Make FK controller')
@@ -196,7 +196,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. make twist deformer( cancle using advanceTwist in ikh instead )
 	'''
-
+	#... No need anymore using twist from setting in ikSpine instead
 	if makeTwistDef == True:
 		twist_def_nrb = mc.duplicate(ik_nrb,n = ik_nrb.replace('ik','twist'))[0]
 
@@ -472,8 +472,7 @@ def fkIkDeformed(	SIDE = 'C',
 
 		TentacleRig.debug(f'This is storeValue: {storeValue.name}')
 		# mc.error('BREAK')
-
-		squashLoc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash# ------------------- _Loc', Count_Detail) -------------------... Cleanup grp
+		squashLoc_list = core.generate_named_pattern(f'{SIDE}_{BASE_NAME}Squash##_loc', COUNT_DETAIL)
 		squash_grp = core.Null(f'{SIDE}_{BASE_NAME}_squashLoc_grp')
 		squash_grp.lockAllAttr(attrs=['t', 'r', 's'])
 
@@ -663,4 +662,4 @@ def fkIkDeformed(	SIDE = 'C',
 								)
 
 	# -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- # -------------------  ------------------- .................. Done
-	core.makeHeader('DONE')
+	core.makeHeader('fkIkDeformed is DONE')

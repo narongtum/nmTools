@@ -102,10 +102,7 @@ def del_selected_matrix(selected = []):
 	print('Delete Done...')
 
 
-def delMatrixConst(selected):
-	name = rawName(selected)
-	mc.delete('{0}_bJnt_mulMtx'.format(name[0]))
-	print (' # # # # # # # # #  Delete matrix parent complete # # # # # # # # # # # #  \n')
+
 
 
 
@@ -549,84 +546,97 @@ def createMatrixAttr(selected, attrNam = 'destination'):
 
 
 
-
 def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, scale=True):
-	if not source:
-		print('Source is not selected.')
-		return False
+    """
+    Matrix-based parent constraint (joint/transform safe).
 
-	# Setup core object references
-	obj_target = core.Dag(target)
-	obj_source = core.Dag(source)
-	base_name = core.check_name_style(name=target)[0]
+    Key points
+    ----------
+    - multMatrix order: [offset] * source.worldMatrix * target.parentInverseMatrix
+    - Joint targets: remove jointOrient via quaternion math:
+        finalQuat = dcmp.outputQuat * inverse( jointOrient )
+        euler(finalQuat) -> target.rotate
+    - Transform targets: use dcmp.outputRotate directly (no quat chain).
+    """
+    if not source:
+        print('Source is not selected.')
+        return False
 
-	# Compute offset matrix
-	localOffset = _getLocalOffsetGPT(source, target)
-	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
+    # Wrappers
+    obj_tgt = core.Dag(target)
+    obj_src = core.Dag(source)
+    base    = core.check_name_style(name=target)[0]
 
-	# Create necessary nodes
-	decomposeMatrix = core.DecomposeMatrix(base_name)
-	multMatrix = core.MultMatrix(base_name)
+    # Match rotate order from source to target first
+    src_ro = mc.getAttr(obj_src.name + ".rotateOrder")
+    mc.setAttr(obj_tgt.name + ".rotateOrder", src_ro)
 
-	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
+    # Compute local offset (target in source local space)
+    local_offset = _getLocalOffsetGPT(source, target)
+    offMat = [local_offset(i, j) for i in range(4) for j in range(4)]
 
-	# Maintain Offset: use multMatrix slot 0 for offset, 1 for worldMatrix, 2 for inverse
-	if mo:
-		mc.setAttr(multMatrix.name + '.matrixIn[0]', offMat, type='matrix')
-		obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[1]')
-		obj_target.attr('parentInverseMatrix[0]') >> multMatrix.attr('matrixIn[2]')
-	else:
-		obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[0]')
-		obj_target.attr('parentInverseMatrix[0]') >> multMatrix.attr('matrixIn[1]')
+    # Nodes
+    dcmp = core.DecomposeMatrix(base)   # decomposeMatrix
+    mmx  = core.MultMatrix(base)        # multMatrix
 
-	# Rotation setup
-	if rotate:
-		target_eulerToQuat = core.EulerToQuat(base_name)
-		target_quatInvert = core.QuatInvert(base_name)
-		target_quatProd = core.QuatProd(base_name)
-		target_quatToEuler = core.QuatToEuler(base_name)
+    Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_tgt.type, obj_src.type))
 
-		#  alway jointOrient if target is joint
-		if obj_target.type == 'joint':
-			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
-			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
-		else:
-			obj_source.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-			obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
-			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
+    # multMatrix wiring: [0]=offset, [1]=source.world, [2]=target.parentInverse
+    if mo:
+        mc.setAttr(mmx.name + '.matrixIn[0]', offMat, type='matrix')
+        obj_src.attr('worldMatrix[0]')         >> mmx.attr('matrixIn[1]')
+        obj_tgt.attr('parentInverseMatrix[0]') >> mmx.attr('matrixIn[2]')
+    else:
+        obj_src.attr('worldMatrix[0]')         >> mmx.attr('matrixIn[0]')
+        obj_tgt.attr('parentInverseMatrix[0]') >> mmx.attr('matrixIn[1]')
 
-		decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
-		target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')
-		target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
-		target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
+    # Send matrix to decompose
+    mmx.attr('matrixSum') >> dcmp.attr('inputMatrix')
 
-		if not mc.listConnections(obj_target.attr('rotateOrder'), d=False, s=True):
-			obj_target.attr('rotateOrder') >> target_quatToEuler.attr('inputRotateOrder')
+    # Translate / Scale
+    if translate:
+        dcmp.attr('outputTranslate') >> obj_tgt.attr('translate')
+    if scale:
+        dcmp.attr('outputScale')     >> obj_tgt.attr('scale')
 
-		source_rotOrder = mc.getAttr(str(source) + '.rotateOrder')
-		obj_target.attr('rotateOrder').value = source_rotOrder
+    # Rotate handling
+    if rotate:
+        if obj_tgt.type == 'joint':
+            # Joint: remove jointOrient with quaternion chain
+            q_e2q   = core.EulerToQuat(base + '_JO')   # Euler (jointOrient) -> Quat
+            q_inv   = core.QuatInvert(base + '_JO')    # inverse(jointOrient quat)
+            q_prod  = core.QuatProd(base + '_JO')      # dcmp.quat * inv(jo)
+            q_q2e   = core.QuatToEuler(base + '_JO')   # back to Euler
 
+            # jointOrient -> quat -> invert
+            mc.connectAttr(obj_tgt.name + '.jointOrient', q_e2q.name + '.inputRotate', f=True)
+            q_e2q.attr('outputQuat')  >> q_inv.attr('inputQuat')
 
-	# Connect matrix calculation
-	multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
+            # combine with decomposed rotation
+            dcmp.attr('outputQuat')   >> q_prod.attr('input1Quat')
+            q_inv.attr('outputQuat')  >> q_prod.attr('input2Quat')
 
-	# Translate
-	if translate:
-		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
+            # back to Euler -> target.rotate
+            q_prod.attr('outputQuat') >> q_q2e.attr('inputQuat')
+            q_q2e.attr('outputRotate') >> obj_tgt.attr('rotate')
 
-	# Scale
-	if scale:
-		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
+            # keep rotate order consistent
+            if not mc.listConnections(obj_tgt.attr('rotateOrder'), d=False, s=True):
+                obj_tgt.attr('rotateOrder') >> q_q2e.attr('inputRotateOrder')
 
-	if not mc.objExists(obj_target.name + '.m_deComp'):
-		obj_target.addAttribute(attributeType='message', longName='m_deComp')
-		decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
+        else:
+            # Transform: use decompose rotate directly (no quat chain)
+            dcmp.attr('outputRotate') >> obj_tgt.attr('rotate')
 
+    # Optional bookkeeping
+    if not mc.objExists(obj_tgt.name + '.m_deComp'):
+        obj_tgt.addAttribute(attributeType='message', longName='m_deComp')
+        dcmp.attr('message') >> obj_tgt.attr('m_deComp')
 
+    mc.select(target, r=True)
+    Constraint.info(' # # # Parent matrix (GPT) Complete # # #\n')
+    return obj_tgt, obj_src
 
-	mc.select(target, r=True)
-	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
-	return obj_target, obj_source
 
 
 

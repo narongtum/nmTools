@@ -2994,10 +2994,10 @@ def do_global_commit():
 	fileTools.doDeletePrefixExt(prefix = 'X_')
 	FileManagerLog.info('doDeleteSuffixExt...')
 
-
+	FileManagerLog.info('deleteDisplayLayer...')
+	fileTools.deleteDisplayLayer()
 
 	#... Round skinweight
-
 	do_pipeline_round_skinWeight()
 	FileManagerLog.info('do_pipeline_round_skinWeight...')
 

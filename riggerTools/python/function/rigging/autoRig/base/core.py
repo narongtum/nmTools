@@ -1406,6 +1406,7 @@ class PlusMinusAverage ( Node ):
 class LightInfo(Node):
 		def __init__(self, name):
 			Node.__init__( self , mc.createNode('lightInfo', name = name)  )
+			self.suffix
 
 
 class BlendColors( Node ):
@@ -2889,6 +2890,14 @@ class Null( Dag ) :
 	def follicle(self   , **kwargs ):
 		"""Special method for parent follicle shapeNode to previous transfromNode that create earilor """
 		mc.createNode( 'follicle' , parent = self.name , **kwargs)
+
+
+
+
+
+
+
+
 
 
 

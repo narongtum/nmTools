@@ -61,6 +61,7 @@ def renameSkinCluster():
 #... rename all bindpose in scene
 def _renameAllBindpose(ext = '_bindPose'):
 	dagPoseList = mc.ls(type = 'dagPose')
+	num = 1
 	for each in dagPoseList:
 		if ext not in each:
 			skc_name  = mc.listConnections(each, type='skinCluster')[0]

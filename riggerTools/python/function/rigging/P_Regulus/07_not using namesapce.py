@@ -12,8 +12,8 @@ if mc.objExists(f'{prefix}facial_bsh'):
     
 
 
-skinName_list = mc.ls(type='skinCluster')
-for each in skinName_list :
+aa=mc.ls(type='skinCluster')
+for each in aa:
     mc.select(each,r=True)
     misc.searchReplace( searchText = prefix, replaceText='' )
     
@@ -34,6 +34,8 @@ bake_range = (startTime, endTimeReal)
 mc.select('*_bJnt',r=True)
 mc.select('*root',add=True)
 
+if mc.objExists(f'facialOffset_jnt'):
+    mc.select('facialOffset_jnt',add=True)
     
 
 bake_joints = mc.ls(sl=True)
@@ -43,7 +45,7 @@ mc.bakeResults(bake_joints, preserveOutsideKeys=True, simulation=True, t=bake_ra
 
 
 
-if mc.objExists(f'Face'):
+if mc.objExists(f'facial_bsh'):
     mc.select('Face',r=True)
     
 mc.bakeResults('facial_bsh', preserveOutsideKeys=True, simulation=True, t=bake_range)    

@@ -24,6 +24,30 @@ reload(mnd)
 
 
 
+def constraint_pair(pairs, maintainOffset=False):
+	"""
+	Create parentConstraint and scaleConstraint for multiple parent-child pairs.
+
+	Args:
+		*pairs: Variable length argument list of tuples (parent, child).
+		maintainOffset (bool): Keep offset if True.
+	"""
+	for parent, child in pairs:
+		print(f'parent {parent} with {child}')
+		# Create parentConstraint
+		mc.parentConstraint(parent, child, maintainOffset=maintainOffset,
+							name=f'{parent}_psCon')
+		# Create scaleConstraint
+		mc.scaleConstraint(parent, child, maintainOffset=maintainOffset,
+						   name=f'{parent}_scCon')
+
+
+
+
+
+
+
+
 def snapPointCon():
 	sel = mc.ls(sl = True)
 	src = sel[0]
@@ -461,3 +485,11 @@ def constraintListJnt( namJntList = [] , child = 'ikJnt', parent = 'bJnt' ):
 		mc.scaleConstraint( parentNam , childNam , maintainOffset = True , name = parentNam + '_scCon')
 
 		print ('%s object has been create.' %each)
+
+
+
+
+
+
+
+

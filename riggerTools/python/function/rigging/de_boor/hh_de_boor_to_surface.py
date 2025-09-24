@@ -44,7 +44,7 @@ def list_joints_from_skincluster(skincluster):
 	return jnts
 
 
-def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True):
+def split_with_surface_debug(mesh, jnt_grid, surface, d=None, tol=0.000001, visualize=True, reverse_joints=True):
 	original_sel = om.MGlobal.getActiveSelectionList()
 
 	verts = mc.ls(mc.polyListComponentConversion(mesh, toVertex=True), fl=True)
@@ -185,6 +185,10 @@ def split_surface_1D_from_cvs(surface, jnts, direction='U', d=None, tol=0.000001
 	d = len(jnts) - 1 if d is None else d
 	count = srf_fn.numCVsInU if direction == 'U' else srf_fn.numCVsInV
 	kv_type = 'open'
+
+	if reverse_joints:
+		jnts = jnts[::-1]
+
 	kv, modified_jnts = core.knot_vector(kv_type, jnts, d)
 
 	# Step 4: get skinCluster
@@ -240,3 +244,81 @@ def split_surface_1D_from_cvs(surface, jnts, direction='U', d=None, tol=0.000001
 
 
 
+def split_surface_1D_from_cvs_open_only(surface, jnts, direction='U', d=None, tol=0.000001, visualize=False, reverse_joints=False):
+	import maya.cmds as mc
+	from maya.api import OpenMaya as om
+	from maya.api import OpenMayaAnim as oma
+	from function.rigging.de_boor import hh_de_boor_core as core
+
+	# Step 1: ensure shape name
+	if mc.objectType(surface) == 'transform':
+		shape = mc.listRelatives(surface, s=True, ni=True, type='nurbsSurface')
+		if not shape:
+			raise RuntimeError(f"No nurbsSurface shape under transform '{surface}'")
+		surface = shape[0]
+
+	# Step 2: get DagPath to shape
+	sel = om.MSelectionList()
+	sel.add(surface)
+	srf_dp = sel.getDagPath(0)
+	if not srf_dp.hasFn(om.MFn.kNurbsSurface):
+		srf_dp.extendToShape()
+	srf_fn = om.MFnNurbsSurface(srf_dp)
+
+	# Step 3: degree, knot vector
+	d = len(jnts) - 1 if d is None else d
+	count = srf_fn.numCVsInU if direction == 'U' else srf_fn.numCVsInV
+	kv_type = 'open'
+
+	if reverse_joints:
+		jnts = jnts[::-1]
+
+	kv, modified_jnts = core.knot_vector(kv_type, jnts, d)
+
+	# Step 4: get skinCluster
+	history = mc.listHistory(surface)
+	skin_clusters = [n for n in history if mc.nodeType(n) == 'skinCluster']
+	if not skin_clusters:
+		raise RuntimeError(f"No skinCluster found on surface '{surface}'")
+	skin_cluster = skin_clusters[0]
+
+	sel = om.MSelectionList()
+	sel.add(skin_cluster)
+	skin_obj = sel.getDependNode(0)
+	skin_fn = oma.MFnSkinCluster(skin_obj)
+
+	infls = skin_fn.influenceObjects()
+	infl_names = [i.partialPathName() for i in infls]
+	infl_ia = om.MIntArray(range(len(infls)))
+	jnt_indices = [infl_names.index(j) for j in jnts]
+
+	# Step 5: create 2D component
+	comp_fn = om.MFnDoubleIndexedComponent()
+	comp = comp_fn.create(om.MFn.kSurfaceCVComponent)
+	comp_fn.setCompleteData(srf_fn.numCVsInU, srf_fn.numCVsInV)
+
+	# Step 6: calculate weights
+	weights = om.MDoubleArray(len(infls) * count, 0.0)
+
+	for i in range(count):
+		u, v = (i, 0) if direction == 'U' else (0, i)
+
+		# normalize t_n manually (for open surface)
+		t_n = float(i) / (count - 1)
+		t_n = min(max(t_n, 0.0), 0.99999)
+
+		wts = core.de_boor(len(modified_jnts), d, t_n, kv, tol=tol)
+		total = sum(wts)
+		wts = [w / total for w in wts] if total > 0 else wts
+
+		for j, jnt_index in enumerate(jnt_indices):
+			weights[jnt_index + i * len(infls)] = wts[j]
+
+		if visualize:
+			pos = srf_fn.cvPosition(u, v, om.MSpace.kWorld)
+			loc = mc.spaceLocator(name=f'cv_debug_{i:03d}')[0]
+			mc.xform(loc, ws=True, t=(pos.x, pos.y, pos.z))
+
+	# Step 7: apply weights
+	skin_fn.setWeights(srf_dp, comp, infl_ia, weights, False)
+	print(f"✅ Done: weights applied in {direction}-direction for open surface.")

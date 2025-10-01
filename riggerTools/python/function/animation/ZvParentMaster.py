@@ -1,4 +1,6 @@
-from function.framework.reloadWrapper import reloadWrapper as reload
+import importlib
+# from function.framework.reloadWrapper import reloadWrapper as reload
+
 
 
 '''
@@ -38,7 +40,7 @@ __copyright__ = 'Copyright (c) 2006-2015 Paolo Dominici'
 
 from maya import cmds, mel
 import os, sys, math
-
+reload = importlib.reload 
 
 # import axion module
 #import function.animation 
@@ -80,8 +82,9 @@ _timelineHsvCols = [(55.0, 1.0, 1.0), (135.0, 1.0, 1.0), (190.0, 1.0, 1.0), (218
 
 # You can place the zv folder either in icons or in the scripts folder
 # _pmpath = 'zv/parentmaster/'
-_pmpath = 'D:/True_Axion/Tools/riggerTools/python/axionTools/animation/zv/parentmaster/'
-print '__name__ is : %s' %__name__
+_pmpath = 'D:/sysTools/nmTools_github/riggerTools/python/function/animation/zv/parentmaster/'
+
+print ('__name__ is : %s' %__name__)
 try:
 	_pmpath = os.path.join([s for s in sys.path if os.path.exists(os.path.join(s, _pmpath))][0], _pmpath)
 except:
@@ -498,7 +501,7 @@ def _createParentConstraint(obj, target, constrName):
 	
 	# se tutte loccate lancia l'errore
 	if len(skipTranslate) == 3 and len(skipRotate) == 3:
-		raise Exception, 'The attributes of the selected object are locked'
+		raise Exception('You must select one or more objects')
 	
 	# crea il constraint
 	_setRootNamespace()
@@ -535,7 +538,7 @@ def createParentGroups(translation=True, rotation=True):
 	
 	# se non ci sono elementi selezionati esci
 	if not ctrls:
-		raise Exception, 'You must select one or more objects'
+		raise Exception('You must select one or more objects')
 	
 	counter = 0
 	for ctrl in ctrls:
@@ -561,7 +564,8 @@ def attach():
 	
 	# carica la selezione
 	sel = cmds.ls(sl=True)
-	if sel == None: sel = []
+	if sel == None:
+		sel = []
 	sel = [s for s in sel if cmds.nodeType(s) == 'transform' or cmds.nodeType(s) == 'joint']		# nota: ls con filtro transforms non funziona bene (include i constraint)
 	
 	ctrls = []
@@ -576,7 +580,7 @@ def attach():
 	
 	# se sono selezionati meno di due elementi esci
 	if len(ctrls) < 2:
-		raise Exception, 'You must select one or more slave objects and a master object'
+		raise Exception('You must select one or more slave objects and a master object')
 	
 	target = ctrls.pop()
 	
@@ -665,7 +669,7 @@ def detach():
 	
 	# se non ho selezionato nessun controllo provvisto di ph esci
 	if not ctrls:
-		raise Exception, 'No valid objects selected'
+		raise Exception('No valid objects selected')
 	
 	for ctrl in ctrls:
 		snapGroup = _getSnapGroup(ctrl)
@@ -710,7 +714,7 @@ def destroy():
 	
 	# se non ho selezionato nessun controllo provvisto di ph esci
 	if not ctrls:
-		raise Exception, 'No valid objects selected'
+		raise Exception('No valid objects selected')
 	
 	# chiedi se fare bake o no
 	result = cmds.confirmDialog(title='Destroy constraints', message='The constraints will be deleted.\nDo you want to revert to previous state or bake and keep animation?', button=['Revert', 'Bake', 'Cancel'], defaultButton='Revert', cancelButton='Cancel', dismissString='Cancel')
@@ -776,7 +780,7 @@ def fixSnap(timeRange=False):
 	
 	# se non ho selezionato nessun controllo provvisto di ph esci
 	if not ctrls:
-		raise Exception, 'No valid objects selected'
+		raise Exception('No valid objects selected')
 	
 	# esegui il fix per ogni oggetto
 	for ctrl in ctrls:
@@ -802,7 +806,7 @@ def selectConstraintNodes(obj=None):
 		
 		# se non ho selezionato nessun controllo provvisto di ph esci
 		if not ctrls:
-			raise Exception, 'No valid objects selected'
+			raise Exception('No valid objects selected')
 	
 	# deseleziona tutto
 	cmds.select(cl=True)
@@ -860,6 +864,9 @@ def navigate(direction):
 def ZvParentMaster(posX=56, posY=180, width=_defaultSize[0], height=_defaultSize[1]):
 	'''Main UI.'''
 	
+	import importlib
+	thisModule = importlib.import_module(__name__)
+
 	winName = 'ZvParentMasterWin'
 	if cmds.window(winName, exists=True):
 		cmds.deleteUI(winName, window=True)
@@ -867,28 +874,56 @@ def ZvParentMaster(posX=56, posY=180, width=_defaultSize[0], height=_defaultSize
 	cmds.window(winName, title='ZV', tlb=True)
 	cmds.columnLayout(adj=True, rs=0, bgc=(0.3, 0.3, 0.3))
 	
-	#### PULSANTI ####
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_attach.xpm', c='%s.attach()' % __name__, ann='Attach objects ( select child and parent )')
+	#### BUTTONS ####
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_attach.xpm',
+						c='ZvParentMaster.attach()', 
+						ann='Attach objects ( select child and parent )')
 	cmds.popupMenu(mm=True)
-	cmds.menuItem(l='Create parent groups - translation', c='%s.createParentGroups(True, False)' % __name__, rp='NE')
-	cmds.menuItem(l='Create parent groups - available attrs', c='%s.createParentGroups()' % __name__, rp='E')
-	cmds.menuItem(l='Create parent groups - rotation', c='%s.createParentGroups(False, True)' % __name__, rp='SE')
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_detach.xpm', c='%s.detach()' % __name__, ann='Detach objects')
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_destroy.xpm', c='%s.destroy()' % __name__, ann='Destroy constraints')
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_fixsnap.xpm', c='%s.fixSnap()' % __name__, ann='Fix snap')
+	cmds.menuItem(l='Create parent groups - translation',
+				  c='ZvParentMaster.createParentGroups(True, False)', rp='NE')
+	cmds.menuItem(l='Create parent groups - available attrs',
+				  c='ZvParentMaster.createParentGroups()', rp='E')
+	cmds.menuItem(l='Create parent groups - rotation',
+				  c='ZvParentMaster.createParentGroups(False, True)', rp='SE')
+
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_detach.xpm',
+						c='ZvParentMaster.detach()',
+						ann='Detach objects')
+
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_destroy.xpm',
+						c='ZvParentMaster.destroy()',
+						ann='Destroy constraints')
+
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_fixsnap.xpm',
+						c='ZvParentMaster.fixSnap()',
+						ann='Fix snap')
 	cmds.popupMenu(mm=True)
-	cmds.menuItem(l='Fix snaps in the active range', c='%s.fixSnap(True)' % __name__, rp='E')
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_select.xpm', c='%s.selectConstraintNodes()' % __name__, ann='Select constraints and snap groups ( select child )')
-	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3), image=_pmpath + 'pm_timeline.xpm', c='%s.timeline()' % __name__, ann='Constraint timeline')
+	cmds.menuItem(l='Fix snaps in the active range',
+				  c='ZvParentMaster.fixSnap(True)', rp='E')
+
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_select.xpm',
+						c='ZvParentMaster.selectConstraintNodes()',
+						ann='Select constraints and snap groups ( select child )')
+
+	cmds.iconTextButton(style='iconOnly', h=34, bgc=(0.3, 0.3, 0.3),
+						image=_pmpath + 'pm_timeline.xpm',
+						c='ZvParentMaster.timeline()',
+						ann='Constraint timeline')
 	cmds.popupMenu(mm=True)
-	cmds.menuItem(l='<- Prev', c='%s.navigate(-1)' % __name__, rp='W')
-	cmds.menuItem(l='Next ->', c='%s.navigate(1)' % __name__, rp='E')
+	cmds.menuItem(l='<- Prev', c='ZvParentMaster.navigate(-1)', rp='W')
+	cmds.menuItem(l='Next ->', c='ZvParentMaster.navigate(1)', rp='E')
 	cmds.setParent('..')
 	
 	cmds.showWindow(winName)
 	cmds.window(winName, edit=True, widthHeight=(width, height), topLeftCorner=(posY, posX))
 	
 	sys.stdout.write('ZV Parent Master %s          http://www.paolodominici.com          paolodominici@gmail.com\n' % __version__)
+
 
 
 ##
@@ -901,7 +936,7 @@ def timeline():
 	sel, objects = _getCtrlsFromSelection(PARENT_CONSTRAINT_SUFFIX)
 	
 	if not objects:
-		raise Exception, 'No valid objects selected'
+		raise Exception('No valid objects selected')
 	
 	posX = 150
 	posY = 200

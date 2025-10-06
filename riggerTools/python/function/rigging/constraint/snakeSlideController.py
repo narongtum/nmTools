@@ -1,6 +1,3 @@
-#... must have locator list attr at rig_grp
-#... look locator naming convention at D:\svn_true\P_Regulus\Content\Characters\CH027_FangRu\01\Anim\Version\CH027_FangRu_01_Anim_testSnake.0002.ma
-
 # Maya Python — Snake path "Ghost Follower" rig helper
 # Converted: use maya.cmds (mc) for core rig logic
 # Keep PyMEL (pm) only for UI
@@ -10,7 +7,6 @@ import pymel.core as pm
 import json
 from maya.api import OpenMaya as om
 
-
 RIG_NODE = "rig_grp"
 SLIDE_LIST_ATTR = "slide_ctrls"
 GHOST_GRP_NAME = "pathGhost_GRP"
@@ -18,7 +14,7 @@ MD_NAME = "SlideScale_MD"
 SLIDE_ATTR = "pathSlide"
 SCALE_ATTR = "pathScale"
 SCALE_INIT_VAL = 0.01
-
+TITLE_NAME = 'Snake Switch Path 0.9.6'
 
 # ----------------------------- Utilities -----------------------------
 
@@ -397,7 +393,10 @@ def snakePathUI():
 	win = "snakePathGhostUI"
 	if pm.window(win, q=True, exists=True):
 		pm.deleteUI(win)
-	with pm.window(win, title="Snake Path (Ghost Follower)", widthHeight=(380, 520)):
+	with pm.window(win, title=F"{TITLE_NAME}", 	widthHeight=(380, 320),
+												sizeable=False,
+												minimizeButton=False,
+												maximizeButton=False):
 		with pm.columnLayout(adjustableColumn=True, rowSpacing=8):
 			with pm.rowLayout(nc=3, adjustableColumn=1, columnAlign=(1, "left")):
 				pm.text(label="Reference")

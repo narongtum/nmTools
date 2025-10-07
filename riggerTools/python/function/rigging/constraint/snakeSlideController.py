@@ -15,6 +15,8 @@ SLIDE_ATTR = "pathSlide"
 SCALE_ATTR = "pathScale"
 SCALE_INIT_VAL = 0.01
 TITLE_NAME = 'Snake Switch Path 0.9.6'
+SLIDE_STRETCHY_ATTR = 'StretchyEntireRange'
+SCALE_STRETCHY_ATTR = 'StretchyScale'
 
 # ----------------------------- Utilities -----------------------------
 

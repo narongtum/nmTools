@@ -1889,6 +1889,9 @@ class Attribute( object ) :
 
 	def __floordiv__( self , attr = '' ) :
 		mc.disconnectAttr( self , attr )
+		'''
+		init_stretch_mdl.attr('output') // storeVal_pma.attr('input1D[0]')
+		'''
 
 	def __rshift__( self , target = '' ) :
 

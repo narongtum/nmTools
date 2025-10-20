@@ -6,6 +6,8 @@ import maya.cmds as mc
 import pymel.core as pm
 import json
 from maya.api import OpenMaya as om
+from function.rigging.autoRig.base import core
+reload(core)
 
 RIG_NODE = "rig_grp"
 SLIDE_LIST_ATTR = "slide_ctrls"
@@ -14,7 +16,8 @@ MD_NAME = "SlideScale_MD"
 SLIDE_ATTR = "pathSlide"
 SCALE_ATTR = "pathScale"
 SCALE_INIT_VAL = 0.01
-TITLE_NAME = 'Snake Switch Path 0.9.6'
+VERSION = '0.9.6'
+TITLE_NAME = f'Snake Switch Path {VERSION}'
 SLIDE_STRETCHY_ATTR = 'StretchyEntireRange'
 SCALE_STRETCHY_ATTR = 'StretchyScale'
 

@@ -9,6 +9,8 @@ world_obj = 'ctrl_grp'  # Parent object to assign in world space
 base_grp = 'L_pinStrap02Offset_grp'  # Offset group
 body_part = 'L_pinStrap02'
 attr_occur = 'L_pinStrap02_ctrlShape' # attr occur at
+no_touch_grp = 'noTouch_grp'
+prior_ctrl = 'clvLFTGmbl_ctrl'
 
 # Function to check if an object exists
 def check_obj_exists(obj_name):
@@ -72,9 +74,9 @@ try:
 	controller_shape.attr(attr) >> reverse_node_rev.attr('ix')
 	reverse_node_rev.attr('ox') >> base_grp_base_cons.attr('w0')
 
-	# Parent local and world groups
-	loc_grp.parent(local_obj)
-	wor_grp.parent(local_obj)
+	# Parent local and world groups to prior controller (prevent cycle warning)
+	loc_grp.parent(prior_ctrl)
+	wor_grp.parent(prior_ctrl)
 
 	# Clear selection and indicate completion
 	core.clearSel()

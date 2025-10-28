@@ -3,12 +3,26 @@
 #... Change name aux to corr
 # how to use #
 # 1. adjust orientation y along 
-# 2. spectify the joint that
+# 2. spectify the joint that what to make it.
 
 '''
 # Direct run
 from function.rigging.corrective import valuePreservation as vpa
 reload(vpa)
+
+vpa.valuePreservation(		middleJnt = 'lwrArmLFT_bJnt',
+							side = 'LFT'				,
+							auxPosiWeight = 0.95		,
+							baseName = 'elbow'			,
+							sensitiveOut = 1.2			,
+							sensitiveInn = 0.2			,
+							intial_posIn = 2.2			,
+							intial_posOut = 3			,
+							moveAxis = 'x'	)
+
+
+
+
 '''
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload

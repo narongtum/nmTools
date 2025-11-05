@@ -66,3 +66,4 @@ riggerTools/python/function/rigging/Rigbox_Reborn_Curves_Tool/__pycache__/rr_mai
 *.pyc
 riggerTools/python/function/rigging/constraint/__pycache__/__init__.cpython-39.pyc
 riggerTools/python/function/rigging/constraint/__pycache__/matrixConstraint.cpython-39.pyc
+riggerTools/python/function/rigging/constraint/__pycache__/matrixConstraint.cpython-39.pyc

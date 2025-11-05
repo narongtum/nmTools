@@ -279,7 +279,7 @@ def runMenu():
 	
 	mc.menuItem( label = "Select all controller", 	command = "from function.animation import animTools\nimportlib.reload(animTools)\nanimTools.selectAllCtrl()" , ann = "Select all controller"    )
 
-	mc.menuItem( label = "mirror controller", 		command = "from function.animation import mirrorSelCtrl\nimportlib.reload(mirrorSelCtrl)\nmirrorSelCtrl.mirror_selCtrl()", ann = "Select LFT ctrl and auto copy to other side and vice versa"	)
+	mc.menuItem( label = "Mirror controller", 		command = "from function.animation import mirrorSelCtrl\nimportlib.reload(mirrorSelCtrl)\nmirrorSelCtrl.mirror_selCtrl()", ann = "Select LFT ctrl and auto copy to other side and vice versa"	)
 
 	mc.setParent( '..', menu=True )
 	#----------------------------------------------------------------------------------------------------------------------

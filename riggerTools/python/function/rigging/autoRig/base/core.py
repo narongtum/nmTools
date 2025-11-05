@@ -2153,6 +2153,34 @@ class Dag( Node ) :
 		mc.setAttr( '%s.rotateOrder' %self.name , val )
 		print ('set rotation order of %s to %s' %(self.name , rotationOrder))
 
+
+
+	def getRotateOrderString(self):
+		"""
+		Return the rotation order of this object as a string
+		(e.g. 'xyz', 'xzy', etc.)
+		"""
+		roDict = {
+			0: 'xyz',
+			1: 'yzx',
+			2: 'zxy',
+			3: 'xzy',
+			4: 'yxz',
+			5: 'zyx'
+		}
+
+		roID = mc.getAttr('%s.rotateOrder' % self.name)
+
+		if roID in roDict:
+			return roDict[roID]
+		else:
+			mc.warning('Unknown rotateOrder ID: %s on %s' % (roID, self.name))
+			return None
+
+
+
+
+
 	rotateOrder = property( getRotateOrder , setRotationOrder , None , None  )
 
 

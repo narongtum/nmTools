@@ -365,6 +365,81 @@ curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
 '''
 
 
+
+
+
+
+
+import ast
+
+
+
+
+def read_joint_list_from_file(file_path):
+	'''
+	Reads a Python-formatted list of joint names from a text file.
+	The file should contain a variable assignment like:
+	bake_jnt_list = ['joint1', 'joint2', 'joint3']
+	
+	Args:
+		file_path (str): The full path to the .txt file.
+
+	Returns:
+		list: A list of joint names, or an empty list if an error occurs.
+	'''
+	#... Check if the file exists
+	if not os.path.exists(file_path):
+		CoreLogger.error(f"Joint list file not found: {file_path}")
+		return []
+
+	CoreLogger.info(f"Reading joint list from: {file_path}")
+	try:
+		#... Read the entire file content
+		with open(file_path, 'r') as f:
+			content = f.read()
+		
+		#... Find the portion that looks like a list assignment (e.g., list = [...])
+		#... We expect a line like 'bake_jnt_list = [...]'
+		#... Split by '=' and take the right side, stripping whitespace
+		if '=' in content:
+			list_str = content.split('=', 1)[1].strip()
+		else:
+			#... If there's no assignment, assume the file content is just the list itself
+			list_str = content.strip()
+			
+		#... Safely evaluate the string content as a Python literal (list, dict, etc.)
+		#... This is safer than using eval()
+		joint_list = ast.literal_eval(list_str)
+
+		if not isinstance(joint_list, list):
+			CoreLogger.error(f"File content is not a valid Python list: {file_path}")
+			return []
+			
+		CoreLogger.info(f"Successfully loaded {len(joint_list)} joints.")
+		return joint_list
+		
+	except (IOError, ValueError, SyntaxError) as e:
+		CoreLogger.error(f"Error reading or parsing joint list file: {e}")
+		return []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def findExtensionFullName(name):
 	'''
 	aaa= core.findExtensionFullName('C_tenTail_squash_deformerHandle')
@@ -2056,7 +2131,7 @@ class Dag( Node ) :
 		colorDict = {   'yellow'    : 17 ,          'red'           : 13 ,
 						'softBlue'  : 18 ,          'blue'          : 6 ,
 						'white'     : 16 ,          'brown'         : 11 ,
-						'black'     : 1 ,           f'gray'          : 2 ,
+						'black'     : 1 ,           'gray'          : 2 ,
 						'softGray'  : 3 ,           'darkRed'       : 4 ,
 						'darkBlue'  : 5 ,           'darkGreen'     : 7 ,
 						'green'     : 14 ,          'none'          : 0     }
@@ -2489,28 +2564,40 @@ class Dag( Node ) :
 			print ('There are no suit condition maybe number of attribure is mismatch(%d)' %(len(lstAttr)))
 
 
-	def lockAllAttr(self, attrs=['v', 't', 'r', 's']):
-		#... Get a list of all the attributes for the specified node
-		targets = [self.name] if isinstance(self.name, str) else self.name
-		for obj in targets:
-			obj = pm.PyNode(obj)
-			for attr in attrs:
-				if attr == 'v':
-					try:
-						obj.v.set(lock=True, keyable=False, channelBox=False)
-					except:
-						pass
-				else:
-					for axis in 'xyz':
+	def lockAllAttr(self, attrs=['v', 't', 'r', 's'], hide=True):
+			#... Get a list of all the attributes for the specified node
+			targets = [self.name] if isinstance(self.name, str) else self.name
+			
+			#... Determine keyable and channelBox status based on the 'hide' argument
+			if hide:
+				#... If hide is True, make them not keyable and hide from channel box
+				k_val = False
+				cb_val = False
+			else:
+				#... If hide is False, keep them keyable and visible in channel box, but locked
+				k_val = True
+				cb_val = True
+				
+			for obj in targets:
+				obj = pm.PyNode(obj)
+				for attr in attrs:
+					if attr == 'v':
 						try:
-							obj.attr(f'{attr}{axis}').set(lock=True, keyable=False, channelBox=False)
+							#... 'v' (visibility) is a single attribute
+							obj.v.set(lock=True, keyable=k_val, channelBox=cb_val)
 						except:
+							#... Catch any error if attribute does not exist or cannot be set
+							CoreLogger.warning('Attribute Visibility does not exist or cannot be set')
 							pass
-
-
-		#... Loop through each attribute and set the lock flag to True
-		# for attr in attr_list:
-		# 	mc.setAttr(self.name + '.' + attr, lock=True)
+					else:
+						for axis in 'xyz':
+							try:
+								#... Other attributes ('t', 'r', 's') have x, y, z components
+								obj.attr(f'{attr}{axis}').set(lock=True, keyable=k_val, channelBox=cb_val)
+							except:
+								#... Catch any error if attribute does not exist or cannot be set
+								CoreLogger.warning('Attribute does not exist or cannot be set')
+								pass
 
 
 
@@ -2978,6 +3065,18 @@ class Locator( Dag ):
 			locShape.attr('localScaleY').value = scale*0.25
 			locShape.attr('localScaleZ').value = scale*0.25
 
+
+	def setLocColor(self, color):
+		COLOR_dict = mnd.COLOR_dict
+
+		if color in COLOR_dict.keys():
+			colorId = COLOR_dict[color]
+			mc.setAttr( '%s.overrideEnabled'    % self.name , 1 )
+			mc.setAttr( '%s.overrideColor'      % self.name, colorId )
+
+		else:
+			colorId = 0
+			mc.error("Insert string keyword such as yellow")
 
 		#... assign 'white color'
 		# self.setAttr('overrideEnabled', 1)

@@ -103,8 +103,10 @@ class function:
 		
 
 
+		#... IF YOU WANT TO BAKE VISIBILITY MESH
+		#... JUST ADD 'bake_mesh' ATTR TO YOUR MESH
 
-		# bake visible mesh
+		#... bake visible mesh
 		bakeAttrs = ['visibility']
 		# check if having ply suffix
 
@@ -150,8 +152,10 @@ class function:
 
 
 
-		
+		# ...
 		# Qury bake joint
+		# ...
+
 		if mc.objExists( 'Root' ):
 			mc.setAttr( 'Root.v', 1)
 			bakeJnt = mc.ls('*_bind_jnt','Root','*_prop_jnt') # call _jnt
@@ -161,9 +165,9 @@ class function:
 			bakeJnt = mc.ls('*_bJnt','root','*_propJnt') # call _jnt
 			rootJnt = 'root'
 		else:
-			mc.error("There are 'Root' or 'root' in the scene, Please consult Rigger.")
+			mc.error("Asset are 'Root' or 'root' in the scene, Please call Rigger for Help.")
 
-			
+		#... bake UE prop joint	
 		if mc.objExists("rig_grp.Engine"):
 			ExportLogger.debug('There are having Ik joint.')
 			if mc.getAttr("rig_grp.Engine") == 1:
@@ -205,9 +209,13 @@ class function:
 
 
 		try:
-			# Delete Rig GRP
-			mc.delete('rig_grp')
-			mc.delete('geo_grp')
+			if mc.objExists('rig_grp'):
+				mc.delete('rig_grp')
+			if mc.objExists('geo_grp'):
+				mc.delete('geo_grp')
+
+			
+			
 
 
 
@@ -252,7 +260,15 @@ class function:
 			export_grp = 'Export_grp'
 		elif mc.objExists( 'export_grp' ):
 			export_grp = 'export_grp'
+		elif mc.objExists( 'root' ):
+			export_grp = 'root'
+
+		if export_grp == None:
+			me.error('There are no proper export name')
+
+
 		mc.select( export_grp, add = True)
+		# mc.error('There are no proper export name')
 
 
 		#... Set time length

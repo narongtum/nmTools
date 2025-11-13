@@ -1608,6 +1608,7 @@ class MultMatrix( Node ):
 		Node.__init__(self, mc.createNode('multMatrix', name = name))
 		self.suffix
 
+
 class MultMatrixWithValue( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('multMatrix', name = name))
@@ -1636,6 +1637,12 @@ class FourByFourMatrix( Node ):
 class AimMatrix( Node ):
 	def __init__(self, name):
 		Node.__init__(self, mc.createNode('aimMatrix', name = name))
+		self.autoSuffix()
+
+
+class PickMatrix( Node ):
+	def __init__(self, name):
+		Node.__init__(self, mc.createNode('pickMatrix', name = name))
 		self.autoSuffix()
 
 

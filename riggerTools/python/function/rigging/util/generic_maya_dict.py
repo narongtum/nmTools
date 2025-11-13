@@ -186,12 +186,12 @@ NODE_dict = [
 	{	'longName': 'curveInfo'								,	'shortName': 'crvInfo'					},
 	{	'longName': 'follicle'								,	'shortName': 'flc'						},
 	{	'longName': 'remapValue'							,	'shortName': 'remap'					},
-	{	'longName': 'composeMatrix'							,	'shortName': 'composeMatrix'			},
+	{	'longName': 'composeMatrix'							,	'shortName': 'composeMat'			},
 	{	'longName': 'vectorProduct'							,	'shortName': 'vectorProd'					},
 	{	'longName': 'fourByFourMatrix'						,	'shortName': 'fourByFourMat'				},
-	{	'longName': 'multMatrix'							,	'shortName': 'multMatrix'					},
-	{	'longName': 'aimMatrix'								,	'shortName': 'aimMatrix'					},
-	{	'longName': 'wtAddMatrix'							,	'shortName': 'wtAddMatrix'					},
+	{	'longName': 'multMatrix'							,	'shortName': 'multMat'					},
+	{	'longName': 'aimMatrix'								,	'shortName': 'aimMat'					},
+	{	'longName': 'wtAddMatrix'							,	'shortName': 'wtAddMat'					},
 	{	'longName': 'eulerToQuat'							,	'shortName': 'eulerToQuat'					},
 	{	'longName': 'quatInvert'							,	'shortName': 'quatInvert'					},
 	{	'longName': 'quatProd'								,	'shortName': 'quatProd'						},
@@ -203,7 +203,8 @@ NODE_dict = [
 	{	'longName': 'blendWeighted'							,	'shortName': 'blendWeighted'		},	
 	{	'longName': 'animCurveUL'							,	'shortName': 'animCurveUL'}	,
 	{	'longName': 'deformSine'							,	'shortName': 'defSine'}	,
-	{	'longName': 'blendTwoAttr'							,	'shortName': 'bta'}
+	{	'longName': 'blendTwoAttr'							,	'shortName': 'bta'},
+	{	'longName': 'pickMatrix'							,	'shortName': 'pickMat'}
 ]
 
 

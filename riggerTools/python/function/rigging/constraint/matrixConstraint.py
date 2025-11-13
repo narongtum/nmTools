@@ -747,7 +747,16 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 
 
 	obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[2]')
-	multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
+
+	#... Insert pickmatrix for make it more option
+
+	pickMatrix = core.PickMatrix(base_name)
+
+	multMatrix.attr('matrixSum') >> pickMatrix.attr('inputMatrix')
+	pickMatrix.attr('outputMatrix') >> decomposeMatrix.attr('inputMatrix')
+
+	#... (backup)
+	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
 
 
 	#... END OF ROTATE CONNECTION

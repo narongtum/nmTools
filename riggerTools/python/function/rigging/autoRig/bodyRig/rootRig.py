@@ -57,7 +57,15 @@ def createMasterGrp(nameSpace = '', charScale = '', PROJECT_DICT = {}):
 	loc_grp = core.Null('loc_grp' )
 	# fkJnt_grp = core.Null('fkJnt_grp')
 	# ikJnt_grp = core.Null('ikJnt_grp')
+
+
+	ctrlStill_grp = core.Null('ctrlStill_grp') #... for kept object that constrained from matrix
+	ctrlStill_grp.lockAllAttr(attrs=['t', 'r', 's'], hide=True)
+	ctrlStill_grp.parent(noTouch_grp)
 	
+
+
+
 	# Snap null make for FK/IKmatcher
 	snapNull_grp = core.Null('snapNull_grp' )
 

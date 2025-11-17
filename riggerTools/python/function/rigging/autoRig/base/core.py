@@ -8,7 +8,18 @@
 
 
 '''
-# direct call
+#... Import
+
+
+sys.path.append('D:/sysTools/nmTools_github/riggerTools/python')
+from function.framework.reloadWrapper import reloadWrapper as reload
+from function.rigging.autoRig.base import core
+reload(core)
+
+
+
+
+#... Direct call
 
 from function.rigging.autoRig.base import core
 reload(core)
@@ -503,7 +514,8 @@ def list_joints_from_skincluster(skincluster):
 		raise RuntimeError(f"SkinCluster '{skincluster}' does not exist.")
 
 	jnts = mc.skinCluster(skincluster, q=True, inf=True)
-	print(f'This is joint in skinCluster: {jnts}')
+	CoreLogger.info(f'This is joint in skinCluster: {jnts}')
+	# print(f'This is joint in skinCluster: {jnts}')
 	return jnts
 
 
@@ -514,17 +526,20 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... check input
 
 	if isinstance(name, str):
-		print("This is a string")
+		# print("This is a string")
+		CoreLogger.info("This is a string")
 		name_split = name.split('_')
 
 	elif not isinstance(name, type):
-		print("This is an instance of some class")
+		# print("This is an instance of some class")
+		CoreLogger.info("This is an instance of some class")
 		nameStr = name.name
 		name_split = nameStr.split('_')
 
 
 	else:
-		print("This is a class itself")
+		# print("This is a class itself")
+		CoreLogger.info("This is a class itself")
 
 	import re
 
@@ -539,7 +554,8 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... 1. Capital Lead Style  'L_something_something_ext'
 
 	if len(name_split[0]) == 1:
-		print('\nThis is naming C_R_L_ style')
+		# print('\nThis is naming C_R_L_ style')
+		CoreLogger.info('\nThis is naming C_R_L_ style')
 		base_name = '_'.join(name_split[:-1])
 
 		isDefault = False
@@ -563,7 +579,8 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	#... 2. Side follow  'somethingLFT_ext'
 	else:
-		print('This is naming LFT RGT Style')
+		# print('This is naming LFT RGT Style')
+		CoreLogger.info('This is naming LFT RGT Style')
 		isDefault = True
 		# for_base_name = name.split('_')
 		base_name = '_'.join(name_split[:-1])

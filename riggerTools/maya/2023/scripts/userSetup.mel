@@ -13,8 +13,3 @@ python("from nmMenu import nmMenu2023");
 python("importlib.reload(nmMenu2023)");
 python("maya.utils.executeDeferred('nmMenu2023.runMenu()')");
 python("from function.framework.reloadWrapper import reloadWrapper as reload");
-
-
-
-
-

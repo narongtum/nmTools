@@ -1,5 +1,5 @@
 '''
-from function.rigging.constraint import locatorFollowToCurve as lfc
+from function.rigging.constraint import pin_locator_curve as lfc
 reload(lfc)
 
 '''
@@ -78,7 +78,7 @@ lfc.locator_follow_curve_spec_position( [('locator1', 0.0), ('locator2', 0.25), 
 
 
 
-
+#... pin locator with locator position itself
 def locator_follow_curve_list(locator_list, curve_name):
 	try:
 		curve_shape_name = mc.listRelatives(curve_name, shapes=True)[0]

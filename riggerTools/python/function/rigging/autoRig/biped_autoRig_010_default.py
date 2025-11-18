@@ -30,62 +30,62 @@ reload( rootRig )
 from function.rigging.autoRig.bodyRig import hipRig
 reload( hipRig )
 
-from function.rigging.autoRig.bodyRig import spineFkRig
-reload( spineFkRig )
+# from function.rigging.autoRig.bodyRig import spineFkRig
+# reload( spineFkRig )
 
-# # Option of spine Rig
-from function.rigging.autoRig.bodyRig import spineRig
-reload( spineRig )
+# # # Option of spine Rig
+# from function.rigging.autoRig.bodyRig import spineRig
+# reload( spineRig )
 
-from function.rigging.autoRig.bodyRig import neckRig
-reload( neckRig )
+# from function.rigging.autoRig.bodyRig import neckRig
+# reload( neckRig )
 
-from function.rigging.autoRig.bodyRig import headRig
-reload( headRig )
+# from function.rigging.autoRig.bodyRig import headRig
+# reload( headRig )
 
-from function.rigging.autoRig.bodyRig import clavicleRig
-reload( clavicleRig )
+# from function.rigging.autoRig.bodyRig import clavicleRig
+# reload( clavicleRig )
 
-from function.rigging.autoRig.bodyRig import armRig
-reload( armRig )
+# from function.rigging.autoRig.bodyRig import armRig
+# reload( armRig )
 
-from function.rigging.autoRig.bodyRig import fingerRig
-reload( fingerRig )
+# from function.rigging.autoRig.bodyRig import fingerRig
+# reload( fingerRig )
 
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
-reload( fingerCurl )
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
-reload( finloCurl )
+# # change module name please update
+# from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
+# reload( fingerCurl )
+# # change module name please update
+# from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
+# reload( finloCurl )
 
-from function.rigging.autoRig.bodyRig import bipedLegRig
-reload( bipedLegRig )
+# from function.rigging.autoRig.bodyRig import bipedLegRig
+# reload( bipedLegRig )
 
-from function.rigging.autoRig.bodyRig import ribbonRig
-reload( ribbonRig )
+# from function.rigging.autoRig.bodyRig import ribbonRig
+# reload( ribbonRig )
 
-from function.rigging.autoRig.bodyRig import propRig
-reload( propRig )
+# from function.rigging.autoRig.bodyRig import propRig
+# reload( propRig )
 
-from function.rigging.feature import baseFingerSpread as baseFinger
-reload(baseFinger)
+# from function.rigging.feature import baseFingerSpread as baseFinger
+# reload(baseFinger)
 
-from function.rigging.autoRig.bodyRig import torsoRig
-reload(torsoRig)
+# from function.rigging.autoRig.bodyRig import torsoRig
+# reload(torsoRig)
 
-from function.rigging.tools import proc as pc 
-reload(pc)
+# from function.rigging.tools import proc as pc 
+# reload(pc)
 
-from function.rigging.autoRig import util 
-reload(util)
+# from function.rigging.autoRig import util 
+# reload(util)
 
-import time
+# import time
 
 #...timeStart
-timeStart = time.time()
+# timeStart = time.time()
 
-# Declare some global variables
+#... Declare some global variables
 nameSpace = '' 
 ribbon = False
 linkRotOrder = True

@@ -69,6 +69,404 @@ sel = mc.ls(sl=True)
 mtc.del_selected_matrix(selected = sel)
 '''
 
+def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, scale=True):
+	if not source:
+		print('Source is not selected.')
+		return False
+
+	# -----------------------------------------------------------------
+	# 01. Setup core object references (same as legacy)
+	# -----------------------------------------------------------------
+	obj_target = core.Dag(target)  # target dag wrapper
+	obj_source = core.Dag(source)  # source dag wrapper
+	base_name = core.check_name_style(name=target)[0]
+
+	# -----------------------------------------------------------------
+	# 02. Compute local offset (use LEGACY version, not GPT version)
+	# -----------------------------------------------------------------
+	# NOTE: _getLocalOffsetGPT is suspected to double-compensate parent.
+	# Use the original, trusted _getLocalOffset instead.
+	localOffset = _getLocalOffset(source, target)
+	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
+
+	# -----------------------------------------------------------------
+	# 03. Create nodes (same idea as legacy function)
+	# -----------------------------------------------------------------
+	decomposeMatrix = core.DecomposeMatrix(base_name)
+	multMatrix = core.MultMatrix(base_name)
+	pickMatrix = core.PickMatrix(base_name)
+
+	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
+
+	# -----------------------------------------------------------------
+	# 04. Offset matrix setup
+	# -----------------------------------------------------------------
+	if mo:
+		#... store local offset into slot 0 (same as legacy)
+		mc.setAttr(multMatrix.name + '.matrixIn[0]', offMat, type='matrix')
+
+	# -----------------------------------------------------------------
+	# 05. Rotation logic (quat pipeline with jointOrient support)
+	# -----------------------------------------------------------------
+	if rotate:
+		target_eulerToQuat = core.EulerToQuat(base_name)
+		target_quatInvert = core.QuatInvert(base_name)
+		target_quatProd = core.QuatProd(base_name)
+		target_quatToEuler = core.QuatToEuler(base_name)
+
+		# -------------------------------------------------------------
+		# 05.1 Decide how to build the "offset" quaternion
+		# -------------------------------------------------------------
+		if obj_target.type == 'joint' and obj_source.type == 'transform':
+			#... transform driving a joint, compensate jointOrient
+			Constraint.info('\nThis is between [ {1} ] and [ {0} ] (joint / transform)'.format(
+				obj_target.type, obj_source.type))
+			#... use jointOrient as pre-rotation
+			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
+
+		elif obj_target.type == 'transform' and obj_source.type == 'transform':
+			#... classic transform to transform case
+			Constraint.info('\nThis is between [ {1} ] and [ {0} ] (transform / transform)'.format(
+				obj_target.type, obj_source.type))
+			#... use current rotate of target as offset
+			obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+
+		else:
+			#... fallback: treat as generic transform case
+			Constraint.info("\nThis is maybe something I don't know (fallback case).")
+			obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+
+		# -------------------------------------------------------------
+		# 05.2 Connect quaternion chain (same idea as legacy)
+		# -------------------------------------------------------------
+		#... build offset quaternion
+		target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
+
+		#... matrix result quaternion from decompose
+		decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
+
+		#... multiply by inverse offset
+		target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')
+
+		#... convert final quat back to Euler
+		target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
+		target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
+
+		# -------------------------------------------------------------
+		# 05.3 Match rotateOrder between source and target
+		# -------------------------------------------------------------
+		source_rotOrder = mc.getAttr(str(source) + '.rotateOrder')
+		obj_target.attr('rotateOrder').value = source_rotOrder
+
+		#... drive quatToEuler rotateOrder from target rotateOrder
+		obj_target.attr('rotateOrder') >> target_quatToEuler.attr('inputRotateOrder')
+
+	else:
+		#... no rotation, so we do not build quaternion pipeline
+		target_eulerToQuat = None
+		target_quatInvert = None
+		target_quatProd = None
+		target_quatToEuler = None
+
+	# -----------------------------------------------------------------
+	# 06. Matrix chain (match legacy parentConMatrix)
+	# -----------------------------------------------------------------
+	# 6.1 connect source worldMatrix to multMatrix
+	obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[2]')
+
+	# 6.2 connect parent worldInverseMatrix to multMatrix
+	parent = mc.pickWalk(target, d='up')[0]
+
+	if parent == target:
+		Constraint.info("I'm World Already")
+	else:
+		Constraint.warning('Warning .matrixIn[2] may occupire. consider to fix it.')
+
+		#... if slot 2 already used (by source worldMatrix), push parentInverse to slot 3
+		if mc.listConnections(multMatrix.name + '.matrixIn[2]'):
+			mc.connectAttr(parent + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[3]')
+		else:
+			mc.connectAttr(parent + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[2]')
+
+	# -----------------------------------------------------------------
+	# 07. PickMatrix isolation for T / R / S
+	# -----------------------------------------------------------------
+	multMatrix.attr('matrixSum') >> pickMatrix.attr('inputMatrix')
+	pickMatrix.attr('outputMatrix') >> decomposeMatrix.attr('inputMatrix')
+
+	#... toggle translation / rotation / scale usage
+	if not translate:
+		pickMatrix.attr('useTranslate').value = 0
+	if not rotate:
+		pickMatrix.attr('useRotate').value = 0
+	if not scale:
+		pickMatrix.attr('useScale').value = 0
+
+	# -----------------------------------------------------------------
+	# 08. Final translate / scale connections
+	# -----------------------------------------------------------------
+	if translate:
+		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
+
+	if scale:
+		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
+
+	# -----------------------------------------------------------------
+	# 09. Optional cleanup and message links (same as legacy)
+	# -----------------------------------------------------------------
+	if rotate:
+		#... break a temporary connection that was only needed for computation
+		target_quatInvert.attr('outputQuat') // target_quatProd.attr('input2Quat')
+
+		#... remove eulerToQuat node name from scene if your wrapper supports it
+		target_eulerToQuat.deleteName()
+
+		#... connect message attributes for possible later cleanup
+		decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
+		target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
+
+	# -----------------------------------------------------------------
+	# 10. Finish
+	# -----------------------------------------------------------------
+	mc.select(target, r=True)
+	Constraint.info(' # # # # # # # # # Parent matrix Complete (Hybrid GPT) # # # # # # # # # # # #  \n')
+
+	return obj_target, obj_source
+
+
+
+
+
+
+
+#... parant constraint using matrix use this Mainly	
+def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
+
+	if not source:
+		print('Source is not selected.')
+		return False
+
+
+	#... rotate offset function
+	obj_target = core.Dag(target)
+	obj_source = core.Dag(source)
+
+	#... find base name
+	base_name = core.check_name_style(name = target)[0]
+
+
+	#...Got call maya API for get local offset position  
+	localOffset =  _getLocalOffset( source, target )
+	offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+
+
+	#... Create
+	decomposeMatrix = core.DecomposeMatrix(base_name)
+	multMatrix = core.MultMatrix(base_name)
+
+
+	#... Notice
+	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
+
+
+	#... Set and Connect
+	if mo == True:
+		mc.setAttr( multMatrix.name + '.matrixIn[0]', offMat, type = 'matrix')
+
+	#... Just in case for add manual attr
+	#obj_source.addAttribute( ln = 'localOffset' , k = False, at = 'matrix' )
+	#mc.setAttr( obj_source.name + '.localOffset', offMat, type = 'matrix')
+
+
+	#... START OF ROTATE CONNECTION
+	if rotate == True:
+		pass
+
+	#... START HERE
+	target_eulerToQuat = core.EulerToQuat(base_name)
+	target_quatInvert = core.QuatInvert(base_name)
+	target_quatProd = core.QuatProd(base_name)
+	target_quatToEuler = core.QuatToEuler(base_name)
+
+
+	if obj_target.type == 'joint' and obj_source.type == 'transform': #... if between transform to joint must add value from orient
+		Constraint.info('\nThis is between [ {1} ] and [ {0} ]'.format(obj_target.type, obj_source.type))
+		#... YOU MISS THIS LINE EVERYTHING WILL FALL
+		mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
+
+
+	elif obj_target.type == 'transform' and obj_source.type == 'transform':
+
+		print('\n')
+		Constraint.info('\nThis is between [ {1} ] and [ {0} ]'.format(obj_target.type, obj_source.type))
+		print('\n')
+
+		#... Add compose matrix for get offset orientation
+		# target_composeMat = core.ComposeMatrix(target)
+		#... Update more arttr for case joint(freezed) is parent grp is child
+		# obj_target.attr('rotate') >> target_composeMat.attr('inputRotate')
+		# obj_target.attr('rotate') // target_composeMat.attr('inputRotate')
+		# target_composeMat.attr('outputMatrix') >> multMatrix.attr('matrixIn[1]')
+		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')		
+
+	else:
+		Constraint.info("\nThis is maybe something I don't know.")
+		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+		
+		
+	#... Connect the rest
+	target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
+	decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
+		
+	target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')	
+	target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
+
+
+	#... Force the rotateOrder of target to the same as source
+	# rotOrder = mc.getAttr( target + '.rotateOrder' )
+
+	Constraint.info(type(source))
+	source_rotOrder = mc.getAttr( str(source) + '.rotateOrder' )
+	obj_target.attr('rotateOrder').value = source_rotOrder
+
+	#target_quatToEuler.attr('inputRotateOrder').value = source_rotOrder
+
+	# mc.setAttr( obj_target + '.rotateOrder' )
+
+	#... can't remember why put this.
+	#... Assign value by manual(not use now)
+	'''
+	allChanel = ['X','Y','Z','W']
+	for chanel in allChanel:
+		target_quatInvert.attr('outputQuat.outputQuatX').value
+		quaVar = mc.getAttr( target_quatInvert.name + '.outputQuat.outputQuat' + chanel )
+		mc.setAttr( target_quatProd.name + '.input2Quat.input2Quat' + chanel, quaVar)
+	 
+	'''
+
+
+	target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
+	#return target_quatToEuler
+
+	#... Connnect rotate order from target to quat to euler 
+	obj_target.attr('rotateOrder') >> target_quatToEuler.attr('inputRotateOrder')
+	# END HERE
+
+
+	obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[2]')
+
+	#... Insert pickmatrix for make it more option
+
+	pickMatrix = core.PickMatrix(base_name)
+
+	multMatrix.attr('matrixSum') >> pickMatrix.attr('inputMatrix')
+	pickMatrix.attr('outputMatrix') >> decomposeMatrix.attr('inputMatrix')
+
+	#... (backup)
+	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
+
+
+	#... END OF ROTATE CONNECTION
+
+
+
+	#...Find out Origin Parent
+	if mc.pickWalk( target , d = 'up')[0] == target:
+		logger.MayaLogger.info("I'm World Already")
+	elif mc.pickWalk( target, d = 'up')[0] != target:
+		world = mc.pickWalk( target, d = 'up')[0]
+		Constraint.warning('Warning .matrixIn[2] may occupire. consider to fix it.')
+		if mc.listConnections(multMatrix.name + '.matrixIn[2]')[0]:
+			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[3]' )
+		else:
+			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[2]' )
+
+
+	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
+	# mc.connectAttr( multMatrix + '.matrixSum', decomposeMatrix + '.inputMatrix' )
+
+	#... Connect TS
+	if translate == True:
+		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
+		# mc.connectAttr( decomposeMatrix + '.outputTranslate', tgt + '.translate')
+	if scale == True:
+		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
+		# mc.connectAttr( decomposeMatrix + '.outputScale', tgt + '.scale')
+
+	#... Clear Node (Cause error I dunno why)
+	target_quatInvert.attr('outputQuat') // target_quatProd.attr('input2Quat')
+	target_eulerToQuat.deleteName()
+	#target_quatInvert.deleteName()
+
+
+
+	decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
+	target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
+
+
+	#... Connect message for incase want to delete
+	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_deComp')
+	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
+	# mc.listConnections( obj_target.name + '.' + 'm_deComp')[0]
+	# mc.listConnections( obj_target.name + '.' + 'm_quatToEuler')[0]
+
+
+
+
+	#... still not work disable for now
+	#... link variable to Network node
+	# parentConMatrix_meta = core.MetaGeneric('matCon')
+	 
+	# mc.select(target, r=True)
+	
+	# meta_node = core.MetaGeneric(obj_source.name)
+
+	# #... connect message
+	# obj_target.attr('message') >> meta_node.attr('Rig_Prior')
+	# meta_node.attr('Base_Name').value = obj_target.name
+	# meta_node.attr('Side').value = 'None'
+	
+	# meta_node.addAttribute( dataType = 'string' , longName = 'node')
+	# meta_node.attr('node').value = f'{decomposeMatrix},{target_quatToEuler},{multMatrix}'
+
+	# meta_node.addAttribute( dataType = 'string' , longName = 'Target')
+	# meta_node.addAttribute( dataType = 'string' , longName = 'Source')
+	# meta_node.attr('Target').value = obj_target.name
+	# meta_node.attr('Source').value = obj_source.name
+
+	mc.select(target, r=True)
+
+	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
+	return obj_target, obj_source
+
+
+#... for delete
+'''
+mc.delete(mc.listConnections( obj_target.name + '.' + 'm_deComp')[0])
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #.... Cut from Util.Misc
 
@@ -548,295 +946,6 @@ def createMatrixAttr(selected, attrNam = 'destination'):
 
 
 
-
-
-def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, scale=True):
-	if not source:
-		print('Source is not selected.')
-		return False
-
-	# Setup core object references
-	obj_target = core.Dag(target)
-	obj_source = core.Dag(source)
-	base_name = core.check_name_style(name=target)[0]
-
-	# Compute offset matrix
-	localOffset = _getLocalOffsetGPT(source, target)
-	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
-
-	# Create necessary nodes
-	decomposeMatrix = core.DecomposeMatrix(base_name)
-	multMatrix = core.MultMatrix(base_name)
-
-	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
-
-	# Maintain Offset: use multMatrix slot 0 for offset, 1 for worldMatrix, 2 for inverse
-	if mo:
-		mc.setAttr(multMatrix.name + '.matrixIn[0]', offMat, type='matrix')
-		obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[1]')
-		obj_target.attr('parentInverseMatrix[0]') >> multMatrix.attr('matrixIn[2]')
-	else:
-		obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[0]')
-		obj_target.attr('parentInverseMatrix[0]') >> multMatrix.attr('matrixIn[1]')
-
-	# Rotation setup
-	if rotate:
-		target_eulerToQuat = core.EulerToQuat(base_name)
-		target_quatInvert = core.QuatInvert(base_name)
-		target_quatProd = core.QuatProd(base_name)
-		target_quatToEuler = core.QuatToEuler(base_name)
-
-		#  alway jointOrient if target is joint
-		if obj_target.type == 'joint':
-			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
-			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
-		else:
-			obj_source.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-			obj_source.attr('rotateOrder') >> target_eulerToQuat.attr('inputRotateOrder')
-			target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
-
-		decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
-		target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')
-		target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
-		target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
-
-		if not mc.listConnections(obj_target.attr('rotateOrder'), d=False, s=True):
-			obj_target.attr('rotateOrder') >> target_quatToEuler.attr('inputRotateOrder')
-
-		source_rotOrder = mc.getAttr(str(source) + '.rotateOrder')
-		obj_target.attr('rotateOrder').value = source_rotOrder
-
-
-	# Connect matrix calculation
-	multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
-
-	# Translate
-	if translate:
-		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
-
-	# Scale
-	if scale:
-		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
-
-	if not mc.objExists(obj_target.name + '.m_deComp'):
-		obj_target.addAttribute(attributeType='message', longName='m_deComp')
-		decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
-
-
-
-	mc.select(target, r=True)
-	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
-	return obj_target, obj_source
-
-
-
-
-
-#... parant constraint using matrix use this Mainly	
-def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
-
-	if not source:
-		print('Source is not selected.')
-		return False
-
-
-	#... rotate offset function
-	obj_target = core.Dag(target)
-	obj_source = core.Dag(source)
-
-	#... find base name
-	base_name = core.check_name_style(name = target)[0]
-
-
-	#...Got call maya API for get local offset position  
-	localOffset =  _getLocalOffset( source, target )
-	offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
-
-
-	#... Create
-	decomposeMatrix = core.DecomposeMatrix(base_name)
-	multMatrix = core.MultMatrix(base_name)
-
-
-	#... Notice
-	Constraint.info('This is between [ {0} ] and [ {1} ]'.format(obj_target.type, obj_source.type))
-
-
-	#... Set and Connect
-	if mo == True:
-		mc.setAttr( multMatrix.name + '.matrixIn[0]', offMat, type = 'matrix')
-
-	#... Just in case for add manual attr
-	#obj_source.addAttribute( ln = 'localOffset' , k = False, at = 'matrix' )
-	#mc.setAttr( obj_source.name + '.localOffset', offMat, type = 'matrix')
-
-
-	#... START OF ROTATE CONNECTION
-	if rotate == True:
-		pass
-
-	#... START HERE
-	target_eulerToQuat = core.EulerToQuat(base_name)
-	target_quatInvert = core.QuatInvert(base_name)
-	target_quatProd = core.QuatProd(base_name)
-	target_quatToEuler = core.QuatToEuler(base_name)
-
-
-	if obj_target.type == 'joint' and obj_source.type == 'transform': #... if between transform to joint must add value from orient
-		Constraint.info('\nThis is between [ {1} ] and [ {0} ]'.format(obj_target.type, obj_source.type))
-		#... YOU MISS THIS LINE EVERYTHING WILL FALL
-		mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
-
-
-	elif obj_target.type == 'transform' and obj_source.type == 'transform':
-
-		print('\n')
-		Constraint.info('\nThis is between [ {1} ] and [ {0} ]'.format(obj_target.type, obj_source.type))
-		print('\n')
-
-		#... Add compose matrix for get offset orientation
-		# target_composeMat = core.ComposeMatrix(target)
-		#... Update more arttr for case joint(freezed) is parent grp is child
-		# obj_target.attr('rotate') >> target_composeMat.attr('inputRotate')
-		# obj_target.attr('rotate') // target_composeMat.attr('inputRotate')
-		# target_composeMat.attr('outputMatrix') >> multMatrix.attr('matrixIn[1]')
-		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')		
-
-	else:
-		Constraint.info("\nThis is maybe something I don't know.")
-		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
-		
-		
-	#... Connect the rest
-	target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
-	decomposeMatrix.attr('outputQuat') >> target_quatProd.attr('input1Quat')
-		
-	target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')	
-	target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
-
-
-	#... Force the rotateOrder of target to the same as source
-	# rotOrder = mc.getAttr( target + '.rotateOrder' )
-
-	Constraint.info(type(source))
-	source_rotOrder = mc.getAttr( str(source) + '.rotateOrder' )
-	obj_target.attr('rotateOrder').value = source_rotOrder
-
-	#target_quatToEuler.attr('inputRotateOrder').value = source_rotOrder
-
-	# mc.setAttr( obj_target + '.rotateOrder' )
-
-	#... can't remember why put this.
-	#... Assign value by manual(not use now)
-	'''
-	allChanel = ['X','Y','Z','W']
-	for chanel in allChanel:
-		target_quatInvert.attr('outputQuat.outputQuatX').value
-		quaVar = mc.getAttr( target_quatInvert.name + '.outputQuat.outputQuat' + chanel )
-		mc.setAttr( target_quatProd.name + '.input2Quat.input2Quat' + chanel, quaVar)
-	 
-	'''
-
-
-	target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
-	#return target_quatToEuler
-
-	#... Connnect rotate order from target to quat to euler 
-	obj_target.attr('rotateOrder') >> target_quatToEuler.attr('inputRotateOrder')
-	# END HERE
-
-
-	obj_source.attr('worldMatrix[0]') >> multMatrix.attr('matrixIn[2]')
-
-	#... Insert pickmatrix for make it more option
-
-	pickMatrix = core.PickMatrix(base_name)
-
-	multMatrix.attr('matrixSum') >> pickMatrix.attr('inputMatrix')
-	pickMatrix.attr('outputMatrix') >> decomposeMatrix.attr('inputMatrix')
-
-	#... (backup)
-	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
-
-
-	#... END OF ROTATE CONNECTION
-
-
-
-	#...Find out Origin Parent
-	if mc.pickWalk( target , d = 'up')[0] == target:
-		logger.MayaLogger.info("I'm World Already")
-	elif mc.pickWalk( target, d = 'up')[0] != target:
-		world = mc.pickWalk( target, d = 'up')[0]
-		Constraint.warning('Warning .matrixIn[2] may occupire. consider to fix it.')
-		if mc.listConnections(multMatrix.name + '.matrixIn[2]')[0]:
-			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[3]' )
-		else:
-			mc.connectAttr( world + '.worldInverseMatrix[0]', multMatrix.name + '.matrixIn[2]' )
-
-
-	# multMatrix.attr('matrixSum') >> decomposeMatrix.attr('inputMatrix')
-	# mc.connectAttr( multMatrix + '.matrixSum', decomposeMatrix + '.inputMatrix' )
-
-	#... Connect TS
-	if translate == True:
-		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
-		# mc.connectAttr( decomposeMatrix + '.outputTranslate', tgt + '.translate')
-	if scale == True:
-		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
-		# mc.connectAttr( decomposeMatrix + '.outputScale', tgt + '.scale')
-
-	#... Clear Node (Cause error I dunno why)
-	target_quatInvert.attr('outputQuat') // target_quatProd.attr('input2Quat')
-	target_eulerToQuat.deleteName()
-	#target_quatInvert.deleteName()
-
-
-
-	decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
-	target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
-
-
-	#... Connect message for incase want to delete
-	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_deComp')
-	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
-	# mc.listConnections( obj_target.name + '.' + 'm_deComp')[0]
-	# mc.listConnections( obj_target.name + '.' + 'm_quatToEuler')[0]
-
-
-
-
-	#... still not work disable for now
-	#... link variable to Network node
-	# parentConMatrix_meta = core.MetaGeneric('matCon')
-	 
-	# mc.select(target, r=True)
-	
-	# meta_node = core.MetaGeneric(obj_source.name)
-
-	# #... connect message
-	# obj_target.attr('message') >> meta_node.attr('Rig_Prior')
-	# meta_node.attr('Base_Name').value = obj_target.name
-	# meta_node.attr('Side').value = 'None'
-	
-	# meta_node.addAttribute( dataType = 'string' , longName = 'node')
-	# meta_node.attr('node').value = f'{decomposeMatrix},{target_quatToEuler},{multMatrix}'
-
-	# meta_node.addAttribute( dataType = 'string' , longName = 'Target')
-	# meta_node.addAttribute( dataType = 'string' , longName = 'Source')
-	# meta_node.attr('Target').value = obj_target.name
-	# meta_node.attr('Source').value = obj_source.name
-
-	mc.select(target, r=True)
-
-	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
-	return obj_target, obj_source
-
-
-#... for delete
-'''
-mc.delete(mc.listConnections( obj_target.name + '.' + 'm_deComp')[0])
-'''
 
 
 #... delete martix node by selection the target

@@ -1753,10 +1753,26 @@ class PointMatrixMult(Node):
 # It will cause maya crash when instanceing i dunno why
 # Because of you insert self as args so it init arg and recusive
 
+
+
 class SkinCluster( Node ):
 	""" skinCluster Node Object """
 	def __init__( self , *args , **kwargs):
+		# Init Node with the result of mc.skinCluster command
 		Node.__init__(self , mc.skinCluster( *args , **kwargs )[0] )
+
+	def setWeight(self, item, transformValue):
+		"""
+		Set skin percent weight for specific component.
+		
+		Args:
+			item (str): Full component path (e.g., 'pPlane1.vtx[10]')
+			transformValue (list): List of tuples [(joint, value), ...]
+		"""
+		mc.skinPercent(self.name, item, transformValue=transformValue)
+		# Optional: Log info for debugging
+		CoreLogger.info('Set weight for {} on {}'.format(item, self.name))
+		# print('Set weight for {} on {}'.format(item, self.name))
 
 
 

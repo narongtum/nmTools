@@ -1473,10 +1473,7 @@ class MultiplyDivine ( Node ):
 '''
 
 
-class MultiplyDivine ( Node ):
-	'''  create MultiplyDivine object  '''
-	def __init__( self , name ):
-		Node.__init__( self , mc.createNode('multiplyDivide', name = name) )
+
 
 
 
@@ -1519,6 +1516,12 @@ class BlendShape( Node ):
 # blendshape_node.attr('pSphere2').value = 0
 
 
+class MultiplyDivine ( Node ):
+	'''  create MultiplyDivine object  '''
+	def __init__( self , name , operation = 0 ):
+		Node.__init__( self , mc.createNode('multiplyDivide', name = name) )
+		self.attr('operation').value = operation
+		self.suffix
 
 class MultiplyDivineWithVal ( Node ):
 	'''  create MultiplyDivine object  with regsinate operator '''
@@ -1824,10 +1827,6 @@ class MotionPath( Node ):
 
 
 
-class MultiplyDivide( Node ):
-	def __init__( self, name ):
-		Node.__init__( self , mc.createNode( 'multiplyDivide' , name = name) )
-		self.suffix
 
 
 

@@ -1,4 +1,6 @@
 '''
+#... NOT SURE IS IS CAN SCALABLE CONTROLLER PLEASE CHECK
+
 #.... This is for test of matrix concept
 from function.rigging.constraint import parentMatrixGPT as mtG
 reload(mtG)

@@ -55,6 +55,12 @@ def createMasterGrp(nameSpace='', charScale=1.0, PROJECT_DICT={}):
 	ctrlStill_grp = core.Null('ctrlStill_grp')
 	ctrlStill_grp.lockAllAttr(attrs=['t', 'r', 's', 'v']) # Lock and hide T, R, S, V attributes
 	ctrlStill_grp.parent(noTouch_grp)
+
+	# ... Group for objects constrained by matrix nodes
+	jntlStill_grp = core.Null('jntStill_grp')
+	jntlStill_grp.lockAllAttr(attrs=['t', 'r', 's', 'v']) # Lock and hide T, R, S, V attributes
+	jntlStill_grp.parent(noTouch_grp)
+
 	
 	# ... Group for snap functionality
 	snapNull_grp = core.Null('snapNull_grp')

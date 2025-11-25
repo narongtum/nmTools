@@ -519,8 +519,9 @@ def list_joints_from_skincluster(skincluster):
 	return jnts
 
 
-
-
+'''
+return_name = core.check_name_style(name = 'spine01_L02_ply')
+'''
 #... Latest here using this function only
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... check input

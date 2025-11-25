@@ -69,7 +69,8 @@ sel = mc.ls(sl=True)
 mtc.del_selected_matrix(selected = sel)
 '''
 
-def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, scale=True):
+#... polish with GPT but not sure there will having issue
+def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True):
 	if not source:
 		print('Source is not selected.')
 		return False
@@ -79,7 +80,13 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 	# -----------------------------------------------------------------
 	obj_target = core.Dag(target)  # target dag wrapper
 	obj_source = core.Dag(source)  # source dag wrapper
+
 	base_name = core.check_name_style(name=target)[0]
+
+	if nameSpace != None:
+		base_name = f"{nameSpace}{base_name.capitalize()}"
+		
+
 
 	# -----------------------------------------------------------------
 	# 02. Compute local offset (use LEGACY version, not GPT version)
@@ -208,8 +215,10 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 	if translate:
 		decomposeMatrix.attr('outputTranslate') >> obj_target.attr('translate')
 
-	if scale:
+	if scale == True:
 		decomposeMatrix.attr('outputScale') >> obj_target.attr('scale')
+
+
 
 	# -----------------------------------------------------------------
 	# 09. Optional cleanup and message links (same as legacy)
@@ -239,7 +248,7 @@ def parentConMatrixGPT(source, target, mo=True, translate=True, rotate=True, sca
 
 
 
-#... parant constraint using matrix use this Mainly	
+#... parant constraint write by me, is more stable,using matrix use this Mainly	
 def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
 	if not source:

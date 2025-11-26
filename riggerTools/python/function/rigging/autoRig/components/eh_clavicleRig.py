@@ -37,29 +37,58 @@ def createClavicleRig(
 		tmpJnt='clavLFT_tmpJnt',
 		charScale=1.0
 	):
+	
 
-	# --- 1. Header & Naming Setup ---
-	# Extract base name
-	raw_name = core.check_name_style(tmpJnt)[0] # Get 'clavLFT'
-	base_name = raw_name.replace(side, '') # Get 'clav'
-	
-	partName = base_name
+
+
+
+
+	#... check naming style
+	if core.check_name_style(tmpJnt)[3] == True: #... naming 'LFT' or 'RGT'
+		base_name = core.check_name_style(tmpJnt)[4] # Get 'clav'
+		# Determine Color
+		ctrl_color = 'red' if side == 'LFT' else 'blue'
+		name_style = 'sideFollow'
+	else:
+		name_style = 'capitalLead'
+		ctrl_color = 'L' if side == 'LFT' else 'R'
+
 	if nameSpace:
-		partName = f"{nameSpace}{partName.capitalize()}"
-	
+		partName = f"{nameSpace}{base_name.capitalize()}"
+	else:
+		partName = base_name
+
+
+
 	core.makeHeader(f'Start of {partName}{side} Rig')
 	
-	# Determine Color
-	ctrl_color = 'red' if side == 'LFT' else 'blue'
+
 	
+
+	#... clariy naming style
+	if name_style == 'sideFollow':
+		base_final_name = f'{partName}{side}'
+		label_side = 1 if side == 'LFT' else 2
+		ctrl_shape = f'shoulder{side}_FK_ctrlShape'
+
+	elif name_style == 'capitalLead':
+		base_final_name = f'{side}_{partName}'
+		label_side = 1 if side == 'L' else 2
+		ctrl_shape = f'{side}_shoulder_FK_ctrlShape'
+
+
+
+
 	
 	# --- 2. Create Main Group ---
-	clavRig_grp = core.Null(f'{partName}Rig{side}_grp')
-	
+	clavRig_grp = core.Null(f'{base_final_name}_grp')
+
+
+
 	# Parent/Constrain Rig Group to Prior Joint
 	if mc.objExists(priorJnt):
 		clavRigGrp_cons = core.parentConstraint(priorJnt, clavRig_grp)
-		clavRigGrp_cons.name = f'{partName}Rig{side}Grp_parCons'
+		clavRigGrp_cons.name = f'{base_final_name}Grp_parCons'
 	else:
 		ClavicleRigLogger.warning(f"Prior Joint '{priorJnt}' not found. Clavicle group will not follow spine.")
 
@@ -71,10 +100,10 @@ def createClavicleRig(
 
 	# Create Bind Joint (Using rigTools for jointAt logic)
 	clav_bJnt = rigTools.jointAt(tmpJnt)
-	clav_bJnt.name = f'{partName}{side}_bJnt'
+	clav_bJnt.name = f'{base_final_name}_bJnt'
 	
 	# Set Label
-	label_side = 1 if side == 'LFT' else 2
+
 	clav_bJnt.attr('side').value = label_side
 	clav_bJnt.attr('type').value = 18 # Collar
 	
@@ -87,7 +116,7 @@ def createClavicleRig(
 
 
 	# --- 4. Controller Creation (Using eh_controller) ---
-	ctrl_shape = f'shoulder{side}_FK_ctrlShape'
+	
 	
 	# [UPDATE] Using eh_adjust.create
 	clav_zro, clav_ctrl, clav_gmbl = eh_adjust.create(

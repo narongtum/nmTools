@@ -2084,7 +2084,9 @@ class Attribute( object ) :
 	# ikCtrlDist = stick_ctrl.attr('regionnair').value
 	# set value
 
-
+	def getExists( self ):
+		return mc.objExists(self.name)
+		exists = property( getExists , None , None , None)
 
 
 

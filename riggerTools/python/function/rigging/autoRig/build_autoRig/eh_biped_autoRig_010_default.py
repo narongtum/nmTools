@@ -30,6 +30,9 @@ reload(rootRig)
 from function.rigging.autoRig.components import eh_hipRig as hipRig
 reload(hipRig)
 
+from function.rigging.autoRig.components import eh_ikfkSpineRig as ikfkSpineRig
+reload(ikfkSpineRig)
+
 #... Declare some global variables
 nameSpace = '' 
 ribbon = False
@@ -43,8 +46,6 @@ povShape = 'sphereAxis'
 # = = = = = Check charactor hight  = = = = = #
 charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
 
-charScale = 1
-
 # = = = = = 01 Create main Controller = = = = = #
 rootRig.createMasterGrp(	charScale = charScale 	)
 
@@ -52,20 +53,20 @@ rootRig.createMasterGrp(	charScale = charScale 	)
 # = = = = = 02 Create hipRig = = = = = #
 hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace , 
 				ctrl_grp = 'ctrl_grp'  , tmpJnt = ( 'cog_tmpJnt','hip_tmpJnt' ) , 
-				charScale = charScale, cogPivot = True   )
+				charScale = charScale)
 
 
-from function.rigging.autoRig.bodyRig import spineIKRig
-reload(spineIKRig)
 
-topSpine_bJnt = spineIKRig.spineHybridIK(
-				nameSpace = '' 		,
-				parentTo = 'ctrl_grp' 						,		
-				tmpJnt = (		'spine01_tmpJnt' 			,
-								'spine02_tmpJnt' 			,
-								'spine03_tmpJnt' 			,
-								'spine04_tmpJnt'			),
-				priorCtrl = 'cog_gmbCtrl'					,
-				priorJnt = hip_bJnt						,				
-				charScale = charScale								,							
-				linkRotOrder = True							)
+spine_bJnt = ikfkSpineRig.createIkFkSpineRig(
+		nameSpace=nameSpace,
+		parentTo='ctrl_grp',
+		priorJnt=hip_bJnt,
+		priorCtrl='cog_gmbCtrl',
+		hipCtrl = 'hip_gmbCtrl',
+		charScale=charScale,
+		# Specific Arguments for this method
+		polyplane_L02='spine01_L02_ply',
+		placement_ctrl='Placement_ctrl', # Needed for Global Scale Logic
+		tmpJnt=['lwrSpine_tmpJnt', 'spineBtw01_tmpJnt', 'spineBtw02_tmpJnt', 'uprSpine_tmpJnt'],
+		# Constants
+		rotateOrder = 'zxy')

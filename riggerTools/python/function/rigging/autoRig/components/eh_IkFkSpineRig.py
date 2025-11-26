@@ -1,304 +1,377 @@
 # -*- coding: utf-8 -*-
 """
-This module is create spine IK hybride with FK  
-source : nomanTools/21.03.Mar.29.Mon_ikSpinePart2
-UPDATED: to use zroNewGrpWithOffset and matrixConstraint
+Module: eh_ikfkSpineRig
+Description: Spine Rig generator using 4-joint method with Squash & Stretch, 
+			 Volume Preservation, and Proxy Mesh Skinning.
 """
 
+import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload
 
-import maya.cmds as mc
-
-# --- Import Core Modules ---
+# --- Import Dependencies (Using Original Core/RigTools as requested) ---
 from function.rigging.autoRig.base import core
 reload(core)
 
-# --- Import ENHANCED rigTools ---
-from function.rigging.autoRig.base import eh_rigTools as rigTools
-reload(rigTools)
+from function.rigging.controllerBox import adjustController as adjust
+reload(adjust)
 
-# --- Import Matrix Constraint ---
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
-from function.pipeline import logger 
+from function.rigging.constraint import pin_locator_polygon as plp
+reload(plp)
+
+from function.pipeline import logger
 reload(logger)
 
-class spineHybridLog(logger.MayaLogger):
-	LOGGER_NAME = "SpineIKRig"
+class IkFkSpineLogger(logger.MayaLogger):
+	LOGGER_NAME = "IkFkSpineLogger"
 
-def spineHybridIK(
-				nameSpace = '' 		,
-				# --- FIX 3: Inputs are now objects ---
-				parentTo_grp = None 						,		
-				tmpJnt = (		'spine01_tmpJnt' 			,
-								'spine02_tmpJnt' 			,
-								'spine03_tmpJnt' 			,
-								'spine04_tmpJnt'			),
-				prior_ctrl = None					, # Was 'cog_gmbCtrl'
-				prior_jnt = None					, # Was 'hip_bJnt'				
-				charScale = 1.0								,							
-				linkRotOrder = True							,
-				rotateOrder = 'yzx'								):
+def createIkFkSpineRig(
+		nameSpace='',
+		parentTo='ctrl_grp',
+		priorJnt='hip_bJnt',
+		priorCtrl='cog_gmbCtrl',
+		hipCtrl = 'hip_gmbCtrl',
+		charScale=1.0,
+		# Specific Arguments for this method
+		polyplane_L02='spine01_L02_ply',
+		placement_ctrl='Placement_ctrl', # Needed for Global Scale Logic
+		tmpJnt=['lwrSpine_tmpJnt', 'spineBtw01_tmpJnt', 'spineBtw02_tmpJnt', 'uprSpine_tmpJnt'],
+		vtx_ids=['11', '10', '9', '8'], # Order: Bottom to Top
+		# Constants
+		rotateOrder = 'zxy',
+		primary_ctrl_shape = 'cube_ctrlShape',
+		secondary_ctrl_shape = 'ring_ctrlShape',
+		between_ctrl_shape = 'circle_ctrlShape'
+	):
 
-	# --- Validate Inputs ---
-	if not parentTo_grp or not prior_ctrl or not prior_jnt:
-		mc.error("spineHybridIK: Missing critical object inputs (parentTo_grp, prior_ctrl, prior_jnt).")
-		return None
-
-	core.makeHeader('Create spineHybridIK Rig')
-
+	# --- 1. Header & Naming Setup ---
 	partName = 'spine'
 	if nameSpace:
-		partName = nameSpace + partName.capitalize()
+		partName = f"{nameSpace}{partName.capitalize()}"
+		
+	core.makeHeader(f'Start of {partName} Rig')
 
-	spine1 = core.Dag( tmpJnt[ 0 ] )
-	spine2 = core.Dag( tmpJnt[ 1 ] )
-	spine3 = core.Dag( tmpJnt[ 2 ] )
-	spine4 = core.Dag( tmpJnt[ 3 ] )
-
-	# Create joint at each spine
-	spine1_bJnt = rigTools.jointAt( spine1 )
-	spine2_bJnt = rigTools.jointAt( spine2 )
-	spine3_bJnt = rigTools.jointAt( spine3 )
-	spine4_bJnt = rigTools.jointAt( spine4 )
-
-	# Parent each 
-	spine4_bJnt.parent( spine3_bJnt )
-	spine3_bJnt.parent( spine2_bJnt )
-	spine2_bJnt.parent( spine1_bJnt )
-
-	# Naming 
-	spine1_bJnt.name = nameSpace + 'spine' + '01' + '_bJnt'
-	spine2_bJnt.name = nameSpace + 'spine' + '02' + '_bJnt'
-	spine3_bJnt.name = nameSpace + 'spine' + '03' + '_bJnt'
-	spine4_bJnt.name = nameSpace + 'spine' + '04' + '_bJnt'
-
-	# freeze
-	spine1_bJnt.freeze()
-	spine2_bJnt.freeze()
-	spine3_bJnt.freeze()
-	spine4_bJnt.freeze()
-
-	# joint label
-	spine1_bJnt.setLable('CEN','spine')
-	spine2_bJnt.setLable('CEN','spine')
-	spine3_bJnt.setLable('CEN','spine')
-	spine4_bJnt.setLable('CEN','spine')
-
-	start_jnt = spine1_bJnt.name
-	end_jnt = spine4_bJnt.name
-	partName = 'spineIK'
-	if nameSpace:
-		partName = nameSpace + partName.capitalize()
-
-	# create spine ik
-	oSpine_ik = core.DoIk(startJoint = start_jnt , endEffector = end_jnt ,solverType = 'ikSplineSolver'  , parentCurve = False)
-	oSpine_ik.name = partName + '_ikh'
-	oSpine_ik.crv = partName + '_crv'
-
-	# create joint top 
-	upr_pxyJnt = core.Joint(partName + 'Upr' +'_pxyJnt')
-	upr_pxyJnt.setLable('CEN','none')
-	upr_pxyJnt.attr('segmentScaleCompensate').value = 0
-	upr_pxyJnt.attr('rotateOrder').value = 1 # 'yzx'
-
-	# create joint  bottom
-	lwr_pxyJnt = core.Joint(partName + 'Lwr' +'_pxyJnt')
-	lwr_pxyJnt.setLable('CEN','none')
-	lwr_pxyJnt.attr('rotateOrder').value = 1 # 'yzx'
-	lwr_pxyJnt.attr('segmentScaleCompensate').value = 0
-
-	# snap position
-	upr_pxyJnt.snapPoint(spine4_bJnt)
-	lwr_pxyJnt.snapPoint(spine1_bJnt)
-
-	# skin it with spine IK curve
-	core.SkinCluster( upr_pxyJnt.name , lwr_pxyJnt.name , oSpine_ik.crv , maximumInfluences = 2 , name = partName + '_skc')
-
-	# Upr
-	spineUpr_ctrl = core.Dag( partName + 'Upr' + '_ctrl' )
-	spineUpr_ctrl.nmCreateController('cube_ctrlShape')
-	spineUpr_ctrl.editCtrlShape( axis = charScale * 4.0 )
+	# --- Validation ---
+	# Construct full mesh name with namespace if needed
+	full_polyplane = f'{nameSpace}{polyplane_L02}' if nameSpace else polyplane_L02
 	
-	# --- FIX 1: Use zroNewGrpWithOffset ---
-	spineUprZro_grp, spineUprOffset_grp = rigTools.zroNewGrpWithOffset( spineUpr_ctrl )
-	spineUprZro_grp.name = partName + 'Upr' + 'Zro_grp'
+	if not mc.objExists(full_polyplane):
+		IkFkSpineLogger.error(f'Proxy poly plane "{full_polyplane}" not found. Cannot proceed.')
+		return None
+
+	if not mc.objExists(placement_ctrl):
+		# Fallback search with namespace
+		if nameSpace and mc.objExists(f'{nameSpace}{placement_ctrl}'):
+			placement_ctrl = f'{nameSpace}{placement_ctrl}'
+		else:
+			IkFkSpineLogger.warning(f'Placement Ctrl "{placement_ctrl}" not found. Global Scale feature might fail.')
+
+
+	# --- 2. Create Main Group ---
+	spineRig_grp = core.Null(f'{partName}Rig_grp')
+
+	# Internal lists
+	spine_jnt_list = []
+	spine_ctrl_list = []
+	bind_jnt_list = []
 	
-	spineUpr_ctrl.color = 'softBlue'
-	spineUpr_ctrl.rotateOrder = rotateOrder
-	spineUprGmbl_ctrl = core.createGimbal( spineUpr_ctrl )
-	spineUprZro_grp.matchPosition( upr_pxyJnt )
+
 	
-	# --- FIX 2: Use Matrix Constraint ---
-	mtc.parentConMatrix( source=spineUprGmbl_ctrl, target=upr_pxyJnt, mo=True )
-
-	# Lower
-	spineLwr_ctrl = core.Dag( partName + 'Lwr' + '_ctrl' )
-	spineLwr_ctrl.nmCreateController('cube_ctrlShape')
-	spineLwr_ctrl.editCtrlShape( axis = charScale * 3.5 )
-
-	# --- FIX 1: Use zroNewGrpWithOffset ---
-	spineLwrZro_grp, spineLwrOffset_grp = rigTools.zroNewGrpWithOffset( spineLwr_ctrl )
-	spineLwrZro_grp.name = partName + 'Lwr' + 'Zro_grp'
 	
-	spineLwr_ctrl.color = 'softBlue'
-	spineLwr_ctrl.rotateOrder = rotateOrder
-	spineLwrGmbl_ctrl = core.createGimbal( spineLwr_ctrl )
-	spineLwrZro_grp.matchPosition( lwr_pxyJnt )
-
-	# --- FIX 2: Use Matrix Constraint ---
-	mtc.parentConMatrix( source=spineLwrGmbl_ctrl, target=lwr_pxyJnt, mo=True )
-
-	# ... (IK Twist setup remains the same) ...
-	ik_handle = core.Dag(oSpine_ik.name)
-	ik_handle.attr('dTwistControlEnable').value = 1
-	ik_handle.attr('dForwardAxis').value = 2
-	ik_handle.attr('dWorldUpAxis').value = 4
-	upUpr_loc = core.Locator( partName + 'Upr' + '_loc' )
-	upUpr_loc.snapPoint(spineUpr_ctrl)
-	upUpr_loc.moveObj([0, 0, 12.5*charScale])
-	upUpr_loc.parent(spineUprGmbl_ctrl)
-	upUpr_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz','v')
-	upLwr_loc = core.Locator( partName + 'Lwr' + '_loc' )
-	upLwr_loc.snapPoint(spineLwr_ctrl)
-	upLwr_loc.moveObj([0, 0, 12.5*charScale])
-	upLwr_loc.parent(spineLwrGmbl_ctrl)
-	upLwr_loc.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz','v')
-	ik_handle.attr('dWorldUpType').value = 2
-	mc.connectAttr(upLwr_loc.name + '.worldMatrix[0]' , oSpine_ik.name + '.dWorldUpMatrix')
-	mc.connectAttr(upUpr_loc.name + '.worldMatrix[0]' , oSpine_ik.name + '.dWorldUpMatrixEnd')
-
-	# Create FK joints
-	spine1_fkJnt = rigTools.jointAt( spine1 )
-	spine2_fkJnt = rigTools.jointAt( spine2 )
-	spine3_fkJnt = rigTools.jointAt( spine3 )
-	spine4_fkJnt = rigTools.jointAt( spine4 )
-
-	spine1_fkJnt.name = nameSpace + 'spine' + '01' + '_fkJnt'
-	spine2_fkJnt.name = nameSpace + 'spine' + '02' + '_fkJnt'
-	spine3_fkJnt.name = nameSpace + 'spine' + '03' + '_fkJnt'
-	spine4_fkJnt.name = nameSpace + 'spine' + '04' + '_fkJnt'
-
-	spine1_fkJnt.rotateOrder = rotateOrder
-	spine2_fkJnt.rotateOrder = rotateOrder
-	spine3_fkJnt.rotateOrder = rotateOrder
-	spine4_fkJnt.rotateOrder = rotateOrder
-
-	spine4_fkJnt.parent( spine3_fkJnt )
-	spine3_fkJnt.parent( spine2_fkJnt )
-	spine2_fkJnt.parent( spine1_fkJnt )
+	# --- 3. Joints & Controllers Creation ---
 	
-	spine1_fkJnt.attr('v').value = 0 # Hide FK chain
+	# Loop create joints/ctrls based on vertex/temp joint input
+	for num, vtx_idx in enumerate(vtx_ids):
+		
+		# 3.1 Naming
+		raw_name = core.check_name_style(tmpJnt[num])[0]
+		# Handle namespace for new objects
+		full_name = f'{nameSpace}{raw_name}' if nameSpace else raw_name
+		
+		# 3.2 Create Joints (Using Snap to Temp Joint instead of Vertex Pos for safer rotation)
+		temp_jnt_name = f'{nameSpace}{tmpJnt[num]}' if nameSpace else tmpJnt[num]
+		
+		if not mc.objExists(temp_jnt_name):
+			 IkFkSpineLogger.error(f'Temp Joint "{temp_jnt_name}" not found.')
+			 return None
 
-	# --- FIX 2: Use Matrix Constraint (FK Jnts -> IK Ctrl Zro Grps) ---
-	mtc.parentConMatrix( source=spine1_fkJnt, target=spineLwrZro_grp, mo=True )
-	mtc.parentConMatrix( source=spine4_fkJnt, target=spineUprZro_grp, mo=True )
+		temp_jnt_obj = core.Dag(temp_jnt_name)
 
-	# fk spine 02
-	spineFk02_ctrl = core.Dag( partName + '02' + 'Fk' + '_ctrl' )
-	spineFk02_ctrl.nmCreateController('circle_ctrlShape')
-	spineFk02_ctrl.editCtrlShape( axis = charScale * 1.6 )
+		# Create Bind Joint
+		bind_jnt = core.Joint(name=f'{full_name}_bJnt')
+		bind_jnt.snap(temp_jnt_obj)
+		bind_jnt.setRotationOrder(rotateOrder)
+		bind_jnt.setLable('CEN', 'spine')
+		bind_jnt_list.append(bind_jnt)
+
+		# Create Rig Joint
+		rig_jnt = core.Joint(name=f'{full_name}_jnt')
+		rig_jnt.snap(temp_jnt_obj)
+		rig_jnt.attr('radius').value = 2.0
+		rig_jnt.setRotationOrder(rotateOrder)
+		spine_jnt_list.append(rig_jnt)
+
+		# 3.3 Determine Control Shape
+		if num == 0:
+			ctrlShape = secondary_ctrl_shape
+		elif num == 1 or num == 2:
+			ctrlShape = between_ctrl_shape
+		elif num == 3:
+			ctrlShape = primary_ctrl_shape
+
+		# 3.4 Create Controller
+		# Using adjust.creControllerFunc as requested (returns list of strings: [zro, ctrl, gmbl])
+		ctrl_objs = adjust.creControllerFunc(
+			selected=[rig_jnt.name], 
+			scale=charScale * 15, 
+			ctrlShape=ctrlShape, 
+			color='yellow', 
+			constraint=True, 
+			matrixConst=True, 
+			mo=False, 
+			translate=True, 
+			rotate=True, 
+			scaleConstraint=False, 
+			rotateOrder=rotateOrder, 
+			parentUnder=False
+		)
+		
+		# Add Rotation Order Enum (Pattern Requirement)
+		ctrl_node = core.Dag(ctrl_objs[1])
+		ctrl_node.addRotEnum()
+
+		spine_ctrl_list.append(ctrl_objs)
+
+
+	# --- 4. Hierarchy Setup ---
 	
-	# --- FIX 1: Use zroNewGrpWithOffset ---
-	spineFk02Zro_grp, spineFk02Offset_grp = rigTools.zroNewGrpWithOffset( spineFk02_ctrl )
-	spineFk02Zro_grp.name = partName + '02' + 'Fk' + 'Zro_grp'
+	# 4.1 Parent Bind Joints
+	for num, each in enumerate(bind_jnt_list):
+		if num != 0:
+			each.parent(bind_jnt_list[num-1])
+		else:
+			if priorJnt and mc.objExists(priorJnt):
+				each.parent(priorJnt)
 
-	spineFk02_ctrl.color = 'softBlue'
-	spineFk02_ctrl.rotateOrder = rotateOrder
-	spineFk02Gmbl_ctrl = core.createGimbal( spineFk02_ctrl )
-	spineFk02Zro_grp.matchPosition( spine2_fkJnt )
 	
-	# --- FIX 2: Use Matrix Constraint ---
-	mtc.parentConMatrix( source=spineFk02Gmbl_ctrl, target=spine2_fkJnt, mo=True )
-
-	# fk spine 03
-	spineFk03_ctrl = core.Dag( partName + '03' + 'Fk' + '_ctrl' )
-	spineFk03_ctrl.nmCreateController('circle_ctrlShape')
-	spineFk03_ctrl.editCtrlShape( axis = charScale * 1.65 )
-
-	# --- FIX 1: Use zroNewGrpWithOffset ---
-	spineFk03Zro_grp, spineFk03Offset_grp = rigTools.zroNewGrpWithOffset( spineFk03_ctrl )
-	spineFk03Zro_grp.name = partName + '03' + 'Fk' + 'Zro_grp'
-
-	spineFk03_ctrl.color = 'softBlue'
-	spineFk03_ctrl.rotateOrder = rotateOrder
-	spineFk03Gmbl_ctrl = core.createGimbal( spineFk03_ctrl )
-	spineFk03Zro_grp.matchPosition( spine3_fkJnt )
-
-	# --- FIX 2: Use Matrix Constraint (Corrected target to spine3_fkJnt) ---
-	# Original code had a bug linking to spine2_fkJnt
-	mtc.parentConMatrix( source=spineFk03Gmbl_ctrl, target=spine3_fkJnt, mo=True )
-
-	# parent fk spine03 to fk spine02
-	spineFk03Zro_grp.parent(spineFk02Gmbl_ctrl)
-
-	# ... (Squash & Stretch logic remains the same) ...
-	# ... (Note: This logic is hardcoded to 3 joints and names)
-	curveInfo = core.CurveInfo( partName + 'CurveInfo')
-	spine_crv = core.Dag(partName + '_crv')
-	divider = 3 
-	for num in range(1,4):
-		spStretch_mdv = core.MultiplyDivineWithVal(partName + 'SpStretch%02d' %num, 2)
-		spStretch_mdv.attr('input2X').value = divider
-		spineUpr_ctrl.attr('translateY') >> spStretch_mdv.attr('input1X')
-		spStretchDef_add = core.AddDoubleLinear(partName + 'SpStretchDef%02d' %num )
-		spStretchDef_add.suffix
-		defaultVal = mc.getAttr('spine%02d_bJnt' %num + '.translateY')
-		spStretchDef_add.attr('input2').value = defaultVal
-		spStretch_mdv.attr('outputX') >> spStretchDef_add.attr('input1')
-		mc.connectAttr(spStretchDef_add.name + '.output' , 'spine%02d_bJnt.translateY' %num)
-
-	# --- FIX 3: Use Object Inputs for Parenting ---
-	spine1_bJnt.parent(prior_jnt) # Was priorJnt (string)
-
-	spineIK_grp = core.Null(partName + 'Rig_grp')
-
-	# parent local grp
-	spineFk02Zro_grp.parent(spineIK_grp)
-	spine1_fkJnt.parent(spineIK_grp)
-	spineUprZro_grp.parent(spineIK_grp)
-	spineLwrZro_grp.parent(spineIK_grp)
-
-	mc.setAttr(spine_crv.name + '.' + 'inheritsTransform' , 0)
-	spine_crv.parent(spineIK_grp)
-
-	# --- FIX 2 & 3: Use Matrix Constraint and Object Input ---
-	mtc.parentConMatrix( source=prior_ctrl, target=spineIK_grp, mo=True )
+	# --- 5. Skinning Proxy Mesh ---
 	
-	spineIK_grp.parent(parentTo_grp) # Was parentTo (string)
-
-	ik_handle.parent('ikh_grp')
-
-	spineJnt_grp = core.Null(partName + 'Jnt_grp')
-	upr_pxyJnt.parent(spineJnt_grp)
-	lwr_pxyJnt.parent(spineJnt_grp)
-	spineJnt_grp.parent('jnt_grp')
-
-	# hide visibility
-	spine_crv.attr('v').value = 0
-	spineJnt_grp.attr('v').value = 0
-	ik_handle.attr('v').value = 0
-
-	# add link rotate order
-	if linkRotOrder:
-		spineLwr_ctrl.addRotEnum()
-		spineLwrGmbl_ctrl.addRotEnum()
-		spineUpr_ctrl.addRotEnum()
-		spineUprGmbl_ctrl.addRotEnum()	
-		spineFk02_ctrl.addRotEnum()
-		spineFk02Gmbl_ctrl.addRotEnum()
-		spineFk03_ctrl.addRotEnum()
-		spineFk03Gmbl_ctrl.addRotEnum()
-
-	spineHybridLog.info('return: '+spine4_bJnt.name)
+	# Define Joints to bind (Head and Tail)
+	joints_to_bind = [spine_jnt_list[0], spine_jnt_list[3]]
 	
-	# --- FIX 3: Return Objects ---
-	return {
-		'jnt_start': spine1_bJnt,
-		'jnt_end': spine4_bJnt,
-		'ctrl_lwr': spineLwr_ctrl,
-		'ctrl_upr': spineUpr_ctrl,
-		'ctrl_fk02': spineFk02_ctrl,
-		'ctrl_fk03': spineFk03_ctrl
-	}
+	# Validation
+	vtx_set_01 = [4, 5, 10]
+	vtx_set_02 = [6, 7, 9]
+	all_required_vtx = vtx_set_01 + vtx_set_02
+	
+	for vtx_id in all_required_vtx:
+		vtx_check = '{}.vtx[{}]'.format(full_polyplane, vtx_id)
+		if not mc.objExists(vtx_check):
+			 IkFkSpineLogger.error(f'Mesh Topology Mismatch: Vertex "{vtx_check}" not found.')
+
+	# Create SkinCluster
+	try:
+		skin_cluster_obj = core.SkinCluster(
+			joints_to_bind, 
+			full_polyplane, 
+			toSelectedBones=True, 
+			bindMethod=0,         
+			skinMethod=0,          
+			normalizeWeights=1, 
+			maximumInfluences=2, 
+			name='{}_skinCluster'.format(full_polyplane)
+		)
+	except Exception as e:
+		IkFkSpineLogger.error(f'Failed to create SkinCluster: {e}')
+
+	# Assign Hard-coded Weights
+	weights_01 = [(spine_jnt_list[0].name, 0.666), (spine_jnt_list[3].name, 0.334)]
+	for vtx_id in vtx_set_01:
+		vtx_full_path = '{}.vtx[{}]'.format(full_polyplane, vtx_id)
+		skin_cluster_obj.setWeight(item=vtx_full_path, transformValue=weights_01)
+
+	weights_02 = [(spine_jnt_list[0].name, 0.334), (spine_jnt_list[3].name, 0.666)]
+	for vtx_id in vtx_set_02:
+		vtx_full_path = '{}.vtx[{}]'.format(full_polyplane, vtx_id)
+		skin_cluster_obj.setWeight(item=vtx_full_path, transformValue=weights_02)
+
+	IkFkSpineLogger.info('Skin weights assigned.')
+
+
+	# --- 6. Pin In-between Controllers ---
+	
+	inbetween_locs = plp.pin_locator_polygon(
+		poly_mesh=full_polyplane,
+		vtx_list=[10, 9], # Hardcoded based on provided logic
+		locator_scale=1.0,
+		side='',   
+		normalAxis='Z',
+		tangentAxis='Y'
+	)
+
+	# Parent Controllers to Locators
+	# spine_ctrl_list structure: [ [zro, ctrl, gmbl], ... ]
+	# Index 1 is In-between 01, Index 2 is In-between 02
+	# Inbetween locs: [loc_vtx10, loc_vtx9]
+	
+	# Note: Source script logic: 
+	# mc.parent(spine_ctrl_list[2][0], inbetween_loc[1]) -> Ctrl Index 2 to Loc Index 1 (Top mid)
+	# mc.parent(spine_ctrl_list[1][0], inbetween_loc[0]) -> Ctrl Index 1 to Loc Index 0 (Bottom mid)
+	
+	# Make objects for clean parenting
+	ctrl_mid_bot_zro = core.Dag(spine_ctrl_list[1][0])
+	ctrl_mid_top_zro = core.Dag(spine_ctrl_list[2][0])
+	
+	# plp returns list of strings
+	loc_mid_bot = core.Dag(inbetween_locs[0])
+	loc_mid_top = core.Dag(inbetween_locs[1])
+	
+	ctrl_mid_bot_zro.parent(loc_mid_bot)
+	ctrl_mid_top_zro.parent(loc_mid_top)
+
+
+	# --- 7. Squash & Stretch Logic ---
+
+	# Setup Naming
+	base_name = core.check_name_style(tmpJnt[1])[0]
+	base_name_space = f'{nameSpace}{base_name}'
+	
+	# Distance Node
+	distance = core.DistanceBetween(name=f'{base_name_space}_btw')
+
+	# Controllers for distance
+	inb01_ctrl = core.Dag(spine_ctrl_list[0][1]) # Bottom Ctrl
+	inb02_ctrl = core.Dag(spine_ctrl_list[3][1]) # Top Ctrl (Fixed index from 1 to 3 based on source list logic: 0=Bot, 3=Top)
+	
+	# Decompose Matrix
+	inb01_decom = core.DecomposeMatrix(f'{base_name_space}01WorldPosi')
+	inb02_decom = core.DecomposeMatrix(f'{base_name_space}02WorldPosi')
+
+	inb01_ctrl.attr('worldMatrix[0]') >> inb01_decom.attr('inputMatrix')
+	inb02_ctrl.attr('worldMatrix[0]') >> inb02_decom.attr('inputMatrix')
+
+	inb01_decom.attr('outputTranslate') >> distance.attr('point1')
+	inb02_decom.attr('outputTranslate') >> distance.attr('point2')
+
+	original_length = mc.getAttr(distance.name + '.distance')
+
+	# Global Scale Adjustment
+	place_ctrl = core.Dag(placement_ctrl)
+	global_scale_mdv = core.MultiplyDivine(f'{base_name_space}GlobalScale_mdv', operation=2)
+	distance.attr('distance') >> global_scale_mdv.attr('input1X')
+
+	# Prevent infinity scale
+	global_store_scale_pma = core.PlusMinusAverage(f'{base_name_space}StoreGlobalScale_pma')
+	place_ctrl.attr('scaleX') >> global_store_scale_pma.attr('input1D[0]')
+	place_ctrl.attr('scaleY') >> global_store_scale_pma.attr('input1D[1]')
+	place_ctrl.attr('scaleZ') >> global_store_scale_pma.attr('input1D[2]')
+
+	avg_value_mdv = core.MultiplyDivine(f'{base_name_space}AvgGlobalScale_mdv', operation=2)
+	avg_value_mdv.attr('input2X').value = 3
+	global_store_scale_pma.attr('output1D') >> avg_value_mdv.attr('input1X')
+	avg_value_mdv.attr('outputX') >> global_scale_mdv.attr('input2X')
+
+	# Stretch Factor
+	baseValue_mdv = core.MultiplyDivine(f'{base_name_space}BaseValue', operation=2)
+	global_scale_mdv.attr('outputX') >> baseValue_mdv.attr('input1X')
+	baseValue_mdv.attr('input2X').value = original_length
+
+	# Volume Preservation (1 / sqrt(Stretch))
+	squareRootValue_mdv = core.MultiplyDivine(f'{base_name_space}SquareRootValue', operation=3)
+	baseValue_mdv.attr('outputX') >> squareRootValue_mdv.attr('input1X')
+	squareRootValue_mdv.attr('input2X').value = 0.5
+
+	volume_preservation_mdv = core.MultiplyDivine(f'{base_name_space}oneDiv', operation=2)
+	volume_preservation_mdv.attr('input1X').value = 1
+	squareRootValue_mdv.attr('outputX') >> volume_preservation_mdv.attr('input2X')
+
+	# Clamp Value
+	value_clamp = core.Clamp(f'{base_name_space}ClampValue')
+	value_clamp.attr('minR').value = 0.001
+	value_clamp.attr('maxR').value = 100.00
+	volume_preservation_mdv.attr('outputX') >> value_clamp.attr('inputR')
+
+	# Connect to Mid Joints (Rig Joints)
+	# spine_jnt_list indices: 0=Bot, 1=MidBot, 2=MidTop, 3=Top
+	inb01_jnt = core.Dag(spine_jnt_list[1].name)
+	inb02_jnt = core.Dag(spine_jnt_list[2].name)
+
+	# Apply Volume Preservation
+	value_clamp.attr('outputR') >> inb01_jnt.attr('scaleX')
+	value_clamp.attr('outputR') >> inb02_jnt.attr('scaleX')
+	value_clamp.attr('outputR') >> inb01_jnt.attr('scaleZ')
+	value_clamp.attr('outputR') >> inb02_jnt.attr('scaleZ')
+
+	IkFkSpineLogger.info('Squash & Stretch Setup Complete.')
+
+
+	# --- 8. Connect Bind Joints to Rig Joints ---
+	
+	for num, each_bind in enumerate(bind_jnt_list):
+		# Using parentConMatrixGPT from mtc (matrixConstraint)
+		# Note: mtc.parentConMatrixGPT returns (obj_target, obj_source)
+		# We need to ensure we pass names or objects correctly
+		mtc.parentConMatrixGPT(
+			spine_jnt_list[num].name, 
+			each_bind.name,
+			nameSpace = 'pairBJnt_', 
+			mo=True, 
+			translate=True, 
+			rotate=True, 
+			scale=True
+		)
+
+
+	# --- 9. Final Organization ---
+
+	# Position Main Group
+	spineRig_grp.matchPosition(bind_jnt_list[0])
+	spineRig_grp.matchRotation(bind_jnt_list[0])
+
+	# Parent Main Group
+	if parentTo and mc.objExists(parentTo):
+		parent_obj = core.Dag(parentTo)
+		spineRig_grp.parent(parent_obj)
+
+	#... Parent Controllers to hip controller grp for make hip move more natheral
+	#... Lower Ctrl Zro
+	# ctrl_lower_zro = core.Dag(spine_ctrl_list[0][0])
+	# ctrl_lower_zro.parent(spineRig_grp)
+
+	mc.parent(spine_ctrl_list[0][0], hipCtrl)
+
+
+
+	
+	# Upper Ctrl Zro
+	ctrl_upper_zro = core.Dag(spine_ctrl_list[3][0])
+	ctrl_upper_zro.parent(spineRig_grp)
+
+	# Organize Joints and Locators
+	# Assuming we want to hide them or put them in jntStill_grp
+
+	jntStill_grp = core.Dag('jntStill_grp')
+	for each_jnt in spine_jnt_list:
+		each_jnt.parent(jntStill_grp)
+
+	for each_loc in inbetween_locs:
+		# These are strings, need casting or direct use
+		mc.parent(each_loc, jntStill_grp.name)
+
+	# Setup Following
+	if priorCtrl and mc.objExists(priorCtrl):
+		mtc.parentConMatrixGPT(
+			priorCtrl, 
+			spineRig_grp.name, 
+			mo=True, 
+			translate=True, 
+			rotate=True, 
+			scale=True
+		)
+
+	IkFkSpineLogger.info(f'#### End of {partName} Rig ####')
+	
+	# Return useful objects
+	return spineRig_grp, bind_jnt_list, spine_ctrl_list

@@ -30,7 +30,7 @@ color_part_dict = mnd.COLOR_part_dict
 class HipRigLogger(logger.MayaLogger):
 	LOGGER_NAME = "hipRig"
 
-def hipRig( 	nameSpace = '' , 
+def createHipRig( 	nameSpace = '' , 
 				ctrl_grp = 'ctrl_grp'  ,
 				tmpJnt = ( 'cog_tmpJnt','hip_tmpJnt' )	, 
 				charScale = ''):

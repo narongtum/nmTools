@@ -69,6 +69,241 @@ sel = mc.ls(sl=True)
 mtc.del_selected_matrix(selected = sel)
 '''
 
+
+
+def orientConstraintMatrix(source, target, mo=True):
+	"""
+	Creates a matrix-based Orient Constraint.
+	
+	Args:
+		source (str): The driver object.
+		target (str): The driven object.
+		mo (bool): Maintain Offset. If True, keeps the current rotation difference.
+
+	Returns:
+		list: [target_node, source_node]
+	"""
+	# 1. Validation
+	if not source or not mc.objExists(source):
+		Constraint.warning('Source object not found.')
+		return False
+	if not target or not mc.objExists(target):
+		Constraint.warning('Target object not found.')
+		return False
+
+	# 2. Core Objects
+	obj_source = core.Dag(source)
+	obj_target = core.Dag(target)
+	base_name = core.check_name_style(name=target)[0]
+	
+	Constraint.info('Creating Matrix Orient Constraint between [{}] and [{}]'.format(obj_source.name, obj_target.name))
+
+	# 3. Calculation Nodes
+	# Using specific naming convention based on your file
+	decompose_node = core.DecomposeMatrix('{}_oriMtx'.format(base_name))
+	mult_node = core.MultMatrix('{}_oriMtx'.format(base_name))
+	
+	# 4. Offset Calculation (Maintain Offset)
+	# We calculate the offset matrix: Offset = TargetWorld * SourceWorldInverse
+	# This stores the relative transform of Target in Source's space.
+	if mo:
+		# Utilizing the helper function from your matrixConstraint.py or util
+		# Assuming _getLocalOffset returns (Child * ParentInverse)
+		offset_matrix = _getLocalOffset(source, target)
+		offset_val = [offset_matrix(i, j) for i in range(4) for j in range(4)]
+		
+		# Set Offset to Input[0]
+		mc.setAttr('{}.matrixIn[0]'.format(mult_node.name), offset_val, type='matrix')
+
+	# 5. Connect Matrix Chain
+	# Formula: Result = [Offset] * SourceWorld * TargetParentInverse
+	# This transforms the Source into the Target's Local Space.
+	
+	# Connect Source World Matrix -> Input[1] (Input[0] is used for Offset)
+	obj_source.attr('worldMatrix[0]') >> mult_node.attr('matrixIn[1]')
+	
+	# Connect Target Parent Inverse Matrix -> Input[2]
+	# This is crucial to convert World Space back to Target's Local Space
+	target_parent = mc.listRelatives(target, parent=True)
+	if target_parent:
+		mc.connectAttr('{}.worldInverseMatrix[0]'.format(target_parent[0]), '{}.matrixIn[2]'.format(mult_node.name))
+	else:
+		# If target is child of World, use Identity matrix (no connection needed imply Identity, or explicit check)
+		pass
+
+	# Connect Result to Decompose
+	mult_node.attr('matrixSum') >> decompose_node.attr('inputMatrix')
+
+	# 6. Rotation Handling (Quat Chain for Joint Orient)
+	# This is the most important part from parentConMatrix style
+	
+	# Create Quat Nodes
+	target_eulerToQuat = core.EulerToQuat('{}_oriMtx'.format(base_name))
+	target_quatInvert = core.QuatInvert('{}_oriMtx'.format(base_name))
+	target_quatProd = core.QuatProd('{}_oriMtx'.format(base_name))
+	target_quatToEuler = core.QuatToEuler('{}_oriMtx'.format(base_name))
+
+	# 6.1 Handle Joint Orient compensation
+	if obj_target.type == 'joint':
+		Constraint.info('Target is a Joint. Compensating for Joint Orient.')
+		# Connect Joint Orient to conversion node
+		obj_target.attr('jointOrient') >> target_eulerToQuat.attr('inputRotate')
+		
+		# Invert the Joint Orient Quat
+		target_eulerToQuat.attr('outputQuat') >> target_quatInvert.attr('inputQuat')
+		
+		# Multiply: (Decomposed Quat) * (Inverse Joint Orient Quat)
+		# Input1 = Total Rotation
+		# Input2 = Inverse Joint Orient
+		# Result = Rotation Value needed for the channel box
+		decompose_node.attr('outputQuat') >> target_quatProd.attr('input1Quat')
+		target_quatInvert.attr('outputQuat') >> target_quatProd.attr('input2Quat')
+		
+		# Connect to Converter
+		target_quatProd.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
+
+	else:
+		# If Transform, just use the decomposed rotation directly
+		# But to keep consistent structure (and handle RotateOrder), we can route through quatToEuler 
+		# or just connect direct. Based on your file, let's route through simple conversion if needed, 
+		# or direct connect. Let's stick to the robust logic:
+		# Direct connect is safer for transforms usually, but let's check rotate order.
+		decompose_node.attr('outputQuat') >> target_quatToEuler.attr('inputQuat')
+
+	# 6.2 Handle Rotate Order
+	# Match Target's rotate order to ensure Euler values are calculated correctly
+	source_ro = mc.getAttr('{}.rotateOrder'.format(source))
+	target_ro = mc.getAttr('{}.rotateOrder'.format(target))
+	
+	# It is good practice to match the constraint calculation to the Target's rotate order
+	target_quatToEuler.attr('inputRotateOrder').value = target_ro
+	
+	# Note: Some rigs force Target RO to match Source RO. 
+	# If you want that behavior (like in your parentConMatrix):
+	# obj_target.attr('rotateOrder').value = source_ro
+	# target_quatToEuler.attr('inputRotateOrder').value = source_ro
+
+	# 7. Final Connection
+	target_quatToEuler.attr('outputRotate') >> obj_target.attr('rotate')
+
+	# 8. Cleanup / Message attributes (Optional, based on your style)
+	if obj_target.type == 'joint':
+		# Clean up temp connection if needed, or hide nodes
+		pass
+		
+	# Add message attr for tracking (similar to your parentConMatrix)
+	if not mc.attributeQuery('m_oriMtx', node=target, exists=True):
+		mc.addAttr(target, ln='m_oriMtx', at='message')
+	
+	decompose_node.attr('message') >> obj_target.attr('m_oriMtx')
+
+	mc.select(target)
+	Constraint.info('Orient Matrix Constraint Created Successfully.')
+	
+	return [obj_target, obj_source]
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------------------------
+# NEW FEATURE: Matrix-based Aim Constraint
+# ------------------------------------------------------------------------------
+
+def aimConstraintMatrix(
+		source, 
+		target, 
+		aimVector=(0, 0, 1), 
+		upVector=(0, 1, 0), 
+		worldUpObject=None,
+		maintainOffset=False 
+	):
+	"""
+	Creates a Matrix-based Aim Constraint using the 'aimMatrix' node.
+	
+	Args:
+		source (str): The target object to look at (Eye Target).
+		target (str): The object being rotated (Eye Aim Group).
+		aimVector (tuple): Axis of the target to point (e.g., Z-axis).
+		upVector (tuple): Axis to keep upright (e.g., Y-axis).
+		worldUpObject (str): Object to use as Up Vector reference (e.g., Head Joint).
+		maintainOffset (bool): (Not fully implemented for Aim yet, usually False for eyes).
+		
+	Returns:
+		dict: Created nodes.
+	"""
+	src_obj = core.Dag(source)
+	tgt_obj = core.Dag(target)
+	base_name = core.check_name_style(tgt_obj.name)[0]
+	
+	# 1. Create AimMatrix Node
+	aim_mat = core.AimMatrix(f"{base_name}_aimMtx")
+	
+	# 2. Connect Primary Target (Look At)
+	# aimMatrix uses .inputMatrix instead of .primaryTargetMatrix in some versions, 
+	# but standard is .primaryTargetMatrix
+	src_obj.attr('worldMatrix[0]') >> aim_mat.attr('primaryTargetMatrix')
+	
+	# Set Vectors
+	aim_mat.attr('primaryInputAxisX').value = aimVector[0]
+	aim_mat.attr('primaryInputAxisY').value = aimVector[1]
+	aim_mat.attr('primaryInputAxisZ').value = aimVector[2]
+	
+	aim_mat.attr('secondaryInputAxisX').value = upVector[0]
+	aim_mat.attr('secondaryInputAxisY').value = upVector[1]
+	aim_mat.attr('secondaryInputAxisZ').value = upVector[2]
+	
+	# 3. Connect Secondary Target (World Up)
+	if worldUpObject and mc.objExists(worldUpObject):
+		up_obj = core.Dag(worldUpObject)
+		up_obj.attr('worldMatrix[0]') >> aim_mat.attr('secondaryTargetMatrix')
+		
+		# Set Mode to use Object Rotation/Alignment
+		# Mode 1 usually works best to align secondary axis to target
+		aim_mat.attr('secondaryMode').value = 1 
+	else:
+		# Vector/Scene Up
+		aim_mat.attr('secondaryMode').value = 0 
+
+	# 4. Space Conversion (World -> Parent Local)
+	# AimMatrix outputs World Space Rotation. We must convert to Target's Local Space.
+	mult_mat = core.MultMatrix(f"{base_name}_Space_mmx")
+	
+	# Input[0] = Aim Result (World)
+	aim_mat.attr('outputMatrix') >> mult_mat.attr('matrixIn[0]')
+	
+	# Input[1] = Target Parent Inverse (World -> Local)
+	tgt_obj.attr('parentInverseMatrix[0]') >> mult_mat.attr('matrixIn[1]')
+	
+	# 5. Decompose & Apply
+	decomp = core.DecomposeMatrix(f"{base_name}_Result_dcmp")
+	mult_mat.attr('matrixSum') >> decomp.attr('inputMatrix')
+	
+	# Connect Rotation
+	decomp.attr('outputRotate') >> tgt_obj.attr('rotate')
+	
+	# Match Rotate Order
+	rot_order = tgt_obj.attr('rotateOrder').value
+	decomp.attr('inputRotateOrder').value = rot_order
+	
+	return {
+		"aimMatrix": aim_mat,
+		"multMatrix": mult_mat,
+		"decompose": decomp
+	}
+
+
+
+
+	
 #... polish with GPT but not sure there will having issue
 def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True):
 	if not source:

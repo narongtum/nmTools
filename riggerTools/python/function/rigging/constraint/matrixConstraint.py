@@ -526,7 +526,7 @@ def aimConstraintMatrix(
 
 
 	
-#... polish with GPT but not sure there will having issue
+#... Mostly polish with AI but not sure there will having issue
 def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True):
 	if not source:
 		print('Source is not selected.')
@@ -659,7 +659,8 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 	if parent == target:
 		Constraint.info("I'm World Already")
 	else:
-		Constraint.warning('Warning .matrixIn[2] may occupire. consider to fix it.')
+		mc.warning(f'Warning {multMatrix.name}.matrixIn[2] may occupire. consider to fix it.')
+		# Constraint.warning(f'Warning {multMatrix.name}.matrixIn[2] may occupire. consider to fix it.')
 
 		#... if slot 2 already used (by source worldMatrix), push parentInverse to slot 3
 		if mc.listConnections(multMatrix.name + '.matrixIn[2]'):
@@ -724,7 +725,8 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 
 
 
-#... Parent constraint write by me, is more stable,using matrix 
+#... Parent constraint write by me, is more stable
+#... Kept for backup
 def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
 	if not source:

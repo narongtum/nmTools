@@ -49,6 +49,14 @@ for each in nodeDict:
 
 
 
+
+
+
+
+
+
+
+
 dForwardAxis_dict = {	'x+':'0',
 						'x-':'1',
 						'y+':'2',
@@ -262,7 +270,9 @@ COLOR_part_dict = { 	'right': 'red',
 						'dynamic': 'white',
 						'primary': 'yellow',
 						'secondary': 'white',
-						'tertiary': 'softBlue'}
+						'tertiary': 'softBlue',
+						'offset':'white',
+						'gimbel': 'white'}
 
 
 

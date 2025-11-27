@@ -30,13 +30,17 @@ reload(logger)
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
 class ClavicleRigLogger(logger.MayaLogger):
 	LOGGER_NAME = "ClavicleRig"
 
 def createClavicleRig(
 		nameSpace='',
 		side='LFT',
-		parentTo='ctrl_grp',
+		parentTo = 'ctrl_grp',
+		priorCtrl='ctrl_grp',
 		priorJnt='spineTop_bJnt', # Should be the top spine joint
 		tmpJnt='clavLFT_tmpJnt',
 		charScale=1.0
@@ -90,9 +94,11 @@ def createClavicleRig(
 	# Common Settings
 	# Color logic: Always use 'red'/'blue' for Core to understand
 	if side == 'LFT' or side == 'L':
-		ctrl_color = 'red'
+		# ctrl_color = 'red'
+		ctrl_color = mnd.COLOR_part_dict['left']
 	else:
-		ctrl_color = 'blue'
+		# ctrl_color = 'blue'
+		ctrl_color = mnd.COLOR_part_dict['right']
 
 	core.makeHeader(f'Start of {full_name} Rig')
 	ClavicleRigLogger.info(f"Naming Style: {'Side Follow' if is_side_follow_style else 'Capital Lead'}")
@@ -103,17 +109,18 @@ def createClavicleRig(
 
 
 	# --- 2. Create Main Group ---
-	clavRig_grp = core.Null(f'{full_name}_grp')
+	clavRig_grp = core.Null(f'{full_name}Rig_grp')
 	# priorJnt_obj = core.Dag(priorJnt)
 	# clavRig_grp.snap(priorJnt_obj)
 
 
 	# --- 6. Final Organization ---
 	#... Parent Main Group
-	if mc.objExists(parentTo):
-		clavRig_grp.parent(parentTo)
 
-	print('ERROR PAW')
+	clavRig_grp.parent(priorCtrl)
+
+
+
 	# Parent/Constrain Rig Group to Prior Joint
 	if mc.objExists(priorJnt):
 		# clavRigGrp_cons = core.parentConstraint(priorJnt, clavRig_grp)
@@ -171,17 +178,16 @@ def createClavicleRig(
 		matrixConstraint=True # Enable Matrix Constraint
 	)
 	
-	# Pattern: Add Rot Enum
-	clav_ctrl.addRotEnum()
+
 	
 	
 	# --- 5. Local / World Setup (Using Matrix Switch) ---
 	# Naming for Space Switch (Uses the full_name)
 	space_name = full_name
 	
-	print('[UPDATE] Using olm.orientLocalWorldMatrix')
+	print('[UPDATE] Using mtc.orientLocalWorldMatrix')
 	mtc.eh_orientLocalWorldMatrix(
-		ctrl=clav_ctrl,
+		ctrl=clav_ctrl.shape,
 		localObj=clavRig_grp,   # Moves with Spine/Prior
 		worldObj=parentTo,      # Static World (ctrl_grp)
 		target=clav_zro,        # Drive the Zro Group
@@ -189,9 +195,9 @@ def createClavicleRig(
 		bodyPart=space_name
 	)
 	
-	
+	#... Pattern: Add Rot Enum (add after localworld)
+	clav_ctrl.addRotEnum()
 
-		
 	
 	ClavicleRigLogger.info(f'#### End of {full_name} Rig ####')
 	

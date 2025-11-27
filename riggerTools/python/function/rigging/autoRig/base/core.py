@@ -2978,14 +2978,6 @@ class Dag( Node ) :
 		ctrlShape.attr('rotate_Order') >> self.attr('rotateOrder')
 
 
-
-
-
-
-
-
-
-
 	def duplicateObj( self, *args , **kwargs ):
 		tmpDup = mc.duplicate( self.name , *args , **kwargs)[0]
 		# return as object
@@ -3013,7 +3005,38 @@ class Dag( Node ) :
 			mc.warning('The object maybe not Curve. Please check')
 
 
+	def getGimbal(self):
+			"""
+			Check and return the Gimbal controller name if it exists via connection.
+			
+			Returns:
+				str: Name of the gimbal transform node.
+				bool: False if not found.
+			"""
+			# 1. Get the shape of the current controller
+			ctrlShape = self.shape
+			if not ctrlShape:
+				return False
 
+			# 2. Check if the specific 'gimbal' attribute exists
+			if mc.attributeQuery('gimbal', node=ctrlShape, exists=True):
+				
+				# 3. Check outgoing connections from the 'gimbal' attribute
+				# We look for the connection to the visibility of the gimbal shape
+				connections = mc.listConnections(ctrlShape + '.gimbal', source=False, destination=True, shapes=True)
+				
+				if connections:
+					# connections[0] will be the Gimbal's Shape node
+					gimbalShape = connections[0]
+					
+					# 4. Get the Transform node (Parent of the shape)
+					parents = mc.listRelatives(gimbalShape, parent=True)
+					if parents:
+						return parents[0]
+
+			return False
+
+		
 
 class Follicle( Node ):
 	def __init__( self ):

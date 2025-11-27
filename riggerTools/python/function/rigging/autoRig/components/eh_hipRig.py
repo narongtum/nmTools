@@ -25,11 +25,11 @@ reload(logger)
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
-
 color_part_dict = mnd.COLOR_part_dict
 
 class HipRigLogger(logger.MayaLogger):
-	LOGGER_NAME = "hipRig"
+	LOGGER_NAME = "eh_hipRig"
+
 
 def createHipRig( 	nameSpace = '' , 
 				ctrl_grp = 'ctrl_grp'  ,

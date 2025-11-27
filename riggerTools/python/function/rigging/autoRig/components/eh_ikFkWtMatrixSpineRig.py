@@ -29,7 +29,7 @@ reload(rwm)
 from function.pipeline import logger
 reload(logger)
 
-class WtMatrixSpineLogger(logger.MayaLogger):
+class spineWtMatrixSpineLogger(logger.MayaLogger):
 	LOGGER_NAME = "WtMatrixSpine"
 
 def createSpineRig(
@@ -49,14 +49,13 @@ def createSpineRig(
 		
 	core.makeHeader(f'Start of {partName} Rig (Matrix Version)')
 
-	full_placement = f'{nameSpace}{placement_ctrl}' if nameSpace else placement_ctrl
+
 	
 	# --- 2. Create Groups ---
 	spineRig_grp = core.Null(f'{partName}Rig_grp')
 	jntStill_grp = core.Null(f'{partName}JntStill_grp')
 
 	#... Change to parent under jnt grp
-	# jntStill_grp.parent(spineRig_grp)
 	mc.parent(jntStill_grp.name, 'jnt_grp')
 	
 	
@@ -78,7 +77,7 @@ def createSpineRig(
 		
 		temp_jnt_name = f'{nameSpace}{tmp}' if nameSpace else tmp
 		if not mc.objExists(temp_jnt_name):
-			 WtMatrixSpineLogger.error(f'Temp Joint "{temp_jnt_name}" not found.')
+			 spineWtMatrixSpineLogger.error(f'Temp Joint "{temp_jnt_name}" not found.')
 			 return None
 
 		# Bind Joint
@@ -168,7 +167,7 @@ def createSpineRig(
 		}
 	]
 	
-	WtMatrixSpineLogger.info("Creating Matrix Rivets...")
+	spineWtMatrixSpineLogger.info("Creating Matrix Rivets...")
 	rwm.rivetMatrixWeight(data_list=rivet_data)
 	
 	# 5.3 Mid Ctrls drive Mid Rig Joints
@@ -207,8 +206,8 @@ def createSpineRig(
 	original_length = mc.getAttr(distance.name + '.distance')
 	
 	# Global Scale
-	if mc.objExists(full_placement):
-		place_ctrl = core.Dag(full_placement)
+	if mc.objExists(placement_ctrl):
+		place_ctrl = core.Dag(placement_ctrl)
 		global_scale_mdv = core.MultiplyDivine(f'{base_name_space}GlobalScale_mdv', operation=2)
 		distance.attr('distance') >> global_scale_mdv.attr('input1X')
 		
@@ -263,10 +262,13 @@ def createSpineRig(
 		)
 
 	# Follow Logic
-	if priorCtrl and mc.objExists(priorCtrl):
-		#... make hip move free from spine
-		mtc.parentConMatrixGPT(priorCtrl, spineRig_grp.name, mo=True)
+	#... make hip move free from spine
+	# mtc.parentConMatrixGPT(priorCtrl, spineRig_grp.name, mo=True)
 
-	WtMatrixSpineLogger.info(f'#### End of {partName} Rig (Matrix) ####')
+	#... Use parent hierarchy instead
+	spineRig_grp.parent(priorCtrl)
+
+
+	spineWtMatrixSpineLogger.info(f'#### End of {partName} Rig (Matrix) ####')
 	
 	return spineRig_grp, bind_jnt_list, spine_ctrl_list

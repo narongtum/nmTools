@@ -78,13 +78,13 @@ def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCe
 	eyeSideZro_grp.matchRotation(eyeSide_bJnt)
 	
 	# 3. Create Eye Target
-	targetPart = nameSpace + 'eyeTarget' + side
+	# targetPart = nameSpace + eyeTarget
 	
 	# Use eh_adjust for standard controller creation here
 	# Target hierarchy: Zro -> Ctrl -> Gimbal (Standard)
 	target_zro, target_ctrl, target_gmbl = eh_adjust.create(
 		nameSpace=None,
-		name=targetPart,
+		name=eyeTarget,
 		ctrlShape='legRGT_pov_ctrlShape',
 		rotateOrder='zxy',
 		charScale=charScale * 0.8,

@@ -43,6 +43,7 @@ import maya.mel as mm
 import os
 import math
 from maya import OpenMaya as om
+import maya.api.OpenMaya as om2
 
 from function.rigging.autoRig.base import core
 reload(core)
@@ -69,6 +70,227 @@ sel = mc.ls(sl=True)
 mtc.del_selected_matrix(selected = sel)
 '''
 
+
+'''
+def _getLocalOffsetGPT(source, target):
+
+	source_world = _getDagPath(source).inclusiveMatrix()
+	target_world = _getDagPath(target).inclusiveMatrix()
+
+	# offset matrix: transforms target into local space of source
+	offset_matrix = target_world * source_world.inverse()
+	return offset_matrix
+
+'''
+
+def _getDagPath(node):
+	"""
+	API 2.0 Helper to get MDagPath
+	Handles String, List, or Custom Object Wrapper inputs.
+	"""
+	# 1. Handle List/Tuple Input (Take first item)
+	if isinstance(node, (list, tuple)):
+		node = node[0]
+		
+	# 2. Handle Custom Object Wrapper (e.g., core.Dag, core.Null)
+	# Assuming these wrappers store the string name in .name or behave like string
+	if hasattr(node, 'name'):
+		node = str(node.name)
+	else:
+		# Convert whatever else to string just in case
+		node = str(node)
+
+	# 3. Get MDagPath via API 2.0
+	sel = om2.MSelectionList()
+	sel.add(node)
+	return sel.getDagPath(0)
+
+def _getLocalOffset(source, target):
+	"""
+	Calculates Offset Matrix using API 2.0
+	Formula: TargetWorld * Inverse(SourceWorld)
+	Returns: List of 16 floats (Row-major)
+	"""
+	# Get DagPaths
+	source_path = _getDagPath(source)
+	target_path = _getDagPath(target)
+	
+	# Get World Matrices (inclusiveMatrix)
+	source_mat = source_path.inclusiveMatrix()
+	target_mat = target_path.inclusiveMatrix()
+	
+	# Calculate Offset (API 2.0 supports * operator directly)
+	# Offset = Child * ParentInverse
+	offset_mat = target_mat * source_mat.inverse()
+	
+	# Return as flat list for cmds.setAttr
+	return list(offset_mat)
+
+
+
+
+
+
+'''
+# ------------------------------------------------------------------------------
+# Helper: Matrix Calculation
+# ------------------------------------------------------------------------------
+def _get_offset_matrix(source, target):
+	"""
+	Calculates the offset matrix: Target World * Inverse Source World.
+	Returns a list of 16 floats (row-major).
+	"""
+	# Get MDagPaths
+	sel = om.MSelectionList()
+	sel.add(source)
+	sel.add(target)
+	
+	source_path = sel.getDagPath(0)
+	target_path = sel.getDagPath(1)
+	
+	# Get Inclusive Matrix (World Matrix)
+	source_mat = source_path.inclusiveMatrix()
+	target_mat = target_path.inclusiveMatrix()
+	
+	# Calculate Offset: Target * Inverse(Source)
+	offset_mat = target_mat * source_mat.inverse()
+	
+	return list(offset_mat)
+'''
+
+
+
+# ------------------------------------------------------------------------------
+# Main Function: Orient Local/World Matrix
+# ------------------------------------------------------------------------------
+def eh_orientLocalWorldMatrix(
+		ctrl, 
+		localObj, 
+		worldObj, 
+		target, 
+		attrName='localWorld', 
+		bodyPart=None
+	):
+	"""
+	Creates a Matrix-based Orientation Space Switch (Local/World).
+	Replaces the legacy 'orientLocalWorldCtrl' which used constraints and dummy groups.
+
+	Args:
+		ctrl (str/Dag): The controller that will hold the switch attribute.
+		localObj (str/Dag): The driver object for 'Local' space (usually parent).
+		worldObj (str/Dag): The driver object for 'World' space.
+		target (str/Dag): The object to be constrained (usually ZroGrp).
+		attrName (str): Name of the blend attribute (0=Local, 1=World).
+		bodyPart (str): Prefix for naming nodes.
+
+	Returns:
+		dict: References to created nodes for debugging or organization.
+	"""
+	
+	# --- 1. Setup Objects & Naming ---
+	ctrl_obj = core.Dag(ctrl)
+	local_obj = core.Dag(localObj)
+	world_obj = core.Dag(worldObj)
+	target_obj = core.Dag(target)
+	
+	# Determine base name
+	if bodyPart:
+		base_name = f"{bodyPart}_Space"
+	else:
+		base_name = core.check_name_style(target_obj.name)[0] + "_Space"
+		
+	Constraint.info(f"Creating Matrix Space Switch for: {base_name}")
+
+	# --- 2. Add Switch Attribute ---
+	# if not ctrl_obj.attr(attrName).exists:
+	ctrl_obj.addAttribute(ln=attrName, k=True, min=0, max=1, defaultValue=0)
+	
+	# --- 3. Calculate Initial Offsets (Maintain Offset) ---
+	# We need the target to stay in place relative to both parents at the bind pose.
+	# Local Offset = Target * Inv(LocalParent)
+	# World Offset = Target * Inv(WorldParent)
+	offset_local_val = _getLocalOffset(local_obj.name, target_obj.name)
+	offset_world_val = _getLocalOffset(world_obj.name, target_obj.name)
+
+	# --- 4. Build Matrix Network ---
+	
+	# 4.1 Local Branch (Offset * LocalObj World)
+	# Using MultMatrix to combine Offset + Driver
+	mat_local = core.MultMatrix(f"{base_name}_Local_mmx")
+	mc.setAttr(f"{mat_local.name}.matrixIn[0]", offset_local_val, type="matrix")
+	local_obj.attr('worldMatrix[0]') >> mat_local.attr('matrixIn[1]')
+	
+	# 4.2 World Branch (Offset * WorldObj World)
+	mat_world = core.MultMatrix(f"{base_name}_World_mmx")
+	mc.setAttr(f"{mat_world.name}.matrixIn[0]", offset_world_val, type="matrix")
+	world_obj.attr('worldMatrix[0]') >> mat_world.attr('matrixIn[1]')
+	
+	# 4.3 Blending (WtAddMatrix)
+	# This node blends the resulting World Matrices from both branches.
+	mat_blend = core.WtAddMatrix(f"{base_name}_Blend_wtAdd")
+	
+	mat_local.attr('matrixSum') >> mat_blend.attr('wtMatrix[0].matrixIn')
+	mat_world.attr('matrixSum') >> mat_blend.attr('wtMatrix[1].matrixIn')
+	
+	# --- 5. Drive Weights ---
+	# Weight 0 (Local) = 1 - attr
+	# Weight 1 (World) = attr
+	
+	rev_node = core.ReverseNam(f"{base_name}_Weight_rev")
+	ctrl_obj.attr(attrName) >> rev_node.attr('inputX')
+	
+	# Connect
+	rev_node.attr('outputX') >> mat_blend.attr('wtMatrix[0].weightIn') # Local
+	ctrl_obj.attr(attrName) >> mat_blend.attr('wtMatrix[1].weightIn') # World
+	
+	# --- 6. Convert to Target Local Space ---
+	# The result of mat_blend is a World Matrix.
+	# To drive the target (Transform node), we must convert it to the target's Parent Space.
+	# Calculation: ResultWorld * TargetParentInverse
+	
+	mat_final = core.MultMatrix(f"{base_name}_Final_mmx")
+	mat_blend.attr('matrixSum') >> mat_final.attr('matrixIn[0]')
+	target_obj.attr('parentInverseMatrix[0]') >> mat_final.attr('matrixIn[1]')
+	
+	# --- 7. Decompose & Apply Rotation ---
+	# Since this is an "Orient" constraint logic, we extract Rotation only.
+	
+	decomp = core.DecomposeMatrix(f"{base_name}_Result_dcmp")
+	mat_final.attr('matrixSum') >> decomp.attr('inputMatrix')
+	
+	# Connect Rotation
+	# Note: Standard DecomposeMatrix outputs Euler rotations. 
+	# For standard controllers (ZroGrps), this is usually sufficient.
+	# If gimbal lock or flipping occurs, a Quaternion-to-Euler chain (like in matrixConstraint.py) might be needed.
+	# For now, we implement the direct connection for efficiency.
+	
+	decomp.attr('outputRotate') >> target_obj.attr('rotate')
+	
+	# Ensure Rotation Order matches
+	rot_order = target_obj.attr('rotateOrder').value
+	decomp.attr('inputRotateOrder').value = rot_order
+
+	Constraint.info(f"Space Switch Complete. Attribute '{attrName}' on '{ctrl_obj.name}' controls orientation.")
+
+	return {
+		"mult_local": mat_local,
+		"mult_world": mat_world,
+		"blend": mat_blend,
+		"reverse": rev_node,
+		"final_mult": mat_final,
+		"decompose": decomp
+	}
+
+
+
+
+
+
+
+
+
+def createMatrixAttr(selected, attrNam = 'destination'):
+	mc.addAttr(selected, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
 
 
 def orientConstraintMatrix(source, target, mo=True):
@@ -329,7 +551,10 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 	# NOTE: _getLocalOffsetGPT is suspected to double-compensate parent.
 	# Use the original, trusted _getLocalOffset instead.
 	localOffset = _getLocalOffset(source, target)
-	offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
+
+	# offMat = [localOffset(i, j) for i in range(4) for j in range(4)]
+	offMat =  _getLocalOffset( source, target )
+
 
 	# -----------------------------------------------------------------
 	# 03. Create nodes (same idea as legacy function)
@@ -366,12 +591,24 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 			#... use jointOrient as pre-rotation
 			mc.connectAttr(obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate')
 
+		elif  obj_target.type == 'joint' and obj_source.type == 'joint':
+			#... If target is a JOINT, we MUST compensate for jointOrient.
+			#... Joint Orient is static, so it won't cause a cycle.
+			Constraint.info(f'Compensating Joint Orient for [ {obj_target.name} ]')
+			mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
+
 		elif obj_target.type == 'transform' and obj_source.type == 'transform':
 			#... classic transform to transform case
 			Constraint.info('\nThis is between [ {1} ] and [ {0} ] (transform / transform)'.format(
 				obj_target.type, obj_source.type))
 			#... use current rotate of target as offset
-			obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+			# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+			#... [FIX] Do NOT connect target.rotate here. 
+			#... The Offset is already handled by matrixIn[0].
+			#... Connecting it creates a Cycle (Rotate -> Calc -> Rotate).
+			# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')	
+			Constraint.info("Transform Target: Using Matrix Offset. No Quat compensation needed.")
+			print('\n')
 
 		else:
 			#... fallback: treat as generic transform case
@@ -465,15 +702,16 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 		#... remove eulerToQuat node name from scene if your wrapper supports it
 		target_eulerToQuat.deleteName()
 
-		#... connect message attributes for possible later cleanup
-		decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
-		target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
+
+		#... Connect message attributes for possible later cleanup
+		# decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
+		# target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
 
 	# -----------------------------------------------------------------
 	# 10. Finish
 	# -----------------------------------------------------------------
 	mc.select(target, r=True)
-	Constraint.info(' # # # # # # # # # Parent matrix Complete (Hybrid GPT) # # # # # # # # # # # #  \n')
+	Constraint.info(' # # # # # # # # # Parent matrix Complete # # # # # # # # # # # #  \n')
 
 	return obj_target, obj_source
 
@@ -483,7 +721,10 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 
 
 
-#... parant constraint write by me, is more stable,using matrix use this Mainly	
+
+
+
+#... Parent constraint write by me, is more stable,using matrix 
 def parentConMatrix(source, target, mo = True, translate = True, rotate = True, scale = True):
 
 	if not source:
@@ -501,7 +742,8 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 
 	#...Got call maya API for get local offset position  
 	localOffset =  _getLocalOffset( source, target )
-	offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+	# offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+	offMat =  _getLocalOffset( source, target )
 
 
 	#... Create
@@ -538,12 +780,16 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 		#... YOU MISS THIS LINE EVERYTHING WILL FALL
 		mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
 
+	elif  obj_target.type == 'joint' and obj_source.type == 'joint':
+		#... If target is a JOINT, we MUST compensate for jointOrient.
+		#... Joint Orient is static, so it won't cause a cycle.
+		Constraint.info(f'Compensating Joint Orient for [ {obj_target.name} ]')
+		mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
 
 	elif obj_target.type == 'transform' and obj_source.type == 'transform':
 
 		print('\n')
 		Constraint.info('\nThis is between [ {1} ] and [ {0} ]'.format(obj_target.type, obj_source.type))
-		print('\n')
 
 		#... Add compose matrix for get offset orientation
 		# target_composeMat = core.ComposeMatrix(target)
@@ -551,10 +797,19 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 		# obj_target.attr('rotate') >> target_composeMat.attr('inputRotate')
 		# obj_target.attr('rotate') // target_composeMat.attr('inputRotate')
 		# target_composeMat.attr('outputMatrix') >> multMatrix.attr('matrixIn[1]')
-		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')		
+
+		#... [FIX] Do NOT connect target.rotate here. 
+		#... The Offset is already handled by matrixIn[0].
+		#... Connecting it creates a Cycle (Rotate -> Calc -> Rotate).
+		# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')	
+		Constraint.info("Transform Target: Using Matrix Offset. No Quat compensation needed.")
+		print('\n')
+
 
 	else:
-		Constraint.info("\nThis is maybe something I don't know.")
+		#... fallback: treat as generic transform case
+		Constraint.info("\nThis is maybe something I don't know (fallback case).")
+		#... [FIX] Safer to pass here as well unless specific need arises
 		obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
 		
 		
@@ -643,16 +898,17 @@ def parentConMatrix(source, target, mo = True, translate = True, rotate = True, 
 	#target_quatInvert.deleteName()
 
 
-
-	decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
-	target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
-
-
-	#... Connect message for incase want to delete
+	#... Connect message for just in case want to delete
 	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_deComp')
 	# obj_target.addAttribute( attributeType = 'message' , longName = 'm_quatToEuler')
-	# mc.listConnections( obj_target.name + '.' + 'm_deComp')[0]
-	# mc.listConnections( obj_target.name + '.' + 'm_quatToEuler')[0]
+
+
+	#... Disable message for now
+	# decomposeMatrix.attr('message') >> obj_target.attr('m_deComp')
+	# target_quatToEuler.attr('message') >> obj_target.attr('m_quatToEuler')
+
+
+
 
 
 
@@ -1008,7 +1264,8 @@ def parentMulMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 
 		# preFUNC
 		localOffset =  getLocalOffset( parent, tgt )
-		offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+		# offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+		offMat =  _getLocalOffset( source, target )
 
 		#  Set and Connect
 		if mo == True:
@@ -1098,7 +1355,8 @@ def create_offset_matrix(source, target, mo = True, translate = True, rotate = T
 
 	#...Got call maya API for get local offset position  
 	localOffset =  _getLocalOffset( source, target )
-	offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+	# offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
+	offMat =  _getLocalOffset( source, target )
 
 	#... Create
 	decomposeMatrix = core.DecomposeMatrix(target)
@@ -1154,36 +1412,6 @@ def matrixConListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt'
 
 
 
-def _getLocalOffsetGPT(source, target):
-
-	source_world = _getDagPath(source).inclusiveMatrix()
-	target_world = _getDagPath(target).inclusiveMatrix()
-
-	# offset matrix: transforms target into local space of source
-	offset_matrix = target_world * source_world.inverse()
-	return offset_matrix
-
-
-
-def _getDagPath(node=None):
-	sel = om.MSelectionList()
-	sel.add(node)
-	dagPath = om.MDagPath()
-	sel.getDagPath(0, dagPath)
-	return dagPath
-
-def _getLocalOffset(parent, child):
-	
-	parentWorldMatrix = _getDagPath(parent).inclusiveMatrix()
-	childWorldMatrix = _getDagPath(child).inclusiveMatrix()
-	#... child World Matrix * invert parent World Matrix = child local matrix
-	#... return child local matrix
-	return childWorldMatrix * parentWorldMatrix.inverse()
-
-
-
-def createMatrixAttr(selected, attrNam = 'destination'):
-	mc.addAttr(selected, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
 
 
 

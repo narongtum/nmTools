@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Module: eh_headRig
-Description: Head Rig generator with Matrix-based approach (Aim, Space Switch).
-			 Includes Head, Jaw, and Eye setup.
-			 [UPDATE] Enhanced debugging for Face Ctrl issues.
+Description: Head Rig generator based strictly on original headRig.py logic.
+			 Optimized with Matrix Constraints and Matrix Space Switching.
 """
 
 import maya.cmds as mc
@@ -42,40 +41,47 @@ color_part_dict = mnd.COLOR_part_dict
 
 def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCenCtrl, eyeTarget):
 	"""
-	Internal helper to create Eye Rig (Joint, Ctrl, Aim).
+	Internal helper to create Eye Rig.
+	Logic follows headRig.py _eyeCtrl strictly.
 	"""
-	partName = f"{nameSpace}eye{side}" if nameSpace else f"eye{side}"
+	# naming logic from original
+	part = nameSpace + 'eye' + side
 	
 	# 1. Create Bind Joint
+	# eyeSide_bJnt = rigTools.jointAt( eyeJntNam )
 	eyeSide_bJnt = rigTools.jointAt(eyeJnt)
-	eyeSide_bJnt.name = f"{partName}_bJnt"
+	eyeSide_bJnt.name = part + '_bJnt'
 	eyeSide_bJnt.parent(headJnt)
-	eyeSide_bJnt.freeze()
+	eyeSide_bJnt.freeze() # Add freeze transform to get rid orientation
 
-	# 2. Create Controller (Eye Ball)
-	eye_zro, eye_ctrl, eye_gmbl = eh_adjust.create(
-		nameSpace=None,
-		name=eyeSide_bJnt.name,
-		ctrlShape='sphere_ctrlShape',
-		rotateOrder='zxy',
-		charScale=charScale * 1.01,
-		color='softBlue',
-		parentTo=None,
-		rotation=(0,0,0),
-		matrixConstraint=False
-	)
+	# 2. Create Controller (Manual Step to match hierarchy: Zro -> Aim -> Ctrl)
+	eyeSide_ctrl = core.Dag(part + '_ctrl')
+	eyeSide_ctrl.nmCreateController('sphere_ctrlShape')
+	eyeSide_ctrl.editCtrlShape(axis=charScale * 1.01)
+	eyeSide_ctrl.color = 'softBlue'
+	eyeSide_ctrl.rotateOrder = 'zxy'
 	
-	# Create Aim Group
-	offset_grp = eye_ctrl.getParent()
-	eyeAim_grp = core.Null(f"{partName}Aim_grp")
-	eyeAim_grp.snap(offset_grp)
+	# Create Aim Group (Legacy logic: zeroGroup(ctrl) -> name it Aim)
+	eyeAimSide_grp = eh_adjust.createZeroGroup(eyeSide_ctrl)
+	eyeAimSide_grp.name = part + 'Aim_grp'
 	
-	offset_grp.parent(eyeAim_grp)
-	eyeAim_grp.parent(eye_zro)
+	# Create Zero Group (Legacy logic: zeroGroup(aim) -> name it Zro)
+	eyeSideZro_grp = eh_adjust.createZeroGroup(eyeAimSide_grp)
+	eyeSideZro_grp.name = part + 'Zro_grp'
 	
-	# 3. Create Eye Target Controller
-	targetPart = f"{nameSpace}eyeTarget{side}" if nameSpace else f"eyeTarget{side}"
+	# Gimbal
+	eyeSideGmbl_ctrl = core.createGimbal(eyeSide_ctrl)
+	eyeSideGmbl_ctrl.rotateOrder = 'zxy'
 	
+	# Positioning
+	eyeSideZro_grp.matchPosition(eyeSide_bJnt)
+	eyeSideZro_grp.matchRotation(eyeSide_bJnt)
+	
+	# 3. Create Eye Target
+	targetPart = nameSpace + 'eyeTarget' + side
+	
+	# Use eh_adjust for standard controller creation here
+	# Target hierarchy: Zro -> Ctrl -> Gimbal (Standard)
 	target_zro, target_ctrl, target_gmbl = eh_adjust.create(
 		nameSpace=None,
 		name=targetPart,
@@ -83,36 +89,41 @@ def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCe
 		rotateOrder='zxy',
 		charScale=charScale * 0.8,
 		color='softBlue',
-		parentTo=eyeCenCtrl,
+		parentTo=eyeCenCtrl, # Move zro grp under eyeCenter grp
 		rotation=(0,0,0),
 		matrixConstraint=False
 	)
 	
+	# Snap to Target Temp
 	target_zro.maSnap(eyeTarget)
 	
-	# 4. Matrix Aim Constraint
+	# 4. Aim Constraint (Matrix Optimized)
+	# Original: aimVector = (0,0,1) , upVector = (0,1,0) , worldUpType = "objectrotation", worldUpObject = headJnt
 	mtc.aimConstraintMatrix(
-		source=target_ctrl.name, 
-		target=eyeAim_grp.name, 
-		aimVector=(0, 0, 1), 
-		upVector=(0, 1, 0), 
-		worldUpObject=headJnt,
+		source=target_ctrl.name,
+		target=eyeAimSide_grp.name,
+		aimVector=(0, 0, 1),
+		upVector=(0, 1, 0),
+		worldUpObject=headJnt, # Object Rotation mode
 		maintainOffset=False
 	)
 	
-	# 5. Finalize Eye Ball
+	# 5. Joint Constraint (Matrix Optimized)
+	# Original: parentConstraint( eyeSideGmbl_ctrl , eyeSide_bJnt , mo = True)
 	mtc.parentConMatrixGPT(
-		source=eye_gmbl.name,
+		source=eyeSideGmbl_ctrl.name,
 		target=eyeSide_bJnt.name,
 		mo=True,
 		translate=True, rotate=True, scale=True
 	)
 	
-	eye_zro.parent(parentTo)
+	# Final Parent
+	eyeSideZro_grp.parent(parentTo)
 	
+	# Lock attributes
 	for attr in ('rx','ry','rz','sx','sy','sz','v'):
 		target_ctrl.attr(attr).lockHide()
-		
+
 	return eyeSide_bJnt
 
 
@@ -132,170 +143,196 @@ def createHeadRig(
 		linkRotOrder=False
 	):
 
-	# --- 1. Header & Setup ---
-	# Validating input length
-	if len(tmpJnt) < 11 and faceCtrl:
-		HeadRigLogger.error(f"TmpJnt list is too short ({len(tmpJnt)}). Face setup requires 11 elements.")
+	core.makeHeader('Start of Head Rig')
+	
+	# --- 1. Verify & Setup ---
+	head1 = core.Dag(tmpJnt[0])
+	if not head1.exists:
+		HeadRigLogger.error(f"Head Joint {tmpJnt[0]} not found.")
 		return None
 
-	head1_tmp = tmpJnt[0]
-	if not mc.objExists(head1_tmp):
-		HeadRigLogger.error(f"Head Temp Joint {head1_tmp} not found.")
-		return None
-
-	name_info = core.check_name_style(head1_tmp)
-	base_name = name_info[4]
-	
-	if nameSpace:
-		partName = f"{nameSpace}{base_name.capitalize()}"
-		prefix = f"{nameSpace}"
-	else:
-		partName = base_name
-		prefix = ""
-
-	core.makeHeader(f'Start of {partName} Rig')
-	
-	# --- 2. Create Main Groups ---
-	headRig_grp = core.Null(f'{prefix}headRig_grp')
-	headRig_grp.matchPosition(head1_tmp)
-	headRig_grp.matchRotation(head1_tmp)
-
-	head01_bJnt = rigTools.jointAt(head1_tmp)
-	head01_bJnt.name = f"{prefix}head01_bJnt"
-	head01_bJnt.attr('segmentScaleCompensate').value = 0
-	head01_bJnt.setLable('CEN','head')
+	# --- 2. Create Bind Joint ---
+	head01_bJnt = rigTools.jointAt(head1)
+	head01_bJnt.name = nameSpace + 'head' + '01' + '_bJnt'
 	
 	if mc.objExists(priorJnt):
 		head01_bJnt.parent(priorJnt)
+		
+	head01_bJnt.setLable('CEN','head')
+	head01_bJnt.attr('segmentScaleCompensate').value = 0
 
-	# --- 3. Head Controller ---
-	head_zro, head_ctrl, head_gmbl = eh_adjust.create(
-		nameSpace=nameSpace,
-		name=head01_bJnt.name,
-		ctrlShape=ctrlShape,
-		rotateOrder='xzy',
-		charScale=charScale * 7.0,
-		color='yellow',
-		parentTo=headRig_grp,
-		rotation=(0,0,0),
-		matrixConstraint=True
-	)
+	# --- 3. Create Head Rig Group ---
+	headRig_grp = core.Null()
+	headRig_grp.name = nameSpace + 'headRig_grp'
+	headRig_grp.matchPosition(head1)
+	headRig_grp.matchRotation(head1)
 	
+	headRotOrder = 'xzy'
+
+	# --- 4. Head Controller Setup ---
+	part = nameSpace + 'head01'
+	head_ctrl = core.Dag(part + '_ctrl')
+	head_ctrl.nmCreateController(ctrlShape)
+	
+	headZro_grp = eh_adjust.createZeroGroup(head_ctrl)
+	headZro_grp.name = part + 'Zro_grp'
+	
+	head_ctrl.editCtrlShape(axis=charScale * 7.0)
+	headGmbl_ctrl = core.createGimbal(head_ctrl)
+	
+	head_ctrl.color = 'yellow'
+	head_ctrl.rotateOrder = headRotOrder
+	headGmbl_ctrl.rotateOrder = headRotOrder
+	
+	headZro_grp.snap(head1)
 	head_ctrl.moveShape(move=(0, charScale * 4.2, 0))
-	head_gmbl.moveShape(move=(0, charScale * 4.2, 0))
-	
+	headGmbl_ctrl.moveShape(move=(0, charScale * 4.2, 0))
+
 	if linkRotOrder:
 		head_ctrl.addRotEnum()
+		headGmbl_ctrl.addRotEnum()
 
-	# --- 4. Local / World Setup ---
+	# --- 5. Head Local / World Setup (Matrix Optimized) ---
+	partName = nameSpace + 'head'
+	
+	# Using Matrix Orient Switch instead of Group Constraint
 	olm.orientLocalWorldMatrix(
 		ctrl=head_ctrl,
-		localObj=headRig_grp,
-		worldObj=parentTo,
-		target=head_zro,
+		localObj=headRig_grp,   
+		worldObj=parentTo,      
+		target=headZro_grp,
 		attrName='localWorld',
-		bodyPart=f'{prefix}head'
+		bodyPart=partName
 	)
 
-	# --- 5. Face Setup (Jaw & Eyes) ---
+	# Constraint Joint
+	mtc.parentConMatrixGPT(
+		source=headGmbl_ctrl.name,
+		target=head01_bJnt.name,
+		mo=True,
+		translate=True, rotate=True, scale=True
+	)
+
+	# Grouping
+	headZro_grp.parent(headRig_grp)
+	if mc.objExists(parentTo):
+		headRig_grp.parent(parentTo)
+
+
+	# --- 6. Face Setup ---
 	if faceCtrl:
 		HeadRigLogger.info("Starting Face Setup...")
 		
-		# --- JAW ---
-		jawLwr_tmp = tmpJnt[3]
-		jawUpr_tmp = tmpJnt[6]
+		# JAW SETUP
+		jaw1Lwr = tmpJnt[3]
+		jaw2Lwr = tmpJnt[4]
+		jaw1Upr = tmpJnt[6]
 		
-		if mc.objExists(jawLwr_tmp):
-			# Create Jaw Joints
-			jaw1Lwr_bJnt = rigTools.jointAt(jawLwr_tmp)
-			jaw1Lwr_bJnt.name = f"{prefix}jaw01Lwr_bJnt"
+		if mc.objExists(jaw1Lwr):
+			# Create Joints
+			jaw1Lwr_bJnt = rigTools.jointAt(jaw1Lwr)
+			jaw2Lwr_bJnt = rigTools.jointAt(jaw2Lwr)
+			jaw1Lwr_bJnt.name = nameSpace + 'jaw' + '01' +'Lwr' + '_bJnt'
+			jaw2Lwr_bJnt.name = nameSpace + 'jaw' + '02' +'Lwr' + '_bJnt'
+			
 			jaw1Lwr_bJnt.parent(head01_bJnt)
+			jaw2Lwr_bJnt.parent(jaw1Lwr_bJnt)
+			jaw1Lwr_bJnt.attr('segmentScaleCompensate').value = 0
+			jaw2Lwr_bJnt.attr('segmentScaleCompensate').value = 0
 			
-			# Upper Jaw
-			jawUpr_zro, jawUpr_ctrl, jawUpr_gmbl = eh_adjust.create(
-				nameSpace=nameSpace,
-				name=f"{prefix}jaw01Upr",
-				ctrlShape='squareExpand_ctrlShape',
-				rotateOrder='xzy',
-				charScale=charScale * 3.5,
-				color='yellow',
-				parentTo=head_gmbl,
-				rotation=(0,0,0),
-				matrixConstraint=False
-			)
-			if mc.objExists(jawUpr_tmp):
-				jawUpr_zro.snap(jawUpr_tmp)
-			
-			# Lower Jaw
-			jawLwr_zro, jawLwr_ctrl, jawLwr_gmbl = eh_adjust.create(
-				nameSpace=nameSpace,
-				name=jaw1Lwr_bJnt.name,
-				ctrlShape='squareExpand_ctrlShape',
-				rotateOrder='xzy',
-				charScale=charScale * 2.8,
-				color='yellow',
-				parentTo=head_gmbl,
-				rotation=(0,0,0),
-				matrixConstraint=True
-			)
-			jawLwr_ctrl.moveShape(move=(0, charScale * -1.8, charScale * 2.8))
-			HeadRigLogger.info("Jaw Setup Complete.")
-		else:
-			HeadRigLogger.error(f"Jaw Joint {jawLwr_tmp} not found!")
+			jaw1Upr_bJnt = None
+			if mc.objExists(jaw1Upr):
+				jaw1Upr_bJnt = rigTools.jointAt(jaw1Upr)
+				jaw1Upr_bJnt.name = nameSpace + 'jaw' + '01' +'Upr' + '_bJnt'
+				jaw1Upr_bJnt.parent(head01_bJnt)
 
-		# --- EYES ---
-		eyeCen_tmp = tmpJnt[8]
-		eyeTargetL_tmp = tmpJnt[9]
-		eyeTargetR_tmp = tmpJnt[10]
-		eyeL_tmp = tmpJnt[1]
-		eyeR_tmp = tmpJnt[2]
-		
-		if mc.objExists(eyeCen_tmp):
-			# Eye Center
-			eyeCen_zro, eyeCen_ctrl, eyeCen_gmbl = eh_adjust.create(
-				nameSpace=nameSpace,
-				name=f"{prefix}eyeCenter",
-				ctrlShape='capsule_ctrlShape',
-				rotateOrder='xzy',
-				charScale=charScale * 0.8,
-				color='yellow',
-				parentTo=head_gmbl,
-				rotation=(0,0,0),
-				matrixConstraint=False
-			)
-			eyeCen_zro.snap(eyeCen_tmp)
+
 			
-			# Eye Center Local/World
+			# Upper Jaw Ctrl
+			if jaw1Upr_bJnt:
+				part = nameSpace + 'jaw01Upr'
+				# eh_adjust.create returns (zro, ctrl, gmbl)
+				jUpr_zro, jUpr_ctrl, jUpr_gmbl = eh_adjust.create(
+					nameSpace=None, name=jaw1Upr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+					rotateOrder=headRotOrder, charScale=charScale * 3.5, color='yellow',
+					parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
+				)
+				jUpr_zro.snap(jaw1Upr_bJnt)
+				mtc.parentConMatrixGPT(jUpr_gmbl.name, jaw1Upr_bJnt.name, mo=True)
+
+				# mc.error(jaw1Upr_bJnt.name)
+				
+			# Lower Jaw Ctrl (01)
+			part = nameSpace + 'jaw01Lwr'
+			jLwr1_zro, jLwr1_ctrl, jLwr1_gmbl = eh_adjust.create(
+				nameSpace=None, name=jaw1Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+				rotateOrder=headRotOrder, charScale=charScale * 2.8, color='yellow',
+				parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
+			)
+			jLwr1_zro.snap(jaw1Lwr_bJnt)
+			jLwr1_ctrl.moveShape(move=(0, charScale * -1.8, charScale * 2.8))
+			mtc.parentConMatrixGPT(jLwr1_gmbl.name, jaw1Lwr_bJnt.name, mo=True)
+			
+			# Lower Jaw Ctrl (02 - Gum)
+			part = nameSpace + 'jaw02Lwr'
+			jLwr2_zro, jLwr2_ctrl, jLwr2_gmbl = eh_adjust.create(
+				nameSpace=None, name=jaw2Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+				rotateOrder=headRotOrder, charScale=charScale * 2.8, color='yellow',
+				parentTo=jLwr1_gmbl.name, rotation=(0,0,0), matrixConstraint=False
+			)
+			jLwr2_zro.snap(jaw2Lwr_bJnt)
+			mtc.parentConMatrixGPT(jLwr2_gmbl.name, jaw2Lwr_bJnt.name, mo=True)
+
+
+		# EYE CENTER SETUP
+		eyeCen = tmpJnt[8]
+		eyeTargetLFT = tmpJnt[9]
+		eyeTargetRGT = tmpJnt[10]
+		eyeLFT = tmpJnt[1]
+		eyeRGT = tmpJnt[2]
+		
+		if mc.objExists(eyeCen):
+			part = nameSpace + 'eyeCenter' + '_tmpJnt'
+
+			eyeCen_obj = core.Dag(eyeCen)
+
+	
+			
+			# Eye Center Ctrl
+			eyeCen_zro, eyeCen_ctrl, eyeCen_gmbl = eh_adjust.create(
+				nameSpace=None, name=eyeCen, ctrlShape='capsule_ctrlShape',
+				rotateOrder=headRotOrder, charScale=charScale * 0.8, color='yellow',
+				parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
+			)
+			eyeCen_zro.snap(eyeCen_obj)
+
+			mc.error(eyeTargetLFT)
+			
+			# Eye Center Local/World (Matrix)
 			olm.orientLocalWorldMatrix(
 				ctrl=eyeCen_ctrl,
-				localObj=head_gmbl,
+				localObj=headGmbl_ctrl, # Original: headGmbl_ctrl
 				worldObj=parentTo,
 				target=eyeCen_zro,
 				attrName='localWorld',
-				bodyPart=f'{prefix}eyeCenter'
+				bodyPart=part
 			)
+
 			
-			# Create Left Eye
-			_createEyeSetup(nameSpace, 'LFT', eyeL_tmp, head01_bJnt.name, charScale, 
-							parentTo=head_gmbl.name, 
+			
+			# Create Eyes
+			_createEyeSetup(nameSpace, 'LFT', eyeLFT, head01_bJnt.name, charScale, 
+							parentTo=headGmbl_ctrl.name, 
 							eyeCenCtrl=eyeCen_ctrl.name, 
-							eyeTarget=eyeTargetL_tmp)
-			
-			# Create Right Eye
-			_createEyeSetup(nameSpace, 'RGT', eyeR_tmp, head01_bJnt.name, charScale, 
-							parentTo=head_gmbl.name, 
+							eyeTarget=eyeTargetLFT)
+							
+			_createEyeSetup(nameSpace, 'RGT', eyeRGT, head01_bJnt.name, charScale, 
+							parentTo=headGmbl_ctrl.name, 
 							eyeCenCtrl=eyeCen_ctrl.name, 
-							eyeTarget=eyeTargetR_tmp)
-			
-			HeadRigLogger.info("Eye Setup Complete.")
-		else:
-			HeadRigLogger.error(f"Eye Center {eyeCen_tmp} not found!")
+							eyeTarget=eyeTargetRGT)
 
 
-	# --- 6. Final Organization ---
-	if mc.objExists(parentTo):
-		headRig_grp.parent(parentTo)
-	
+	# --- 7. Final Organization ---
 	if mc.objExists(priorJnt):
 		mtc.parentConMatrixGPT(
 			source=priorJnt,

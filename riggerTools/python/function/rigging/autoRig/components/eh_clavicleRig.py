@@ -113,7 +113,7 @@ def createClavicleRig(
 	if mc.objExists(parentTo):
 		clavRig_grp.parent(parentTo)
 
-
+	print('ERROR PAW')
 	# Parent/Constrain Rig Group to Prior Joint
 	if mc.objExists(priorJnt):
 		# clavRigGrp_cons = core.parentConstraint(priorJnt, clavRig_grp)
@@ -179,8 +179,8 @@ def createClavicleRig(
 	# Naming for Space Switch (Uses the full_name)
 	space_name = full_name
 	
-	# [UPDATE] Using olm.orientLocalWorldMatrix
-	olm.orientLocalWorldMatrix(
+	print('[UPDATE] Using olm.orientLocalWorldMatrix')
+	mtc.eh_orientLocalWorldMatrix(
 		ctrl=clav_ctrl,
 		localObj=clavRig_grp,   # Moves with Spine/Prior
 		worldObj=parentTo,      # Static World (ctrl_grp)

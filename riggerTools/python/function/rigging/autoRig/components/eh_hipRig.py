@@ -25,6 +25,7 @@ reload(logger)
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
+
 color_part_dict = mnd.COLOR_part_dict
 
 class HipRigLogger(logger.MayaLogger):
@@ -39,6 +40,8 @@ def createHipRig( 	nameSpace = '' ,
 	
 	part = nameSpace + 'cog'
 	HipRigLogger.info('Start of %s rig' %part)
+	core.makeHeader('Start of %s rig' %part)
+
 	# core.makeHeader('Start of %s rig' %part)
 
 	# ctrl_grp = '%s%s' %(nameSpace,ctrl_grp) 
@@ -163,7 +166,6 @@ def createHipRig( 	nameSpace = '' ,
 		mc.connectAttr('root_meta'+ '.message', meta_node.name + '.Rig_Prior')
 		# joint.attr('message') >> hook_node.attr('upJnt')
 
-
 	HipRigLogger.info('\n#### End of %s Rig ####' %(part))
-	print('\n\n\n\n\n')
+	core.makeHeader('End of %s Rig'%(part))
 	return hip_bJnt.name

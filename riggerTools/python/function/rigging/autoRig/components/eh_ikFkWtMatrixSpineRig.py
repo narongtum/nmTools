@@ -264,6 +264,7 @@ def createSpineRig(
 
 	# Follow Logic
 	if priorCtrl and mc.objExists(priorCtrl):
+		#... make hip move free from spine
 		mtc.parentConMatrixGPT(priorCtrl, spineRig_grp.name, mo=True)
 
 	WtMatrixSpineLogger.info(f'#### End of {partName} Rig (Matrix) ####')

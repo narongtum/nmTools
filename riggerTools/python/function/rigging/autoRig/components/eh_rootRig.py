@@ -137,6 +137,8 @@ def createMasterGrp(nameSpace='', charScale=1.0, PROJECT_DICT={}):
 		rig_grp.attr('message') >> metaNode.attr('rig_grp')
 
 	logger.info(f'#### End of {part} Rig ####')
+
+	core.makeHeader(f'End of {part} rig')
 	
 	# --- Return the main rig group ---
 	return rig_grp

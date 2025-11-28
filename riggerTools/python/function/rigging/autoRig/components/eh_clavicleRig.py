@@ -13,9 +13,6 @@ from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.autoRig.base import core
 reload(core)
 
-from function.rigging.constraint import eh_orientLocalWorldMatrix as olm
-reload(olm)
-
 # --- Import Rig Tools (Still needed for jointAt) ---
 from function.rigging.autoRig.base import eh_rigTools as rigTools
 reload(rigTools)
@@ -198,7 +195,7 @@ def createClavicleRig(
 	#... Pattern: Add Rot Enum (add after localworld)
 	clav_ctrl.addRotEnum()
 
-	
+	core.makeHeader('End of %s rig' %full_name)
 	ClavicleRigLogger.info(f'#### End of {full_name} Rig ####')
 	
 	# Return Objects

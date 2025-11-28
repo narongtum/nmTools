@@ -1089,8 +1089,6 @@ class Node( object ) :
 		print ('Deleting object {0} ...'.format(self.name))
 		mc.delete( self.name , **kwargs)
 
-
-
 	# property ask Name object
 	# =============
 	def getName( self ) :
@@ -1115,14 +1113,6 @@ class Node( object ) :
 	def getExists( self ):
 		return mc.objExists(self)
 	exists = property(getExists , None , None , None )
-
-
-
-
-
-
-
-
 
 
 	def attr(self, attrName = ''):
@@ -2024,7 +2014,13 @@ class Attribute( object ) :
 			mc.warning(	'Connection failed, %s and %s has something went wrong.' % ( self , target )	)
 
 
+	# property: check if this attribute exists on the node
+	def _getExists(self):
+		# self.name เป็น string แบบ "node.attr"
+		return mc.objExists(self.name)
 
+	exists = property(_getExists, None, None, None)
+	
 
 
 	# Lock and hide attribute

@@ -11,10 +11,6 @@ from function.framework.reloadWrapper import reloadWrapper as reload
 from function.rigging.autoRig.base import core
 reload(core)
 
-# --- Import Matrix Constraint (New Module for Local/World) ---
-from function.rigging.constraint import eh_orientLocalWorldMatrix as olm
-reload(olm)
-
 # --- Import Matrix Constraint (Original for Parent Constraint) ---
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
@@ -41,7 +37,8 @@ def createNeckRig(
 		parentTo='ctrl_grp',
 		priorCtrl = '',
 		priorJnt='spineTop_bJnt', # Should be the top spine joint or chest
-		tmpJnt='neck_tmpJnt',     # Single joint input
+		tmpJnt='neck_tmpJnt',    # Single joint input
+		ctrl_shape = 'circle_ctrlShape',
 		charScale=1.0,
 		linkRotOrder=True
 	):
@@ -123,8 +120,6 @@ def createNeckRig(
 		if mc.objExists(priorJnt):
 			bJnt.parent(priorJnt)
 
-		# 3.3 Controller Creation
-		ctrl_shape = 'circle_ctrlShape'
 
 		zro, ctrl, gmbl = eh_adjust.create(
 			nameSpace=nameSpace,
@@ -138,8 +133,7 @@ def createNeckRig(
 			matrixConstraint=True
 		)
 		
-		if linkRotOrder:
-			ctrl.addRotEnum()
+
 
 		controllers.append(ctrl)
 
@@ -152,8 +146,8 @@ def createNeckRig(
 		# Access Zro via parent of parent (Ctrl -> Offset -> Zro)
 		neck_zro = neck_ctrl.getParent().getParent()
 		
-		olm.orientLocalWorldMatrix(
-			ctrl=neck_ctrl,
+		mtc.eh_orientLocalWorldMatrix(
+			ctrl=neck_ctrl.shape,	# Attr at shape node
 			localObj=neckRig_grp,   # Moving with body/prior
 			worldObj=parentTo,      # Static World (ctrl_grp)
 			target=neck_zro,
@@ -161,10 +155,13 @@ def createNeckRig(
 			bodyPart=f'{partName}'
 		)
 
+	#... add rotEnum after local/world
+	if linkRotOrder:
+		ctrl.addRotEnum()
 
 	# --- 5. Final Organization ---
 	# (ตัดส่วน Parenting ออกเพราะทำไปแล้วข้างบน)
-
+	core.makeHeader('End of %s rig' %partName)
 	NeckRigLogger.info(f'#### End of {partName} Rig ####')
 
 	return neckRig_grp, bind_joints, controllers

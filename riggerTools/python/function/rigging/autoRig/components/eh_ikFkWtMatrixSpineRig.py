@@ -269,6 +269,7 @@ def createSpineRig(
 	spineRig_grp.parent(priorCtrl)
 
 
+	core.makeHeader(f'End of {partName} Rig')
 	spineWtMatrixSpineLogger.info(f'#### End of {partName} Rig (Matrix) ####')
 	
 	return spineRig_grp, bind_jnt_list, spine_ctrl_list

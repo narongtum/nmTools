@@ -13,8 +13,8 @@ from function.rigging.autoRig.base import core
 reload(core)
 
 # --- Import Matrix Constraint ---
-from function.rigging.constraint import eh_orientLocalWorldMatrix as olm
-reload(olm)
+# from function.rigging.constraint import eh_orientLocalWorldMatrix as olm
+# reload(olm)
 
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
@@ -46,7 +46,7 @@ def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCe
 	"""
 	# naming logic from original
 	part = nameSpace + 'eye' + side
-	
+
 	# 1. Create Bind Joint
 	# eyeSide_bJnt = rigTools.jointAt( eyeJntNam )
 	eyeSide_bJnt = rigTools.jointAt(eyeJnt)
@@ -60,43 +60,48 @@ def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCe
 	eyeSide_ctrl.editCtrlShape(axis=charScale * 1.01)
 	eyeSide_ctrl.color = 'softBlue'
 	eyeSide_ctrl.rotateOrder = 'zxy'
-	
+
 	# Create Aim Group (Legacy logic: zeroGroup(ctrl) -> name it Aim)
 	eyeAimSide_grp = eh_adjust.createZeroGroup(eyeSide_ctrl)
 	eyeAimSide_grp.name = part + 'Aim_grp'
-	
+
 	# Create Zero Group (Legacy logic: zeroGroup(aim) -> name it Zro)
 	eyeSideZro_grp = eh_adjust.createZeroGroup(eyeAimSide_grp)
 	eyeSideZro_grp.name = part + 'Zro_grp'
-	
+
 	# Gimbal
 	eyeSideGmbl_ctrl = core.createGimbal(eyeSide_ctrl)
 	eyeSideGmbl_ctrl.rotateOrder = 'zxy'
-	
+
 	# Positioning
 	eyeSideZro_grp.matchPosition(eyeSide_bJnt)
-	eyeSideZro_grp.matchRotation(eyeSide_bJnt)
-	
+	#eyeSideZro_grp.matchRotation(eyeSide_bJnt) #... match only position because of RGT side will make alway flip
+
 	# 3. Create Eye Target
 	# targetPart = nameSpace + 'eyeTarget' + side
-	
+
+	mc.parent(eyeSideZro_grp.name, parentTo)
+
+
+
 	# Use eh_adjust for standard controller creation here
 	# Target hierarchy: Zro -> Ctrl -> Gimbal (Standard)
 	target_zro, target_ctrl, target_gmbl = eh_adjust.create(
 		nameSpace=None,
 		name=eyeTarget,
-		ctrlShape='legRGT_pov_ctrlShape',
+		ctrlShape='sphere_ctrlShape',
 		rotateOrder='zxy',
 		charScale=charScale * 0.8,
 		color='softBlue',
+		constraint=False,
 		parentTo=eyeCenCtrl, # Move zro grp under eyeCenter grp
 		rotation=(0,0,0),
 		matrixConstraint=False
 	)
-	
+
 	# Snap to Target Temp
-	target_zro.maSnap(eyeTarget)
-	
+	# target_zro.maSnap(eyeTarget) #.. no need to snap
+
 	# 4. Aim Constraint (Matrix Optimized)
 	# Original: aimVector = (0,0,1) , upVector = (0,1,0) , worldUpType = "objectrotation", worldUpObject = headJnt
 	mtc.aimConstraintMatrix(
@@ -104,26 +109,30 @@ def _createEyeSetup(nameSpace, side, eyeJnt, headJnt, charScale, parentTo, eyeCe
 		target=eyeAimSide_grp.name,
 		aimVector=(0, 0, 1),
 		upVector=(0, 1, 0),
-		worldUpObject=headJnt, # Object Rotation mode
-		maintainOffset=False
+		worldUpObject='', # Object Rotation mode
+		maintainOffset=True
 	)
-	
+
+
+
+
+
 	# 5. Joint Constraint (Matrix Optimized)
 	# Original: parentConstraint( eyeSideGmbl_ctrl , eyeSide_bJnt , mo = True)
 	mtc.parentConMatrixGPT(
 		source=eyeSideGmbl_ctrl.name,
 		target=eyeSide_bJnt.name,
-		mo=True,
+		mo=False,
 		translate=True, rotate=True, scale=True
 	)
-	
+
 	# Final Parent
-	eyeSideZro_grp.parent(parentTo)
-	
+	#eyeSideZro_grp.parent(parentTo)
+
 	# Lock attributes
 	for attr in ('rx','ry','rz','sx','sy','sz','v'):
 		target_ctrl.attr(attr).lockHide()
-
+	#... new version
 	return eyeSide_bJnt
 
 
@@ -210,7 +219,7 @@ headRig_grp.parent(priorCtrl)
 
 
 # Using Matrix Orient Switch instead of Group Constraint
-olm.orientLocalWorldMatrix(
+mtc.eh_orientLocalWorldMatrix(
 	ctrl=head_ctrl,
 	localObj=headRig_grp,   
 	worldObj=parentTo,      
@@ -254,7 +263,7 @@ jaw1Lwr_bJnt.attr('segmentScaleCompensate').value = 0
 jaw2Lwr_bJnt.attr('segmentScaleCompensate').value = 0
 
 #jaw1Upr_bJnt = None
-if mc.objExists(jaw1Upr):
+#if mc.objExists(jaw1Upr):
 jaw1Upr_bJnt = rigTools.jointAt(jaw1Upr)
 jaw1Upr_bJnt.name = nameSpace + 'jaw' + '01' +'Upr' + '_bJnt'
 jaw1Upr_bJnt.parent(head01_bJnt)
@@ -317,23 +326,24 @@ eyeCen_obj = core.Dag(eyeCen)
 eyeCen_zro, eyeCen_ctrl, eyeCen_gmbl = eh_adjust.create(
 	nameSpace=None, name=eyeCen, ctrlShape='capsule_ctrlShape',
 	rotateOrder=headRotOrder, charScale=charScale * 0.8, color=ctrl_color,
-	parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=True
+	parentTo=headGmbl_ctrl.name, rotation=(0,0,0),constraint=False, matrixConstraint=True
 )
 #eyeCen_zro.snap(eyeCen_obj) no need to snap 
 
-mc.error(eyeTargetLFT)
+#mc.error(eyeTargetLFT)
 
 # Eye Center Local/World (Matrix)
-olm.orientLocalWorldMatrix(
+mtc.eh_orientLocalWorldMatrix(
 	ctrl=eyeCen_ctrl,
 	localObj=headGmbl_ctrl, # Original: headGmbl_ctrl
 	worldObj=parentTo,
 	target=eyeCen_zro,
 	attrName='localWorld',
+	parentMode='parent',
 	bodyPart=part
 )
 
-
+'''
 
 # Create Eyes
 _createEyeSetup(nameSpace, 'LFT', eyeLFT, head01_bJnt.name, charScale, 
@@ -347,6 +357,9 @@ _createEyeSetup(nameSpace, 'RGT', eyeRGT, head01_bJnt.name, charScale,
 				eyeTarget=eyeTargetRGT)
 
 
+
+'''
+
 # --- 7. Final Organization ---
 # if mc.objExists(priorJnt):
 # 	mtc.parentConMatrixGPT(
@@ -357,4 +370,4 @@ _createEyeSetup(nameSpace, 'RGT', eyeRGT, head01_bJnt.name, charScale,
 # 	)
 
 HeadRigLogger.info(f'#### End of {partName} Rig ####')
-return head01_bJnt.name
+# return head01_bJnt.name

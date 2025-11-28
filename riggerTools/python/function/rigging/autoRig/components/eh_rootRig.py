@@ -66,13 +66,13 @@ def createMasterGrp(nameSpace='', charScale=1.0, PROJECT_DICT={}):
 	snapNull_grp = core.Null('snapNull_grp')
 
 	# ... Master Control (Global Scale)
-	master_ctrl = core.Dag('Master_ctrl')
+	master_ctrl = core.Dag('master_ctrl')
 	master_ctrl.nmCreateController('placement_ctrlShape')
 	master_ctrl.editCtrlShape(axis=charScale * 1.4)
 	master_ctrl.setColor(color_part_dict.get('primary', 'yellow'))
 	
 	# ... Placement/Root Control (Global Movement)
-	placement_ctrl = core.Dag('Placement_ctrl')
+	placement_ctrl = core.Dag('placement_ctrl')
 	placement_ctrl.nmCreateController('fly_ctrlShape')
 	placement_ctrl.editCtrlShape(axis=charScale * 1.0)
 	placement_ctrl.setColor(color_part_dict.get('secondary', 'white'))

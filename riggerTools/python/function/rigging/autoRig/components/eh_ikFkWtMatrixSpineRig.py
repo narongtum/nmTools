@@ -92,6 +92,9 @@ def createSpineRig(
 		rig_jnt.attr('radius').value = 2.0
 		spine_jnt_list.append(rig_jnt)
 
+		#... Hide joint
+		rig_jnt.attr('visibility').value = 0
+
 		# Determine Shape
 		if num == 0: ctrlShape = secondary_ctrl_shape
 		elif num == 3: ctrlShape = primary_ctrl_shape

@@ -218,7 +218,7 @@ def createHeadRig(
 
 	# Using Matrix Orient Switch instead of Group Constraint
 	mtc.eh_orientLocalWorldMatrix(
-		ctrl=head_ctrl,
+		ctrl=head_ctrl.shape,
 		localObj=headRig_grp,   
 		worldObj=parentTo,      
 		target=headZro_grp,
@@ -240,132 +240,127 @@ def createHeadRig(
 
 
 	# --- 6. Face Setup ---
-	# if faceCtrl:
-	HeadRigLogger.info("Starting Face Setup...")
+	if faceCtrl:
+		HeadRigLogger.info("Starting Face Setup...")
 
-	# JAW SETUP
-	jaw1Lwr = tmpJnt[3]
-	jaw2Lwr = tmpJnt[4]
-	jaw1Upr = tmpJnt[6]
+		# JAW SETUP
+		jaw1Lwr = tmpJnt[3]
+		jaw2Lwr = tmpJnt[4]
+		jaw1Upr = tmpJnt[6]
 
-	# if mc.objExists(jaw1Lwr):
-	# Create Joints
-	jaw1Lwr_bJnt = rigTools.jointAt(jaw1Lwr)
-	jaw2Lwr_bJnt = rigTools.jointAt(jaw2Lwr)
-	jaw1Lwr_bJnt.name = nameSpace + 'jaw' + '01' +'Lwr' + '_bJnt'
-	jaw2Lwr_bJnt.name = nameSpace + 'jaw' + '02' +'Lwr' + '_bJnt'
+		# if mc.objExists(jaw1Lwr):
+		# Create Joints
+		jaw1Lwr_bJnt = rigTools.jointAt(jaw1Lwr)
+		jaw2Lwr_bJnt = rigTools.jointAt(jaw2Lwr)
+		jaw1Lwr_bJnt.name = nameSpace + 'jaw' + '01' +'Lwr' + '_bJnt'
+		jaw2Lwr_bJnt.name = nameSpace + 'jaw' + '02' +'Lwr' + '_bJnt'
 
-	jaw1Lwr_bJnt.parent(head01_bJnt)
-	jaw2Lwr_bJnt.parent(jaw1Lwr_bJnt)
-	jaw1Lwr_bJnt.attr('segmentScaleCompensate').value = 0
-	jaw2Lwr_bJnt.attr('segmentScaleCompensate').value = 0
+		jaw1Lwr_bJnt.parent(head01_bJnt)
+		jaw2Lwr_bJnt.parent(jaw1Lwr_bJnt)
+		jaw1Lwr_bJnt.attr('segmentScaleCompensate').value = 0
+		jaw2Lwr_bJnt.attr('segmentScaleCompensate').value = 0
 
-	#jaw1Upr_bJnt = None
-	#if mc.objExists(jaw1Upr):
-	jaw1Upr_bJnt = rigTools.jointAt(jaw1Upr)
-	jaw1Upr_bJnt.name = nameSpace + 'jaw' + '01' +'Upr' + '_bJnt'
-	jaw1Upr_bJnt.parent(head01_bJnt)
-
-
-
-	# Upper Jaw Ctrl
-	# if jaw1Upr_bJnt:
-	part = nameSpace + 'jaw01Upr'
-	# eh_adjust.create returns (zro, ctrl, gmbl)
-	jUpr_zro, jUpr_ctrl, jUpr_gmbl = eh_adjust.create(
-		nameSpace=None, name=jaw1Upr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
-		rotateOrder=headRotOrder, charScale=charScale * 3.5, color=ctrl_color,
-		parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
-	)
-	#jUpr_zro.snap(jaw1Upr_bJnt)
-	#mtc.parentConMatrixGPT(jUpr_gmbl.name, jaw1Upr_bJnt.name, mo=True)
-
-	# mc.error(jaw1Upr_bJnt.name)
-
-	# Lower Jaw Ctrl (01)
-	part = nameSpace + 'jaw01Lwr'
-	jLwr1_zro, jLwr1_ctrl, jLwr1_gmbl = eh_adjust.create(
-	nameSpace=None, name=jaw1Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
-	rotateOrder=headRotOrder, charScale=charScale * 2.8, color=ctrl_color,
-	parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=True
-	)
-	#jLwr1_zro.snap(jaw1Lwr_bJnt)
-	jLwr1_ctrl.moveShape(move=(0, charScale * -1.8, charScale * 2.8))
-	#mtc.parentConMatrixGPT(jLwr1_gmbl.name, jaw1Lwr_bJnt.name, mo=True)
-
-	# Lower Jaw Ctrl (02 - Gum)
-	part = nameSpace + 'jaw02Lwr'
-	jLwr2_zro, jLwr2_ctrl, jLwr2_gmbl = eh_adjust.create(
-	nameSpace=None, name=jaw2Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
-	rotateOrder=headRotOrder, charScale=charScale * 2.8, color=ctrl_color,
-	parentTo=jLwr1_gmbl.name, rotation=(0,0,0), matrixConstraint=True
-	)
-	jLwr2_ctrl.moveShape(move=(0, 0, charScale * 4.2))
-
-	#jLwr2_zro.snap(jaw2Lwr_bJnt)
-	#mtc.parentConMatrixGPT(jLwr2_gmbl.name, jaw2Lwr_bJnt.name, mo=True)
-
-
-	# EYE CENTER SETUP
-	eyeCen = tmpJnt[8]
-	eyeTargetLFT = tmpJnt[9]
-	eyeTargetRGT = tmpJnt[10]
-	eyeLFT = tmpJnt[1]
-	eyeRGT = tmpJnt[2]
-
-	# if mc.objExists(eyeCen):
-	part = nameSpace + 'eyeCenter' + '_tmpJnt'
-
-	eyeCen_obj = core.Dag(eyeCen)
+		#jaw1Upr_bJnt = None
+		#if mc.objExists(jaw1Upr):
+		jaw1Upr_bJnt = rigTools.jointAt(jaw1Upr)
+		jaw1Upr_bJnt.name = nameSpace + 'jaw' + '01' +'Upr' + '_bJnt'
+		jaw1Upr_bJnt.parent(head01_bJnt)
 
 
 
-	# Eye Center Ctrl
-	eyeCen_zro, eyeCen_ctrl, eyeCen_gmbl = eh_adjust.create(
-		nameSpace=None, name=eyeCen, ctrlShape='capsule_ctrlShape',
-		rotateOrder=headRotOrder, charScale=charScale * 0.8, color=ctrl_color,
-		parentTo=headGmbl_ctrl.name, rotation=(0,0,0),constraint=False, matrixConstraint=True
-	)
-	#eyeCen_zro.snap(eyeCen_obj) no need to snap 
+		# Upper Jaw Ctrl
+		# if jaw1Upr_bJnt:
+		part = nameSpace + 'jaw01Upr'
+		# eh_adjust.create returns (zro, ctrl, gmbl)
+		jUpr_zro, jUpr_ctrl, jUpr_gmbl = eh_adjust.create(
+			nameSpace=None, name=jaw1Upr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+			rotateOrder=headRotOrder, charScale=charScale * 3.5, color=ctrl_color,
+			parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
+		)
+		#jUpr_zro.snap(jaw1Upr_bJnt)
+		#mtc.parentConMatrixGPT(jUpr_gmbl.name, jaw1Upr_bJnt.name, mo=True)
 
-	#mc.error(eyeTargetLFT)
+		# mc.error(jaw1Upr_bJnt.name)
 
-	# Eye Center Local/World (Matrix)
-	mtc.eh_orientLocalWorldMatrix(
-		ctrl=eyeCen_ctrl.shape,
-		localObj=headGmbl_ctrl, # Original: headGmbl_ctrl
-		worldObj=parentTo,
-		target=eyeCen_zro,
-		attrName='localWorld',
-		parentMode='parent',
-		bodyPart=part
-	)
+		# Lower Jaw Ctrl (01)
+		part = nameSpace + 'jaw01Lwr'
+		jLwr1_zro, jLwr1_ctrl, jLwr1_gmbl = eh_adjust.create(
+		nameSpace=None, name=jaw1Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+		rotateOrder=headRotOrder, charScale=charScale * 2.8, color=ctrl_color,
+		parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=True
+		)
+		#jLwr1_zro.snap(jaw1Lwr_bJnt)
+		jLwr1_ctrl.moveShape(move=(0, charScale * -1.8, charScale * 2.8))
+		#mtc.parentConMatrixGPT(jLwr1_gmbl.name, jaw1Lwr_bJnt.name, mo=True)
 
+		# Lower Jaw Ctrl (02 - Gum)
+		part = nameSpace + 'jaw02Lwr'
+		jLwr2_zro, jLwr2_ctrl, jLwr2_gmbl = eh_adjust.create(
+		nameSpace=None, name=jaw2Lwr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
+		rotateOrder=headRotOrder, charScale=charScale * 2.8, color=ctrl_color,
+		parentTo=jLwr1_gmbl.name, rotation=(0,0,0), matrixConstraint=True
+		)
+		jLwr2_ctrl.moveShape(move=(0, 0, charScale * 4.2))
 
-
-	# Create Eyes
-	_createEyeSetup(nameSpace, 'LFT', eyeLFT, head01_bJnt.name, charScale, 
-					parentTo=headGmbl_ctrl.name, 
-					eyeCenCtrl=eyeCen_ctrl.name, 
-					eyeTarget=eyeTargetLFT)
-					
-	_createEyeSetup(nameSpace, 'RGT', eyeRGT, head01_bJnt.name, charScale, 
-					parentTo=headGmbl_ctrl.name, 
-					eyeCenCtrl=eyeCen_ctrl.name, 
-					eyeTarget=eyeTargetRGT)
-
+		#jLwr2_zro.snap(jaw2Lwr_bJnt)
+		#mtc.parentConMatrixGPT(jLwr2_gmbl.name, jaw2Lwr_bJnt.name, mo=True)
 
 
+		# EYE CENTER SETUP
+		eyeCen = tmpJnt[8]
+		eyeTargetLFT = tmpJnt[9]
+		eyeTargetRGT = tmpJnt[10]
+		eyeLFT = tmpJnt[1]
+		eyeRGT = tmpJnt[2]
+
+		# if mc.objExists(eyeCen):
+		part = nameSpace + 'eyeCenter' + '_tmpJnt'
+
+		eyeCen_obj = core.Dag(eyeCen)
 
 
-	# --- 7. Final Organization ---
-	# if mc.objExists(priorJnt):
-	# 	mtc.parentConMatrixGPT(
-	# 		source=priorJnt,
-	# 		target=headRig_grp.name,
-	# 		mo=True,
-	# 		translate=True, rotate=True, scale=True
-	# 	)
+		# Eye Center Ctrl
+		eyeCen_zro, eyeCen_ctrl, eyeCen_gmbl = eh_adjust.create(
+			nameSpace=None, name=eyeCen, ctrlShape='capsule_ctrlShape',
+			rotateOrder=headRotOrder, charScale=charScale * 0.8, color=ctrl_color,
+			parentTo=headGmbl_ctrl.name, rotation=(0,0,0),constraint=False, matrixConstraint=True
+		)
+		#eyeCen_zro.snap(eyeCen_obj) no need to snap 
 
+		#mc.error(eyeTargetLFT)
+
+		# Eye Center Local/World (Matrix)
+		mtc.eh_orientLocalWorldMatrix(
+			ctrl=eyeCen_ctrl.shape,
+			localObj=headGmbl_ctrl, # Original: headGmbl_ctrl
+			worldObj=parentTo,
+			target=eyeCen_zro,
+			attrName='localWorld',
+			parentMode='parent',
+			bodyPart=part
+		)
+
+
+		# Create Eyes
+		_createEyeSetup(nameSpace, 'LFT', eyeLFT, head01_bJnt.name, charScale, 
+						parentTo=headGmbl_ctrl.name, 
+						eyeCenCtrl=eyeCen_ctrl.name, 
+						eyeTarget=eyeTargetLFT)
+						
+		_createEyeSetup(nameSpace, 'RGT', eyeRGT, head01_bJnt.name, charScale, 
+						parentTo=headGmbl_ctrl.name, 
+						eyeCenCtrl=eyeCen_ctrl.name, 
+						eyeTarget=eyeTargetRGT)
+
+		# --- 7. Final Organization ---
+		# if mc.objExists(priorJnt):
+		# 	mtc.parentConMatrixGPT(
+		# 		source=priorJnt,
+		# 		target=headRig_grp.name,
+		# 		mo=True,
+		# 		translate=True, rotate=True, scale=True
+		# 	)
+
+	mc.select(deselect=True)
 	HeadRigLogger.info(f'#### End of {partName} Rig ####')
-	# return head01_bJnt.name
+	return head01_bJnt.name

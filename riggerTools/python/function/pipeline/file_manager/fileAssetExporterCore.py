@@ -142,6 +142,13 @@ class FileAssetExporter(QtWidgets.QMainWindow):
 		self.update_input_path_with_scene_name()
 
 
+	def delete_for_characterModel_logic(self):
+		found_targets=[]
+		all_transforms = mc.ls(type='transform')
+		for obj in all_transforms:
+			if re.search(r"(?i)(?:^|_)(wp|weapon)(?:_|$)", obj):
+				found_targets.append(obj)
+		return found_targets
 
 
 
@@ -285,16 +292,63 @@ class FileAssetExporter(QtWidgets.QMainWindow):
 		exportFBX.exportFBX_with_path(found_targets, fileName = FBX_new_name, path = self.fbx_folder_path)
 
 	def on_export_type2_clicked(self):
-		# name = self.ui.text_2_lineEdit.text()
-		# checked = self.ui.asset_2_checkBox.isChecked()
-		found_targets = mc.ls(sl=True)
+		print('EXPORTMAIWA')
+
+
+		delete_obj = self.delete_for_characterModel_logic()
+
+		if delete_obj == []:
+			QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: Has Found nothing to delete")
+			
+		else:
+			QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: Has {delete_obj} nothing to delete")
+			mc.delete(delete_obj)
+
+			# checked = self.ui.asset_2_checkBox.isChecked()	
+			FBX_new_name = self.ui.text_result_02_lineEdit.text()
+
+
+		found_targets = []
+		# Search case-insensitive
+		all_transforms = mc.ls(type='transform')
+		for name in GROUP_NAMES:
+			for obj in all_transforms:
+				if obj.lower() == name.lower():
+					found_targets.append(obj)
+
 		if not found_targets:
 			QtWidgets.QMessageBox.warning(self, "Not Found", "No matching 'Export_grp' and 'Model_grp' found in scene.")
-			return	
+			return
+
+		# Select object 
+		mc.select(clear=True)
+		mc.select(found_targets)
+
+		# Unparent to world if parent exists
+		for node in found_targets:
+			parent = mc.listRelatives(node, parent=True)
+			if parent:
+				mc.parent(node, world=True)
+
+		#... selected
+		mc.select(found_targets)
+		#... get new name
 		FBX_new_name = self.ui.text_result_02_lineEdit.text()
+
+		#... get destination export part
+		self.fbx_folder_path = fileTools.findAppropriateFBXFolder()
+
+		FileManagerLog.debug(f'\n{found_targets}')
+		FileManagerLog.debug(f'\n{FBX_new_name}')
+		FileManagerLog.debug(f'\n{self.fbx_folder_path}')
+
 		self.fbx_folder_path = fileTools.findAppropriateFBXFolder()
 		exportFBX.exportFBX_with_path(found_targets, fileName = FBX_new_name, path = self.fbx_folder_path)
-		QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: {name}\nChecked: {checked}")
+		print('EXPORTSIWA')
+		# QtWidgets.QMessageBox.information(self, "Export Type 2", f"Export: {name}\nChecked: {checked}")
+
+
+
 
 	def on_commit_clicked(self):
 		if not self.fbx_folder_path:

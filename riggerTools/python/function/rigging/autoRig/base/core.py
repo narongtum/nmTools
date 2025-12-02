@@ -13,8 +13,7 @@
 
 sys.path.append('D:/sysTools/nmTools_github/riggerTools/python')
 from function.framework.reloadWrapper import reloadWrapper as reload
-from function.rigging.autoRig.base import core
-reload(core)
+
 
 
 
@@ -519,10 +518,166 @@ def list_joints_from_skincluster(skincluster):
 	return jnts
 
 
+
+#... Find base name polish by Gemini
+def parse_node_name(node_input):
+	"""
+	Decomposes a node name into components (base, side, type, etc.).
+	Supports both Prefix style (L_Name_Type) and Suffix style (NameLFT_Type).
+
+	Args:
+		node_input (str or object): The node name or object to parse.
+
+	Returns:
+		dict: A dictionary containing:
+			  - 'base_name': Name without suffix type (e.g., 'L_arm').
+			  - 'side': Detected side ('L', 'R', 'C', 'LFT', 'RGT') or None.
+			  - 'reverse_side': The opposite side code or None.
+			  - 'is_prefix_style': Boolean (True if L_Name, False if NameLFT).
+			  - 'pure_name': Name stripped of side and numbers (e.g., 'arm').
+			  - 'mirror_name': Full base name flipped to opposite side.
+	"""
+	
+	# --- 1. Robust Input Handling ---
+	# Convert whatever input to string safely
+	try:
+		if isinstance(node_input, str):
+			obj_name = node_input
+		elif hasattr(node_input, 'name'): # Supports PyMel or custom classes
+			obj_name = node_input.name() if callable(node_input.name) else node_input.name
+		else:
+			obj_name = str(node_input) # Fallback for OpenMaya objects or others
+			
+		CoreLogger.info(f"Parsing: {obj_name}")
+	except Exception as e:
+		mc.error(f"Invalid input for parsing: {node_input}. Error: {e}")
+		return None
+
+	name_split = obj_name.split('_')
+
+	# Basic Validation
+	if len(name_split) < 2:
+		# Warning instead of Error allows script to handle non-compliant names gracefully
+		mc.warning(f"Naming convention violation: '{obj_name}' requires underscores.")
+		return {
+			'base_name': obj_name, 'side': None, 'reverse_side': None,
+			'is_prefix_style': True, 'pure_name': obj_name, 'mirror_name': None
+		}
+
+	# Initialize Variables
+	side = None
+	reverse_side = None
+	is_prefix_style = True
+	
+	# We assume the last part is the suffix/type (e.g., _jnt, _ctrl) and exclude it for base_name
+	# Exception: If naming is strictly 2 parts like "L_arm", excluding last part leaves "L"
+	# Logic: Join everything except the last element
+	base_name = '_'.join(name_split[:-1])
+	
+	pure_name = ""
+
+	# --- 2. Determine Style & Side ---
+	
+	# Style A: Prefix (Capital Lead) -> e.g., "L_arm_jnt"
+	# Check if first token is length 1 (L, R, C, M)
+	if len(name_split[0]) == 1:
+		is_prefix_style = True
+		side_token = name_split[0]
+		
+		if side_token in ['L', 'R', 'C', 'M']:
+			side = side_token
+		
+		# Remove "L_" (first 2 chars) to get pure name logic
+		# Safety check: ensure base_name is long enough
+		pure_name = base_name[2:] if len(base_name) > 2 else base_name
+
+	# Style B: Suffix/Inside (Side Follow) -> e.g., "armLFT_jnt"
+	else:
+		is_prefix_style = False
+		# Iterate to find side tag
+		# Check known tags
+		if 'LFT' in base_name:
+			side = 'LFT'
+		elif 'RGT' in base_name:
+			side = 'RGT'
+		elif 'CEN' in base_name: # Handle center if needed
+			side = 'CEN'
+			
+		# Extract pure name
+		if side:
+			pure_name = base_name.replace(side, '')
+		else:
+			pure_name = base_name
+
+	# Cleanup Pure Name (Remove trailing numbers like arm01 -> arm)
+	#... I want to keep '01'
+	# pure_name = re.sub(r'\d+$', '', pure_name)
+
+	# --- 3. Determine Mirror/Reverse Side ---
+	side_map = {
+		'L': 'R', 'R': 'L',
+		'LFT': 'RGT', 'RGT': 'LFT',
+		'C': 'C', 'CEN': 'CEN'
+	}
+	
+	reverse_side = side_map.get(side)
+	
+	# Generate Mirror Name (e.g., L_arm -> R_arm)
+	mirror_name = None
+	if side and reverse_side:
+		# Use replace with count=1 to avoid replacing unintended parts
+		# e.g. "Left_Leg_L" -> "Right_Leg_L" (if simple replace) vs specific logic
+		if is_prefix_style:
+			# Reconstruct for precision: Replace first token
+			new_split = list(name_split[:-1]) # Copy list excluding suffix
+			if new_split[0] == side:
+				new_split[0] = reverse_side
+			mirror_name = '_'.join(new_split)
+		else:
+			# Replace side string in base name
+			mirror_name = base_name.replace(side, reverse_side)
+
+	# --- 4. Return Dictionary ---
+	result = {
+		'base_name': base_name,         # e.g., L_arm01
+		'side': side,                   # e.g., L
+		'reverse_side': reverse_side,   # e.g., R
+		'is_prefix_style': is_prefix_style, # True
+		'pure_name': pure_name,         # e.g., arm
+		'mirror_name': mirror_name      # e.g., R_arm01
+	}
+	
+	# CoreLogger.info(f"Parsed Result: {result}") # Optional debug
+	return result
+
+
+
+
+'''
+info = parse_node_name("L_arm_jnt")
+
+if info['side'] == 'L':
+    print(f"Creating mirror for: {info['mirror_name']}")
+
+# หรือใช้ .get เพื่อความปลอดภัย
+print(info.get('pure_name'))
+'''
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 return_name = core.check_name_style(name = 'spine01_L02_ply')
 '''
-#... Latest here using this function only
+#... Latest here using this function only to find base name
 def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 	#... check input
 

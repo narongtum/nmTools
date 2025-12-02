@@ -89,6 +89,7 @@ def create(
 		ctrlShape, 
 		rotateOrder='yzx', 
 		parentTo=None, 
+		parentJntTo=None,
 		charScale=1, 
 		color='yellow', 
 		rotation=(0,0,0), 
@@ -113,6 +114,11 @@ def create(
 		part = f"{nameSpace}{base_name}"
 		
 	ControllerLogger.info(f"Creating Controller for: {part}")
+
+
+	if parentJntTo:
+		if mc.nodeType(name) == 'joint':
+			mc.parent(name, parentJntTo)
 
 	# 2. Create Controller & Shape
 	controller_ctrl = core.Dag(part + '_ctrl')
@@ -167,5 +173,8 @@ def create(
 			controllerZro_grp.parent(parentTo)
 		else:
 			ControllerLogger.warning(f"Parent target '{parentTo}' does not exist.")
+
+
+
 
 	return controllerZro_grp, controller_ctrl, controllerGmbl_ctrl

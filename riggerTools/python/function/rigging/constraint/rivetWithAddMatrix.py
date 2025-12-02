@@ -116,8 +116,9 @@ def rivetMatrixWeight(data_list):
 			mc.warning('Target not found: {}'.format(target))
 			continue
 			
-		base_name = core.findBaseName(target)
-		target_rivet_name = base_name + '_Rivet'
+		base_name = core.check_name_style(target)[0]	
+		# base_name = core.findBaseName(target)
+		target_rivet_name = base_name + '_rivet'
 		
 		print('\n# Processing Rivet: {}'.format(target))
 
@@ -128,7 +129,7 @@ def rivetMatrixWeight(data_list):
 		
 		# 1.2 Invert Parent Matrix Node (To handle local space of the target)
 		# This ensures the target stays in place relative to its parent
-		invert_node_name = '{}_invertParent_mulMtx'.format(target_rivet_name)
+		invert_node_name = '{}_invertParent'.format(target_rivet_name)
 		invert_mul_mtx = core.MultMatrix(invert_node_name)
 		
 		# 1.3 Decompose Matrix (To drive Translate/Rotate/Scale)
@@ -203,13 +204,24 @@ def rivetMatrixWeight(data_list):
 		mc.connectAttr('{}.parentInverseMatrix[0]'.format(target), '{}.matrixIn[1]'.format(invert_mul_mtx.name))
 		
 		# 3.3 Connect Result -> Decompose
-		invert_mul_mtx.attr('matrixSum') >> decompose_node.attr('inputMatrix')
+		# invert_mul_mtx.attr('matrixSum') >> decompose_node.attr('inputMatrix')
+
+
+		# 1.3 [UPDATE] Pick Matrix Node (To clean matrix before decompose)
+		pick_node = core.PickMatrix(f'{base_name}')
+		invert_mul_mtx.attr('matrixSum') >> pick_node.attr('inputMatrix')
+		pick_node.attr('outputMatrix') >> decompose_node.attr('inputMatrix')
+
 		
 		# 3.4 Drive the Target
 		# We drive Translate and Rotate. Scale is optional depending on needs (added here for completeness)
 		decompose_node.attr('outputTranslate') >> item['target'] + '.translate'
 		decompose_node.attr('outputRotate') >> item['target'] + '.rotate'
 		decompose_node.attr('outputScale') >> item['target'] + '.scale'
+
+		# 3.5 [UPDATE] Set Target Color to White
+		target_dag = core.Dag(item['target'])
+		target_dag.color = 'white'
 		
 		riveAddMatrixLog.info('   > Rivet created successfully for {}'.format(target))
 

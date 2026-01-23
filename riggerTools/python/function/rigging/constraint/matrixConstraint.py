@@ -132,44 +132,35 @@ def _getLocalOffset(source, target):
 
 
 '''
-# ------------------------------------------------------------------------------
-# Helper: Matrix Calculation
-# ------------------------------------------------------------------------------
-def _get_offset_matrix(source, target):
-	"""
-	Calculates the offset matrix: Target World * Inverse Source World.
-	Returns a list of 16 floats (row-major).
-	"""
-	# Get MDagPaths
-	sel = om.MSelectionList()
-	sel.add(source)
-	sel.add(target)
-	
-	source_path = sel.getDagPath(0)
-	target_path = sel.getDagPath(1)
-	
-	# Get Inclusive Matrix (World Matrix)
-	source_mat = source_path.inclusiveMatrix()
-	target_mat = target_path.inclusiveMatrix()
-	
-	# Calculate Offset: Target * Inverse(Source)
-	offset_mat = target_mat * source_mat.inverse()
-	
-	return list(offset_mat)
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+
+mtc.eh_orientLocalWorldMatrix(
+	ctrl = 'spine03_ctrl',
+	localObj = 'spine02_gmbCtrl',
+	worldObj = 'noTouch_grp',
+	target='spine03Zro_grp',
+	attrName='parentLocalWorld',
+	parentMode='orient',  # 'parent' = T+R, 'orient' = R only
+	bodyPart='spine'
 '''
+
+
+
+
 
 # ------------------------------------------------------------------------------
 # Main Function: Parent Local/World Matrix (Translate + Rotate / Rotate-only)
 # ------------------------------------------------------------------------------
 
 def eh_orientLocalWorldMatrix(
-	ctrl,
-	localObj,
-	worldObj,
-	target,
-	attrName='parentLocalWorld',
+	ctrl = 'spine03_ctrlShape',
+	localObj = 'spine02_gmbCtrl',
+	worldObj = 'noTouch_grp',
+	target='spine03Zro_grp',
+	attrName='Local_World',
 	parentMode='orient',  # 'parent' = T+R, 'orient' = R only
-	bodyPart=None
+	bodyPart='spine'
 ):
 	"""
 	Matrix-based Local/World space switch with optional parent/orient behavior.

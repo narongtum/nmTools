@@ -82,5 +82,11 @@ This toolset includes and integrates several amazing community tools:
 *   Comet Scripts by Michael Comet
 *   DoraSkinWeight by Hiroki Itoh
 
+
+
+
+# If file name prefix is 'eh_' is mean ai generate file
+
+
 ---
 *Developed with ❤️ by Narongtum*

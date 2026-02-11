@@ -374,6 +374,21 @@ def create_advanced_ik_rig(nameSpace, legType, side, priorJnt, legRig_grp, jnt_g
     # In Maya, we just parent IK3 handle to the Ankle Ctrl
     ik3_ikh.parent(ankleIkGmbl_ctrl)
     
+    # Standard Stretch (Applied to IK2 Chain - The Driver)
+    # We apply stretch to IK2 because it's the main structural chain.
+    # IK Jnts will follow IK2/IK3 via constraints.
+    print('This maybe error')
+    stretchNode = create.iKStretch(
+        ikJnt=(ik2Jnts[0].name, ik2Jnts[1].name, ik2Jnts[2].name), # Apply to IK2
+        ikCtrl=(ikRoot.name, ankleIk_ctrl.name),
+        region=legType,
+        side=side,
+        scaleCtrl='placement_ctrl',
+        noTouchGrp=noTouchGrp,
+        lowNam=names['ankle'] # This helps internal naming in stretch func
+    )
+    pmaNode = stretchNode[0]
+    
     # Drive Main Chain from IK2/IK3
     # The Main Chain (ikJnts) needs to follow the automation.
     # We constrain Main Mid to IK2 Mid
@@ -412,25 +427,18 @@ def create_advanced_ik_rig(nameSpace, legType, side, priorJnt, legRig_grp, jnt_g
                  ('upStretch', 'float', None, None), ('lowStretch', 'float', None, None), 
                  ('Upper_IK', 'long', 0, 1)]
     for attr, typ, mn, mx in attr_list:
-        args = {'longName': attr, 'attributeType': typ, 'k': True, 'dv': 0}
+        # Use mc.addAttr directly to ensure it works
+        if mc.attributeQuery(attr, node=ankleIk_ctrl.name, exists=True):
+            continue
+            
+        args = {'longName': attr, 'attributeType': typ, 'k': True, 'defaultValue': 0}
         if mn is not None: args['minValue'] = mn
         if mx is not None: args['maxValue'] = mx
-        ankleIk_ctrl.addAttribute(**args)
+        
+        mc.addAttr(ankleIk_ctrl.name, **args)
     
     ankleIk_ctrl.hideArnoldNode()
     
-    # Standard Stretch (Applied to Main Chain)
-    stretchNode = create.iKStretch(
-        ikJnt=(ikJnts['up'].name, ikJnts['mid'].name, ikJnts['low'].name),
-        ikCtrl=(ikRoot.name, ankleIk_ctrl.name),
-        region=legType,
-        side=side,
-        scaleCtrl='placement_ctrl',
-        noTouchGrp=noTouchGrp,
-        lowNam=names['ankle']
-    )
-    pmaNode = stretchNode[0]
-
     # FK/IK Switch Attr
     stick_ctrl.addAttribute(attributeType='float', longName='FK_IK', minValue=0, maxValue=1, defaultValue=0, keyable=True)
 

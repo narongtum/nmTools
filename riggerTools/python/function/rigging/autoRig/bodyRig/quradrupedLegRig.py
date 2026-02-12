@@ -606,7 +606,7 @@ def quradrupedLegRig(		nameSpace = '' 	,
 
 
 
-	# Create attribute for rollBackAnkle
+	#... Create attribute for rollBackAnkle
 	ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'toe_Aim' , k = True , minValue = 0 , maxValue = 1  ,dv = 0 )
 	ankleIk_ctrl.addAttribute(  attributeType = 'long' ,ln = 'autoStretch' 	, k = True , minValue = 0 , maxValue = 1 ,dv = 0 )
 	ankleIk_ctrl.addAttribute(  attributeType = 'float' ,ln = 'upStretch' 	, k = True  ,dv = 0 )

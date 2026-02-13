@@ -1,6 +1,5 @@
-# 01_quardpedRearLegRig_doubleIK_01_start_v001
-
-# find new method to rig animal back leg rig "digitigrade" leg
+#... 01_quardpedRearLegRig_doubleIK_rig_01_start_0001
+#... find new method to rig animal back leg rig "digitigrade" leg
 
 import maya.cmds as mc
 
@@ -26,8 +25,8 @@ parentTo = 'ctrl_grp'
 side = 'LFT'			
 region = 'backLeg'	
 # get the temp joint	
-tmpJnt = ('hipLFT_tmpJnt','kneeLFT_tmpJnt','hockLFT_tmpJnt','ankleLFT_tmpJnt','legPovBackLFT_tmpJnt')
-pxyKneeJnt = 'proxyKneeLFT_tmpJnt'
+tmpJnt = ('upLegBackLFT_tmpJnt','midLegBackLFT_tmpJnt','lowLegBackLFT_tmpJnt','ankleBackLFT_tmpJnt','legPovBackLFT_tmpJnt')
+pxyKneeJnt = 'proxyMidLegBackLFT_tmpJnt'
 priorJnt = ''			
 ikhGrp = 'ikh_grp' 					
 noTouchGrp = 'noTouch_grp' 			
@@ -39,13 +38,8 @@ ribbonName = ('upFrontLeg', 'lwrFrontLeg')
 charScale = 1
 
 
-
-
-
-
 if len(tmpJnt) != 5:
 	mc.error('the joint number is not match.')
-
 
 
 
@@ -58,8 +52,8 @@ ankle = core.Dag( tmpJnt[3] )
 pov = core.Dag( tmpJnt[4] )
 
 pxyKnee = core.Dag( pxyKneeJnt )
-#pxyHip = core.Dag( tmpJnt[0] )
-#pxyAnkle = core.Dag( tmpJnt[3] )
+pxyHip = core.Dag( tmpJnt[0] )
+pxyAnkle = core.Dag( tmpJnt[3] )
 
 hipName = hip.makeRawName()
 kneeName = knee.makeRawName()
@@ -120,7 +114,7 @@ pxyKnee_pxyJnt.parent( pxyHip_pxyJnt )
 pxyAnkle_pxyJnt.parent( pxyKnee_pxyJnt )
 
 # set orient y along
-mc.select(pxyHip_pxyJnt.name,r=True)
+mc.select(pxyHip_pxyJnt.name, r=True)
 mc.joint(e=True, orientJoint = 'yzx', secondaryAxisOrient = 'yup', children=True, zeroScaleOrient=True)
 
 
@@ -139,7 +133,7 @@ proxy_ikh.eff = hipName + 'Proxy'+ side + '_eff'
 proxy_ikh.attr('v').value = 1
 
 
-ik_grp = core.Null( 'ik_grp')
+ik_grp = core.Null('ik_grp')
 main_ikh.parent(ik_grp)
 proxy_ikh.parent(ik_grp)
 
@@ -155,8 +149,10 @@ ankle_ik_pos.snapPoint( ankle_ikJnt )
 
 
 # lowerLegIK_ctrl = core.Dag( name +'Ik'+ side + '_ctrl' )
-ANKLE_IK_CTRL = core.Dag('ANKLE_IK_CTRL')
+ANKLE_IK_CTRL = core.Dag('ANKLE_IK_ctrl')
 ANKLE_IK_CTRL.nmCreateController('circle_ctrlShape')
+ANKLE_IK_CTRL.editCtrlShape( axis = charScale * 4.0 )
+ANKLE_IK_CTRL.setColor('yellow')
 
 ANKLE_IK_CTRL.snap(ankle_ik_pos)
 ANKLE_IK_CTRL.parent(ankle_ik_pos)
@@ -167,8 +163,11 @@ ANKLE_IK_CTRL.parent(ankle_ik_pos)
 hock_ik_pos = core.Null( 'hock_ik_pos')
 hock_ik_pos.snap( pxyAnkle_pxyJnt )
 
-HOCK_IK_CTRL = core.Dag('HOCK_IK_CTRL')
-HOCK_IK_CTRL.nmCreateController('cube_ctrlShape')
+HOCK_IK_CTRL = core.Dag('HOCK_IK_ctrl')
+HOCK_IK_CTRL.nmCreateController('orientAxisC_ctrlShape')
+HOCK_IK_CTRL.editCtrlShape( axis = charScale * 1.5 )
+HOCK_IK_CTRL.setColor('yellow')
+
 HOCK_IK_CTRL.snap( hock_ik_pos )
 HOCK_IK_CTRL.parent(hock_ik_pos)
 
@@ -178,14 +177,13 @@ hock_ik_pos.parent(ANKLE_IK_CTRL)
 
 
 
-# make hock_ik_pos grp  aimcon >>>>>  proxyKnee   , ANKLE_IK_CTRL is world up
+#... make hock_ik_pos grp  aimcon >>>>>  proxyKnee   , ANKLE_IK_CTRL is world up
 hock_aimCons = core.aimConstraint( pxyKnee_pxyJnt, hock_ik_pos, mo = False , aimVector = (0,1,0) ,upVector = (0,0,1)  ,worldUpType = "objectrotation", worldUpObject = ANKLE_IK_CTRL.name )
 
 
-
-
-
+#... Aim constraint hock joint to hock controller using ankle controller as world up
 core.aimConstraint( HOCK_IK_CTRL , hock_ikJnt , mo = True , aimVector = (0,1,0) ,upVector = (0,0,1)  ,worldUpType = "objectrotation", worldUpObject = ANKLE_IK_CTRL.name )
+
 
 
 # now create constraint for ikh as usual

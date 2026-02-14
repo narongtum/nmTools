@@ -82,61 +82,67 @@ alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'
 
 #... newr version using this instead
 NODE_short_dict = {
-    'nurbsSurface': 'nrb',
-    'nurbsCurve': 'ctrl',
-    'condition': 'cnd',
-    'blendColors': 'blc',
-    'distanceBetween': 'dtw',
-    'expression': 'exp',
-    'file': 'file',
-    'lambert': 'lambert',
-    'place2dTexture': 'place2d',
-    'plusMinusAverage': 'pma',
-    'skinCluster': 'skc',
-    'multiplyDivide': 'mdv',
-    'reverse': 'rev',
-    'mesh': 'ply',
-    'cluster': 'clus',
-    'parentConstraint': 'parCons',
-    'scaleConstraint': 'scaleCons',
-    'orientConstraint': 'orienCons',
-    'pointConstraint': 'poinCons',
-    'ikHandle': 'ikh',
-    'ikEffector': 'ike',
-    'poleVectorConstraint': 'poleCons',
-    'joint': 'jnt',
-    'group': 'grp',
-    'locator': 'loc',
-    'clamp': 'cmp',
-    'pointOnCurveInfo': 'poci',
-    'decomposeMatrix': 'deComp',
-    'animCurveU': 'animCrv',
-    'multDoubleLinear': 'mdl',
-    'phong': 'phong',
-    'shadingEngine': 'sg',
-    'motionPath': 'mp',
-    'cMuscleSmartConstraint': 'musleCons',
-    'addDoubleLinear': 'adl',
-    'aimConstraint': 'aimCons',
-    'animCurveUU': 'animUU',
-    'curveInfo': 'crvInfo',
-    'follicle': 'flc',
-    'remapValue': 'remap',
-    'composeMatrix': 'composeMatrix',
-    'vectorProduct': 'vecProd',
-    'fourByFourMatrix': 'fBFMat',
-    'multMatrix': 'multMatrix',
-    'aimMatrix': 'aimMatrix',
-    'wtAddMatrix': 'wtAddMat',
-    'eulerToQuat': 'eulToQuat',
-    'quatInvert': 'quatInv',
-    'quatProd': 'quatProd',
-    'quatToEuler': 'quatToEul',
-    'blendMatrix': 'blendMat',
-    'blendShape': 'bsh',
-    'network': 'meta',
-    'setRange': 'setRange',
-    'deformSquash': 'defSquash' 
+	'nurbsSurface': 'nrb',
+	'nurbsCurve': 'ctrl',
+	'condition': 'cnd',
+	'blendColors': 'blc',
+	'distanceBetween': 'dtw',
+	'expression': 'exp',
+	'file': 'file',
+	'lambert': 'lambert',
+	'place2dTexture': 'place2d',
+	'plusMinusAverage': 'pma',
+	'skinCluster': 'skc',
+	'multiplyDivide': 'mdv',
+	'reverse': 'rev',
+	'mesh': 'ply',
+	'cluster': 'clus',
+	'parentConstraint': 'parCons',
+	'scaleConstraint': 'scaleCons',
+	'orientConstraint': 'orienCons',
+	'pointConstraint': 'poinCons',
+	'ikHandle': 'ikh',
+	'ikEffector': 'ike',
+	'poleVectorConstraint': 'poleCons',
+	'joint': 'jnt',
+	'group': 'grp',
+	'locator': 'loc',
+	'clamp': 'cmp',
+	'pointOnCurveInfo': 'poci',
+	'decomposeMatrix': 'deComp',
+	'animCurveU': 'animCrv',
+	'multDoubleLinear': 'mdl',
+	'phong': 'phong',
+	'shadingEngine': 'sg',
+	'motionPath': 'mp',
+	'cMuscleSmartConstraint': 'musleCons',
+	'addDoubleLinear': 'adl',
+	'aimConstraint': 'aimCons',
+	'animCurveUU': 'animUU',
+	'curveInfo': 'crvInfo',
+	'follicle': 'flc',
+	'remapValue': 'remap',
+	'composeMatrix': 'composeMatrix',
+	'vectorProduct': 'vecProd',
+	'fourByFourMatrix': 'fBFMat',
+	'multMatrix': 'multMatrix',
+	'aimMatrix': 'aimMatrix',
+	'wtAddMatrix': 'wtAddMat',
+	'eulerToQuat': 'eulToQuat',
+	'quatInvert': 'quatInv',
+	'quatProd': 'quatProd',
+	'quatToEuler': 'quatToEul',
+	'blendMatrix': 'blendMat',
+	'blendShape': 'bsh',
+	'network': 'meta',
+	'setRange': 'setRange',
+	'deformSquash': 'defSquash' ,
+	'blendWeighted':'blendWeighted',
+	'animCurveUL':'animCurveUL',
+	'deformSine':'defSine',
+	'blendTwoAttr':'bta',
+	'pickMatrix':'pickMat'
+
 }
 
 #... Example usage
@@ -430,23 +436,23 @@ standard_jnt_dict = {
 
 
 ue_jnt_dict = {
-    'root': ['root', 'weapon_l', 'weapon_r'],
-    'spine': ['pelvis', 'spine_01', 'spine_02', 'spine_03'],
-    'head': ['neck_01', 'head', 'eye_l', 'eye_r'],
-    'L_arm': ['clavicle_l', 'upperarm_l', 'lowerarm_l', 'hand_l',
-              'thumb_01_l', 'thumb_02_l', 'thumb_03_l',
-              'index_01_l', 'index_02_l', 'index_03_l',
-              'middle_01_l', 'middle_02_l', 'middle_03_l',
-              'ring_01_l', 'ring_02_l', 'ring_03_l',
-              'pinky_01_l', 'pinky_02_l', 'pinky_03_l'],
-    'R_arm': ['clavicle_r', 'upperarm_r', 'lowerarm_r', 'hand_r',
-              'thumb_01_r', 'thumb_02_r', 'thumb_03_r',
-              'index_01_r', 'index_02_r', 'index_03_r',
-              'middle_01_r', 'middle_02_r', 'middle_03_r',
-              'ring_01_r', 'ring_02_r', 'ring_03_r',
-              'pinky_01_r', 'pinky_02_r', 'pinky_03_r'],
-    'L_leg': ['thigh_l', 'calf_l', 'foot_l', 'ball_l'],
-    'R_leg': ['thigh_r', 'calf_r', 'foot_r', 'ball_r']
+	'root': ['root', 'weapon_l', 'weapon_r'],
+	'spine': ['pelvis', 'spine_01', 'spine_02', 'spine_03'],
+	'head': ['neck_01', 'head', 'eye_l', 'eye_r'],
+	'L_arm': ['clavicle_l', 'upperarm_l', 'lowerarm_l', 'hand_l',
+			  'thumb_01_l', 'thumb_02_l', 'thumb_03_l',
+			  'index_01_l', 'index_02_l', 'index_03_l',
+			  'middle_01_l', 'middle_02_l', 'middle_03_l',
+			  'ring_01_l', 'ring_02_l', 'ring_03_l',
+			  'pinky_01_l', 'pinky_02_l', 'pinky_03_l'],
+	'R_arm': ['clavicle_r', 'upperarm_r', 'lowerarm_r', 'hand_r',
+			  'thumb_01_r', 'thumb_02_r', 'thumb_03_r',
+			  'index_01_r', 'index_02_r', 'index_03_r',
+			  'middle_01_r', 'middle_02_r', 'middle_03_r',
+			  'ring_01_r', 'ring_02_r', 'ring_03_r',
+			  'pinky_01_r', 'pinky_02_r', 'pinky_03_r'],
+	'L_leg': ['thigh_l', 'calf_l', 'foot_l', 'ball_l'],
+	'R_leg': ['thigh_r', 'calf_r', 'foot_r', 'ball_r']
 }
 
 
@@ -484,19 +490,19 @@ import maya.cmds as mc
 
 # Rename function
 def rename_joints(standard_dict, nanuq_dict):
-    for body_part in standard_dict:
-        # Iterate over joints in each part
-        for i, standard_jnt in enumerate(standard_dict[body_part]):
-            if i < len(nanuq_dict[body_part]):  # Ensure there is a corresponding nanuq joint
-                nanuq_jnt = nanuq_dict[body_part][i]
-                
-                # Check if the standard joint exists in the scene
-                if mc.objExists(standard_jnt):
-                    # Rename to the corresponding nanuq joint
-                    mc.rename(standard_jnt, nanuq_jnt)
-                    print(f"Renamed {standard_jnt} to {nanuq_jnt}")
-                else:
-                    print(f"{standard_jnt} does not exist.")
+	for body_part in standard_dict:
+		# Iterate over joints in each part
+		for i, standard_jnt in enumerate(standard_dict[body_part]):
+			if i < len(nanuq_dict[body_part]):  # Ensure there is a corresponding nanuq joint
+				nanuq_jnt = nanuq_dict[body_part][i]
+				
+				# Check if the standard joint exists in the scene
+				if mc.objExists(standard_jnt):
+					# Rename to the corresponding nanuq joint
+					mc.rename(standard_jnt, nanuq_jnt)
+					print(f"Renamed {standard_jnt} to {nanuq_jnt}")
+				else:
+					print(f"{standard_jnt} does not exist.")
 
 
 

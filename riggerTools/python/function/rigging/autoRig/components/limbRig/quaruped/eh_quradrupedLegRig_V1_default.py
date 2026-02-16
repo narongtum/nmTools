@@ -423,25 +423,8 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	upperLeg_ikJnt.parent( armIkJnt_grp )
 
 
-	uprIK = upperLeg_ikJnt.name
-	midIK = midLeg_ikJnt.name
-	lwrIK = lowerLeg_ikJnt.name
-	ankleIK = ankle_ikJnt.name
-	ikJntLst = ( uprIK,midIK,lwrIK,ankleIK )
-
-	# Create IK handle 
-	# [0] is upper leg , [2] is lower leg
-	QuardrupedLogger.info('ENABLE IK SPRING SOLVER.')
-	
-	try:
-		# lowerIk_ikh = core.IkRp(	startJoint = ikJntLst[0], endEffector = ikJntLst[2]	)
-		lowerIk_ikh = core.IkSpring(	startJoint = ikJntLst[0], endEffector = ikJntLst[2]	) # try to change for better result
-	except:
-		mc.error("Please enable Maya IkSpring solver by typing 'ikSpringSolver' before use this module.")
-
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	# Transfer preferredAngle from guide to IK joint
-	# Move after IK creation to prevent the solver from resetting these values
 	# = = = = = = = = = = = = = = = = = = = = = = = = = = = #
 	guide_map_ik = [
 		(tmpJnt[0], upperLeg_ikJnt),
@@ -461,9 +444,34 @@ def quradrupedLegRig(		nameSpace = '' 	,
 					ik_jnt.attr(target_attr).value = val
 					QuardrupedLogger.info('Set %s.%s to %s from guide.' %(ik_jnt.name, target_attr, val))
 
+	
+	uprIK = upperLeg_ikJnt.name
+	midIK = midLeg_ikJnt.name
+	lwrIK = lowerLeg_ikJnt.name
+	ankleIK = ankle_ikJnt.name
+	ikJntLst = ( uprIK,midIK,lwrIK,ankleIK )
+
+	
+
+	# Create IK angle 
+	# [0] is upper leg , [2] is lower leg
+
+	
+	QuardrupedLogger.info('ENABLE IK SPRING SOLVER.')
+	
+	
+	try:
+		# lowerIk_ikh = core.IkRp(	startJoint = ikJntLst[0], endEffector = ikJntLst[2]	)
+		lowerIk_ikh = core.IkSpring(	startJoint = ikJntLst[0], endEffector = ikJntLst[2]	) # try to change for better result
+	except:
+		mc.error("Please enable Maya IkSpring solver by typing 'ikSpringSolver' before use this module.")
+
 	lowerIk_ikh.name = rawName[9] + side + '_ikSpring_handle'
 	lowerIk_ikh.eff = rawName[9] + side + '_eff'
 	lowerIk_ikh.attr('v').value = 0
+	mc.error('break 3')
+	
+	# mc.error('break 446')
 	# 
 	# 		Create ik handle controller 
 	# 

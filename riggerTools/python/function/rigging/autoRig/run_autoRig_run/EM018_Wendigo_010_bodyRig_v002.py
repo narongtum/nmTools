@@ -4,8 +4,6 @@
 
 import maya.cmds as mc
 
-# sys.path.append(r'D:\True_Axion\Tools\riggerTools\python\axionTools\rigging\autoRig\bodyRig')
-
 from function.rigging.autoRig.base import rigTools
 reload( rigTools )
 
@@ -38,11 +36,7 @@ from function.rigging.autoRig.bodyRig import fingerRig
 reload( fingerRig )
 
 
-# from function.rigging.autoRig.bodyRig import fingerCurl
-# reload( fingerCurl )
 
-# from function.rigging.autoRig.bodyRig import localFinger
-# reload( localFinger )
 
 
 # change module name please update
@@ -51,12 +45,6 @@ reload( fingerCurl )
 # change module name please update
 from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
 reload( finloCurl )
-
-
-
-
-
-
 
 from function.rigging.autoRig.bodyRig import bipedLegRig
 reload( bipedLegRig )
@@ -291,12 +279,6 @@ fingerCurl.mainFingerCurlRig( 	nameSpace = nameSpace 	 ,
 
 
 
-
-
-
-
-
-
 # 10 Local finger curl # = = = = = #
 finloCurl.localFingerAllRig( 		nameSpace = nameSpace, parentTo='ctrl_grp' , side = 'LFT' , 
 									fingerName = ('thumb','index','middle','ring','pinky') ,
@@ -327,38 +309,6 @@ propRig.propRig(	nameSpace = nameSpace		,
 # add base finger spread 
 baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadLFT_tmpJnt' , stick = stickNamLFT , fingerGrpNam = fingerLFT )
 baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadRGT_tmpJnt' , stick = stickNamRGT , fingerGrpNam = fingerRGT )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -417,36 +367,7 @@ rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamRGT  , spaces = ['world
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#.... additional arm and leg at the head
+#.... Additional arm and leg at the head following character design
 
 
 

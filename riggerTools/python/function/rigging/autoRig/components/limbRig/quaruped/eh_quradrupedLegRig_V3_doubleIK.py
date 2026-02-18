@@ -161,11 +161,11 @@ ball_ikh.eff = rawName[2] + side + '_eff'
 
 
 #... IK4
-toe_ikh = core.DoIk( startJoint = ball_ikJnt , endEffector = toe_ikJnt , solverType = 'ikSCsolver' )
+toe_ikh = core.DoIk( startJoint = ball_ikJnt , endEffector = toe_ikJnt , solverType = 'ikRPsolver' )
 # toe_ikh.name = rawName[5] + side + '_ikh'
 toe_ikh.name = 'ikHandle7'
 toe_ikh.eff = rawName[5] + side + '_eff'
-toe_ikh.attr('v').value = showInfo # Hide it
+toe_ikh.attr('v').value = 1
 
 '''
 
@@ -185,12 +185,9 @@ if priorJnt:
 '''
 
 
-# rootName = upperLeg_bJnt.name.split('_')[0][:-3]
+#... Create controller
 
 rootName = rawName[0]
-# [0] = 'upperLegLFT'
-# [0][:-3]	= 'upperLeg'
-
 
 colorSide = 'blue'
 rootName =  rootName + 'Ik' + side
@@ -216,18 +213,31 @@ rootPxyIk_parCons.name = region +'Pxy' + side + 'Jnt_parCons'
 
 
 
+
+#... hock ctrl
+name = nameSpace + rawName[2] 
+hock_ctrl = core.Dag( name +'Ik'+ side + '_ctrl' )
+hock_ctrl.nmCreateController('cube_ctrlShape')
+hock_ctrl.editCtrlShape( axis = charScale * 2.1 )
+hock_ctrl.setColor(colorSide)
+
+hockZro_grp = rigTools.zeroGroup( hock_ctrl )
+hockZro_grp.name = rawName[2]  + 'Zro_grp'
+hockZro_grp.snapPoint(hock)
+
+
+
+
+#... ankle ctrl
 name = nameSpace + rawName[3] 
-ankleIk_ctrl = core.Dag( name +'Ik'+ side + '_ctrl' )
-ankleIk_ctrl.nmCreateController('cube_ctrlShape')
-ankleIk_ctrl.editCtrlShape( axis = charScale * 20 )
-ankleIk_ctrl.setColor(colorSide)
+ankle_ctrl = core.Dag( name +'Ik'+ side + '_ctrl' )
+ankle_ctrl.nmCreateController('cube_ctrlShape')
+ankle_ctrl.editCtrlShape( axis = charScale * 1.5 )
+ankle_ctrl.setColor(colorSide)
 
-
-ankleIkZro_grp = rigTools.zeroGroup( ankleIk_ctrl )
-ankleIkZro_grp.name = rawName[3]  + 'Zro_grp'
-ankleIkZro_grp.snapPoint(ankle)
-
-
+ankleZro_grp = rigTools.zeroGroup( ankle_ctrl )
+ankleZro_grp.name = rawName[3]  + 'Zro_grp'
+ankleZro_grp.snapPoint(ankle)
 
 
 
@@ -244,11 +254,11 @@ ankleRev_ikJnt.parent(ballRev_ikJnt)
 
 #... IK5
 ballRev_ikh = core.DoIk( startJoint = ballRev_ikJnt , endEffector = ankleRev_ikJnt , solverType = 'ikSCsolver' )
-ballRev_ikh.name = rawName[5] + side+'Rev' + '_ikh'
+# ballRev_ikh.name = rawName[5] + side+'Rev' + '_ikh'
 ballRev_ikh.eff = rawName[5] + side+'Rev' + '_eff'
 ballRev_ikh.attr('v').value = showInfo 
 
-
+ballRev_ikh.name = 'ikHandle8'
 
 
 #... IK5

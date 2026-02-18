@@ -465,7 +465,7 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	lowerIk_ikh.eff = rawName[9] + side + '_eff'
 	lowerIk_ikh.attr('v').value = 0
 
-	mc.error('for check preferred angle')
+	# mc.error('for check preferred angle')
 	# 
 	# 		Create ik handle controller 
 	# 

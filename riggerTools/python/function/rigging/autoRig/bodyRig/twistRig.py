@@ -149,6 +149,7 @@ def twistRigAuto(			nameSpace = '',
 
 
 	upperTwist01_jnt = core.Joint()
+	# upperTwist01_jnt.name  = parent_jnt + '_twJnt'
 	upperTwist01_jnt.name = nameSpace + 'upper%sTwist01%s_twJnt' %(region,side) 
 	twistShapeJnt = core.Locator('tmpName')
 	# Swap shape node of locator to joint 
@@ -160,7 +161,8 @@ def twistRigAuto(			nameSpace = '',
 
 
 	upperTwist02_jnt = core.Joint()
-	upperTwist02_jnt.name = nameSpace +'upper%sTwist02%s_twJnt' %(region,side) 
+	# upperTwist02_jnt.name  = child_jnt + '_twJnt'
+	upperTwist02_jnt.name = nameSpace +'upper%sTwist02%s_twJnt' %(region,side)
 	twistShapeJnt = core.Locator('tmpName')
 	# Swap shape node of locator to joint 
 	mc.parent( twistShapeJnt.shape , upperTwist02_jnt.name , s = True , r = True )
@@ -208,6 +210,7 @@ def twistRigAuto(			nameSpace = '',
 
 	# Create locator for guide upVector
 	upVectorGuide_loc = core.Locator( nameSpace + 'upper%sAimUp%s_loc' %(region,side) )
+	# upVectorGuide_loc = core.Locator( nameSpace + 'parent_jnt')
 	upVectorGuide_loc.maSnap(upperTwist01_jnt)
 	#upVectorGuide_loc.freeze()
 	#upVectorGuide_loc.attr('translateY').value = 0.5

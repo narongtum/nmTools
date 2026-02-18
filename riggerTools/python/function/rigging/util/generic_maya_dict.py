@@ -1,6 +1,7 @@
 #... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
 #... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
 #... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
+#... Generig dictionary file USE THIS FILE INSTEAD mayaNodeDict
 
 '''
 
@@ -280,6 +281,16 @@ COLOR_part_dict = { 	'right': 'red',
 						'offset':'white',
 						'gimbel': 'white'}
 
+
+def askColor(side):
+	if side == 'LFT':
+		return 'red'
+	elif side == 'RGT':
+		return 'blue'
+	elif side == 'MID':
+		return 'yellow'
+	else:
+		return 'white'
 
 
 
@@ -883,15 +894,6 @@ eachFinger_behavior_dict = {
 
 
 
-def askColor(side):
-	if side == 'LFT':
-		return 'red'
-	elif side == 'RGT':
-		return 'blue'
-	elif side == 'MID':
-		return 'yellow'
-	else:
-		return 'white'
 
 
 

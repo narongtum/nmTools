@@ -1,7 +1,3 @@
-# Standard autorig
-# version 1.05
-
-
 import maya.cmds as mc
 
 # sys.path.append(r'D:\True_Axion\Tools\riggerTools\python\axionTools\rigging\autoRig\bodyRig')
@@ -38,25 +34,11 @@ from function.rigging.autoRig.bodyRig import fingerRig
 reload( fingerRig )
 
 
-# from function.rigging.autoRig.bodyRig import fingerCurl
-# reload( fingerCurl )
-
-# from function.rigging.autoRig.bodyRig import localFinger
-# reload( localFinger )
-
-
-# change module name please update
 from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
 reload( fingerCurl )
-# change module name please update
+
 from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
 reload( finloCurl )
-
-
-
-
-
-
 
 from function.rigging.autoRig.bodyRig import bipedLegRig
 reload( bipedLegRig )
@@ -79,16 +61,17 @@ reload(pc)
 from function.rigging.autoRig import util 
 reload(util)
 
-from function.rigging.autoRig.bodyRig import quradrupedLegRig as quRig
+from function.rigging.autoRig.bodyRig import eh_quradrupedLegRig_ext as quRig
 reload(quRig)
 
+#from function.rigging.autoRig.bodyRig import eh_quradrupedLegRig02_ext as quRig
+#reload(quRig)
 
 nameSpace = '' 
 
 from function.rigging.autoRig.bodyRig import fkIkGenRig
 reload( fkIkGenRig )
 
-#charScale = 1
 ribbon = False
 
 # = = = = = Check charactor hight  = = = = = #
@@ -108,12 +91,32 @@ hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace ,
 				charScale = charScale, cogPivot = True   )
 
 
+
+
+'''
 # = = = = = 03 Create spine IK Rig  = = = = = #
 topSpine_bJnt = torsoRig.torsoRig( 
 									nameSpace = nameSpace									,
-						 			ctrl_grp = 'ctrl_grp'							,
-						 			tmpJnt = ( 'spine01_tmpJnt', 'spine02_tmpJnt' )	,
-						 			charScale = charScale 									)
+									ctrl_grp = 'ctrl_grp'							,
+									tmpJnt = ( 'spine01_tmpJnt', 'spine02_tmpJnt' )	,
+									charScale = charScale 									)
+
+'''
+
+
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , parentTo = 'ctrl_grp'  ,
+					tmpJnt = 	( 	'spine01_tmpJnt','spine02_tmpJnt', 'spine03_tmpJnt', 'spine04_tmpJnt'   )	,
+					charScale = 0.1*charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_ctrl',
+					side = '' ,ctrlShape = 'neck_ctrlShape'  , localWorld = True , 
+					color = 'yellow' , curlCtrl = True ,suffix = '_bJnt'	)[2][-1]
+
+
+topSpine_bJnt = topSpine_bJnt.name
+
+
 
 
 
@@ -140,7 +143,6 @@ headRig.headRig(
 					priorJnt = neck_bJnt	,
 					charScale = charScale	,
 					linkRotOrder = True			)
-
 
 
 
@@ -178,7 +180,7 @@ clavRGT_bJnt = clavicleRig.clavicleRig(		nameSpace = nameSpace 					,
 # arm LFT Side
 stickNamLFT, handLFT_bJnt= armRig.armRigExt(
 
-				nameSpace = '' 	,				
+				nameSpace = nameSpace 	,				
 				charScale = charScale	,			
 				parentTo = 'ctrl_grp' 	,			
 				side = 'LFT'	,
@@ -305,6 +307,37 @@ baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadRGT_tmpJnt' , s
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # = = = = = 11 Leg Back LFT = = = = = #
 quRig.quradrupedLegRig(		nameSpace = nameSpace 	,	
 							parentTo = 'ctrl_grp' 	,		
@@ -350,6 +383,272 @@ quRig.quradrupedLegRig(		nameSpace = nameSpace 	,
 # add space switch
 rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamLFT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', neck_bJnt, topSpine_bJnt, hip_bJnt ] )
 rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamRGT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', neck_bJnt, topSpine_bJnt, hip_bJnt ] )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#.... ADDITIONAL arm and leg at the head
+
+
+
+# = = = = = 06 clavicleRig LFT = = = = = #
+clavUprLFT_bJnt = clavicleRig.clavicleRig(		nameSpace = 'upr' , 
+										parentTo = 'ctrl_grp' ,
+										side = 'LFT',
+										tmpJnt = ( 	'uprclavLFT_tmpJnt'  ),
+										priorJnt = 'head01_bJnt'	,
+										charScale = charScale )
+
+
+#... I know it wired but put namespace + joint in maya scene  Ex 'uprupperArmLFT_tmpJnt'
+#... but in arg just joint name without namespace
+
+from function.rigging.autoRig.bodyRig import armRig
+reload(armRig)
+
+#... hand LFT Side
+stickHHandLFT, HhandLFT_bJnt= armRig.armRigExt(
+
+				nameSpace = 'upr' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'LFT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperArmLFT_tmpJnt' ,	
+						'lowerArmLFT_tmpJnt', 	 
+						'handLFT_tmpJnt' ,	
+						'elbowPovLFT_tmpJnt' ),
+				priorJnt = clavUprLFT_bJnt	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,			
+				nullGrp = 'snapNull_grp',			
+				jnt_grp =  'jnt_grp'	,			
+				povShape = 'sphereAxis',
+				keepFkIkBoth = False,
+				ribbon = False,
+				ribbonRes = 'low', 
+				ribbonName = ('upArm', 'lwrArm'),
+				showInfo = False )
+				
+				
+# LOWER ARM # = = = = = 08 Create finger LFT = = = = = #
+	
+from function.rigging.autoRig.bodyRig import fingerRig
+reload( fingerRig )
+
+handLwrLFT = fingerRig.fingerRigExt( 	
+								nameSpace = 'upr' ,
+								side = 'LFT', fingerNum = 3 , 
+								fingerName = ['thumb', 'index', 'middle', 'ring', 'pinky'], 
+								charScale = charScale ,priorJnt = HhandLFT_bJnt ,stickNam = stickHHandLFT )
+								#charScale= charScale, stickNam = stickNamLFT)
+
+# = = = = = 09 Main finger curl = = = = = #
+fingerCurl.mainFingerCurlRig( 	nameSpace = 'upr' 	 ,
+								fingerName = ('thumb','index','middle','ring','pinky') , 
+								side = 'LFT'  , numCtrl = 3 , zroNam = 'Zro_grp' , 
+								offsetNam = 'Offset_grp' , stickNam = stickHHandLFT )
+# 10 Local finger curl # = = = = = #
+finloCurl.localFingerAllRig( 		nameSpace = 'upr', parentTo='ctrl_grp' , side = 'LFT' , 
+									fingerName = ('thumb','index','middle','ring','pinky') ,
+									charScale= charScale, numCtrl = 3, stickNam = stickHHandLFT)
+
+
+
+from function.rigging.autoRig.bodyRig import fkIkTwistGenRig as fkg
+reload(fkg)
+fkg.fkIkTwistGenRig(
+
+				nameSpace = 'upB' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'LFT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperLegLFT_tmpJnt' ,	
+						'lowerLegLFT_tmpJnt', 	 
+						'ankleLFT_tmpJnt' ,	
+						'legPovLFT_tmpJnt' ),
+				priorJnt = clavUprLFT_bJnt	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,			
+				nullGrp = 'snapNull_grp',			
+				jnt_grp =  'jnt_grp'	,
+				showInfo = False ,
+				ribbon = False,	
+				ribbonRes = 'low',
+				ribbonName = ('upLeg', 'lwrLeg'),
+				propCtrl = False,
+				keepFkIkBoth = False,	
+				povShape = 'sphereAxis',
+				ikPosi = None ,
+				linkRotOrder = True ,
+				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
+				creTwistJnt = True ,
+				stickShape = 'stickCircle_Y_long_ctrlShape',
+				alongAxis = 'y' ,
+				pinMethod = 'matrix',
+				povPosi = 'front'
+				)
+
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+#... brach at head
+L_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('L_uprBranchA01_bJnt','L_uprBranchA02_bJnt', 'L_uprBranchA03_bJnt'),
+					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+L_branchB = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('L_uprBranchB01_bJnt','L_uprBranchB02_bJnt', 'L_uprBranchB03_bJnt','L_uprBranchB04_bJnt'),
+					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+
+
+
+
+
+
+
+					
+
+# = = = = = 06 clavicleRig RGT = = = = = #
+clavUprRGT_bJnt = clavicleRig.clavicleRig(		nameSpace = 'upr' , 
+										parentTo = 'ctrl_grp' ,
+										side = 'RGT',
+										tmpJnt = ( 	'uprclavRGT_tmpJnt'  ),
+										priorJnt = 'head01_bJnt'	,
+										charScale = charScale )
+
+
+#... I know it wired but put namespace + joint in maya scene  Ex 'uprupperArmLFT_tmpJnt'
+#... but in arg just joint name without namespace
+
+from function.rigging.autoRig.bodyRig import armRig
+reload(armRig)
+
+#... hand RGT Side
+stickHHandRGT, HhandRGT_bJnt= armRig.armRigExt(
+
+				nameSpace = 'upr' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'RGT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperArmRGT_tmpJnt' ,	
+						'lowerArmRGT_tmpJnt', 	 
+						'handRGT_tmpJnt' ,	
+						'elbowPovRGT_tmpJnt' ),
+				priorJnt = clavUprRGT_bJnt	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,			
+				nullGrp = 'snapNull_grp',			
+				jnt_grp =  'jnt_grp'	,			
+				povShape = 'sphereAxis',
+				keepFkIkBoth = False,
+				ribbon = False,
+				ribbonRes = 'low', 
+				ribbonName = ('upArm', 'lwrArm'),
+				showInfo = False )
+				
+				
+# LOWER ARM # = = = = = 08 Create finger RGT = = = = = #
+	
+from function.rigging.autoRig.bodyRig import fingerRig
+reload( fingerRig )
+
+handLwrRGT = fingerRig.fingerRigExt( 	
+								nameSpace = 'upr' ,
+								side = 'RGT', fingerNum = 3 , 
+								fingerName = ['thumb', 'index', 'middle', 'ring', 'pinky'], 
+								charScale = charScale ,priorJnt = HhandRGT_bJnt ,stickNam = stickHHandRGT )
+								#charScale= charScale, stickNam = stickNamRGT)
+
+# = = = = = 09 Main finger curl = = = = = #
+fingerCurl.mainFingerCurlRig( 	nameSpace = 'upr' 	 ,
+								fingerName = ('thumb','index','middle','ring','pinky') , 
+								side = 'RGT'  , numCtrl = 3 , zroNam = 'Zro_grp' , 
+								offsetNam = 'Offset_grp' , stickNam = stickHHandRGT )
+# 10 Local finger curl # = = = = = #
+finloCurl.localFingerAllRig( 		nameSpace = 'upr', parentTo='ctrl_grp' , side = 'RGT' , 
+									fingerName = ('thumb','index','middle','ring','pinky') ,
+									charScale= charScale, numCtrl = 3, stickNam = stickHHandRGT)
+
+
+
+from function.rigging.autoRig.bodyRig import fkIkTwistGenRig as fkg
+reload(fkg)
+fkg.fkIkTwistGenRig(
+
+				nameSpace = 'upB' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'RGT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperLegRGT_tmpJnt' ,	
+						'lowerLegRGT_tmpJnt', 	 
+						'ankleRGT_tmpJnt' ,	
+						'legPovRGT_tmpJnt' ),
+				priorJnt = clavUprRGT_bJnt	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,			
+				nullGrp = 'snapNull_grp',			
+				jnt_grp =  'jnt_grp'	,
+				showInfo = False ,
+				ribbon = False,	
+				ribbonRes = 'low',
+				ribbonName = ('upLeg', 'lwrLeg'),
+				propCtrl = False,
+				keepFkIkBoth = False,	
+				povShape = 'sphereAxis',
+				ikPosi = None ,
+				linkRotOrder = True ,
+				ctrlShape = 'fk_ctrlShape', #... ctrl shape for fk ctrl only
+				creTwistJnt = True ,
+				stickShape = 'stickCircle_Y_long_ctrlShape',
+				alongAxis = 'y' ,
+				pinMethod = 'matrix',
+				povPosi = 'front'
+				)
+
+
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+#... brach at head
+R_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('R_uprBranchA01_bJnt','R_uprBranchA02_bJnt', 'R_uprBranchA03_bJnt'),
+					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'R',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
 
 
 

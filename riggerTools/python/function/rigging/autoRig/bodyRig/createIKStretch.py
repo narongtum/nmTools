@@ -13,6 +13,12 @@ import math
 def mag( v ):
 	return( math.sqrt( pow(v[0], 2) + pow(v[1], 2) + pow(v[2], 2) ) )
 
+
+
+# 'front' (Front Leg / Straight Chain)
+# 'back' (Back Leg / Zig-Zag Chain)
+
+
 def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) , 
 					ikCtrl = ('ikRoot' , 'ankleIk_ctrl') , region = ''	, 
 					side = '' , scaleCtrl = 'placement_ctrl'	,

@@ -96,7 +96,8 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					charScale = 1, priorJnt = 'head01_bJnt',side = 'LFT',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
-					parentToPriorJnt = False, parentMatrix = False,
+					parentToPriorJnt = False,
+					parentCtrlToPriorJnt = False, parentMatrix = False,
 					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True):
 
 	#... find base name
@@ -306,6 +307,11 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 			base_name = core.check_name_style(name = jntLst[num])[0]
 			parCons.name = f'{base_name}_psCons'
 			print ('\nPARENT IT DONE...')
+
+
+	if parentCtrlToPriorJnt == True:
+		if priorJnt:
+			core.parentConstraint(priorJnt, rigGrp.name, mo=True )
 
 
 	misc.makeHeader('End of {0}'.format(__name__))

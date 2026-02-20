@@ -368,6 +368,42 @@ quRig.quradrupedLegRig(		nameSpace = nameSpace 	,
 
 
 
+from function.rigging.autoRig.addRig import createFkRig
+reload(createFkRig)
+
+
+out_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('L_toeOut01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackLFT_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+mid_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('L_toeMid01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackLFT_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+in_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('L_inToe01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackLFT_bJnt',side = 'LFT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+
+
+
+
+
 # = = = = = 11 Leg Back RGT = = = = = #		
 quRig.quradrupedLegRig(		nameSpace = nameSpace 	,	
 							parentTo = 'ctrl_grp' 	,		
@@ -385,6 +421,45 @@ quRig.quradrupedLegRig(		nameSpace = nameSpace 	,
 							ribbonRes = 'low'	,				
 							ribbonName = ('upBackLeg', 'lwrBackLeg'),	
 							charScale = charScale		)	
+
+
+
+
+out_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('R_toeOut01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackRGT_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+mid_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('R_toeMid01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackRGT_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+in_toe = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'ctrl_grp',
+					jntLst = ('R_inToe01_bJnt',),
+					charScale = charScale*0.25, priorJnt = 'ankleBackRGT_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					parentCtrlToPriorJnt = True, parentMatrix = False,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -521,7 +596,7 @@ reload(createFkRig)
 
 #... brach at head
 L_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'head01_gmbCtrl',
-					jntLst = ('L_uprBranchA01_bJnt','L_uprBranchA02_bJnt', 'L_uprBranchA03_bJnt'),
+					jntLst = ('L_uprBranchA01_bJnt','L_uprBranchA02_bJnt', 'L_uprBranchA03_bJnt','L_uprBranchA04_bJnt'),
 					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'LFT',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
@@ -651,7 +726,7 @@ reload(createFkRig)
 
 #... brach at head
 R_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'head01_gmbCtrl',
-					jntLst = ('R_uprBranchA01_bJnt','R_uprBranchA02_bJnt', 'R_uprBranchA03_bJnt'),
+					jntLst = ('R_uprBranchA01_bJnt','R_uprBranchA02_bJnt', 'R_uprBranchA03_bJnt','R_uprBranchA04_bJnt'),
 					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'R',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',

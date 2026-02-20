@@ -182,16 +182,6 @@ def fkIkTwistGenRig(
 
 
 
-
-
-
-
-
-
-
-
-
-
 	#... Adjust rotate order
 	upper_bJnt.rotateOrder = rotOrder
 	middle_bJnt.rotateOrder = rotOrder
@@ -205,15 +195,6 @@ def fkIkTwistGenRig(
 
 	# Parent it to prior joint
 	upper_bJnt.parent( priorJnt )
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1123,7 +1104,7 @@ def fkIkTwistGenRig(
 	# so put manual for user drive value insted		
 	
 	
-	# sys.exit('BREAK')
+	
 	follow_grp = tr.twistRigAuto(	 
 									nameSpace = nameSpace ,
 									parent_jnt = upper_buffJnt.name , 

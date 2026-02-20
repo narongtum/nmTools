@@ -48,11 +48,33 @@ for each in nodeDict:
 '''
 
 
+'''
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+mnd.COLOR_part_dict['right']
+'''
 
 
 
+COLOR_part_dict = { 	'right': 'red', 
+						'left': 'blue', 
+						'dynamic': 'white',
+						'primary': 'yellow',
+						'secondary': 'white',
+						'tertiary': 'softBlue',
+						'offset':'white',
+						'gimbal': 'white'}
 
 
+def askColor(side):
+	if side == 'LFT':
+		return 'red'
+	elif side == 'RGT':
+		return 'blue'
+	elif side == 'MID':
+		return 'yellow'
+	else:
+		return 'white'
 
 
 
@@ -272,25 +294,6 @@ COLOR_dict = {   'yellow'    : 17 ,          'red'           : 13 ,
 				'green'     : 14 ,          'softBlue'      : 18 ,
 				'none'      : 0     }
 
-COLOR_part_dict = { 	'right': 'red', 
-						'left': 'blue', 
-						'dynamic': 'white',
-						'primary': 'yellow',
-						'secondary': 'white',
-						'tertiary': 'softBlue',
-						'offset':'white',
-						'gimbel': 'white'}
-
-
-def askColor(side):
-	if side == 'LFT':
-		return 'red'
-	elif side == 'RGT':
-		return 'blue'
-	elif side == 'MID':
-		return 'yellow'
-	else:
-		return 'white'
 
 
 

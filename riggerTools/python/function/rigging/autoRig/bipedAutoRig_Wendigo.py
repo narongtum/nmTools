@@ -61,18 +61,26 @@ reload(pc)
 from function.rigging.autoRig import util 
 reload(util)
 
-from function.rigging.autoRig.bodyRig import eh_quradrupedLegRig_ext as quRig
-reload(quRig)
 
-#from function.rigging.autoRig.bodyRig import eh_quradrupedLegRig02_ext as quRig
-#reload(quRig)
 
+import time
+
+#...timeStart
+timeStart = time.time()
+
+# Declare some global variables
 nameSpace = '' 
+ribbon = False
+linkRotOrder = True
+keepFkIkBoth = False
+creTwistJnt = True
+showInfo = False
+stickShape = 'stick_ctrlShape'
 
 from function.rigging.autoRig.bodyRig import fkIkGenRig
 reload( fkIkGenRig )
 
-ribbon = False
+
 
 # = = = = = Check charactor hight  = = = = = #
 charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
@@ -194,13 +202,13 @@ stickNamLFT, handLFT_bJnt= armRig.armRigExt(
 				noTouchGrp = 'noTouch_grp' ,			
 				nullGrp = 'snapNull_grp',			
 				jnt_grp =  'jnt_grp'	,			
-				povShape = 'sphereAxis',
-				keepFkIkBoth = True,
+				povShape = 'pyramid',
+				keepFkIkBoth = keepFkIkBoth,
 				ribbon = ribbon,
 				ribbonRes = 'low', 
 				ribbonName = ('upArm', 'lwrArm'),
-				showInfo = False ,
-				linkRotOrder = False )
+				showInfo = showInfo ,
+				linkRotOrder = linkRotOrder )
 
 
 # = = = = = 08 Create finger LFT = = = = = #	 		
@@ -227,13 +235,13 @@ stickNamRGT, handRGT_bJnt= armRig.armRigExt(
 				noTouchGrp = 'noTouch_grp' ,			
 				nullGrp = 'snapNull_grp',			
 				jnt_grp =  'jnt_grp'	,			
-				povShape = 'sphereAxis',
-				keepFkIkBoth = True,
+				povShape = 'pyramid',
+				keepFkIkBoth = keepFkIkBoth,
 				ribbon = ribbon,
 				ribbonRes = 'low', 
 				ribbonName = ('upArm', 'lwrArm'),
-				showInfo = False 	,
-				linkRotOrder = False )
+				showInfo = showInfo 	,
+				linkRotOrder = linkRotOrder )
 
 
 # Create Finger RGT = = = = = #
@@ -331,9 +339,11 @@ baseFinger.baseFingerSpread( nameSpace = '', tmpJnt = 'baseSpreadRGT_tmpJnt' , s
 
 
 
+from function.rigging.autoRig.bodyRig import eh_quradrupedLegRig_ext as quRig
+reload(quRig)
 
-
-
+#from function.rigging.autoRig.bodyRig import quradrupedLegRig as quRig
+#reload(quRig)
 
 
 
@@ -644,7 +654,7 @@ R_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo 
 					jntLst = ('R_uprBranchA01_bJnt','R_uprBranchA02_bJnt', 'R_uprBranchA03_bJnt'),
 					charScale = charScale*0.25, priorJnt = 'head01_bJnt',side = 'R',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
-					color = 'blue', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
+					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
 					parentToPriorJnt = False, parentMatrix = False,
 					curlCtrlShape = 'stick_ctrlShape', constraintCurl = False)
 

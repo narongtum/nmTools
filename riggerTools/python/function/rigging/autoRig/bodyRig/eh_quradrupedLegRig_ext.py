@@ -23,6 +23,9 @@ reload( create )
 from function.rigging.tools import proc as pc
 reload(pc)
 
+from function.rigging.util import generic_maya_dict as mnd
+reload(mnd)
+
 import maya.mel as mel
 
 import logging
@@ -521,6 +524,7 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	#... Create POV Controller
 	name = nameSpace + tmpPov + legType.capitalize() + side
 	pov_ctrl = core.Dag( name + '_ctrl' )
+	pov_ctrl.setColor(colorSide)
 
 	# pov_ctrl.nmCreateController(povShape)
 	if povShape == 'sphereAxis':
@@ -596,7 +600,8 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	ankleIkZro_grp = rigTools.zeroGroup( ankleIk_ctrl )
 	ankleIkZro_grp.name = ctrlName + 'Zro_grp'
 	# Snap position
-	ankleIkZro_grp.snapPoint( ankle_ikJnt )
+	# ankleIkZro_grp.snapPoint( ankle_ikJnt )
+	ankleIkZro_grp.snapPoint( ankle_bJnt )
 	
 	
 
@@ -828,7 +833,8 @@ def quradrupedLegRig(		nameSpace = '' 	,
 	rollBackAnkleIkOffset_grp.parent( rollBackAnkleIkZro_grp )
 	rollBackAnkleIk_ctrl.parent( rollBackAnkleIkOffset_grp )
 	# Snap position to ankle joint na
-	rollBackAnkleIkZro_grp.snap( ankle_ikJnt )
+	# rollBackAnkleIkZro_grp.snap( ankle_ikJnt )
+	rollBackAnkleIkZro_grp.snap( ankle_bJnt )
 
 	# Parenting
 	ankleIkZro_grp.parent( lowerLegIK_ctrl )

@@ -223,10 +223,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		self.rename_btn.setObjectName("rename_btn")
 		self.execName_layout.addWidget(self.rename_btn)
 
-
 		self.retranslateUi(ReNameUi)
 		QtCore.QMetaObject.connectSlotsByName(ReNameUi)
-
 
 
 
@@ -257,7 +255,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		
 	def retranslateUi(self, ReNameUi):
 		_translate = QtCore.QCoreApplication.translate
-		ReNameUi.setWindowTitle(_translate("ReNameUi", "nomanRenamer v1.00"))
+		ReNameUi.setWindowTitle(_translate("ReNameUi", "nomanRenamer v1.01 Gemini"))
 
 		# Make this widget a standalone window even though it is parented 
 		ReNameUi.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint) 
@@ -327,13 +325,12 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				mc.error('Please select something first!.')
 
 		else:
+			# Rename in reverse order to keep paths for parent objects valid
 			self.suffix_txt = self.suffix_txtField.text()
-			for each in selection:
-				# convert unicode to ascii
-				# each = each.encode('ascii')
-				each = str(each)
-
-				mc.rename(each ,each + self.suffix_txt )
+			for each in reversed(selection):
+				# Use the short name of the object to avoid mc.rename error with full paths
+				short_name = each.split('|')[-1]
+				mc.rename(each, short_name + self.suffix_txt)
 
 				
 
@@ -361,121 +358,43 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					sharp.append(char)
 					digit += 1
 
-			for each in range(len(sel)):
-				
-				fullDagPath = mc.listRelatives( sel[each] , allDescendents = True , type='transform' , fullPath=True )
-
+			# Populate rename_dict based on selection
+			for index in range(len(sel)):
+				fullDagPath = mc.listRelatives( sel[index] , allDescendents = True , type='transform' , fullPath=True )
 				if not fullDagPath:
-					rename_dict[alphabet[each % len(alphabet)]] = sel[each]
-
+					rename_dict[alphabet[index % len(alphabet)]] = sel[index]
 				else:
 					# add themself
-					fullDagPath.append(sel[each])
-					rename_dict[ alphabet[each] ] = fullDagPath
+					fullDagPath.append(sel[index])
+					rename_dict[ alphabet[index % len(alphabet)] ] = fullDagPath
 
-
-
-			# for each key
+			# Perform the actual renaming
 			for keysDict in rename_dict.keys():
-				# mc.select(clear=True)
-				logger.info(keysDict)
-				amount = len(rename_dict[ keysDict ])-1
-
+				logger.info(f"Processing group: {keysDict}")
+				member = rename_dict[keysDict]
 				
-				# loop for each child object
-				logger.info(amount)
-				member = rename_dict[ keysDict ]
+				# Normalize member to a list for uniform processing
+				if isinstance(member, list):
+					rev_List = member[::-1]
+				else:
+					rev_List = [member]
 				
-				# # # # # # # # # # # # 
-				# arg is a List
-				# # # # # # # # # # # # 
-
-				if type(member) == type(['l','i','s','t']):
-					print ('This is list')
-					
-					# reverse iteration for solve can't rename with redundance name
-					rev_List = member[::-1]				
-					betIdx = 0
-					num = 1
-
-
-					for i in range(amount, -1, -1):
-						numIdx = i
-						if digit:
-							logger.info('this is digit number: %s' %digit)
-							numName = i + 1
-							logger.info('loop: ' + str(each))
-							strNum = str(numName)
-							replaceStr = strNum.zfill(digit)
-
-							newVal = replace_sharp_pattern(newName, numName)
-
-							
-							newBet = newVal.replace('@', keysDict)
-
-
-								
-							logger.info('doing rename in maya')
-							logger.info('rename %s ==> %s' %(rev_List[numIdx] , newBet))
-							mc.rename( rev_List[numIdx] ,  prefix + newBet + suffix)
-							logger.info(numIdx)
-
-							num = num+1
-
-						else:
-
-							newBet = newName.replace( '@' , keysDict )
-							logger.info('rename alphabet only')
-							logger.info('rename %s ==> %s' %(rev_List[numIdx] , newBet))
-							mc.rename( rev_List[numIdx] ,  prefix + newBet + suffix)
-
-
-
-
-				# # # # # # # # # # # # 
-				# arg is a String
-				# # # # # # # # # # # # 
-
-
-				if MAYA_VERSION >= 2022:
-					if type(member) in [bytes, str]:
-						logger.info('This is string of python3.')
-
-				else:
-					if type(member) in [str, unicode]:
-						logger.info('This is string of of python2.')
-
-				logger.info('this is digit number: %s' %digit)
-				# noneed to reverse
-				rev_List = member
-				betIdx = 0
-				num = 1
-				logger.info('loop: ' + str(each))
-				logger.info('insert the number start.')
-
-				if digit != 0:
-					numName = 1
-					strNum = str(numName)
-					replaceStr = strNum.zfill(digit)
-					logger.info('replaceStr is: %s' %replaceStr)
-					newVal = replace_sharp_pattern(newName, numName)
-					logger.info(keysDict)
-					newBet = newVal.replace('@', keysDict)
-
-
-					logger.info('doing rename in maya')
-					logger.info('rename %s ==> %s' %(rev_List , newBet))
-
-					try:
-						mc.rename( rev_List , prefix + newBet + suffix )
-					except Exception as e:
-						logger.warning(f"Rename failed: {rev_List} → {prefix + newBet + suffix}. Reason: {e}")
-
-				else:
-					logger.info('there is no didit.')
-					newBet = newName.replace( '@' , keysDict )
-					logger.info('rename %s ==> %s' %(rev_List , newBet))
-					mc.rename( rev_List , prefix + newBet + suffix )
+				amount = len(rev_List) - 1
+				for i in range(amount, -1, -1):
+					if digit:
+						# If it's a hierarchy, 'i' is the child index. 
+						# If it's a single object, 'i' is 0.
+						numName = i + 1
+						newVal = replace_sharp_pattern(newName, numName)
+						newBet = newVal.replace('@', keysDict)
+						final_name = prefix + newBet + suffix
+						logger.info(f'Renaming {rev_List[i]} to {final_name}')
+						mc.rename(rev_List[i], final_name)
+					else:
+						newBet = newName.replace('@', keysDict)
+						final_name = prefix + newBet + suffix
+						logger.info(f'Renaming {rev_List[i]} to {final_name}')
+						mc.rename(rev_List[i], final_name)
 
 		else:
 			mc.error('Select something si.')
@@ -518,13 +437,13 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			num = 1
 			for i in range(amount, -1, -1):
 				numIdx = i
-				numName = i + 1		
+				numName = i+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
 				newVal = replace_sharp_pattern(newName, numName)
 				newBet = newVal.replace( '@' , alphabet[betIdx] )
 				logger.info(f'Renamed {sel[numIdx]} to {newBet}')
-				mc.rename(sel[numIdx], newBet)
+				mc.rename(sel[numIdx], newBet)		
 
 		mc.select(clear=True)
 		
@@ -571,7 +490,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			num = 1
 			for i in range(amount, -1, -1):
 				numIdx = i
-				numName = i + 1		
+				numName = i+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
 				newVal = replace_sharp_pattern(newName, numName)

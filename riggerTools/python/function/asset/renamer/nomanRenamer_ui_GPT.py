@@ -255,7 +255,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		
 	def retranslateUi(self, ReNameUi):
 		_translate = QtCore.QCoreApplication.translate
-		ReNameUi.setWindowTitle(_translate("ReNameUi", "nomanRenamer v1.00"))
+		ReNameUi.setWindowTitle(_translate("ReNameUi", "nomanRenamer v1.01 Gemini"))
 
 		# Make this widget a standalone window even though it is parented 
 		ReNameUi.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint) 
@@ -325,13 +325,12 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				mc.error('Please select something first!.')
 
 		else:
+			# Rename in reverse order to keep paths for parent objects valid
 			self.suffix_txt = self.suffix_txtField.text()
-			for each in selection:
-				# convert unicode to ascii
-				# each = each.encode('ascii')
-				each = str(each)
-
-				mc.rename(each ,each + self.suffix_txt )
+			for each in reversed(selection):
+				# Use the short name of the object to avoid mc.rename error with full paths
+				short_name = each.split('|')[-1]
+				mc.rename(each, short_name + self.suffix_txt)
 
 				
 
@@ -358,12 +357,6 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			elif char == '#':
 				sharp.append(char)
 				digit += 1
-
-		# old loop replacedif each == '@':
-					addSight.append(each)
-				elif each == '#':
-					sharp.append(each)			
-					digit = len(sharp)
 
 
 
@@ -524,7 +517,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			num = 1
 			for i in range(amount, -1, -1):
 				numIdx = i
-				numName = each+1		
+				numName = i+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
 				newVal = replace_sharp_pattern(newName, numName)
@@ -548,8 +541,8 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		rename_dict = {}
 		effHirechy = True
 		addSight = []
-			digit = 0
-			sharp = []
+		digit = 0
+		sharp = []
 		
 		self.base_txt = self.base_txtField.text()
 		newName = self.base_txt
@@ -577,7 +570,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			num = 1
 			for i in range(amount, -1, -1):
 				numIdx = i
-				numName = each+1		
+				numName = i+1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
 				newVal = replace_sharp_pattern(newName, numName)

@@ -1250,22 +1250,26 @@ def searchReplace( searchText='', replaceText='' ):
 
 def reSuf(assetGrp=None):
 	''' add suffix '''
-	selection = mc.ls(selection = True)
+	selection = mc.ls(selection = True, long = True)
 	if selection:
 		totalObj = len(selection)
-		for index , each in enumerate(selection):
-			mc.rename(each , selection[index] + assetGrp )
+		for each in reversed(selection):
+			# Use short name for renaming
+			short_name = each.split('|')[-1]
+			mc.rename(each , short_name + assetGrp )
 		print ('%s object has been rename' %totalObj)
 	else:
 		mc.error('Please select something first!.')	
 
 def rePre(assetGrp=None):
-	selection = mc.ls(selection = True)
+	''' add prefix '''
+	selection = mc.ls(selection = True, long = True)
 	if selection:
-	
 		totalObj = len(selection)
-		for index , each in enumerate(selection):
-			mc.rename(each ,assetGrp + selection[index] )
+		for each in reversed(selection):
+			# Use short name for renaming
+			short_name = each.split('|')[-1]
+			mc.rename(each, assetGrp + short_name)
 		print ('%s object has been rename' %totalObj)
 	else:
 		mc.error('Please select something first!.')

@@ -568,7 +568,7 @@ fkg.fkIkTwistGenRig(
 						'lowerLegLFT_tmpJnt', 	 
 						'ankleLFT_tmpJnt' ,	
 						'legPovLFT_tmpJnt' ),
-				priorJnt = clavUprLFT_bJnt	,	
+				priorJnt = 'head01_bJnt'	,	
 				ikhGrp = 'ikh_grp'		,			
 				noTouchGrp = 'noTouch_grp' ,			
 				nullGrp = 'snapNull_grp',			
@@ -698,7 +698,7 @@ fkg.fkIkTwistGenRig(
 						'lowerLegRGT_tmpJnt', 	 
 						'ankleRGT_tmpJnt' ,	
 						'legPovRGT_tmpJnt' ),
-				priorJnt = clavUprRGT_bJnt	,	
+				priorJnt = 'head01_bJnt'	,	
 				ikhGrp = 'ikh_grp'		,			
 				noTouchGrp = 'noTouch_grp' ,			
 				nullGrp = 'snapNull_grp',			
@@ -739,3 +739,13 @@ R_branchA = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo 
 
 # Lock attr
 util.cleanup()
+
+
+
+
+
+#... rename roll joint to  another
+mc.rename('ballRollBackLFT_bJnt', 'ballRollBackLFT_jnt')
+mc.rename('toeRollBackLFT_bJnt', 'toeRollBackLFT_endJnt')
+mc.rename('ballRollBackRGT_bJnt', 'ballRollBackRGT_jnt')
+mc.rename('toeRollBackRGT_bJnt', 'toeRollBackRGT_endJnt')

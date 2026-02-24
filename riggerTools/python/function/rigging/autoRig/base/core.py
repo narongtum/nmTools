@@ -372,6 +372,31 @@ multMat = core.MultMatrixWithValue('something')
 
 #... Example 34: Create controller and zero grp
 curl_ctrl.nmCreateController(ctrlShape,lineWidth = 2)
+
+
+#... Example 35: List number joint
+pattern = 'C_tenTail##_ikJnt'
+count = 4
+print(core.generate_named_pattern(pattern, count))
+# -> ('C_tenTail01_ikJnt', 'C_tenTail02_ikJnt', 'C_tenTail03_ikJnt', 'C_tenTail04_ikJnt')
+
+pattern2 = 'L_leg#_ctrl'
+count2 = 3
+print(core.generate_named_pattern(pattern2, count2))
+# -> ('L_leg1_ctrl', 'L_leg2_ctrl', 'L_leg3_ctrl')
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 
 
@@ -486,19 +511,7 @@ def generate_named_pattern(pattern, count):
 
 
 
-'''
-# example
-pattern = 'C_tenTail##_ikJnt'
-count = 4
-print(core.generate_named_pattern(pattern, count))
-# -> ('C_tenTail01_ikJnt', 'C_tenTail02_ikJnt', 'C_tenTail03_ikJnt', 'C_tenTail04_ikJnt')
 
-pattern2 = 'L_leg#_ctrl'
-count2 = 3
-print(core.generate_named_pattern(pattern2, count2))
-# -> ('L_leg1_ctrl', 'L_leg2_ctrl', 'L_leg3_ctrl')
-
-'''
 
 
 

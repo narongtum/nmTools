@@ -24,6 +24,12 @@ reload(mnd)
 
 
 
+
+
+
+
+
+
 def constraint_pair(pairs, maintainOffset=False):
 	"""
 	Create parentConstraint and scaleConstraint for multiple parent-child pairs.
@@ -40,6 +46,37 @@ def constraint_pair(pairs, maintainOffset=False):
 		# Create scaleConstraint
 		mc.scaleConstraint(parent, child, maintainOffset=maintainOffset,
 						   name=f'{parent}_scCon')
+
+
+def constraint_list(parents, children, mo_parent=True, mo_scale=True):
+	"""
+	Create parentConstraint and scaleConstraint between corresponding items in two lists.
+
+	Args:
+		parents (list): List of parent object names.
+		children (list): List of child object names.
+		mo_parent (bool): Keep parent offset if True. Defaults to True.
+		mo_scale (bool): Keep scale offset if True. Defaults to True.
+	"""
+	# Check if lengths are equal
+	if len(parents) != len(children):
+		mc.error(f"Length mismatch: parents ({len(parents)}) vs children ({len(children)})")
+		return
+
+	for i in range(len(parents)):
+		parent = parents[i]
+		child = children[i]
+		
+		print(f'Constraining: {parent} >>> {child}')
+		
+		# Create parentConstraint
+		mc.parentConstraint(parent, child, maintainOffset=mo_parent,
+							name=f'{parent}_psCon')
+		# Create scaleConstraint
+		# mc.scaleConstraint(parent, child, maintainOffset=mo_scale,
+		# 				   name=f'{parent}_scCon')
+
+	print('# Done: constraint_list executed successfully.')
 
 
 

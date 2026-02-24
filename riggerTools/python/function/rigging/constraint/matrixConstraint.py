@@ -101,6 +101,9 @@ def _getDagPath(node):
 		node = str(node)
 
 	# 3. Get MDagPath via API 2.0
+	if not mc.objExists(node):
+		raise RuntimeError(f"Object '{node}' does not exist in the scene.")
+
 	sel = om2.MSelectionList()
 	sel.add(node)
 	return sel.getDagPath(0)
@@ -1581,6 +1584,38 @@ def matrixConListJnt( namJntList = [] , child = 'bind_jnt', parent = 'proxy_jnt'
 		print('This is childNam >>> {}'.format(childNam))
 
 		parentConMatrix(parentNam, childNam, mo = True, translate = True, rotate = True, scale = True)
+
+
+def matrix_constraint_list(parents, children, mo=True):
+	"""
+	Create parentConMatrix between corresponding items in two lists.
+
+	Args:
+		parents (list): List of parent object names.
+		children (list): List of child object names.
+		mo (bool): Maintain offset. Defaults to True.
+	"""
+	# Check if lengths are equal
+	if len(parents) != len(children):
+		mc.error(f"Length mismatch: parents ({len(parents)}) vs children ({len(children)})")
+		return
+
+	for i in range(len(parents)):
+		parent = parents[i]
+		child = children[i]
+		
+		# Check if objects exist
+		if not mc.objExists(parent):
+			mc.error(f"Parent object '{parent}' does not exist. Stopping execution.")
+			return
+		if not mc.objExists(child):
+			mc.error(f"Child object '{child}' does not exist. Stopping execution.")
+			return
+
+		print(f'Matrix Constraining: {parent} >>> {child}')
+		parentConMatrix(parent, child, mo=mo, translate=True, rotate=True, scale=True)
+
+	print('# Done: matrix_constraint_list executed successfully.')
 
 
 

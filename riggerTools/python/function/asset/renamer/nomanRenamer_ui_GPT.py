@@ -298,7 +298,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 	def clickSuffix(self):
 
 		# check is autoSuffix_check is check 
-		selection = mc.ls(sl=True)
+		selection = mc.ls(sl=True, long=True)
 		if self.autoSuffix_check.isChecked() == True:
 			
 
@@ -340,7 +340,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 
 	def _nmRenamer(self, prefix='',newName='',suffix=''):
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		if sel:
 			rename_dict = {}
@@ -494,7 +494,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 	def clickBase( self ):
 		# alphabet = app.alphabet
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		
 		self.base_txt = self.base_txtField.text()
@@ -562,7 +562,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 				digit += 1
 
 		# alphabet = app.alphabet
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		if self.effect_check.isChecked() == True:
 			self._nmRenamer(prefix = pre_txt , newName = newName , suffix = suffix_txt)
@@ -671,7 +671,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			self.base_txtField.setText('BAK')	
 
 	def clickSearchNreplace( self ):
-		selection = mc.ls(sl=True)
+		selection = mc.ls(sl=True, long=True)
 		search_txt = self.search_txtField.text()
 		replace_txt = self.replace_txtField.text()
 		misc.searchReplace( searchText = search_txt, replaceText = replace_txt )

@@ -6,10 +6,22 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-# male alway on top at line 244
+'''
+from function.framework.Qtpy.Qt import QtCore, QtGui, QtWidgets
+from function.asset.renamer import nomanRenamer_ui_GPT
+reload(nomanRenamer_ui_GPT)
+Form = QtWidgets.QWidget()
+ui = nomanRenamer_ui_GPT.Ui_ReNameUi()
+ui.setupUi(Form)
+Form.show()
+'''
+
+
+
+
+
 
 from function.framework.reloadWrapper import reloadWrapper as reload
-
 
 import logging
 logger = logging.getLogger('debug_text')
@@ -33,20 +45,6 @@ if MAYA_VERSION >= 2022:
 else:
 	reload( misc )
 
-
-
-# make alway on top at line 211
-
-# direct run
-
-
-# from function.framework.Qtpy.Qt import QtCore, QtGui, QtWidgets
-# from function.asset.renamer import nomanRenamer_ui
-# reload(nomanRenamer_ui)
-# Form = QtWidgets.QWidget()
-# ui = nomanRenamer_ui.Ui_ReNameUi()
-# ui.setupUi(Form)
-# Form.show()
 
 
 
@@ -84,6 +82,17 @@ def getMayaMainWindow():# still fail why ?
 	else:
 		pointer = wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 	return pointer
+
+
+
+def replace_sharp_pattern(name_pattern, index):
+	import re
+	pattern = re.compile(r"(#+)")
+	match = pattern.search(name_pattern)
+	if match:
+		num_digits = len(match.group(1))
+		return pattern.sub(str(index).zfill(num_digits), name_pattern, count=1)
+	return name_pattern
 
 
 class Ui_ReNameUi(QtWidgets.QWidget):
@@ -214,8 +223,10 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		self.rename_btn.setObjectName("rename_btn")
 		self.execName_layout.addWidget(self.rename_btn)
 
+
 		self.retranslateUi(ReNameUi)
 		QtCore.QMetaObject.connectSlotsByName(ReNameUi)
+
 
 
 
@@ -289,7 +300,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 	def clickSuffix(self):
 
 		# check is autoSuffix_check is check 
-		selection = mc.ls(sl=True)
+		selection = mc.ls(sl=True, long=True)
 		if self.autoSuffix_check.isChecked() == True:
 			
 
@@ -302,7 +313,9 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					lastname = misc._findExtension(each)
 					# lastname = '_ply'
 
-					mc.rename(each ,each +  '_' + lastname )
+					new_name = each + '_' + lastname
+					logger.info(f'Renamed {each} to {new_name}')
+					mc.rename(each, new_name)
 
 				suffix_txt = self.suffix_txtField.text()	
 				self.suffix_txtField.setText( '_' + lastname )
@@ -329,34 +342,31 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 
 	def _nmRenamer(self, prefix='',newName='',suffix=''):
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		if sel:
 			rename_dict = {}
 			addSight = []
+			digit = 0
 			sharp = []
 
 			alphabet = (	'A','B','C','D','E','F','G','H','I','J','K','M','N',
 					'O','P','Q','R','S','T','U','V','W','X','Y','Z'			)
 
-			for each in newName:
-				if each == '@':
-					addSight.append(each)
-				elif each == '#':
-					sharp.append(each)
-
-			numAtt = len(addSight)
-			digit = len(sharp)
-
-
+			digit = 0
+			for char in newName:
+				if char == '@':
+					addSight.append(char)
+				elif char == '#':
+					sharp.append(char)
+					digit += 1
 
 			for each in range(len(sel)):
 				
 				fullDagPath = mc.listRelatives( sel[each] , allDescendents = True , type='transform' , fullPath=True )
 
-				if fullDagPath == None:
-					fullDagPath = sel[each]
-					rename_dict[ alphabet[each] ] = fullDagPath
+				if not fullDagPath:
+					rename_dict[alphabet[each % len(alphabet)]] = sel[each]
 
 				else:
 					# add themself
@@ -367,7 +377,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 			# for each key
 			for keysDict in rename_dict.keys():
-				# mc.select(d=1)
+				# mc.select(clear=True)
 				logger.info(keysDict)
 				amount = len(rename_dict[ keysDict ])-1
 
@@ -389,17 +399,21 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					num = 1
 
 
-					for each in range(amount,-1,-1):
-						numIdx = each
+					for i in range(amount, -1, -1):
+						numIdx = i
 						if digit:
 							logger.info('this is digit number: %s' %digit)
-							numName = each+1
+							numName = i + 1
 							logger.info('loop: ' + str(each))
 							strNum = str(numName)
 							replaceStr = strNum.zfill(digit)
 
-							newVal = newName.replace( digit*'#' , replaceStr )
-							newBet = newVal.replace( '@' , keysDict )
+							newVal = replace_sharp_pattern(newName, numName)
+
+							
+							newBet = newVal.replace('@', keysDict)
+
+
 								
 							logger.info('doing rename in maya')
 							logger.info('rename %s ==> %s' %(rev_List[numIdx] , newBet))
@@ -444,16 +458,18 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 					strNum = str(numName)
 					replaceStr = strNum.zfill(digit)
 					logger.info('replaceStr is: %s' %replaceStr)
-					newVal = newName.replace( digit*'#' , replaceStr )
+					newVal = replace_sharp_pattern(newName, numName)
 					logger.info(keysDict)
-					newBet = newVal.replace( '@' , keysDict )
+					newBet = newVal.replace('@', keysDict)
+
+
 					logger.info('doing rename in maya')
 					logger.info('rename %s ==> %s' %(rev_List , newBet))
 
 					try:
 						mc.rename( rev_List , prefix + newBet + suffix )
-					except:
-						logger.info(rev_List)
+					except Exception as e:
+						logger.warning(f"Rename failed: {rev_List} → {prefix + newBet + suffix}. Reason: {e}")
 
 				else:
 					logger.info('there is no didit.')
@@ -472,7 +488,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 	def clickBase( self ):
 		# alphabet = app.alphabet
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		
 		self.base_txt = self.base_txtField.text()
@@ -487,30 +503,30 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 
 			# this redundance code with naRenamer
 			addSight = []
+			digit = 0
 			sharp = []
 			for each in newName:
 				if each == '@':
 					addSight.append(each)
 				elif each == '#':
-					sharp.append(each)
-
-			numAtt = len(addSight)
-			digit = len(sharp)
+					sharp.append(each)			
+					digit += 1
 			# this redundance code with naRenamer
 
 			amount = len(sel)-1
 			betIdx = 0
 			num = 1
-			for each in range(amount,-1,-1):
-				numIdx = each
-				numName = each+1		
+			for i in range(amount, -1, -1):
+				numIdx = i
+				numName = i + 1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
-				newVal = newName.replace( digit*'#' , replaceStr )
+				newVal = replace_sharp_pattern(newName, numName)
 				newBet = newVal.replace( '@' , alphabet[betIdx] )
-				mc.rename( sel[numIdx] , newBet )		
+				logger.info(f'Renamed {sel[numIdx]} to {newBet}')
+				mc.rename(sel[numIdx], newBet)
 
-		mc.select(d=1)
+		mc.select(clear=True)
 		
 
 		
@@ -526,6 +542,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 		rename_dict = {}
 		effHirechy = True
 		addSight = []
+		digit = 0
 		sharp = []
 		
 		self.base_txt = self.base_txtField.text()
@@ -535,13 +552,11 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			if each == '@':
 				addSight.append(each)
 			elif each == '#':
-				sharp.append(each)
-
-		numAtt = len(addSight)
-		digit = len(sharp)
+				sharp.append(each)		
+				digit += 1
 
 		# alphabet = app.alphabet
-		sel = mc.ls(sl=True)
+		sel = mc.ls(sl=True, long=True)
 
 		if self.effect_check.isChecked() == True:
 			self._nmRenamer(prefix = pre_txt , newName = newName , suffix = suffix_txt)
@@ -554,20 +569,22 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			amount = len(sel)-1
 			betIdx = 0
 			num = 1
-			for each in range(amount,-1,-1):
-				numIdx = each
-				numName = each+1		
+			for i in range(amount, -1, -1):
+				numIdx = i
+				numName = i + 1		
 				strNum = str(numName)
 				replaceStr = strNum.zfill(digit)
-				newVal = newName.replace( digit*'#' , replaceStr )
+				newVal = replace_sharp_pattern(newName, numName)
 				newBet = newVal.replace( '@' , alphabet[betIdx] )
 
 				# option for use underscore as separater
 				# pName = '_'.join( [pre_txt , newBet , suffix_txt] )
 
-				mc.rename( sel[numIdx] , pre_txt + newBet + suffix_txt )
+				final_name = pre_txt + newBet + suffix_txt
+				logger.info(f'Renamed {sel[numIdx]} to {final_name}')
+				mc.rename(sel[numIdx], final_name)
 
-		mc.select(d=1)
+		mc.select(clear=True)
 
 		print (pre_txt + base_txt + suffix_txt)
 
@@ -648,7 +665,7 @@ class Ui_ReNameUi(QtWidgets.QWidget):
 			self.base_txtField.setText('BAK')	
 
 	def clickSearchNreplace( self ):
-		selection = mc.ls(sl=True)
+		selection = mc.ls(sl=True, long=True)
 		search_txt = self.search_txtField.text()
 		replace_txt = self.replace_txtField.text()
 		misc.searchReplace( searchText = search_txt, replaceText = replace_txt )
@@ -662,46 +679,3 @@ def showUI():
 	ui.show()
 
 
-
-
-# def showUI():
-# 	# show mai dai arh
-# 	# if __name__ == "__main__":
-# 	import sys
-# 	app = QtWidgets.QApplication.instance()
-# 	#app = QtWidgets.QApplication(sys.argv)
-# 	Form = QtWidgets.QWidget()
-# 	ui = Ui_ReNameUi(getMayaWindow())
-# 	ui.setupUi(Form)
-# 	Form.show()
-# 	sys.exit(app.exec_())
-
-
-
-
-
-
-
-'''
-def showUI():
-	ui = Ui_ReNameUi()
-	ui.show()
-	return ui
-'''
-
-
-
-
-
-'''
-if __name__ == "__main__":
-	import sys
-	app = QtWidgets.QApplication.instance()
-	#app = QtWidgets.QApplication(sys.argv)
-	Form = QtWidgets.QWidget()
-	ui = Ui_ReNameUi()
-	ui.setupUi(Form)
-	Form.show()
-	sys.exit(app.exec_())
-
-'''

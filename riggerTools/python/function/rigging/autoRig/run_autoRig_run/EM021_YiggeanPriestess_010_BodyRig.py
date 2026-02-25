@@ -129,6 +129,8 @@ topSpine_bJnt = topSpine_bJnt.name
 
 
 
+'''
+
 neck_bJnt = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo = 'spine03_gmbCtrl',
 					jntLst = ('neck01_bJnt','neck02_bJnt', 'neck03_bJnt'),
 					charScale = 1, priorJnt = topSpine_bJnt, side = '',
@@ -139,8 +141,8 @@ neck_bJnt = createFkRig.fkRig_omni_newCurl( nameSpace = nameSpace, parentCtrlTo 
 					curlCtrlShape = 'circle_ctrlShape', constraintCurl = True)
 
 
-
 '''
+
 # = = = = = 04 Neck Rig = = = = = #
 neck_bJnt = neckRig.neckRig(	
 							nameSpace = nameSpace 					, 
@@ -148,24 +150,6 @@ neck_bJnt = neckRig.neckRig(
 							tmpJnt = (		'neck_tmpJnt' ,'head01_tmpJnt' 	) ,  
 							priorJnt = topSpine_bJnt ,
 							charScale = charScale	)
-
-'''
-
-
-# = = = = = 05 HeadRig = = = = = #
-headRig.headRig(	
-					nameSpace = nameSpace 					, 
-					parentTo = 'ctrl_grp'  , 
-					tmpJnt = ( 		'head01_tmpJnt' , 'eyeLFT_tmpJnt' , 'eyeRGT_tmpJnt' ,		# head
-					'jaw01Lwr_tmpJnt' , 'jaw02Lwr_tmpJnt' , 'jaw03Lwr_tmpJnt' 			,		# jaw
-					'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
-					'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 				),		# eye			
-					faceCtrl = False	,
-					priorJnt = 'neck04_bJnt'	,
-					charScale = charScale	,
-					ctrlShape = 'plainSphereB_ctrlShape',
-					linkRotOrder = linkRotOrder			)
-
 
 
 
@@ -348,8 +332,25 @@ propRig.propRig(	nameSpace = nameSpace		,
 
 
 
-# Lock attr
-util.cleanup()
+
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'spine02_gmbCtrl',
+					jntLst = ('L_breast01_bJnt',),
+					charScale = charScale*0.5, priorJnt = 'spine02_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'yellow', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'spine02_gmbCtrl',
+					jntLst = ('R_breast01_bJnt',),
+					charScale = charScale*0.5, priorJnt = 'spine02_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'yellow', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
 
 
 
@@ -357,20 +358,28 @@ util.cleanup()
 
 
 
-#...timeEnd
-timeEnd = time.time()
-timeElapsed = timeEnd-timeStart
+'''
+# = = = = = 05 HeadRig = = = = = #
+headRig.headRig(	
+					nameSpace = nameSpace 					, 
+					parentTo = 'ctrl_grp'  , 
+					tmpJnt = ( 		'head01_tmpJnt' , 'eyeLFT_tmpJnt' , 'eyeRGT_tmpJnt' ,		# head
+					'jaw01Lwr_tmpJnt' , 'jaw02Lwr_tmpJnt' , 'jaw03Lwr_tmpJnt' 			,		# jaw
+					'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
+					'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 				),		# eye			
+					faceCtrl = False	,
+					priorJnt = 'neckRbn12_bJnt'	,
+					charScale = charScale	,
+					ctrlShape = 'plainSphereB_ctrlShape',
+					linkRotOrder = linkRotOrder			)
 
-roundedTimeElapsed = round(timeElapsed, 1)
 
-#...print time
-print('SaveData Elapsed: %s'%roundedTimeElapsed)
+'''
 
 
 
 
-
-
+#... PART2
 
 # # # # # # # # # # # # # # # # # # # # # # # #
 # Additional Rig    
@@ -426,4 +435,125 @@ createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'L_earring04_gmbC
 					parentToPriorJnt = True, parentMatrix = True,
 					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
 
+
+
+
+
+
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head01_gmbCtrl',
+					jntLst = ('R_earring01_bJnt','R_earring02_bJnt', 'R_earring03_bJnt', 'R_earring04_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'head01_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = '', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'R_earring04_gmbCtrl',
+					jntLst = ('R_featherA01_bJnt','R_featherA02_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'R_earring04_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'R_earring04_gmbCtrl',
+					jntLst = ('R_featherB01_bJnt','R_featherB02_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'R_earring04_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'R_earring04_gmbCtrl',
+					jntLst = ('R_featherC01_bJnt',),
+					charScale = charScale*0.5, priorJnt = 'R_earring04_bJnt',side = 'RGT',
+					ctrlShape = 'circle_ctrlShape', localWorld = False ,
+					color = 'red', curlCtrl = False, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+
+
+
+
+
+#... TENTACLE RIG
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
+					jntLst = ('tenA01_bJnt','tenA02_bJnt','tenA03_bJnt','tenA04_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
+					jntLst = ('tenB01_bJnt','tenB02_bJnt','tenB03_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
+					jntLst = ('tenC01_bJnt','tenC02_bJnt','tenC03_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
+					jntLst = ('tenD01_bJnt','tenD02_bJnt','tenD03_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
+					jntLst = ('tenE01_bJnt','tenE02_bJnt','tenE03_bJnt'),
+					charScale = charScale*0.5, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
+					parentToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True)
+
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+jtt.change_endJnt_gray()
+
+
+
+
+
+# Lock attr
+util.cleanup()
+
+
+
+
+
+
+
+#...timeEnd
+timeEnd = time.time()
+timeElapsed = timeEnd-timeStart
+
+roundedTimeElapsed = round(timeElapsed, 1)
+
+#...print time
+print('SaveData Elapsed: %s'%roundedTimeElapsed)
 

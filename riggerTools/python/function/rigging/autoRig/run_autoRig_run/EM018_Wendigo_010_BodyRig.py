@@ -743,6 +743,9 @@ util.cleanup()
 
 
 
+from function.rigging.skeleton import jointTools as jtt
+reload(jtt)
+jtt.change_endJnt_gray()
 
 #... rename roll joint to  another
 mc.rename('ballRollBackLFT_bJnt', 'ballRollBackLFT_jnt')

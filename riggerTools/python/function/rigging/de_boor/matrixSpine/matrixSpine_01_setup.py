@@ -364,6 +364,10 @@ count = 4
 pCount = 12
 side = 'C'
 
+
+# Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and install the latest version.
+
+
 if count == 3:
 	degree = count - 1 
 else:
@@ -375,8 +379,6 @@ pRadius = 0.5
 spacing = cRadius * 5
 charScale = 1.0
 cvSize = 10
-
-
 
 
 

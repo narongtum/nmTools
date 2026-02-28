@@ -1,4 +1,7 @@
 # Proc
+# from function.rigging.autoRig.components.limbRig import proc as pc
+# reload(pc)
+
 
 import maya.cmds as mc
 from function.framework.reloadWrapper import reloadWrapper as reload

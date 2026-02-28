@@ -752,3 +752,12 @@ mc.rename('ballRollBackLFT_bJnt', 'ballRollBackLFT_jnt')
 mc.rename('toeRollBackLFT_bJnt', 'toeRollBackLFT_endJnt')
 mc.rename('ballRollBackRGT_bJnt', 'ballRollBackRGT_jnt')
 mc.rename('toeRollBackRGT_bJnt', 'toeRollBackRGT_endJnt')
+
+
+
+
+from function.rigging.autoRig.components.limbRig import eh_proc as pc
+reload(pc)
+
+pc.targetPov( ctrl = 'legPovBackBacklegLFT_ctrl' , jnt = 'midLegBackLFT_bJnt' )
+pc.targetPov( ctrl = 'legPovBackBacklegRGT_ctrl' , jnt = 'midLegBackRGT_bJnt' )

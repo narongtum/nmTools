@@ -1,6 +1,6 @@
-import maya.cmds as cmds
+import maya.cmds as mc
 
-# 1. Dictionary ของเดิมใน Maya (ที่คุณส่งมา)
+# 1. Dictionary Maya 
 maya_jnt_dict = {
 	'root': ['root', 'L_weapon_bJnt', 'R_weapon_bJnt'],
 	'spine': ['hip_bJnt', 'spine01_bJnt', 'spine02_bJnt', 'spine03_bJnt', 'spine04_bJnt'],
@@ -21,7 +21,7 @@ maya_jnt_dict = {
 	'R_leg': ['upperLegRGT_bJnt', 'lowerLegRGT_bJnt', 'ankleRGT_bJnt', 'ballRGT_bJnt']
 }
 
-# 2. Dictionary ฝั่ง Unreal (ชื่อสะอาด 100% เพื่อแก้ Error Log)
+# 2. Dictionary side Unreal 
 ue_jnt_dict = {
 	'root': ['root', 'weapon_l', 'weapon_r'],
 	'spine': ['pelvis', 'spine_01', 'spine_02', 'spine_03', 'spine_04'],
@@ -53,11 +53,11 @@ def clean_rename_for_unreal(maya_map, ue_map):
 			if i < len(new_list):
 				new_clean_name = new_list[i]
 				
-				if cmds.objExists(old_name):
-					cmds.rename(old_name, new_clean_name)
+				if mc.objExists(old_name):
+					mc.rename(old_name, new_clean_name)
 					print(f"Renamed: {old_name} -> {new_clean_name}")
 					count += 1
 	print(f"\n[Success] Renamed {count} joints to Unreal Standard.")
 
-# รันสคริปต์
+#... runcode
 clean_rename_for_unreal(maya_jnt_dict, ue_jnt_dict)

@@ -17,17 +17,19 @@ if not os.path.exists(JIRA_PATH):
 
 CONFIG_FILE = os.path.join(JIRA_PATH, "jira_config.json")
 DB_FILE = os.path.join(JIRA_PATH, "worklog_db.json")
+FAV_FILE = os.path.join(JIRA_PATH, "favorite_tickets.json")
+HOLIDAY_FILE = os.path.join(JIRA_PATH, "holidays.json")
 LOG_FILE = os.path.join(JIRA_PATH, "jira_app.log")
 
 
 # --- 2. Setup Logging ---
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+	level=logging.DEBUG,
+	format='%(asctime)s - %(levelname)s - %(message)s',
+	handlers=[
+		logging.FileHandler(LOG_FILE, encoding='utf-8'),
+		logging.StreamHandler()
+	]
 )
 
 #... เปลี่ยนจาก DEBUG เป็น WARNING เพื่อลดการบันทึก
@@ -96,11 +98,14 @@ class JiraWorklogApp:
 		logger.debug("Loading configurations...")
 		self.config = load_json(CONFIG_FILE, {"url": "https://your-domain.atlassian.net", "email": "your-email@example.com", "token": "your-api-token"})
 		self.db = load_json(DB_FILE, {})
+		self.favorites = load_json(FAV_FILE, [])
+		self.holidays = load_json(HOLIDAY_FILE, {}) # format: {"YYYY-MM-DD": "Name"}
 		
 		logger.debug("Setting up UI components...")
 		self.setup_ui()
 		logger.debug("Refreshing highlights and initial selection...")
 		self.refresh_calendar_highlights()
+		self.load_favorites_to_ui()
 		self.on_date_selected()  # โหลดข้อมูลวันปัจจุบันทันทีที่เปิดโปรแกรม
 
 	def setup_ui(self):
@@ -108,7 +113,40 @@ class JiraWorklogApp:
 		self.main_pane = tk.PanedWindow(self.root, orient="horizontal", sashrelief="raised", sashwidth=4)
 		self.main_pane.pack(fill="both", expand=True)
 
-		# --- Left: Calendar ---
+		# --- Left: Favorite Tickets ---
+		self.fav_frame = tk.Frame(self.main_pane, padx=10, pady=10, width=250)
+		self.main_pane.add(self.fav_frame)
+		
+		tk.Label(self.fav_frame, text="favorite ticket", font=("Arial", 12, "bold")).pack(pady=5)
+		
+		# Favorite Table Headers
+		fav_header = tk.Frame(self.fav_frame)
+		fav_header.pack(fill="x")
+		tk.Label(fav_header, text="ticket", width=10).pack(side="left")
+		tk.Label(fav_header, text="detail", padx=10).pack(side="left", expand=True)
+		
+		self.fav_rows = []
+		self.fav_scroll_frame = tk.Frame(self.fav_frame)
+		self.fav_scroll_frame.pack(fill="both", expand=True)
+		
+		for i in range(10):  # 10 rows as per mockup
+			row_frame = tk.Frame(self.fav_scroll_frame, pady=2)
+			row_frame.pack(fill="x")
+			
+			e_ticket = tk.Entry(row_frame, width=10)
+			e_ticket.pack(side="left")
+			
+			e_detail = tk.Entry(row_frame)
+			e_detail.pack(side="left", fill="x", expand=True, padx=2)
+			
+			btn_del = tk.Button(row_frame, text="X", width=2, command=lambda idx=i: self.clear_fav_row(idx))
+			btn_del.pack(side="right")
+			
+			self.fav_rows.append({"ticket": e_ticket, "detail": e_detail})
+
+		tk.Button(self.fav_frame, text="save", command=self.save_favorites, width=10).pack(pady=10, anchor="w")
+
+		# --- Middle: Calendar ---
 		self.left_frame = tk.Frame(self.main_pane, padx=15, pady=15)
 		self.main_pane.add(self.left_frame)
 		
@@ -266,6 +304,57 @@ class JiraWorklogApp:
 
 		tk.Button(win, text="Save Entry", command=save, bg="#28a745", fg="white").pack(pady=15)
 
+		# Right-click context menu for favorites
+		self.fav_menu = tk.Menu(win, tearoff=0)
+		self.refresh_context_menu(e_issue, e_comment)
+		
+		e_issue.bind("<Button-3>", lambda e: self.show_context_menu(e)) # Windows Right Click
+		
+	def refresh_context_menu(self, entry_issue, entry_comment):
+		self.fav_menu.delete(0, "end")
+		has_favs = False
+		for fav in self.favorites:
+			if fav["ticket"].strip():
+				has_favs = True
+				label = f"{fav['ticket']} | {fav['detail']}"
+				self.fav_menu.add_command(label=label, 
+					command=lambda t=fav['ticket'], d=fav['detail']: self.fill_from_fav(entry_issue, entry_comment, t, d))
+		
+		if not has_favs:
+			self.fav_menu.add_command(label="No favorites saved", state="disabled")
+
+	def show_context_menu(self, event):
+		self.fav_menu.post(event.x_root, event.y_root)
+
+	def fill_from_fav(self, entry_issue, entry_comment, ticket, detail):
+		entry_issue.delete(0, tk.END)
+		entry_issue.insert(0, ticket)
+		entry_comment.delete(0, tk.END)
+		entry_comment.insert(0, detail)
+
+	def clear_fav_row(self, idx):
+		self.fav_rows[idx]["ticket"].delete(0, tk.END)
+		self.fav_rows[idx]["detail"].delete(0, tk.END)
+
+	def load_favorites_to_ui(self):
+		for i, fav in enumerate(self.favorites):
+			if i < len(self.fav_rows):
+				self.fav_rows[i]["ticket"].insert(0, fav.get("ticket", ""))
+				self.fav_rows[i]["detail"].insert(0, fav.get("detail", ""))
+
+	def save_favorites(self):
+		new_favs = []
+		for row in self.fav_rows:
+			ticket = row["ticket"].get().strip()
+			detail = row["detail"].get().strip()
+			if ticket:
+				new_favs.append({"ticket": ticket, "detail": detail})
+		
+		self.favorites = new_favs
+		save_json(FAV_FILE, self.favorites)
+		logger.info("Favorite tickets saved")
+		messagebox.showinfo("Success", "บันทึก Favorite Tickets เรียบร้อยแล้ว")
+
 	def delete_log(self):
 		selected = self.tree.selection()
 		if not selected: return
@@ -329,6 +418,17 @@ class JiraWorklogApp:
 
 		self.cal.tag_config("completed", background="lightgreen", foreground="black")
 		self.cal.tag_config("partial", background="#fffce3", foreground="#856404") # แหลืองจางๆ
+		
+		# Highlights Holidays
+		for d_str, name in self.holidays.items():
+			try:
+				self.cal.calevent_create(datetime.strptime(d_str, "%Y-%m-%d"), name, "holiday")
+			except ValueError:
+				logger.warning(f"Invalid holiday date format: {d_str}")
+		
+		self.cal.tag_config("holiday", background="#ffcccc", foreground="black") # สีชมพูอ่อน/แดงจางๆ
+
+
 
 	def submit_to_jira(self):
 		date_str = self.cal.get_date()

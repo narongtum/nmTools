@@ -426,7 +426,7 @@ class JiraWorklogApp:
 			except ValueError:
 				logger.warning(f"Invalid holiday date format: {d_str}")
 		
-		self.cal.tag_config("holiday", background="#ffcccc", foreground="black") # สีชมพูอ่อน/แดงจางๆ
+		self.cal.tag_config("holiday", background="#a4c2f4", foreground="black") # สีฟ้า
 
 
 

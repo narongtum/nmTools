@@ -21,6 +21,47 @@ maya_jnt_dict = {
 	'R_leg': ['upperLegRGT_bJnt', 'lowerLegRGT_bJnt', 'ankleRGT_bJnt', 'ballRGT_bJnt']
 }
 
+
+
+maya_jnt_dict_naming_dode = {
+    'root': ['root', 'weaponLFT_bJnt', 'weaponRGT_bJnt'],
+    'spine': ['hip_bJnt', 'spine01_bJnt', 'spine02_bJnt', 'spine03_bJnt', 'spine04_bJnt'],
+    'loin': ['loinFRN01_bJnt', 'loinFRN02_bJnt', 'loinFRN03_bJnt', 'loinFRN04_bJnt', 'loinFRN05_bJnt', 'loinFRN06_bJnt'],
+    'head': ['neck01_bJnt', 'neck02_bJnt', 'head_bJnt'],
+    'L_arm': [
+        'clvLFT_bJnt', 'upperArmLFT_bJnt', 'lowerArmLFT_bJnt', 'handLFT_bJnt',
+        'thumbLFT01_bJnt', 'thumbLFT02_bJnt', 'thumbLFT03_bJnt',
+        'indexLFT01_bJnt', 'indexLFT02_bJnt', 'indexLFT03_bJnt',
+        'middleLFT01_bJnt', 'middleLFT02_bJnt', 'middleLFT03_bJnt',
+        'ringLFT01_bJnt', 'ringLFT02_bJnt', 'ringLFT03_bJnt',
+        'pinkyLFT01_bJnt', 'pinkyLFT02_bJnt', 'pinkyLFT03_bJnt'
+    ],
+    'R_arm': [
+        'clvRGT_bJnt', 'upperArmRGT_bJnt', 'lowerArmRGT_bJnt', 'handRGT_bJnt',
+        'thumbRGT01_bJnt', 'thumbRGT02_bJnt', 'thumbRGT03_bJnt',
+        'indexRGT01_bJnt', 'indexRGT02_bJnt', 'indexRGT03_bJnt',
+        'middleRGT01_bJnt', 'middleRGT02_bJnt', 'middleRGT03_bJnt',
+        'ringRGT01_bJnt', 'ringRGT02_bJnt', 'ringRGT03_bJnt',
+        'pinkyRGT01_bJnt', 'pinkyRGT02_bJnt', 'pinkyRGT03_bJnt'
+    ],
+    'L_leg': [
+        'upperLegLFT_bJnt', 'lowerLegLFT_bJnt', 
+        'footLFT_bJnt', 'ballLFT_bJnt'
+    ],
+    'R_leg': [
+        'upperLegRGT_bJnt', 'lowerLegRGT_bJnt', 
+        'footRGT_bJnt', 'ballRGT_bJnt'
+    ],
+    'ik': [
+        'ik_foot_root', 'ik_foot_l', 'ik_foot_r', 
+        'ik_hand_root', 'ik_hand_l', 'ik_hand_r', 'ik_hand_gun'
+    ]
+}
+
+
+
+
+
 # 2. Dictionary side Unreal 
 ue_jnt_dict = {
 	'root': ['root', 'weapon_l', 'weapon_r'],
@@ -60,4 +101,4 @@ def clean_rename_for_unreal(maya_map, ue_map):
 	print(f"\n[Success] Renamed {count} joints to Unreal Standard.")
 
 #... runcode
-clean_rename_for_unreal(maya_jnt_dict, ue_jnt_dict)
+clean_rename_for_unreal(maya_jnt_dict_naming_dode, ue_jnt_dict)

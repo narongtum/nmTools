@@ -188,6 +188,7 @@ class JiraWorklogApp:
 		btn_box = tk.Frame(self.right_frame)
 		btn_box.pack(fill="x", pady=10)
 		tk.Button(btn_box, text="+ Add New Log", command=self.open_add_dialog, width=15).pack(side="left", padx=5)
+		tk.Button(btn_box, text="Edit Log", command=self.open_edit_dialog, width=15).pack(side="left", padx=5)
 		tk.Button(btn_box, text="Delete Selected", command=self.delete_log, width=15, fg="red").pack(side="left", padx=5)
 
 		# Monthly Total Label
@@ -307,8 +308,73 @@ class JiraWorklogApp:
 		# Right-click context menu for favorites
 		self.fav_menu = tk.Menu(win, tearoff=0)
 		self.refresh_context_menu(e_issue, e_comment)
-		
 		e_issue.bind("<Button-3>", lambda e: self.show_context_menu(e)) # Windows Right Click
+
+		
+	def open_edit_dialog(self):
+		selected = self.tree.selection()
+		if not selected:
+			messagebox.showwarning("Warning", "กรุณาเลือกรายการที่ต้องการแก้ไข")
+			return
+		
+		item_idx = self.tree.index(selected[0])
+		date_str = self.cal.get_date()
+		log = self.db[date_str]["logs"][item_idx]
+		
+		if log.get("status") == "submitted":
+			messagebox.showwarning("Warning", "ไม่สามารถแก้ไขรายการที่ส่ง Jira ไปแล้วได้")
+			return
+
+		logger.debug(f"Opening Edit Entry dialog for index {item_idx}")
+		win = tk.Toplevel(self.root)
+		win.title("Edit Worklog Entry")
+		win.geometry("300x250")
+		
+		tk.Label(win, text="Issue Key (e.g. PROJ-123)").pack(pady=2)
+		e_issue = tk.Entry(win)
+		e_issue.insert(0, log["issue"])
+		e_issue.pack()
+		
+		tk.Label(win, text="Time Spent (e.g. 2h, 45m)").pack(pady=2)
+		e_time = tk.Entry(win)
+		e_time.insert(0, log["time"])
+		e_time.pack()
+		
+		tk.Label(win, text="Comment").pack(pady=2)
+		e_comment = tk.Entry(win)
+		e_comment.insert(0, log["comment"])
+		e_comment.pack()
+
+		def save():
+			time_val = e_time.get().strip()
+			issue_key = e_issue.get().upper().strip()
+			
+			if not time_val:
+				messagebox.showerror("Error", "กรุณาใส่เวลา")
+				return
+			
+			minutes = parse_time_to_minutes(time_val)
+			if minutes == 0 and time_val != "0":
+				messagebox.showerror("Error", f"รูปแบบเวลาไม่ถูกต้อง: '{time_val}'")
+				return
+
+			self.db[date_str]["logs"][item_idx] = {
+				"issue": issue_key,
+				"time": time_val,
+				"comment": e_comment.get(),
+				"status": "waiting"
+			}
+			save_json(DB_FILE, self.db)
+			self.refresh_daily_list(date_str)
+			self.refresh_calendar_highlights()
+			win.destroy()
+
+		tk.Button(win, text="Save Changes", command=save, bg="#28a745", fg="white").pack(pady=15)
+		
+		# Right-click context menu for favorites
+		self.fav_menu = tk.Menu(win, tearoff=0)
+		self.refresh_context_menu(e_issue, e_comment)
+		e_issue.bind("<Button-3>", lambda e: self.show_context_menu(e))
 		
 	def refresh_context_menu(self, entry_issue, entry_comment):
 		self.fav_menu.delete(0, "end")
@@ -431,67 +497,67 @@ class JiraWorklogApp:
 
 
 	def submit_to_jira(self):
-		date_str = self.cal.get_date()
-		logger.debug(f"Starting submit_to_jira for date: {date_str}")
-		if date_str not in self.db: 
-			logger.debug(f"No logs found in DB for date {date_str}")
-			messagebox.showinfo("Info", f"ไม่มีข้อมูลสำหรับวันที่ {date_str}")
+		logger.debug("Starting submit_to_jira for ALL waiting logs")
+		
+		if not self.db:
+			messagebox.showinfo("Info", "ไม่มีข้อมูลในฐานข้อมูล")
 			return
 
 		auth = HTTPBasicAuth(self.config['email'], self.config['token'])
 		headers = {"Accept": "application/json", "Content-Type": "application/json"}
-		logs = self.db[date_str]["logs"]
 		
-		success = 0
+		success_total = 0
 		errors = []
-		waiting_count = 0
+		waiting_total = 0
 
-		for log in logs:
-			if log.get("status", "").lower() == "waiting":
-				waiting_count += 1
-				issue_id = log['issue'].strip()
-				url = f"{self.config['url'].strip('/')}/rest/api/3/issue/{issue_id}/worklog"
-				logger.debug(f"Submitting log for {issue_id}: {log['time']} to {url}")
-				
-				payload = {
-					"timeSpent": log['time'],
-					"started": f"{date_str}T12:00:00.000+0700",
-					"comment": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"text": log['comment'] or "Log via Python Tool", "type": "text"}]}]}
-				}
-				try:
-					res = requests.post(url, json=payload, headers=headers, auth=auth, timeout=10)
-					logger.debug(f"Jira Response Code: {res.status_code}")
-					if res.status_code == 201:
-						res_data = res.json()
-						worklog_id = res_data.get("id")
-						logger.info(f"Successfully submitted worklog for {issue_id} (ID: {worklog_id})")
-						log["worklogId"] = worklog_id
-						log["status"] = "submitted"
-						success += 1
-					else:
-						# Log the specific error from Jira
-						try:
-							err_msg = res.json().get('errorMessages', [res.text])[0]
-						except:
-							err_msg = res.text
-						logger.error(f"Failed to submit {issue_id}: {res.status_code} - {err_msg}")
-						errors.append(f"Issue {log['issue']}: {res.status_code} - {err_msg}")
-				except Exception as e:
-					logger.exception(f"Exception during submission for {issue_id}")
-					errors.append(f"Issue {log['issue']}: Connection Error - {str(e)}")
+		# Loop through ALL dates in the DB
+		for date_str, data in self.db.items():
+			logs = data.get("logs", [])
+			for log in logs:
+				if log.get("status", "").lower() == "waiting":
+					waiting_total += 1
+					issue_id = log['issue'].strip()
+					url = f"{self.config['url'].strip('/')}/rest/api/3/issue/{issue_id}/worklog"
+					logger.debug(f"Submitting log for {issue_id} on {date_str}: {log['time']} to {url}")
+					
+					payload = {
+						"timeSpent": log['time'],
+						"started": f"{date_str}T12:00:00.000+0700",
+						"comment": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"text": log['comment'] or "Log via Python Tool", "type": "text"}]}]}
+					}
+					try:
+						res = requests.post(url, json=payload, headers=headers, auth=auth, timeout=10)
+						logger.debug(f"Jira Response for {issue_id} on {date_str}: {res.status_code}")
+						if res.status_code == 201:
+							res_data = res.json()
+							worklog_id = res_data.get("id")
+							logger.info(f"Successfully submitted worklog for {issue_id} (ID: {worklog_id})")
+							log["worklogId"] = worklog_id
+							log["status"] = "submitted"
+							success_total += 1
+						else:
+							try:
+								err_msg = res.json().get('errorMessages', [res.text])[0]
+							except:
+								err_msg = res.text
+							logger.error(f"Failed to submit {issue_id} on {date_str}: {res.status_code} - {err_msg}")
+							errors.append(f"[{date_str}] Issue {log['issue']}: {res.status_code} - {err_msg}")
+					except Exception as e:
+						logger.exception(f"Exception during submission for {issue_id} on {date_str}")
+						errors.append(f"[{date_str}] Issue {log['issue']}: Connection Error - {str(e)}")
 
-		logger.debug(f"Finished submission. Success: {success}, Total waiting: {waiting_count}")
-		if success > 0:
+		logger.debug(f"Finished batch submission. Success: {success_total}, Total waiting: {waiting_total}")
+		if success_total > 0:
 			save_json(DB_FILE, self.db)
-			self.refresh_daily_list(date_str)
-			msg = f"ส่งข้อมูลสำเร็จ {success} รายการ"
+			current_date = self.cal.get_date()
+			self.refresh_daily_list(current_date)
+			msg = f"ส่งข้อมูลสำเร็จทั้งหมด {success_total} รายการ"
 			if errors:
 				msg += "\n\nพบข้อผิดพลาดบางรายการ:\n" + "\n".join(errors)
 			messagebox.showinfo("Result", msg)
-		elif waiting_count > 0:
-			# Found items to send, but all failed
+		elif waiting_total > 0:
 			err_text = "\n".join(errors)
-			messagebox.showerror("Submission Error", f"ไม่สามารถส่งข้อมูลได้ (ตรวจพบ {waiting_count} รายการแต่ล้มเหลว):\n\n{err_text}")
+			messagebox.showerror("Submission Error", f"ไม่สามารถส่งข้อมูลได้ (ตรวจพบ {waiting_total} รายการแต่ล้มเหลว):\n\n{err_text}")
 		else:
 			messagebox.showinfo("Info", "ไม่มีรายการใหม่ที่ต้องส่ง (สถานะ 'waiting')")
 

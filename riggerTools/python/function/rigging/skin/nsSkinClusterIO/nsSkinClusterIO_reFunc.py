@@ -355,7 +355,7 @@ class SkinClusterIO(object):
 		timeStart = time.time()
 
 		#...write data 
-		np.save(filepath, data)
+		np.save(filepath, np.array(data, dtype=object))
 
 		#...timeEnd
 		timeEnd = time.time()
@@ -631,7 +631,7 @@ def saveSkin():
 
 	timeStart = time.time()
 
-	np.save(filepath, data)
+	np.save(filepath, np.array(data, dtype=object))
 	cmds.select(deselect=True)
 	timeEnd = time.time()
 	timeElapsed = timeEnd-timeStart

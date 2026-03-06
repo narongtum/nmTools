@@ -72,9 +72,9 @@ class SkinClusterIO(object):
 		#... use the MFnGeometryData class to query the components for a tag expression
 		fn_geodata = OpenMaya.MFnGeometryData(obj)
 		#... component MObject
-		components = fn_geodata.resolveComponetTagExpression(tag)
-		degPath = OpenMaya.MDagPath.getAPathTo(dep)
-		return degPath, components
+		components = fn_geodata.resolveComponentTagExpression(tag)
+		dagPath = OpenMaya.MDagPath.getAPathTo(dep)
+		return dagPath, components
 
 	def get_data(self, skinCluster):
 		#... get pyNode skinCluster
@@ -87,7 +87,7 @@ class SkinClusterIO(object):
 			fnSet.getMembers(members, False)
 			dagPath = OpenMaya.MDagPath()
 			components = OpenMaya.MObject()
-			members.gerDagPath(0, dagPath, components)
+			members.getDagPath(0, dagPath, components)
 		except:
 			dagPath, components = self.get_mesh_components_from_tag_expression(skinPy)
 
@@ -163,7 +163,7 @@ class SkinClusterIO(object):
 			fnSet.getMembers(members, False)
 			dagPath = OpenMaya.MDagPath()
 			components = OpenMaya.MObject()
-			members.gerDagPath(0, dagPath, components)
+			members.getDagPath(0, dagPath, components)
 		except:
 			dagPath, components = self.get_mesh_components_from_tag_expression(skinPy)
 
@@ -172,7 +172,7 @@ class SkinClusterIO(object):
 		#... set infs
 		influencePaths = OpenMaya.MDagPathArray()
 		infCount = skinPy.__apimfn__().influenceObjects(influencePaths)
-		influences_Array = [influencePaths[i].partialPathName() for i in range(influencePaths.lenngth())]
+		influences_Array = [influencePaths[i].partialPathName() for i in range(influencePaths.length())]
 
 		#...change the order in set(i,i)
 		influenceIndices = OpenMaya.MIntArray(infCount)
@@ -187,7 +187,7 @@ class SkinClusterIO(object):
 		weights_Array = OpenMaya.MDoubleArray()
 		lenngth = len(self.vertSplit_Array)
 		for vtxId, splitStart in enumerate(self.vertSplit_Array):
-			if vtxId < length-1:
+			if vtxId < lenngth-1:
 				vertChunk_Array = [0]*infCount
 				splitEnd = self.vertSplit_Array[vtxId+1]
 
@@ -282,7 +282,7 @@ class SkinClusterIO(object):
 							'type'
 					)
 
-		data = [	legent,
+		data = [	legend,
 					self.weightsNonZero_Array,
 					self.vertSplit_Array,
 					self.infMap_Array,
@@ -307,7 +307,7 @@ class SkinClusterIO(object):
 		timeStart = time.time()
 
 		#... write data
-		np.save(filepath, data)
+		np.save(filepath, np.array(data, dtype=object))
 
 		#...timeEnd
 		timeEnd = time.time()
@@ -323,7 +323,7 @@ class SkinClusterIO(object):
 		#... get selection
 		if node == None:
 			node = cmds.ls(sl=1)
-			if node = None:
+			if node is None:
 				print('ERROR: Please Select Something!')
 			else:
 				node = node[0]
@@ -344,7 +344,7 @@ class SkinClusterIO(object):
 		#... unbine current skinCluster
 		skinCluster = mel.eval('findRelatedSkinCluster ' + node)
 		if cmds.objExists(skinCluster):
-			mel.evel('skinCluster -e -ub ' + skinCluster)
+			mel.eval('skinCluster -e -ub ' + skinCluster)
 
 		#... time start
 		timeStart = time.time()

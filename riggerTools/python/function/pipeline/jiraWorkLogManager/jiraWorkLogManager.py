@@ -129,7 +129,7 @@ class JiraWorklogApp:
 		self.fav_scroll_frame = tk.Frame(self.fav_frame)
 		self.fav_scroll_frame.pack(fill="both", expand=True)
 		
-		for i in range(10):  # 10 rows as per mockup
+		for i in range(14):  # 10 rows as per mockup
 			row_frame = tk.Frame(self.fav_scroll_frame, pady=2)
 			row_frame.pack(fill="x")
 			

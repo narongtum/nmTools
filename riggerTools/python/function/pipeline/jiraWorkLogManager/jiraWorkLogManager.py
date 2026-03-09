@@ -91,7 +91,7 @@ class JiraWorklogApp:
 	def __init__(self, root):
 		logger.debug("Initializing JiraWorklogApp...")
 		self.root = root
-		self.root.title("Jira Worklog Manager v1.0")
+		self.root.title("Jira Worklog Manager v1.01")
 		self.root.geometry("1000x600")
 		
 		# Load Config & Database

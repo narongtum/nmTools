@@ -518,17 +518,31 @@ from function.pipeline import fileTools as fileTools
 reload (fileTools)
 
 def _processPath():
-	dataRaw = fileTools.getAssetData()
-	status = dataRaw[0][-2]
+	state = fileTools.fileState()
 
-	if status == 'commit':
-		print ('This is hero file')
-		filePath  = fileTools.desinatePath('\\RIG\\Data\\skinData')
+	if state == 'global_hero':
+		# File at .../asset/Commit/file.ma
+		# target: .../asset/Rig/Data/skinData
+		filePath = fileTools.desinatePath('\\Rig\\Data\\skinData')
+		print('This is Global Publish file (Hero)')
 
-	else:
-		print ('This is version file')
-		filePath  = fileTools.desinatePath('\\Data\\skinData')
+	elif state == 'local_hero':
+		# File at .../asset/Rig/Commit/file.ma
+		# target: .../asset/Rig/Data/skinData
+		filePath = fileTools.desinatePath('\\Data\\skinData')
+		print('This is Local Publish file (Local Hero)')
 
+	elif state == 'version':
+		# File at .../asset/Rig/Version/file.ma
+		# target: .../asset/Rig/Data/skinData
+		filePath = fileTools.desinatePath('\\Data\\skinData')
+		print('This is Version file')
+
+	else: # 'unknown'
+		# File at .../any/folder/file.ma
+		# target: .../any/folder/Data/skinData
+		filePath = fileTools.currentBackFolder() + 'Data\\skinData'
+		print('This is Unknown file type, saving to local Data folder')
 
 	fileTools.currentFilePath(filePath)
 	return filePath

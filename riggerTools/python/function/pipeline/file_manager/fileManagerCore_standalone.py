@@ -22,20 +22,6 @@ reload(logger)
 
 import re
 
-# from function.pipeline import fileTools
-# reload(fileTools)
-
-# reload(runWrite)
-
-# reload(skinIO)
-
-# reload(jtt)
-
-# reload(adjust)
-
-# from function.pipeline.file_manager import run_ui
-# reload(run_ui)
-
 try:
 	from shiboken2 import wrapInstance
 except:
@@ -168,11 +154,6 @@ def getMayaMainWindow():
 	return None
 
 
-#... try for enable filter widget
-# class FilterProxyModel(QtCore.QSortFilterProxyModel):
-# 	def __init__(self, parent=None):
-# 		super(FilterProxyModel, self).__init__(parent)
-# 		self._pattern = ""
 
 	@property
 	def pattern(self):
@@ -272,7 +253,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... set combo box to that
 
 		if self.is_scene_open():
-# 			current_scene_path = pm.system.sceneName()
+
 			current_scene_path = os.path.normpath(current_scene_path)
 			path_elements = current_scene_path.split(os.path.sep)
 			if path_elements[2] in PROJECT_NAME:
@@ -281,7 +262,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 				#... make set current drive that scene open
-				# current_drive = path_elements[0] + '\\'
 				current_drive = os.path.splitdrive(current_scene_path)[0] + os.sep
 				if current_drive in DRIVES:
 					FileManagerLog.debug(f'# line: 275 # # Set Drive to: {current_drive}')
@@ -303,15 +283,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... Connect entity 
 		self.asset_global_listWidget.itemClicked.connect(self.on_glogal_commit_clicked)
-
-
-		# # Connect the on_version_clicked method to the left clicked signal
-		# # No need to use anymore disable for now
-		# self.asset_version_view_listWidget.itemClicked.connect(self.on_version_clicked)
-
-		# # Create jobs at department level
-		# self.asset_department_listWidget = QListWidget()
-		# self.setCentralWidget(self.asset_department_listWidget)
 
 		# Show context for department widget
 		self.asset_department_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -350,12 +321,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def is_scene_open(self):
 		return False
-
-	# def closeEvent(self, event):
-	# 	# Remove the window instance from the list of open windows
-	# 	self.open_windows.remove(self)
-	# 	# Call the base class closeEvent to ensure proper cleanup
-	# 	super(FileManager, self).closeEvent(event)
 		
 	def setupMenuBar(self):
 		file_menu = self.menuFile
@@ -369,10 +334,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		replaceRef_action = FileManagerActions.createReplaceRefAction(self, self.replaceSelectedReference)
 		file_menu.addAction(replaceRef_action)
 
-		#... inside 'Tools' menubar
-		#... Create 'Print B' action and add it to the 'File' menu
-		# print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
-		# toos_menu.addAction(print_b_action)
 
 		assetExport_action = FileManagerActions.createAssetExportAction(self, self.printC)
 		toos_menu.addAction(assetExport_action)
@@ -413,14 +374,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		
 		run_ui.run_file_exporter()
 
-
-	'''
-	def filter_model(self, text):
-		#... Apply the filter to the proxy model
-		search_pattern = f"*{text}*"  # Wildcards allow partial matches
-		self.proxyModel = QtCore.QSortFilterProxyModel()
-		self.proxyModel.setFilterWildcard(search_pattern)
-		'''
 
 	def filter_model(self, text):
 		# Reuse the single persistent proxy already wired to the view.
@@ -525,30 +478,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... normalize path before execute
 		save_path = os.path.join(save_path, '')
 
-		# save_path = os.path.normpath(save_path)
-
-
-
-# 		fileTools.createThumbnail_ext(currentPath=save_path, fileName=fileName)
-
-
-		'''
-# 		import maya.OpenMaya as om
-# 		import maya.OpenMayaUI as omui
-# 		mimage = om.MImage()
-# 		view = omui.M3dView.active3dView()
-		view.readColorBuffer(mimage, True)
-
-		# Resize the image to the specified width and height
-		mimage.resize(width, height)
-
-		mimage.writeToFile(save_path, fileType)
-		print('Thumbnail has been created at: {0}'.format(save_path))
-		'''
 
 
 		save_full_path = os.path.normpath(save_full_path)
-
 
 		#... Asking SVN
 		reply = QMessageBox(self)
@@ -995,7 +927,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
 
 				# --- back to original scene BEFORE saving ---
-# 				mc.file(original_scene_path, o=True, f=True)
 				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 				# 3.Add SVN
@@ -1041,8 +972,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# TODO: Create check what is type of this file
 
 		# Get full path that current open in maya
-# 		original_scene_path  = mc.file( query=True , sn=True )
-
 
 		full_path = self._get_full_path()
 		department_text = self.asset_department_listWidget.currentItem().text()
@@ -1121,7 +1050,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
 
 				# --- back to original scene BEFORE saving ---
-# 				mc.file(original_scene_path, o=True, f=True)
 				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 				#... update return logmsg for SVN
@@ -1149,7 +1077,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				self.load_local_commit(full_path)
 
 				# --- back to original scene BEFORE saving ---
-# 				mc.file(original_scene_path, o=True, f=True)
 				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
 
 			elif result == QMessageBox.Rejected:
@@ -1158,12 +1085,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-	
-		
-
-			'''except Exception as e:
-													FileManagerLog.debug('File not valid name please check: {0}'.format(maya_file_path))
-													print("Error:", e)'''
 				
 
 		else:
@@ -1174,18 +1095,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.debug(f'\tUI has change project name to >>> {self.project_comboBox.currentText()}')
 
 
-# 		current_scene_path = pm.system.sceneName()
 		
-		# Check where is the scene is saved
+		#... Check where is the scene is saved
 		if current_scene_path:
-			# Normalize the path
+			#... Normalize the path
 			current_scene_path = os.path.normpath(current_scene_path)
 
-			# Split the path to extract relevant information
+			#... Split the path to extract relevant information
 			path_elements = current_scene_path.split(os.path.sep)
 			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements))
 			
-			# Extract the asset and department names
+			#... Extract the asset and department names
 			asset_name = path_elements[-4]
 			department_name = path_elements[-3]
 
@@ -1197,7 +1117,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			if project_name != self.project_comboBox.currentText(): #... in case for make can change project with already open scene other project
 				FileManagerLog.debug('	[{0}] <<< is not equal set project to  >>> [{1}]'.format(project_name, self.project_comboBox.currentText()))
 				#... change project
-				# self.project_comboBox.setCurrentText(self.project_comboBox.currentText()) 
 			else:
 				FileManagerLog.debug('{0} is same as {1}'.format(project_name, self.project_comboBox.currentText()))
 				pass
@@ -1234,20 +1153,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		else:
 			FileManagerLog.warning("update_to_browser: invalid index for %s", file_path)
 
-
-
-
-			
-		
-
-
-
-
 	def populate_version_from_open_scene(self, file_path):
 		pass
-
-
-
 
 
 
@@ -1272,14 +1179,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		path_list = asset_path.split('\\')
 
-		
-
-
 
 		selected_project = self.project_comboBox.currentText()
 
-		# I don't know how to manage this 
-		# if selected_project == 'P_Regulus':
+		#... I don't know how to manage this 
 		if selected_project in USE_VARIATION:
 
 			path_check = path_list[-2] + '_' + path_list[-1]
@@ -1289,7 +1192,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
 
 			
-		# Making list to find jobs step
+		#... Making list to find jobs step
 		step_filter_list = []
 		for each in job_step_list:
 			# Filter for *.ma or *.mb and proper naming only
@@ -1309,8 +1212,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def create_job_step(self):
 
-		# shift to above
-		# Open Dialog
 		step_name, okPressed = QInputDialog.getText(self, "Create Step", "Enter Step name:")
 
 		if okPressed and step_name:
@@ -1342,9 +1243,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_project = self.project_comboBox.currentText()
 
 		split_path_list = new_folder_path.split('\\')
-		# Project Regulus is use wired naming 
-		# We can't use '01' or '02' variation name as a Asset name 
-		# So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
+		#... Project Regulus is use wired naming 
+		#... We can't use '01' or '02' variation name as a Asset name 
+		#... So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
 
 		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
 
@@ -1438,7 +1339,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def maya_add_recen_file(self, filepath, MAYA_EXT):
 		pass
-# 		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
 
 	#... this method is for publish saving only
 	#... change to return path for make it more dynamic
@@ -1452,18 +1352,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def maya_reference_noAsk(self, file_path):
 		pass
-# 		mc.file(file_path, reference=True, namespace=file_name)
-
-
 
 	def maya_reference(self, file_path):
 		pass
 
 
-
-
-
-	# Context menu for asset_department_listWidget
 	def show_job_context_menu(self, position):
 		# Create Jobs
 		contextMenu = QtWidgets.QMenu(self)
@@ -1723,27 +1616,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				self.assetInfo_list_listWidget.addItem(json_data['comment'])
 
 
-			#... Fail for now
-			# #... Make filter Start
-			# filter_text = self.asset_filter_lineEdit.text()
-
-			# proxy_model = QSortFilterProxyModel()
-			# proxy_model.setSourceModel(self.model)
-
-			# proxy_model.setFilterRegExp(filter_text)
-			# proxy_model.setFilterKeyColumn(0)
-
-			# #... Set the proxy model on the asset_dir_TREEVIEW
-			# self.asset_dir_TREEVIEW.setModel(proxy_model)
-
-
-			# #... Set the root index to show the filtered results
-			# root_index = self.asset_dir_TREEVIEW.model().index(QDir.currentPath())
-			# self.asset_dir_TREEVIEW.setRootIndex(root_index)
-
-			# #... Make filter End
-
-				
+			
 
 
 	def on_treeview_SCENE_clicked(self, index):
@@ -1963,9 +1836,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			if os.path.isdir(full):
 				items.append(name)
 
-		# If you still want to prefer reading from data.json when present,
-		# you can optionally override items here by reading department_name from JSON.
-		# But at minimum, show the folder list.
+		#... If you still want to prefer reading from data.json when present,
+		#... you can optionally override items here by reading department_name from JSON.
+		#... But at minimum, show the folder list.
 		if items:
 			self.asset_department_listWidget.addItems(sorted(items))
 
@@ -2208,7 +2081,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 
-
 	def create_data_JSON(self, base_path, entitie_type, entitie_name, full_entity_name, department_name, comment, add_path_SVN ):
 		# Write to dictionary
 		entitie_dict = DICTIONARY_TEMPLATE
@@ -2285,7 +2157,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				FileManagerLog.info('This is department_name:\t\t{0}')
 
 
-
 				# Write Add path for SVN
 				add_path_for_SVN = []
 
@@ -2338,13 +2209,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					pass
 
 
-
-
-				
-
-
-
-
 			else:
 				print("\tThere are already folder skipped.")
 				pass
@@ -2353,13 +2217,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				self.asset_dir_TREEVIEW.update()
 
 
-
 class General():
 	def __init__(self):
 		pass
 
 	def get_scene_name(self):
-# 		scene_path = pm.system.sceneName()
 		if scene_path:
 			# Get the file name with extension
 			self.Scene_Name = os.path.basename(scene_path)
@@ -2369,13 +2231,7 @@ class General():
 		return self.Scene_Name  # Return the scene name
 
 	def get_workspace(self):
-# 		self.WorkSpace_RootDir = pm.workspace(q=1,rd=1)
 		FileManagerLog.debug('self.WorkSpace_RootDir:\t%s',self.WorkSpace_RootDir)
-# 		# self.RuleEntry_SourceImages = pm.workspace('sourceImages',fileRuleEntry=1,q=1 )
-		# FileManagerLog.debug('self.RuleEntry_SourceImages:\t%s',self.RuleEntry_SourceImages)
-# 		# self.RuleEntry_3dPaintTextures = pm.workspace('3dPaintTextures',fileRuleEntry=1,q=1 )
-# 		# self.RuleEntry_Scenes = pm.workspace('scene',fileRuleEntry=1,q=1 )
-		# FileManagerLog.debug('self.RuleEntry_Scenes:\t%s',self.RuleEntry_Scenes)
 
 	def log_list(self,inputList):
 		if inputList :
@@ -2406,7 +2262,6 @@ class General():
 
 	def get_reference_file(self):
 		# check scene name is not set or not
-# 		if pm.system.sceneName():
 			# Get reference file
 			self.Reference_File = set( cmds.file(q=True,l=True) )
 			self.log_list( self.Reference_File )        
@@ -2444,11 +2299,6 @@ class SvnMaya:
 		subprocess.run(command_line, shell=True)
 
 
-
-
-
-
-
 def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 	
 	#... Create Thumbnail at current maya file
@@ -2456,8 +2306,8 @@ def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 
 	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
 	
-# 	mimage = om.MImage()
-# 	view = omui.M3dView.active3dView()
+	#...mimage = om.MImage()
+	#... view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
 
 	#... Resize the image to the specified width and height
@@ -2471,16 +2321,9 @@ def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 	print('Thumbnail has been created at: {0}'.format(imageFile))
 
 
-
-
 def do_pipeline_round_skinWeight(group_names = ['Export_grp', 'Model_grp']):
 	FileManagerLog.debug('\ndo_pipeline_round_skinWeight...')
 	pass
-
-
-
-
-
 
 
 
@@ -2491,8 +2334,6 @@ def do_local_commit():
 def do_global_commit():
 	FileManagerLog.debug('do_global_commit START')
 	pass
-# 	mc.select(deselect = True)	
-
 
 
 class FileManagerActions:
@@ -2502,18 +2343,9 @@ class FileManagerActions:
 		create_thumbnail_open.triggered.connect(callback)
 		return create_thumbnail_open
 
-	# @staticmethod
-	# def createPrintBAction(parent, callback):
-	# 	print_b_action = QtWidgets.QAction("Print B in menu", parent)
-	# 	print_b_action.triggered.connect(callback)
-	# 	return print_b_action
-
 	@staticmethod
 	def createAssetExportAction(parent, callback):
 		pass
-
-
-
 
 	@staticmethod
 	def saveCtrlShapeAction(parent, callback):
@@ -2535,30 +2367,3 @@ class FileManagerActions:
 	def createReplaceRefAction(parent, callback):
 		pass
 
-
-'''
-
-#...
-#... this is example for using python and SVN by GPT
-#...
-
-def run_tortoise_svn_command(svn_bin_path, cmd_type, file_path, logmsg='', close_on_end=0):
-	command = [
-		os.path.join(svn_bin_path, 'TortoiseProc.exe'),
-		f'/command:{cmd_type}',
-		f'/path:{file_path}',
-		f'/logmsg:{logmsg}',
-		f'/closeonend:{close_on_end}'
-	]
-	
-	try:
-		result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-		print(result.stdout)
-	except subprocess.CalledProcessError as e:
-		print(f"Error running command: {e.cmd}")
-		print(f"Return code: {e.returncode}")
-		print(f"Output: {e.output}")
-		print(f"Error output: {e.stderr}")
-
-run_tortoise_svn_command(SVN_BIN_PATH, cmd_type, file_path, logmsg, close_on_end)
-'''

@@ -154,6 +154,24 @@ def getMayaMainWindow():
 	return None
 
 
+class AssetFilterProxyModel(QtCore.QSortFilterProxyModel):
+	"""Proxy model for Asset tree search.
+
+	English:
+	- Uses a simple case-insensitive substring match.
+	- Recursive: keeps parent folders visible if any descendant matches.
+	- NEVER filters out the project root index (so QTreeView won't jump to drive root).
+	"""
+
+	def __init__(self, parent=None):
+		super(AssetFilterProxyModel, self).__init__(parent)
+		self._pattern = ""
+		self._root_src_index = QtCore.QModelIndex()
+
+	def set_root_source_index(self, src_index: QtCore.QModelIndex):
+		self._root_src_index = src_index
+		# Re-filter so root acceptance takes effect immediately
+		self.invalidateFilter()
 
 	@property
 	def pattern(self):
@@ -161,21 +179,28 @@ def getMayaMainWindow():
 
 	@pattern.setter
 	def pattern(self, value):
-		self._pattern = value
+		self._pattern = value or ""
 		self.invalidateFilter()
 
 	def filterAcceptsRow(self, sourceRow, sourceParent):
-		if not self.pattern:
+		pattern = (self._pattern or "").strip()
+		if not pattern:
 			return True
 
 		sourceModel = self.sourceModel()
 		index = sourceModel.index(sourceRow, 0, sourceParent)
-		filePath = sourceModel.filePath(index)
-		fileName = sourceModel.fileName(index)
+		if not index.isValid():
+			return False
 
-		if self.pattern.lower() in fileName.lower():
+		# Always accept root project folder (prevents rootIndex becoming invalid)
+		if self._root_src_index.isValid() and index == self._root_src_index:
 			return True
 
+		fileName = sourceModel.fileName(index)
+		if pattern.lower() in (fileName or "").lower():
+			return True
+
+		# Keep parents visible if any child matches
 		if sourceModel.isDir(index):
 			childCount = sourceModel.rowCount(index)
 			for i in range(childCount):
@@ -196,18 +221,33 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		super(FileManager, self).__init__(parent=parent)
 		self.setupUi(self)
 		self.path = None
+		# --- Asset tree view state ---
+		# English: keep last selection by filesystem path (more stable than QModelIndex across proxy refilters)
+		self._asset_last_selected_path = None
+		self._asset_root_src_index = QtCore.QModelIndex()
+		self._asset_root_proxy_index = QtCore.QModelIndex()
+		self._is_restoring_asset_selection = False
 		FileManagerLog.debug('# --- Asset file system model + proxy for filtering ---')
 
 		# --- Asset file system model + proxy for filtering ---
 		self.asset_fs_model = QtWidgets.QFileSystemModel(self)   # source model for Asset tree
-		self.asset_proxy    = QtCore.QSortFilterProxyModel(self) # single, persistent proxy
+		self.asset_proxy    = AssetFilterProxyModel(self) # persistent proxy with recursive filtering
 		# show only column 0 (name) filtering; case-insensitive
-		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
-		self.asset_proxy.setFilterKeyColumn(0)
+		if hasattr(self.asset_proxy, "setFilterCaseSensitivity"):
+			self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
+		if hasattr(self.asset_proxy, "setFilterKeyColumn"):
+			self.asset_proxy.setFilterKeyColumn(0)
 
 		# If your PySide2/Qt >= 5.10, this enables filtering into children
 		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
 			self.asset_proxy.setRecursiveFilteringEnabled(True)
+
+		# --- Search UI (connect ONCE) ---
+		self.asset_filter_lineEdit.setPlaceholderText('Search...')
+		# English: QLineEdit built-in clear (X) button
+		if hasattr(self.asset_filter_lineEdit, "setClearButtonEnabled"):
+			self.asset_filter_lineEdit.setClearButtonEnabled(True)
+		self.asset_filter_lineEdit.textChanged.connect(self.on_asset_search_text_changed)
 
 
 
@@ -379,18 +419,102 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		# Reuse the single persistent proxy already wired to the view.
 		# Do NOT create a new proxy each keystroke, or the view loses its model state.
 		pattern = text.strip()
-		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
-		self.asset_proxy.setFilterKeyColumn(0)  # filter by "Name" column
-
-		# Prefer FixedString for simple contains; use wildcard if you really need it.
-		# With QSortFilterProxyModel default, setFilterFixedString matches substrings.
-		self.asset_proxy.setFilterFixedString(pattern)
-
-		# English: If Qt >= 5.10, ensure recursive filtering is on so parent folders with
-		# matching descendants remain visible.
-		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
-			self.asset_proxy.setRecursiveFilteringEnabled(True)
+		# NOTE: This project now uses AssetFilterProxyModel + on_asset_search_text_changed().
+		# Keep this method for backward-compat (if other code calls it).
+		self.asset_proxy.pattern = pattern
 		FileManagerLog.debug("Filter applied: '%s'", pattern)
+
+	# --- Asset search / selection helpers ---
+	def _remember_asset_selection(self):
+		"""Remember current selection path (source path) for later restore.
+
+		English: store by path rather than QModelIndex so it survives proxy refilters.
+		"""
+		if self._is_restoring_asset_selection:
+			return
+		try:
+			proxy_index = self.asset_dir_TREEVIEW.currentIndex()
+			path = self._path_from_treeview_index(proxy_index) if proxy_index.isValid() else None
+			if path:
+				self._asset_last_selected_path = os.path.normpath(path)
+		except Exception:
+			# Never let selection remembering break UI
+			return
+
+	def _restore_asset_selection(self, path: str) -> bool:
+		"""Restore selection by path. Returns True if selection was restored."""
+		if not path:
+			return False
+		path = os.path.normpath(path)
+		if not os.path.exists(path):
+			return False
+		src_index = self.asset_fs_model.index(path)
+		if not src_index.isValid():
+			return False
+		proxy_index = self.asset_proxy.mapFromSource(src_index)
+		if not proxy_index.isValid():
+			return False
+
+		self._is_restoring_asset_selection = True
+		try:
+			self.asset_dir_TREEVIEW.setCurrentIndex(proxy_index)
+			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
+				proxy_index,
+				QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current,
+			)
+			self.asset_dir_TREEVIEW.scrollTo(
+				proxy_index, QtWidgets.QAbstractItemView.PositionAtCenter
+			)
+		finally:
+			self._is_restoring_asset_selection = False
+		return True
+
+	def on_asset_search_text_changed(self, text: str):
+		"""Filter asset tree. When cleared, restore last selected folder.
+
+		Fix:
+		- Prevent treeview from reverting to drive/root when filter becomes empty.
+		- Keep user context by restoring last selected folder.
+		"""
+		# Remember selection before refiltering
+		self._remember_asset_selection()
+
+		pattern = (text or "").strip()
+
+		# Apply filter via proxy subclass (recursive, substring match)
+		self.asset_proxy.pattern = pattern
+
+		# When clearing (including clear-button X), do UI restore on next event loop tick
+		# to avoid crashes while the model is resetting.
+		if not pattern:
+			QtCore.QTimer.singleShot(0, self._after_asset_search_cleared)
+
+	def _after_asset_search_cleared(self):
+		"""Restore rootIndex + selection after search cleared.
+
+		English: Called via QTimer.singleShot(0, ...) to avoid touching selection during
+		proxy/model reset (prevents random UI close/crash on clear button).
+		"""
+		try:
+			# Always restore project root index first.
+			root_proxy = (
+				self.asset_proxy.mapFromSource(self._asset_root_src_index)
+				if self._asset_root_src_index.isValid()
+				else QtCore.QModelIndex()
+			)
+			if root_proxy.isValid():
+				self.asset_dir_TREEVIEW.setRootIndex(root_proxy)
+
+			# Restore selection (best-effort)
+			if self._asset_last_selected_path and self._restore_asset_selection(self._asset_last_selected_path):
+				return
+
+			# Fallback: scroll to project root
+			if root_proxy.isValid():
+				self.asset_dir_TREEVIEW.scrollTo(root_proxy)
+		except Exception:
+			# Never crash UI from restore
+			return
 
 	def _path_from_treeview_index(self, proxy_index):
 		"""English: Map a QTreeView proxy index to absolute filesystem path."""
@@ -1558,6 +1682,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	
 	#... Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
+		# remember selection for search restore
+		try:
+			path = self.asset_fs_model.filePath(self._asset_proxy_to_source(index))
+			if path:
+				self._asset_last_selected_path = os.path.normpath(path)
+		except Exception:
+			pass
+
 		#... refresh everytime that click at treeview
 		self.asset_local_view_listWidget.clear()
 		self.asset_global_listWidget.clear()
@@ -1869,14 +2001,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		src_root = self.asset_fs_model.index(self.path)
 		proxy_root = self.asset_proxy.mapFromSource(src_root)
 		self.asset_dir_TREEVIEW.setRootIndex(proxy_root)
+		self._asset_root_src_index = src_root
+		self._asset_root_proxy_index = proxy_root
+		# Tell proxy which folder is "root" so it will never be filtered out
+		if hasattr(self.asset_proxy, "set_root_source_index"):
+			self.asset_proxy.set_root_source_index(src_root)
 
-		# 4) Filters (unchanged)
-		self.asset_filter_lineEdit.setPlaceholderText('Search.')
-		self.asset_filter_lineEdit.textChanged.connect(
-			lambda text: self.asset_proxy.setFilterWildcard(f"*{text}*")
-		)
+		# English: on project change we don't want stale filter text; clear it silently.
+		try:
+			if self.asset_filter_lineEdit.text():
+				blocker = QtCore.QSignalBlocker(self.asset_filter_lineEdit)
+				self.asset_filter_lineEdit.setText("")
+				del blocker
+				# reset filter pattern
+				if hasattr(self.asset_proxy, "pattern"):
+					self.asset_proxy.pattern = ""
+		except Exception:
+			pass
 
-		# 5) Hide patterns etc.
+		# 4) Hide patterns etc.
 		self.asset_fs_model.setNameFilters(HIDE_FORMAT)
 
 		# Show only folders (no files) in the asset tree
@@ -1892,9 +2035,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... Optional: make the Name column fill the width nicely
 		if hasattr(header, "setSectionResizeMode"):
-		    header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+			header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 		else:
-		    header.setResizeMode(0, QtWidgets.QHeaderView.Stretch)
+			header.setResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
 	
 	def _asset_proxy_to_source(self, index: QtCore.QModelIndex) -> QtCore.QModelIndex:
@@ -2366,4 +2509,10 @@ class FileManagerActions:
 	@staticmethod
 	def createReplaceRefAction(parent, callback):
 		pass
+
+
+
+
+
+
 

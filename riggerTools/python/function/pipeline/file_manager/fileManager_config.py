@@ -4,7 +4,7 @@
 DRIVES = [      "D:\\",
 				"E:\\"      ]
 
-PROJECT_NAME = ['P_RP','P_Regulus','P_jobby']
+PROJECT_NAME = ['P_RP','P_Regulus','NangRam','True']
 
 DICTIONARY_TEMPLATE = {     
 
@@ -30,7 +30,7 @@ DEPT_EMPTY          =   ['Commit','Texture', 'ConceptArt','FBX']
 JOB_TEMPLATE        =   ['Version', 'Data', 'Output', 'Commit', 'FBX']
 EXCLUDE_VIEW_ITEM   =   ['data.json', THUMBNAIL_NAME, 'Commit']
 STATIC_FOLDER       =   [ASSET_TOP_FOLDER, 'Version', 'Commit']
-DEFAULT_PROJECT     =   'P_Regulus'
+DEFAULT_PROJECT     =   'P_RP'
 PADDING             =   4
 MAYA_EXT            =   'ma'
 USE_VARIATION       =   ('P_Regulus')
@@ -59,7 +59,12 @@ PROJECT_DETAIL = {
 	"P_RP": {
 		"typeNum": "1",
 		"FILE_01_NAMING_REPLACE": "Rig",
-		"FILE_01_NAMING_WITH": "SK",
+		"FILE_01_NAMING_WITH": "Rig",
+	},
+	"NangRam": {
+		"typeNum": "1",
+		"FILE_01_NAMING_REPLACE": "Rig",
+		"FILE_01_NAMING_WITH": "Rig",
 	}
 
 }

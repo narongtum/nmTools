@@ -308,9 +308,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 			current_scene_path = os.path.normpath(current_scene_path)
 			path_elements = current_scene_path.split(os.path.sep)
-			if path_elements[2] in PROJECT_NAME:
-				FileManagerLog.debug(f'# line: 266 # # Set Project to: {path_elements[2]}')
-				self.project_comboBox.setCurrentText(path_elements[2])
+			
+			project_name = path_elements[3] if len(path_elements) > 3 and path_elements[2] == 'P_Roblox' else path_elements[2]
+			if project_name in PROJECT_NAME:
+				FileManagerLog.debug(f'# line: 266 # # Set Project to: {project_name}')
+				self.project_comboBox.setCurrentText(project_name)
 
 
 				#... make set current drive that scene open
@@ -1246,7 +1248,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			department_name = path_elements[-3]
 
 			#... Extract Project names (updated)
-			project_name = path_elements[2]
+			project_name = path_elements[3] if len(path_elements) > 3 and path_elements[2] == 'P_Roblox' else path_elements[2]
 			FileManagerLog.debug('	This is project_name >>> {0}'.format(project_name))
 			FileManagerLog.debug('	[{0}] <<<   >>> [{1}]'.format(project_name, self.project_comboBox.currentText()))
 
@@ -1629,10 +1631,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.info("\nThis is Run When start")
 		#... Set selected drive and project as root path
 		try:
-			self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
+			if DEFAULT_PROJECT in ['NangRam', 'True']:
+				self.path = rf'D:\svn_true\P_Roblox\{DEFAULT_PROJECT}'
+			else:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
 		except FileNotFoundError:
 			FileManagerLog.error("Invalid project name!")
-			self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0], ASSET_TOP_FOLDER)
+			if PROJECT_NAME[0] in ['NangRam', 'True']:
+				self.path = rf'D:\svn_true\P_Roblox\{PROJECT_NAME[0]}'
+			else:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0], ASSET_TOP_FOLDER)
 
 		FileManagerLog.info("Show project path:...\t\t\t", self.path)
 
@@ -1997,12 +2005,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		- Bind source -> proxy -> view and set the view's root index.
 		"""
 		# 1) Build the absolute project root for the Asset tab
-		self.path = os.path.join(
-			self.drive_comboBox.currentText(),
-			BASE_FOLDER,
-			self.project_comboBox.currentText(),
-			ASSET_TOP_FOLDER
-		)
+		selected_project = self.project_comboBox.currentText()
+		if selected_project in ['NangRam', 'True']:
+			self.path = rf'D:\svn_true\P_Roblox\{selected_project}'
+		else:
+			self.path = os.path.join(
+				self.drive_comboBox.currentText(),
+				BASE_FOLDER,
+				selected_project,
+				ASSET_TOP_FOLDER
+			)
 
 		# 2) Point the QFileSystemModel at that root
 		self.asset_fs_model.setRootPath(self.path)
@@ -2208,7 +2220,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		directories = base_path.split("/")
 
 		# find suffix
-		content_index = directories.index(ASSET_TOP_FOLDER)
+		if ASSET_TOP_FOLDER in directories:
+			content_index = directories.index(ASSET_TOP_FOLDER)
+		else:
+			selected_project = self.project_comboBox.currentText()
+			if selected_project in ['NangRam', 'True'] and selected_project in directories:
+				content_index = directories.index(selected_project)
+			else:
+				content_index = 0  # Fallback to avoid error
 
 		for i in range (0,content_index+1):
 			del directories[0]

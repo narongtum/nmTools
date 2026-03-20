@@ -34,8 +34,19 @@ import fnmatch
 class FileManagerLog(logger.MayaLogger):
 	LOGGER_NAME = "FileManagerLog"
 
+'''
+import sys
+import os
 
+# 1. เพิ่ม path ของ riggerTools เข้า sys.path เพื่อให้ Python หา library เจอ
+tools_path = r'd:\sysTools\nmTools_github\riggerTools\python'
+if tools_path not in sys.path:
+    sys.path.append(tools_path)
 
+# 2. Import และรัน UI ผ่าน run_ui_standalone
+from function.pipeline.file_manager import run_ui_standalone
+run_ui_standalone.run_file_manager()
+'''
 
 
 FileManagerLog.set_level(logging.DEBUG)
@@ -72,6 +83,7 @@ PADDING 			= 	4
 #... Check if the file exists
 if os.path.exists(file_path):
 	FileManagerLog.debug("Config File exists.")
+	sys.path.append(directory)
 	import fileManager_config as config
 
 	DRIVES = config.DRIVES

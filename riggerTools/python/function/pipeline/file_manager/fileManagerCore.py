@@ -95,6 +95,7 @@ PADDING 			= 	4
 #... Check if the file exists
 if os.path.exists(file_path):
 	FileManagerLog.debug("Config File exists.")
+	#... Maya add in path automatically so it can import if not maya will not find it
 	import fileManager_config as config
 
 	DRIVES = config.DRIVES

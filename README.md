@@ -74,6 +74,31 @@ Once installed, a new menu **"nmMenu"** will appear in your Maya main menu bar. 
 
 ---
 
+## 📝 How to Import Modules
+
+To use internal modules (such as those in the `function` package) in your own scripts or other software (Maya, Blender, etc.), you must add the repository's python path to `sys.path`.
+
+### Python Import Setup
+
+```python
+import sys
+import os
+
+# 1. Define the path to riggerTools/python
+# (Change this to your actual installation path)
+tools_path = r'd:\sysTools\nmTools_github\riggerTools\python'
+
+if tools_path not in sys.path:
+    sys.path.append(tools_path)
+
+# 2. Example: Importing from the 'function' module
+from function.pipeline.file_manager import fileManagerCore_standalone
+# or
+from function.rigging.autoRig.base import core
+```
+
+---
+
 ## 🤝 Credits
 This toolset includes and integrates several amazing community tools:
 *   [Studio Library](https://www.studiolibrary.com/)

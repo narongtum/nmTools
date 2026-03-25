@@ -96,7 +96,9 @@ PADDING 			= 	4
 if os.path.exists(file_path):
 	FileManagerLog.debug("Config File exists.")
 	#... Maya add in path automatically so it can import if not maya will not find it
+	sys.path.insert(0, directory)
 	import fileManager_config as config
+	reload(config)
 
 	DRIVES = config.DRIVES
 	PROJECT_NAME = config.PROJECT_NAME
@@ -116,6 +118,11 @@ if os.path.exists(file_path):
 	USE_VARIATION = config.USE_VARIATION
 	SVN_BIN_PATH = config.SVN_BIN_PATH
 	HIDE_FORMAT = config.HIDE_FORMAT
+
+	if hasattr(config, "FIXED_PROJECT_PATHS"):
+		FIXED_PROJECT_PATHS = config.FIXED_PROJECT_PATHS
+	else:
+		FIXED_PROJECT_PATHS = {}
 
 	FileManagerLog.debug("using {0} as a default project.".format(DEFAULT_PROJECT))
 
@@ -161,6 +168,7 @@ else:
 	USE_VARIATION 		= 	('P_Regulus')
 	SVN_BIN_PATH 		= r"C:\Program Files\TortoiseSVN\bin"
 	HIDE_FORMAT = ['*.pyc', '*.o']
+	FIXED_PROJECT_PATHS = {}
 	
 
 
@@ -2391,12 +2399,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		- Bind source -> proxy -> view and set the view's root index.
 		"""
 		# 1) Build the absolute project root for the Asset tab
-		self.path = os.path.join(
-			self.drive_comboBox.currentText(),
-			BASE_FOLDER,
-			self.project_comboBox.currentText(),
-			ASSET_TOP_FOLDER
-		)
+		current_project = self.project_comboBox.currentText()
+		if current_project in FIXED_PROJECT_PATHS:
+			self.path = FIXED_PROJECT_PATHS[current_project]
+		else:
+			self.path = os.path.join(
+				self.drive_comboBox.currentText(),
+				BASE_FOLDER,
+				current_project,
+				ASSET_TOP_FOLDER
+			)
 
 		# 2) Point the QFileSystemModel at that root
 		self.asset_fs_model.setRootPath(self.path)
@@ -2444,10 +2456,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	# --- fileManagerCore.py ---
 	def populate_SCENE_treeView(self):
 		# compute scene root path first
-		self.path = os.path.join(
-			self.drive_comboBox.currentText(), BASE_FOLDER,
-			self.project_comboBox.currentText(), SCENE_TOP_FOLDER
-		)
+		current_project = self.project_comboBox.currentText()
+		if current_project in FIXED_PROJECT_PATHS:
+			self.path = FIXED_PROJECT_PATHS[current_project]
+		else:
+			self.path = os.path.join(
+				self.drive_comboBox.currentText(), BASE_FOLDER,
+				current_project, SCENE_TOP_FOLDER
+			)
 
 		# Dedicated model for SCENE tab (not shared with Asset)
 		self.scene_fs_model = QtWidgets.QFileSystemModel(self)

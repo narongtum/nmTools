@@ -472,6 +472,12 @@ class function:
 		mel.eval('FBXExportDeleteOriginalTakeOnSplitAnimation -v true')
 		mel.eval(f'FBXExportSplitAnimationIntoTakes -v "{clip_name}" {start_time} {end_time}')
 
+		#... Explicitly enable Bake Animation in FBX options
+		mel.eval('FBXExportBakeComplexAnimation -v true')
+		mel.eval('FBXExportBakeComplexStep -v 1')
+		mel.eval(f'FBXExportBakeComplexStart -v {start_time}')
+		mel.eval(f'FBXExportBakeComplexEnd -v {end_time}')
+
 		if mc.objExists(EXPORT_GRP):
 			mc.select(EXPORT_GRP, add=True)
 			
@@ -726,6 +732,12 @@ class function:
 		mel.eval( cleanUpExporterCommand )
 		mel.eval( clearExporterCommand )
 		mel.eval( createExportClipCommand )
+
+		#... Explicitly enable Bake Animation in FBX options
+		mel.eval('FBXExportBakeComplexAnimation -v true')
+		mel.eval('FBXExportBakeComplexStep -v 1')
+		mel.eval('FBXExportBakeComplexStart -v {0}'.format(start_time))
+		mel.eval('FBXExportBakeComplexEnd -v {0}'.format(end_time))
 
 		#... Export obj
 		exportCommand = 'file -force -options "v=0;" -typ "FBX export" -pr -es '

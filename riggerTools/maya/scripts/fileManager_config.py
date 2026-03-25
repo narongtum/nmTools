@@ -4,7 +4,7 @@
 DRIVES = [      "D:\\",
 				"E:\\"      ]
 
-PROJECT_NAME = ['P_RP','P_Regulus','P_jobby']
+PROJECT_NAME = ['P_RP','P_Regulus','P_jobby','NangRam','True']
 
 DICTIONARY_TEMPLATE = {     
 
@@ -37,7 +37,10 @@ USE_VARIATION       =   ('P_Regulus')
 SVN_BIN_PATH        = r"C:\Program Files\TortoiseSVN\bin"
 HIDE_FORMAT = ['*.pyc', '*.o','*.png','.mayaSwatches']
 
-
+FIXED_PROJECT_PATHS = {
+    "NangRam": r"D:\svn_true\P_Roblox\NangRam",
+    "True": r"D:\svn_true\P_Roblox\True"
+}
 
 GROUP_NAMES = ('Model_grp', 'Export_grp')
 
@@ -57,6 +60,16 @@ PROJECT_DETAIL = {
 		"FILE_02_NAMING_WITH": "Character_Model"
 	},
 	"P_RP": {
+		"typeNum": "1",
+		"FILE_01_NAMING_REPLACE": "Rig",
+		"FILE_01_NAMING_WITH": "Rig",
+	},
+	"NangRam": {
+		"typeNum": "1",
+		"FILE_01_NAMING_REPLACE": "Rig",
+		"FILE_01_NAMING_WITH": "Rig",
+	},
+	"True": {
 		"typeNum": "1",
 		"FILE_01_NAMING_REPLACE": "Rig",
 		"FILE_01_NAMING_WITH": "Rig",

@@ -393,6 +393,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		replaceRef_action = FileManagerActions.createReplaceRefAction(self, self.replaceSelectedReference)
 		file_menu.addAction(replaceRef_action)
 
+		passFile_action = QtWidgets.QAction("Pass File", self)
+		passFile_action.triggered.connect(self.import_external_file)
+		file_menu.addAction(passFile_action)
 
 		assetExport_action = FileManagerActions.createAssetExportAction(self, self.printC)
 		toos_menu.addAction(assetExport_action)
@@ -965,7 +968,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 					FileManagerLog.debug('\nGot replace_name: {0}'.format(replace_name[0]))
 					FileManagerLog.debug('Got element: {0}\n'.format(element))
-					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
+					
+					match = re.search(r'\.(\d+)\.[a-zA-Z0-9]+$', element)
+					if match:
+						version = int(match.group(1))
+					else:
+						FileManagerLog.error(f'Could not find version in element: {element}')
+						continue
+						
 					if name not in result or version > int(result[name][1]):
 						result[name] = [element, version]
 
@@ -1015,224 +1025,152 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def push_btn_global_publish(self):
-		#... Publish global file that Maya currenly open
+		import shutil
+		
+		# Get selected item from version widget
+		selected_item = self.asset_version_view_listWidget.currentItem()
+		if not selected_item:
+			QMessageBox.warning(self, "Warning", "Please select a version file to publish globally.")
+			return
+		
+		selected_version_file = selected_item.text()
+		asset_path = self._get_full_path()
+		department_text = self.asset_department_listWidget.currentItem().text()
+		
+		# Source file path
+		source_file_path = os.path.normpath(os.path.join(asset_path, department_text, STATIC_FOLDER[1], selected_version_file))
+		if not os.path.exists(source_file_path):
+			QMessageBox.warning(self, "Warning", f"Source file does not exist:\n{source_file_path}")
+			return
 
-		try:
-# 			original_scene_path = mc.file(q=True, sn=True)
-			asset_path = self._get_full_path()
-			department_text = self.asset_department_listWidget.currentItem().text()
+		# Global path
+		global_path = os.path.join(asset_path, STATIC_FOLDER[2])
+		global_path = os.path.normpath(global_path)
+		
+		# Create the Commit directory if it doesn't exist
+		if not os.path.exists(global_path):
+			os.makedirs(global_path, exist_ok=True)
+		
+		global_path_list = global_path.split(os.path.sep)
+		selected_project = self.project_comboBox.currentText()
 
-			global_path = os.path.join(asset_path, STATIC_FOLDER[2])
-			global_path = os.path.normpath(global_path)
+		if selected_project in USE_VARIATION:
+			global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+		else:
+			global_commit_name = global_path_list[-2] + '_' + department_text
 
-			
-			global_path_list = global_path.split(os.path.sep)
-			FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
+		_, extension = os.path.splitext(selected_version_file)
+		if extension.startswith('.'):
+			extension = extension[1:]
 
-			selected_project = self.project_comboBox.currentText()
+		save_file_name = f"{global_commit_name}.{extension}"
+		save_full_path = os.path.normpath(os.path.join(global_path, save_file_name))
 
-			if selected_project in USE_VARIATION:
+		reply = QMessageBox(self)
+		reply.setWindowTitle('Commit Changes')
+		reply.setText(f'Do you want to commit file to SVN ?\n\t{save_file_name}')
 
-				global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+		commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+		save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+		reply.addButton(QMessageBox.Cancel)	
 
-			else:
-				global_commit_name = global_path_list[-2] + '_' + department_text
+		result = reply.exec_()	
+		
+		if reply.clickedButton() == commit_button or reply.clickedButton() == save_button:
+			try:
+				shutil.copy2(source_file_path, save_full_path)
+				FileManagerLog.info(f"Successfully copied to global commit: {save_full_path}")
+			except Exception as e:
+				FileManagerLog.error(f"Failed to copy file: {e}")
+				QMessageBox.critical(self, "Error", f"Failed to publish file:\n{e}")
+				return
 
-
-			FileManagerLog.debug('\nThis is global_path ( {0} )'.format(global_path))
-			FileManagerLog.debug('This is global_commit_name ( {0} )'.format(global_commit_name))
-
-			save_full_path = os.path.join(global_path, global_commit_name)
-
-			line_number = sys._getframe().f_lineno
-			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
-
-
-			reply = QMessageBox(self)
-			reply.setWindowTitle('Commit Changes')
-			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(global_commit_name))
-
-
-			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
-			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
-			reply.addButton(QMessageBox.Cancel)	
-
-			result = reply.exec_()	
-			# Do global_commit_name	
 			if reply.clickedButton() == commit_button:
+				self.svn_maya.execute_cmd('add', file_path=save_full_path, close_on_end=0, logmsg='Global Publish')
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path, close_on_end=0, logmsg='Global Publish')
 
-				# 1.Procress manage scene
-				do_global_commit()			
+			self.load_global_commit(global_path)
+			FileManagerLog.info(f"Global Publish complete: {save_file_name}")
 
-				# 2.Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				#... update return logmsg for SVN
-				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
-
-				# --- back to original scene BEFORE saving ---
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				# 3.Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 4.Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 5.Update localWidget viewport
-				self.load_global_commit(global_path)
-
-			elif reply.clickedButton() == save_button:
-				# 1.Procress manage scene
-				do_global_commit()
-
-				# 2.Maya Save
-				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
-
-				# --- back to original scene BEFORE saving ---
-# 				mc.file(original_scene_path, o=True, f=True)
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				# 3.Update localWidget viewport
-				self.load_global_commit(global_path)
-
-			elif result == QMessageBox.Rejected:
-					print('Cancel button clicked')
-					pass
-
-
-
-
-		except Exception as e:
-			print("Error:", e)
-			FileManagerLog.error('Path file not valid name please check: {0}'.format(global_path))
+		elif result == QMessageBox.Rejected:
+			pass
 
 
 
 
 	def push_btn_local_publish(self):
+		import shutil
 
-		# TODO: Create check what is type of this file
-
-		# Get full path that current open in maya
-
+		selected_item = self.asset_version_view_listWidget.currentItem()
+		if not selected_item:
+			QMessageBox.warning(self, "Warning", "Please select a version file to publish locally.")
+			return
+		
+		selected_version_file = selected_item.text()
 		full_path = self._get_full_path()
 		department_text = self.asset_department_listWidget.currentItem().text()
-		full_path = os.path.join(full_path, department_text, STATIC_FOLDER[2])
+		
+		# Source file path
+		source_file_path = os.path.normpath(os.path.join(full_path, department_text, STATIC_FOLDER[1], selected_version_file))
+		if not os.path.exists(source_file_path):
+			QMessageBox.warning(self, "Warning", f"Source file does not exist:\n{source_file_path}")
+			return
 
+		# Local commit dir
+		local_commit_dir = os.path.normpath(os.path.join(full_path, department_text, STATIC_FOLDER[2]))
+		
+		# Create the Commit directory if it doesn't exist
+		if not os.path.exists(local_commit_dir):
+			os.makedirs(local_commit_dir, exist_ok=True)
 
-		if original_scene_path :
-			# try:
-			file_ext = os.path.basename(original_scene_path )
-			FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
+		# Parsing file name
+		file_name_no_ext, extension = os.path.splitext(selected_version_file)
+		if extension.startswith('.'):
+			extension = extension[1:]
+			
+		check_digit = file_name_no_ext.split('.')[-1]
 
-			# Splits a pathname into a pair (root, ext)
-			file_name = os.path.splitext(file_ext)[0]
-
-			# Check if righ naming version (****.0001.ma) of this pipeline 
-			check_digit = (os.path.splitext(file_ext)[0]).split('.')[-1]
-
-			if check_digit.isdigit():
-
-				# Check if valid name 
-				digits = [count for count in check_digit if count.isdigit()]
-				padding_count = len(digits)
-
-				if padding_count == PADDING:
-
-				# if file_name.split('.')[-1].isdigit():# Check if valid name 
-					
-					local_commit_name = file_name.split('.')[0]
-
-					FileManagerLog.debug('This is local_commit_name: {0}'.format(local_commit_name))
-					# do the naming and publish
-					# cut '.000x' and replace with step job
-					# Ex. 		 003_Lucille    01       Rig  skel.ma
-					# 	 		[assetname]_[variation]_[job]_[step]
-					# 		Do something when publish
-
+		if check_digit.isdigit():
+			digits = [count for count in check_digit if count.isdigit()]
+			if len(digits) == PADDING:
+				# remove the .000x part
+				local_commit_name = file_name_no_ext.rsplit('.', 1)[0]
 			else:
-				FileManagerLog.debug('This not valid name: using original ( {0} )'.format(file_name))
-				local_commit_name = file_name
-				pass
-
-			# Saving file to local commit location
-
-			FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
-			save_full_path = os.path.join(full_path, local_commit_name)
-
-
-			line_number = sys._getframe().f_lineno
-			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
-
-
-
-
-
-
-			reply = QMessageBox(self)
-			reply.setWindowTitle('Commit Changes')
-			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(local_commit_name))
-
-
-			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
-			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
-			reply.addButton(QMessageBox.Cancel)	
-
-			result = reply.exec_()	
-
-			# Local commit action
-			if reply.clickedButton() == commit_button:
-				# 1. Procress manage scene
-				do_local_commit()
-
-				# 2. Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
-				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
-				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
-				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
-
-				# --- back to original scene BEFORE saving ---
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				#... update return logmsg for SVN
-				# 3. Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 4. Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 5. Update localWidget viewport
-				self.load_local_commit(full_path)
-
-			elif reply.clickedButton() == save_button:
-				# 1. Procress manage scene
-				line_number = sys._getframe().f_lineno
-				FileManagerLog.debug('({0})Do local commit'.format(line_number))
-				do_local_commit()
-
-
-				# 2. Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
-
-				# 3. Update localWidget viewport
-				self.load_local_commit(full_path)
-
-				# --- back to original scene BEFORE saving ---
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-			elif result == QMessageBox.Rejected:
-					print('Cancel button clicked')
-					pass
-
-
-
-				
-
+				local_commit_name = file_name_no_ext
 		else:
-			FileManagerLog.debug('The current file not maya saving file do it later.')
-			return False
+			local_commit_name = file_name_no_ext
+
+		save_file_name = f"{local_commit_name}.{extension}"
+		save_full_path = os.path.normpath(os.path.join(local_commit_dir, save_file_name))
+
+		reply = QMessageBox(self)
+		reply.setWindowTitle('Commit Changes')
+		reply.setText(f'Do you want to commit file to SVN ?\n\t{save_file_name}')
+
+		commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+		save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+		reply.addButton(QMessageBox.Cancel)	
+
+		result = reply.exec_()	
+
+		if reply.clickedButton() == commit_button or reply.clickedButton() == save_button:
+			try:
+				shutil.copy2(source_file_path, save_full_path)
+				FileManagerLog.info(f"Successfully copied to local commit: {save_full_path}")
+			except Exception as e:
+				FileManagerLog.error(f"Failed to copy file: {e}")
+				QMessageBox.critical(self, "Error", f"Failed to publish file:\n{e}")
+				return
+
+			if reply.clickedButton() == commit_button:
+				self.svn_maya.execute_cmd('add', file_path=save_full_path, close_on_end=0, logmsg='Local Publish')
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path, close_on_end=0, logmsg='Local Publish')
+
+			self.load_local_commit(local_commit_dir)
+			FileManagerLog.info(f"Local Publish complete: {save_file_name}")
+
+		elif result == QMessageBox.Rejected:
+			pass
 
 	def update_project_name(self):
 		FileManagerLog.debug(f'\tUI has change project name to >>> {self.project_comboBox.currentText()}')
@@ -1329,10 +1267,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if selected_project in USE_VARIATION:
 
 			path_check = path_list[-2] + '_' + path_list[-1]
-			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
+			pattern_esc = r'{0}.*\.[a-zA-Z0-9]+'.format(re.escape(path_check))
 		else:
 			path_check = path_list[-1]
-			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
+			pattern_esc = r'{0}.*\.[a-zA-Z0-9]+'.format(re.escape(path_check))
 
 			
 		#... Making list to find jobs step
@@ -1522,7 +1460,94 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
 		# self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
 
+	def import_external_file(self):
+		import shutil
 
+		# 1. Check if department is selected
+		current_item = self.asset_department_listWidget.currentItem()
+		if not current_item:
+			QMessageBox.warning(self, "Warning", "Please select a department first!")
+			FileManagerLog.warning("No department selected. Terminating import.")
+			return
+
+		# 2. Browse external file
+		file_dialog = QtWidgets.QFileDialog(self)
+		file_dialog.setWindowTitle("Select External File to Import")
+		file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFile)
+		if file_dialog.exec_() == QtWidgets.QFileDialog.Accepted:
+			selected_files = file_dialog.selectedFiles()
+			if not selected_files:
+				return
+			external_file_path = selected_files[0]
+		else:
+			return
+
+		# 3. Prompt for stepName
+		step_name, okPressed = QInputDialog.getText(self, "Input Step Name", "Enter Step Name:")
+		if not (okPressed and step_name):
+			return
+
+		# 4. Generate new name and version
+		asset_path_text = self._get_full_path()
+		department_text = current_item.text()
+		new_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text))
+
+		step_filter_list = self.filter_proper_version_list()
+		result_job_element = self.find_step_and_version(step_filter_list)
+
+		selected_project = self.project_comboBox.currentText()
+		split_path_list = new_folder_path.replace('\\', '/').split('/')
+
+		if selected_project in USE_VARIATION:
+			asset_name = split_path_list[-3]
+			variation_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			final_file_name = f"{asset_name}_{variation_name}_{job_name}"
+		else:
+			asset_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			final_file_name = f"{asset_name}_{job_name}"
+
+		# Check existing version
+		if result_job_element != False:
+			step_list = result_job_element['step']
+			if step_name in step_list:
+				index = step_list.index(step_name)
+				max_version = result_job_element['max_version'][index]
+				max_version += 1
+				max_version = str(max_version).zfill(PADDING)
+			else:
+				max_version = str(1).zfill(PADDING)
+		else:
+			max_version = str(1).zfill(PADDING)
+
+		# Get external file extension
+		_, ext = os.path.splitext(external_file_path)
+		if ext.startswith('.'):
+			ext = ext[1:]
+
+		new_file_name = '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, ext)
+		save_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+
+		# 5. Copy file
+		try:
+			shutil.copy2(external_file_path, save_full_path)
+			FileManagerLog.info(f"Successfully copied external file to {save_full_path}")
+			
+			# 6. Update UI
+			version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
+			self.asset_version_view_listWidget.clear()
+			self.show_version_entite(version_folder_path)
+			
+			# Optionally select it in the UI
+			# Attempt to find the newly added item and select it
+			items = self.asset_version_view_listWidget.findItems(new_file_name, Qt.MatchExactly)
+			if items:
+				self.asset_version_view_listWidget.setCurrentItem(items[0])
+				
+		except Exception as e:
+			FileManagerLog.error(f"Failed to copy external file: {e}")
+			QMessageBox.critical(self, "Error", f"Failed to import file:\n{e}")
 
 	def show_job_explorer(self):# Change policy to open folder directly instead open 'Version' folder
 
@@ -2218,36 +2243,43 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def get_full_entity_name(self, base_path):
 
-		# base_path = os.path.normpath(base_path)
-
+		base_path = os.path.normpath(base_path).replace('\\', '/')
 		directories = base_path.split("/")
 
 		# find suffix
-		content_index = directories.index(ASSET_TOP_FOLDER)
+		if ASSET_TOP_FOLDER in directories:
+			content_index = directories.index(ASSET_TOP_FOLDER)
+			directories = directories[content_index+1:]
+		else:
+			current_project = self.project_comboBox.currentText()
+			if current_project in directories:
+				proj_index = directories.index(current_project)
+				directories = directories[proj_index+1:]
+			else:
+				directories = directories[1:] if len(directories) > 1 else directories
 
-		for i in range (0,content_index+1):
-			del directories[0]
-		 
-		directories.pop()
+		if directories:
+			directories.pop()
 
 		# Join the directories back together to form a path.
-		edited_path = "/".join(directories)
+		if not directories:
+			edited_path = "/"
+		else:
+			edited_path = "/" + "/".join(directories)
 
-		edited_path = os.path.join("/", edited_path)
 		print(edited_path)
 		return edited_path
 
 	def get_department_name(self, new_asset_path):
 
 		folders_list = os.listdir(new_asset_path)
+		valid_folders = []
 
 		for folder in folders_list:
+			if os.path.isdir(os.path.join(new_asset_path, folder)):
+				valid_folders.append(folder)
 
-			if folder == 'data.json':
-
-				folder.remove(folders_list)
-
-		return folders_list
+		return valid_folders
 
 
 
@@ -2324,7 +2356,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Get department name
 				department_name = self.get_department_name(new_asset_path)
-				FileManagerLog.info('This is department_name:\t\t{0}')
+				FileManagerLog.info('This is department_name:\t\t{0}'.format(department_name))
 
 
 				# Write Add path for SVN

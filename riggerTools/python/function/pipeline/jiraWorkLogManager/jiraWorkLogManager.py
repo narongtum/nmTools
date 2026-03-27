@@ -91,8 +91,11 @@ class JiraWorklogApp:
 	def __init__(self, root):
 		logger.debug("Initializing JiraWorklogApp...")
 		self.root = root
-		self.root.title("Jira Worklog Manager v1.01")
-		self.root.geometry("1000x600")
+		self.root.title("Jira Worklog Manager v1.02")
+		self.root.geometry("1000x800")
+		self.root.minsize(1000, 700)
+		
+		self.apply_dark_theme()
 		
 		# Load Config & Database
 		logger.debug("Loading configurations...")
@@ -108,6 +111,30 @@ class JiraWorklogApp:
 		self.load_favorites_to_ui()
 		self.on_date_selected()  # โหลดข้อมูลวันปัจจุบันทันทีที่เปิดโปรแกรม
 
+	def apply_dark_theme(self):
+		bg_color = '#2b2b2b'
+		fg_color = '#dddddd'
+		ent_bg = '#3c3f41'
+		
+		self.root.tk_setPalette(background=bg_color, foreground=fg_color, 
+								activeBackground=ent_bg, activeForeground='#ffffff',
+								highlightBackground=bg_color, highlightColor='#5c85d6',
+								insertBackground='#ffffff', selectColor=ent_bg,
+								selectBackground='#0056b3', selectForeground='#ffffff')
+		
+		self.root.option_add('*Entry.background', ent_bg)
+		self.root.option_add('*Entry.foreground', '#ffffff')
+		
+		style = ttk.Style()
+		if 'clam' in style.theme_names():
+			style.theme_use('clam')
+		style.configure(".", background=bg_color, foreground=fg_color, fieldbackground=ent_bg, 
+						troughcolor=ent_bg, bordercolor=bg_color, darkcolor=bg_color, lightcolor=bg_color)
+		style.configure("Treeview", background=ent_bg, fieldbackground=ent_bg, foreground=fg_color, borderwidth=0)
+		style.configure("Treeview.Heading", background='#4a4a4a', foreground='#ffffff', relief='flat')
+		style.map("Treeview", background=[('selected', '#0056b3')])
+		style.map("TButton", background=[('active', '#4a4a4a')])
+
 	def setup_ui(self):
 		# Main Container
 		self.main_pane = tk.PanedWindow(self.root, orient="horizontal", sashrelief="raised", sashwidth=4)
@@ -117,7 +144,7 @@ class JiraWorklogApp:
 		self.fav_frame = tk.Frame(self.main_pane, padx=10, pady=10, width=250)
 		self.main_pane.add(self.fav_frame)
 		
-		tk.Label(self.fav_frame, text="favorite ticket", font=("Arial", 12, "bold")).pack(pady=5)
+		tk.Label(self.fav_frame, text="Favorite Ticket", font=("Arial", 12, "bold")).pack(pady=5)
 		
 		# Favorite Table Headers
 		fav_header = tk.Frame(self.fav_frame)
@@ -155,7 +182,12 @@ class JiraWorklogApp:
 		self.cal = Calendar(self.left_frame, selectmode='day', date_pattern='y-mm-dd',
 						   year=now.year, month=now.month, day=now.day,
 						   showweeknumbers=False,
-						   background="darkblue", foreground="white", headersbackground="gray")
+						   background="#1e1e1e", foreground="#ffffff", 
+						   headersbackground="#2b2b2b", headersforeground="#ffffff",
+						   normalbackground="#3c3f41", normalforeground="#dddddd",
+						   weekendbackground="#3c3f41", weekendforeground="#ff9999",
+						   othermonthbackground="#2b2b2b", othermonthforeground="#555555",
+						   othermonthwebackground="#2b2b2b", othermonthweforeground="#774444")
 		self.cal.pack(pady=10, fill="both", expand=True)
 		self.cal.bind("<<CalendarSelected>>", self.on_date_selected)
 		self.cal.bind("<<CalendarMonthChanged>>", lambda e: self.refresh_month_total())
@@ -164,7 +196,7 @@ class JiraWorklogApp:
 		self.right_frame = tk.Frame(self.main_pane, padx=15, pady=15)
 		self.main_pane.add(self.right_frame)
 		
-		self.date_header = tk.Label(self.right_frame, text="Today's Logs", font=("Arial", 14, "bold"), fg="#2c3e50")
+		self.date_header = tk.Label(self.right_frame, text="Today's Logs", font=("Arial", 14, "bold"))
 		self.date_header.pack(anchor="w")
 
 		# Table (Treeview)
@@ -174,8 +206,8 @@ class JiraWorklogApp:
 			self.tree.heading(col, text=col)
 			self.tree.column(col, width=120)
 		
-		self.tree.tag_configure('submitted', background='#d4edda', foreground='#155724') # สีเขียว
-		self.tree.tag_configure('waiting', background='#fff3cd', foreground='#856404')   # สีเหลือง
+		self.tree.tag_configure('submitted', background='#2e4a35', foreground='#8fdfa0') # สีเขียว
+		self.tree.tag_configure('waiting', background='#574b21', foreground='#e3c66f')   # สีเหลือง
 		self.tree.pack(fill="both", expand=True, pady=10)
 
 		# Progress Section
@@ -189,15 +221,15 @@ class JiraWorklogApp:
 		btn_box.pack(fill="x", pady=10)
 		tk.Button(btn_box, text="+ Add New Log", command=self.open_add_dialog, width=15).pack(side="left", padx=5)
 		tk.Button(btn_box, text="Edit Log", command=self.open_edit_dialog, width=15).pack(side="left", padx=5)
-		tk.Button(btn_box, text="Delete Selected", command=self.delete_log, width=15, fg="red").pack(side="left", padx=5)
+		tk.Button(btn_box, text="Delete Selected", command=self.delete_log, width=15, fg="#ff6666").pack(side="left", padx=5)
 
 		# Monthly Total Label
-		self.month_total_label = tk.Label(self.root, text="Total for Month: 0h", font=("Arial", 10, "italic"), fg="#7f8c8d")
+		self.month_total_label = tk.Label(self.root, text="Total for Month: 0h", font=("Arial", 10, "italic"), fg="#aaaaaa")
 		self.month_total_label.pack(side="bottom", fill="x", padx=20)
 
 		# Big Submit Button
 		self.submit_btn = tk.Button(self.root, text="🚀 SUBMIT WAITING LOGS TO JIRA", 
-								   command=self.submit_to_jira, bg="#0056b3", fg="white", 
+								   command=self.submit_to_jira, bg="#555555", fg="white", 
 								   font=("Arial", 12, "bold"), height=2)
 		self.submit_btn.pack(side="bottom", fill="x", padx=20, pady=20)
 
@@ -303,7 +335,7 @@ class JiraWorklogApp:
 			self.refresh_calendar_highlights()
 			win.destroy()
 
-		tk.Button(win, text="Save Entry", command=save, bg="#28a745", fg="white").pack(pady=15)
+		tk.Button(win, text="Save Entry", command=save, bg="#2ea043", fg="white").pack(pady=15)
 
 		# Right-click context menu for favorites
 		self.fav_menu = tk.Menu(win, tearoff=0)
@@ -369,7 +401,7 @@ class JiraWorklogApp:
 			self.refresh_calendar_highlights()
 			win.destroy()
 
-		tk.Button(win, text="Save Changes", command=save, bg="#28a745", fg="white").pack(pady=15)
+		tk.Button(win, text="Save Changes", command=save, bg="#2ea043", fg="white").pack(pady=15)
 		
 		# Right-click context menu for favorites
 		self.fav_menu = tk.Menu(win, tearoff=0)
@@ -481,9 +513,10 @@ class JiraWorklogApp:
 				self.cal.calevent_create(datetime.strptime(d_str, "%Y-%m-%d"), "Full", "completed")
 			elif total_m > 0: # Partial
 				self.cal.calevent_create(datetime.strptime(d_str, "%Y-%m-%d"), "Partial", "partial")
-
-		self.cal.tag_config("completed", background="lightgreen", foreground="black")
-		self.cal.tag_config("partial", background="#fffce3", foreground="#856404") # แหลืองจางๆ
+		#... set color of completed 
+		self.cal.tag_config("completed", background="#6d89ad", foreground="#000000")
+		#... set color of not complete
+		self.cal.tag_config("partial", background="#4b6680", foreground="#83D4D1")
 		
 		# Highlights Holidays
 		for d_str, name in self.holidays.items():
@@ -491,8 +524,8 @@ class JiraWorklogApp:
 				self.cal.calevent_create(datetime.strptime(d_str, "%Y-%m-%d"), name, "holiday")
 			except ValueError:
 				logger.warning(f"Invalid holiday date format: {d_str}")
-		
-		self.cal.tag_config("holiday", background="#a4c2f4", foreground="black") # สีฟ้า
+		#... set color of holiday
+		self.cal.tag_config("holiday", background="#E07155", foreground="#000000")
 
 
 

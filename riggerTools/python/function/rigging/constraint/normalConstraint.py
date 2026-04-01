@@ -132,14 +132,18 @@ def snapMatArg( source , target ):
 #####################################################
 def normalParentConstr( source, target , **kwargs ):
 	mc.parentConstraint( source ,target  ) 
+	
 def normalScaleConstr( source, target , **kwargs ):
-	mc.scaleConstraint( source ,target )	
+	mc.scaleConstraint( source ,target )
+
 def normalPointConstr( source, target , **kwargs  ):
-	mc.pointConstraint( source ,target )	
+	mc.pointConstraint( source ,target )
+
 def orientConstr( source, target , **kwargs  ):
 	mc.pointConstraint( source ,target )	
 
-
+def orientConstrRe(source, target, **kwargs):
+	mc.orientConstraint(source, target)	
 
 
 

@@ -424,10 +424,8 @@ def orientConstraintMatrix(source, target, mo=True):
 	# This stores the relative transform of Target in Source's space.
 	if mo:
 		# Utilizing the helper function from your matrixConstraint.py or util
-		# Assuming _getLocalOffset returns (Child * ParentInverse)
-		offset_matrix = _getLocalOffset(source, target)
-		offset_val = [offset_matrix(i, j) for i in range(4) for j in range(4)]
-		
+		# _getLocalOffset already returns a flat 16-element list
+		offset_val = _getLocalOffset(source, target)
 		# Set Offset to Input[0]
 		mc.setAttr('{}.matrixIn[0]'.format(mult_node.name), offset_val, type='matrix')
 
@@ -715,6 +713,9 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 	if not source:
 		print('Source is not selected.')
 		return False
+
+	print(source)
+	print(target)
 
 	# -----------------------------------------------------------------
 	# 01. Setup core object references (same as legacy)
@@ -1448,15 +1449,10 @@ def parentMulMatrix( src, tgt, mo = True, t = True, r = True, s = True):
 		# Create
 		mc.createNode( 'multMatrix', n = offsetMtx )
 
-		# preFUNC
-		localOffset =  getLocalOffset( parent, tgt )
-		# offMat = [localOffset(i,j) for i in range(4) for j in range(4)]
-		offMat =  _getLocalOffset( source, target )
-
 		#  Set and Connect
-		if mo == True:
-
-			mc.setAttr( offsetMtx + '.matrixIn[0]', offMat , type = 'matrix')
+		if mo:
+			offMat = _getLocalOffset(parent, tgt)
+			mc.setAttr(offsetMtx + '.matrixIn[0]', offMat, type='matrix')
 
 		mc.connectAttr( parent + '.worldMatrix[0]', offsetMtx + '.matrixIn[1]' )
 		mc.connectAttr( offsetMtx + '.matrixSum', wtMtx + '.wtMatrix[%d].matrixIn'%(p))

@@ -25,6 +25,9 @@ reload(logger)
 from function.rigging.util import generic_maya_dict as mnd
 reload(mnd)
 
+from function.rigging.tools import proc as pc 
+reload(pc)
+
 color_part_dict = mnd.COLOR_part_dict
 
 class HipRigLogger(logger.MayaLogger):
@@ -34,10 +37,13 @@ class HipRigLogger(logger.MayaLogger):
 def createHipRig( 	nameSpace = '' , 
 				ctrl_grp = 'ctrl_grp'  ,
 				tmpJnt = ( 'cog_tmpJnt','hip_tmpJnt' )	, 
-				charScale = ''):
+				charScale = '',
+				cogPivot = True ):
 
 	
+
 	
+
 	part = nameSpace + 'cog'
 	HipRigLogger.info('Start of %s rig' %part)
 	core.makeHeader('Start of %s rig' %part)
@@ -122,6 +128,9 @@ def createHipRig( 	nameSpace = '' ,
 	# rotate order adjustment
 	cog_ctrl.rotateOrder = 'xzy'
 	hipGmbl_ctrl.rotateOrder = 'xzy'
+
+
+	pc.cogPivot( cog = nameSpace + 'cog_ctrl' , cogZro = nameSpace + 'cogCtrlZro_grp' , piorGrp = nameSpace + 'hipRig_grp' , charScale = charScale )
 
 	# =================================================================
 	# --- NEW: Making joint parent to controller using Matrix Constraint ---

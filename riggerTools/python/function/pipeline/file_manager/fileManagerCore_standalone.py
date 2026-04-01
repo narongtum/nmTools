@@ -32,7 +32,7 @@ except:
 import fnmatch
 
 class FileManagerLog(logger.MayaLogger):
-	LOGGER_NAME = "FileManagerLog"
+	LOGGER_NAME = "FileManagerLog StandAlone"
 
 '''
 import sys
@@ -70,7 +70,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-CORE_VERSION = '0.9.6'
+CORE_VERSION = '0.9.7'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -1763,7 +1763,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			self.display_images(None)
 
 			# Check if having 'data.json' mean is asset folder for sure
-			if os.path.exists(data_file):
+			is_asset_by_meta = os.path.exists(data_file)
+			
+			# Fallback: Check if there's any pipeline structural folder
+			is_asset_by_structure = False
+			if not is_asset_by_meta:
+				is_asset_by_structure = any(
+					os.path.isdir(os.path.join(file_path, dept)) for dept in JOB_TEMPLATE
+				)
+
+			if is_asset_by_meta or is_asset_by_structure:
 				# safe-blocks that truly need data.json (comment, thumb, global list)
 				# Global commits
 				FileManagerLog.debug('That is "ASSET" we looking for.')
@@ -1778,7 +1787,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Show thumbnail
 				thumbnail_path = os.path.join(file_path, THUMBNAIL_NAME)
-				self.display_images(thumbnail_path)
+				if os.path.exists(thumbnail_path):
+					self.display_images(thumbnail_path)
+				else:
+					self.display_images(None)
 
 				# Do not expand the asset folder if already expanded(Still... not work)
 				if self.asset_dir_TREEVIEW.isExpanded(index):
@@ -1786,10 +1798,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					FileManagerLog.debug('Please do not expanded.')
 
 				#... show data json file to widget
-				with open(data_file, "r") as file:
-					json_data = json.load(file)
-
-				self.assetInfo_list_listWidget.addItem(json_data['comment'])
+				if is_asset_by_meta:
+					try:
+						with open(data_file, "r") as file:
+							json_data = json.load(file)
+						self.assetInfo_list_listWidget.addItem(json_data.get('comment', 'No Comment'))
+					except Exception as e:
+						FileManagerLog.error(f"Error reading {data_file}: {e}")
+				else:
+					self.assetInfo_list_listWidget.addItem("⚠️ Pipeline Warning: Missing 'data.json'")
+					FileManagerLog.warning(f"Asset '{file_path}' has a valid structure but is missing 'data.json'.")
 
 
 			

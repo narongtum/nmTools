@@ -2016,10 +2016,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		FileManagerLog.info("\nThis is Run When start")
 		#... Set selected drive and project as root path
 		try:
-			self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
+			if DEFAULT_PROJECT in ['NangRam', 'True']:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT)
+			else:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, DEFAULT_PROJECT, ASSET_TOP_FOLDER)
 		except FileNotFoundError:
 			FileManagerLog.error("Invalid project name!")
-			self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0], ASSET_TOP_FOLDER)
+			if PROJECT_NAME[0] in ['NangRam', 'True']:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0])
+			else:
+				self.path = os.path.join(selected_drive, BASE_FOLDER, PROJECT_NAME[0], ASSET_TOP_FOLDER)
 
 		FileManagerLog.info("Show project path:...\t\t\t", self.path)
 
@@ -2403,12 +2409,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if current_project in FIXED_PROJECT_PATHS:
 			self.path = FIXED_PROJECT_PATHS[current_project]
 		else:
-			self.path = os.path.join(
-				self.drive_comboBox.currentText(),
-				BASE_FOLDER,
-				current_project,
-				ASSET_TOP_FOLDER
-			)
+			if current_project in ['NangRam', 'True']:
+				self.path = os.path.join(
+					self.drive_comboBox.currentText(),
+					BASE_FOLDER,
+					current_project
+				)
+			else:
+				self.path = os.path.join(
+					self.drive_comboBox.currentText(),
+					BASE_FOLDER,
+					current_project,
+					ASSET_TOP_FOLDER
+				)
 
 		# 2) Point the QFileSystemModel at that root
 		self.asset_fs_model.setRootPath(self.path)
@@ -2460,10 +2473,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		if current_project in FIXED_PROJECT_PATHS:
 			self.path = FIXED_PROJECT_PATHS[current_project]
 		else:
-			self.path = os.path.join(
-				self.drive_comboBox.currentText(), BASE_FOLDER,
-				current_project, SCENE_TOP_FOLDER
-			)
+			if current_project in ['NangRam', 'True']:
+				self.path = os.path.join(
+					self.drive_comboBox.currentText(), BASE_FOLDER,
+					current_project
+				)
+			else:
+				self.path = os.path.join(
+					self.drive_comboBox.currentText(), BASE_FOLDER,
+					current_project, SCENE_TOP_FOLDER
+				)
 
 		# Dedicated model for SCENE tab (not shared with Asset)
 		self.scene_fs_model = QtWidgets.QFileSystemModel(self)

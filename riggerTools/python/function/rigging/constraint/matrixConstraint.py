@@ -18,6 +18,10 @@ mtc.parentConMatrix( sel[0], sel[1], mo = True, translate = True, rotate = True,
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
+
+selected = mc.ls(sl=True)[0]
+mtc.delMatrixConst(selected)
+
 '''
 
 
@@ -128,6 +132,76 @@ def _getLocalOffset(source, target):
 	
 	# Return as flat list for cmds.setAttr
 	return list(offset_mat)
+
+def rotateOffset(tgt, dmpMtx, mulMtx):
+	# TODO: Check euler to quad is enable
+	if not mc.pluginInfo('quatNodes', query=True, loaded=True):
+		mc.loadPlugin("quatNodes", qt=False)
+
+
+
+	# Create name 
+	eulQua = tgt + '_eulQua'
+	quaInv = tgt + '_quaInv'
+	quaPro = tgt + '_quaPro'
+	quaEul = tgt + '_quaEul'
+	# Add compose matrix
+	quaCom = tgt + '_compose'
+
+	# Create More Node
+	mc.createNode( 'eulerToQuat', n = eulQua )
+	mc.createNode( 'quatInvert', n = quaInv )
+	mc.createNode( 'quatProd', n = quaPro )
+	mc.createNode( 'quatToEuler', n = quaEul )
+
+	mc.createNode( 'composeMatrix', n = quaCom )# Add compose matrix for get offset orientation
+
+
+	# Rotate Part
+	# Add condition for another type except joint
+	logger.MayaLogger.info(tgt)
+	if mc.nodeType(tgt) == 'joint':
+		logger.MayaLogger.info("This is maybe joint.")
+		mc.connectAttr( tgt + '.jointOrient', eulQua + '.inputRotate' )
+	elif mc.nodeType(tgt) == 'transform':
+		logger.MayaLogger.info("This is maybe mesh or group.")
+
+		# Update more arttr for case joint(freezed) is parent grp is child
+		mc.connectAttr('{0}.rotate'.format(tgt) ,'{0}.inputRotate'.format(quaCom), f = True) # Add rotation value from driven
+		mc.disconnectAttr('{0}.rotate'.format(tgt) ,'{0}.inputRotate'.format(quaCom)) # No need to keep thr connection the value already add to channel 
+		mc.connectAttr('{0}.outputMatrix'.format(quaCom), '{0}.matrixIn[0]'.format(mulMtx)) # Connect rotation space to the MulMtx
+
+		mc.connectAttr( tgt + '.rotate', eulQua + '.inputRotate' )
+
+
+	else:
+		logger.MayaLogger.info("This is maybe something I don't know.")
+		mc.connectAttr( tgt + '.rotate', eulQua + '.inputRotate' )
+
+	mc.connectAttr( eulQua + '.outputQuat', quaInv + '.inputQuat' )
+	mc.connectAttr( dmpMtx + '.outputQuat', quaPro + '.input1Quat' )
+
+	# get Inverse Quat from Child Rotate Order
+	mc.connectAttr( quaInv + '.outputQuat', quaPro + '.input2Quat' )
+	mc.connectAttr( quaPro + '.outputQuat', quaEul + '.inputQuat' )
+
+	# get Rotate Order for quaEul
+	rotOrder = mc.getAttr( tgt + '.rotateOrder' )
+	mc.setAttr( quaEul + '.inputRotateOrder', rotOrder)
+	
+	allChanel = ['X','Y','Z','W']
+	for chanel in allChanel:
+		quaVar = mc.getAttr( quaInv + '.outputQuat.outputQuat' + chanel )
+		mc.setAttr( quaPro + '.input2Quat.input2Quat' + chanel )
+
+	# Clear Node
+	mc.delete( eulQua )
+
+	# Final Connect
+	mc.connectAttr( quaEul + '.outputRotate', tgt + '.rotate')
+
+	return quaEul
+
 
 
 
@@ -387,7 +461,7 @@ def createMatrixAttr(selected, attrNam = 'destination'):
 	mc.addAttr(selected, ln = 'offsetMatrix_{0}'.format(attrNam), at='matrix')
 
 
-def orientConstraintMatrix(source, target, mo=True):
+def orientConstraintMatrix(source, target, mo=True, baseName=None):
 	"""
 	Creates a matrix-based Orient Constraint.
 	
@@ -410,7 +484,10 @@ def orientConstraintMatrix(source, target, mo=True):
 	# 2. Core Objects
 	obj_source = core.Dag(source)
 	obj_target = core.Dag(target)
-	base_name = core.check_name_style(name=target)[0]
+	if baseName is not None:
+		base_name = baseName
+	else:
+		base_name = core.check_name_style(name=target)[0]
 	
 	Constraint.info('Creating Matrix Orient Constraint between [{}] and [{}]'.format(obj_source.name, obj_target.name))
 
@@ -608,7 +685,8 @@ def aimConstraintMatrix(
 	aimVector=(0, 0, 1), 
 	upVector=(0, 1, 0), 
 	worldUpObject=None, 
-	maintainOffset=False 
+	maintainOffset=False,
+	baseName=None
 ):
 	"""
 	Creates a Matrix-based Aim Constraint using the 'aimMatrix' node.
@@ -618,7 +696,10 @@ def aimConstraintMatrix(
 	# 1. Prepare Objects
 	src_obj = core.Dag(source)
 	tgt_obj = core.Dag(target)
-	base_name = core.check_name_style(tgt_obj.name)[0]
+	if baseName is not None:
+		base_name = baseName
+	else:
+		base_name = core.check_name_style(tgt_obj.name)[0]
 	
 	# 2. Create AimMatrix Node
 	aim_mat = core.AimMatrix(f"{base_name}_aimMtx")
@@ -709,7 +790,7 @@ def aimConstraintMatrix(
 
 	
 #... Mostly polish with AI but not sure there will having issue
-def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True):
+def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True, baseName=None):
 	if not source:
 		print('Source is not selected.')
 		return False
@@ -723,10 +804,12 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 	obj_target = core.Dag(target)  # target dag wrapper
 	obj_source = core.Dag(source)  # source dag wrapper
 
-	base_name = core.check_name_style(name=target)[0]
-
-	if nameSpace != None:
-		base_name = f"{nameSpace}{base_name.capitalize()}"
+	if baseName is not None:
+		base_name = baseName
+	else:
+		base_name = core.check_name_style(name=target)[0]
+		if nameSpace != None:
+			base_name = f"{nameSpace}{base_name.capitalize()}"
 		
 
 

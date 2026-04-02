@@ -75,7 +75,7 @@ topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , 
 					side = '' ,ctrlShape = 'circle_ctrlShape'  , localWorld = True , 
 					color = 'yellow' , curlCtrl = True ,suffix = '_bJnt'	)[2][-1]
 #... return
-topSpine_bJnt = topSpine_bJnt.name
+
 
 
 
@@ -100,7 +100,7 @@ headRig.createHeadRig(
 					'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
 					'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 				),		# eye			
 					faceCtrl = False	,
-					priorJnt = topSpine_bJnt	,
+					priorJnt = topSpine_bJnt.name	,
 					charScale = charScale	,
 					ctrlShape = 'circle_ctrlShape',
 					priorCtrl ='spine01_gmbCtrl',
@@ -111,5 +111,34 @@ headRig.createHeadRig(
 
 
 
+# = = = = = 06 arm LFT Side
+from function.rigging.autoRig.components import eh_armRigR15 as armRig
+reload(armRig)
 
+stickNamLFT, handLFT_bJnt= armRig.eh_armRigExtR15(
+
+				nameSpace = '' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'LFT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperArmLFT_tmpJnt' ,	
+						'lowerArmLFT_tmpJnt', 	 
+						'handLFT_tmpJnt' ,	
+						'elbowPovLFT_tmpJnt' ),
+				priorJnt = topSpine_bJnt.name	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,			
+				nullGrp = 'snapNull_grp',			
+				jnt_grp =  'jnt_grp'	,			
+				povShape = 'pyramid',
+				keepFkIkBoth = keepFkIkBoth,
+				ribbon = ribbon,
+				ribbonRes = 'low', 
+				ribbonName = ('upArm', 'lwrArm'),
+				showInfo = showInfo ,
+				linkRotOrder = linkRotOrder	,
+				stickShape = stickShape 	,
+				creTwistJnt = creTwistJnt		
+				 )
 

@@ -45,7 +45,7 @@ logger.setLevel(logging.DEBUG)
 
 color_part_dict = mnd.COLOR_part_dict
 
-def fkIkTwistGenRig(
+def eh_fkIkTwistGenRig_R15(
 				nameSpace='',				
 				charScale=1,			
 				parentTo='ctrl_grp',			
@@ -79,6 +79,12 @@ def fkIkTwistGenRig(
 				
 	core.makeHeader(f'Start of {region}{side} Rig (EH Version)')		
 
+
+	import logging
+	logger = logging.getLogger('R16 arm raw run testing')
+	logger.setLevel(logging.DEBUG)
+
+
 	# --- 1. Setup Joint & Names ---
 	if side == 'LFT':
 		colorSide = color_part_dict['left']
@@ -91,7 +97,7 @@ def fkIkTwistGenRig(
 
 	# Parse Names
 	rawName = [tmp.split('_')[0][:-3] for tmp in tmpJnt]
-	
+
 	# Create Bind Joints
 	upper_bJnt = rigTools.jointAt(nameSpace + tmpJnt[0])
 	middle_bJnt = rigTools.jointAt(nameSpace + tmpJnt[1])
@@ -117,7 +123,7 @@ def fkIkTwistGenRig(
 	# --- 2. Main Groups ---
 	part = nameSpace + rawName[2] # e.g. hand or ankle
 	fkIkRig_grp = core.Null(f"{part}Rig{side}_grp")
-	
+
 	# Group Constraint (Matrix)
 	mtc.parentConMatrixGPT(priorJnt, fkIkRig_grp.name, mo=True)
 
@@ -127,10 +133,10 @@ def fkIkTwistGenRig(
 	stickName = rawName[2] + 'Stick'
 	stick_ctrl = core.Dag(f"{nameSpace}{stickName}{side}_ctrl")
 	stick_ctrl.nmCreateController(stickShape)
-	
+
 	stickZro_grp = eh_adjust.createZeroGroup(stick_ctrl)
 	stickZro_grp.name = f"{nameSpace}{stickName}{side}Zro_grp"
-	
+
 	stick_ctrl.editCtrlShape(axis=charScale * 1.8)
 	stick_ctrl.color = 'yellow'
 	stick_ctrl.hideArnoldNode()
@@ -181,40 +187,27 @@ def fkIkTwistGenRig(
 	# FK Controllers using eh_adjust
 	# Upper
 	upr_zro, upr_ctrl, upr_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[0]}{side}", ctrlShape, rotOrder, 
+		nameSpace, upper_fkJnt.name, ctrlShape, rotOrder, 
 		parentTo=fkCtrl_grp.name, charScale=charScale*0.9, color=colorSide, 
 		constraint=True # Matrix Constraint included
 	)
 	if side == 'RGT': upr_ctrl.flipCtrlShape(axis='Y')
-	upr_zro.matchPosition(upper_fkJnt)
-	upr_zro.matchRotation(upper_fkJnt)
-	# Re-apply constraint to ensure correct target (since we matched after creation)
-	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
 
 	# Middle
 	mid_zro, mid_ctrl, mid_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[1]}{side}", ctrlShape, rotOrder, 
+		nameSpace, middle_fkJnt.name, ctrlShape, rotOrder, 
 		parentTo=upr_gmbl.name, charScale=charScale*0.8, color=colorSide,
 		constraint=True
 	)
 	if side == 'RGT': mid_ctrl.flipCtrlShape(axis='Y')
-	mid_zro.matchPosition(middle_fkJnt)
-	mid_zro.matchRotation(middle_fkJnt)
-	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
 
 	# Lower
 	lwr_zro, lwr_ctrl, lwr_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[2]}{side}", ctrlShape, rotOrder, 
+		nameSpace, lower_fkJnt.name, ctrlShape, rotOrder, 
 		parentTo=mid_gmbl.name, charScale=charScale*0.7, color=colorSide,
 		constraint=True
 	)
 	if side == 'RGT': lwr_ctrl.flipCtrlShape(axis='Y')
-	lwr_zro.matchPosition(lower_fkJnt)
-	lwr_zro.matchRotation(lower_fkJnt)
-	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
 
 	# Space Switching for Upper Arm (FK)
 	# [0] controller itself, [1] local group space, [2] world group space, [3] zero group of controller
@@ -236,11 +229,14 @@ def fkIkTwistGenRig(
 	ikCtrl_grp.parent(fkIkRig_grp)
 
 	ikJnt_grp = core.Null(f"{part}IkJnt{side}_grp")
-	ikJnt_grp.snap(priorJnt)
+	#ikJnt_grp.snap(priorJnt) #... no need for snap 
 	ikJnt_grp.parent(fkIkJnt_grp)
 
-	# IK Joints
-	upper_IkJnt = rigTools.jointAt(upper_bJnt)
+
+	#.. IK Joints
+	#... create buffer position for IK
+	upperArm_2ik = core.Dag(upperArmR15) #... bypass upper arm position to correctly 
+	upper_IkJnt = rigTools.jointAt(upperArm_2ik)
 	middle_IkJnt = rigTools.jointAt(middle_bJnt)
 	lower_IkJnt = rigTools.jointAt(lower_bJnt)
 
@@ -252,19 +248,25 @@ def fkIkTwistGenRig(
 	lower_IkJnt.parent(middle_IkJnt)
 	upper_IkJnt.parent(ikJnt_grp)
 
-	# Create IK Handle
+
+
+
+	#... Create IK Handle
 	ikhName = mc.ikHandle(n=f"{part}Ik{side}_ikh", sj=upper_IkJnt.name, ee=lower_IkJnt.name, sol='ikRPsolver')
 	mc.rename(ikhName[1], f"{lower_IkJnt.name}_eff")
 	ikhNam = ikhName[0]
 	mc.setAttr(f"{ikhNam}.visibility", 0)
 
+	ikPosi = None
 	# IK Controller
 	ikShape = 'cube_ctrlShape' if not ikPosi else 'squarePlain_ctrlShape'
-	
+
+	ikPosi=None
+
 	# Using eh_adjust.create
 	ikZro_grp, lowerIk_ctrl, ikGmbl_ctrl = eh_adjust.create(
 		nameSpace=None,
-		name=f"{nameSpace}{rawName[2]}Ik{side}", 
+		name=f"{nameSpace}{rawName[2]}Ik{side}_ctrl", 
 		ctrlShape=ikShape,
 		rotateOrder=rotOrder,
 		charScale=charScale*8,
@@ -273,16 +275,18 @@ def fkIkTwistGenRig(
 		constraint=False, # We handle constraints manually
 		matrixConstraint=False
 	)
-	
+
+
 	lowerIk_ctrl.addAttribute(at='long', ln='autoStretch', k=True, min=0, max=1, dv=0)
 	lowerIk_ctrl.addAttribute(at='float', ln='upStretch', k=True, dv=0)
 	lowerIk_ctrl.addAttribute(at='float', ln='lowStretch', k=True, dv=0)
 
-	# Orient IK Controller
+	#... Orient IK Controller
 	if region == 'arm':
 		misc.snapParentConst(lower_IkJnt.name, ikZro_grp.name)
 	else:
 		misc.snapPointConst(lower_IkJnt.name, ikZro_grp.name)
+
 
 	# Constraint Joint to Controller (Matrix Orient)
 	mtc.orientConstraintMatrix(ikGmbl_ctrl.name, lower_IkJnt.name, mo=True)
@@ -294,10 +298,11 @@ def fkIkTwistGenRig(
 	mc.parent(ikhNam, ikhZro_grp)
 	mc.rotate(0, 0, 0, ikhNam, os=True, fo=True)
 
+
 	# Pole Vector
 	povZro_grp = mc.group(em=True, n=f"{nameSpace}{rawName[3]}{side}Zro_grp")
 	pov_ctrl = core.Dag(f"{nameSpace}{rawName[3]}{side}_ctrl")
-	
+
 	# Shape Logic
 	if povShape == 'pyramid':
 		pov_ctrl.nmCreateController('pyramid_ctrlShape')
@@ -305,14 +310,14 @@ def fkIkTwistGenRig(
 		pc.targetPov(ctrl=pov_ctrl.name, jnt=middle_bJnt.name)
 	else:
 		pov_ctrl.nmCreateController('legLFT_pov_ctrlShape')
-	
+
 	pov_ctrl.editCtrlShape(axis=charScale*1.4)
 	pov_ctrl.setColor(colorSide)
 	mc.parent(pov_ctrl.name, povZro_grp)
-	
+
 	# Snap POV
 	misc.snapPointConst(f"{nameSpace}{tmpJnt[3]}", povZro_grp)
-	
+
 	# Pole Vector Constraint (Standard PV constraint is best, Matrix PV exists but standard is reliable)
 	# NOTE: Using standard constraint for PV is usually fine, or custom Matrix calculation. 
 	# Let's use standard for now to match original reliability unless requested otherwise.
@@ -333,15 +338,17 @@ def fkIkTwistGenRig(
 	# IK Root Controller
 	ikRootName = f"{nameSpace}{rawName[0]}IkRoot{side}"
 	ikRootZro, ikRoot_ctrl, ikRootGmbl = eh_adjust.create(
-		nameSpace=None, name=ikRootName, ctrlShape='cube_ctrlShape',
+		nameSpace=None, name=ikRootName+'_ctrl', ctrlShape='cube_ctrlShape',
 		rotateOrder=rotOrder, charScale=charScale*5.5, color='yellow',
 		parentTo=ikCtrl_grp.name, constraint=False
 	)
-	ikRootZro.snap(upper_bJnt)
-	
+	ikRootZro.snap(upperArm_2ik)
+
 	# Matrix Parent Constraint IK Root -> IK Joint
 	mtc.parentConMatrixGPT(ikRootGmbl.name, upper_IkJnt.name, mo=True)
 
+	alongAxis='y'
+	povPosi = 'front'
 	# --- 6. IK Stretch (Refactored Module) ---
 	# Passing updated arguments to createIKStretch
 	pmaNode, psStreEndName = create.iKStretch(
@@ -352,6 +359,66 @@ def fkIkTwistGenRig(
 		lowNam=rawName[2], alongAxis=alongAxis, povPosi=povPosi
 	)
 
+
+
+	#... create real position for making FK / IK match correctly
+	#... IK_2_Buffer joint
+	upper_IkBufferJnt = rigTools.jointAt(upper_bJnt)
+	middle_IkBufferJnt = rigTools.jointAt(middle_bJnt)
+	lower_IkBufferJnt = rigTools.jointAt(lower_bJnt)
+
+	mc.setAttr(f'{upper_IkBufferJnt}.radius', 0.75)
+	mc.setAttr(f'{middle_IkBufferJnt}.radius', 0.75)
+	mc.setAttr(f'{lower_IkBufferJnt}.radius', 0.75)
+
+
+	mc.setAttr(f'{upper_IkBufferJnt}.overrideDisplayType', 1)
+	mc.setAttr(f'{middle_IkBufferJnt}.overrideDisplayType', 1)
+	mc.setAttr(f'{lower_IkBufferJnt}.overrideDisplayType', 1)
+
+
+
+
+	upper_IkBufferJnt.name = f"{nameSpace}{rawName[0]}{side}_ikBufferJnt"
+	middle_IkBufferJnt.name = f"{nameSpace}{rawName[1]}{side}_ikBufferJnt"
+	lower_IkBufferJnt.name = f"{nameSpace}{rawName[2]}{side}_ikBufferJnt"
+
+	middle_IkBufferJnt.parent(upper_IkBufferJnt)
+	lower_IkBufferJnt.parent(middle_IkBufferJnt)
+	upper_IkBufferJnt.parent(ikJnt_grp)
+
+
+	#... pair constraint between ik_jnt --> ik_bufferJnt
+	from function.rigging.constraint import normalConstraint as nmCon
+	reload(nmCon)
+
+	# nmCon.orientConstrRe(upper_IkJnt.name, upper_IkBufferJnt.name, mo=True)
+	mtc.orientConstraintMatrix(upper_IkJnt.name, upper_IkBufferJnt.name, mo=True, baseName = f'upperIkBuffer{side}')
+	mtc.parentConMatrixGPT('spine01_bJnt', upper_IkBufferJnt.name, mo=True, translate=True, rotate=False, scale=False, baseName=f'upperIkBufferPoint{side}')
+
+
+
+
+	mtc.parentConMatrixGPT(middle_IkJnt.name, middle_IkBufferJnt.name, mo=False, baseName = f'middleIkBuffer{side}')
+	# nmCon.normalParentConstr(lower_IkJnt.name, lower_IkBufferJnt.name, mo=False)
+	mtc.parentConMatrixGPT(lower_IkJnt.name, lower_IkBufferJnt.name, mo=False, baseName = f'lowerIkBuffer{side}')
+
+
+
+
+
+
+
+
+
+	#... Back to normal coding
+
+
+	#... IKH Hierarchy with SoftIK Prep
+
+
+
+
 	# --- 7. FK/IK Switch Attributes ---
 	stick_ctrl.addAttribute(attributeType='float', longName='FK_IK', min=0, max=1, dv=0, k=True)
 	if keepFkIkBoth:
@@ -360,7 +427,7 @@ def fkIkTwistGenRig(
 
 	# --- 8. Buffer Joints & Blending (The Critical Part) ---
 	# To replace parentConstraint(w0,w1) we use mtc.parentMulMatrix
-	
+
 	buffJnt_grp = core.Null(f"{nameSpace}{region}BuffJnt{side}_grp")
 	buffJnt_grp.parent(fkIkJnt_grp)
 
@@ -376,11 +443,11 @@ def fkIkTwistGenRig(
 	lower_buffJnt.parent(middle_buffJnt)
 	upper_buffJnt.parent(buffJnt_grp)
 
-	# Blending Loop
+	#... Blending Loop
 	jnt_names = [rawName[0], rawName[1], rawName[2]]
 	for i, base in enumerate(jnt_names):
 		fk_jnt = f"{nameSpace}{base}{side}_fkJnt"
-		ik_jnt = f"{nameSpace}{base}{side}_ikJnt"
+		ik_jnt = f"{nameSpace}{base}{side}_ikBufferJnt"
 		buff_jnt = f"{base}{side}_buffJnt"
 		
 		# Use parentMulMatrix from mtc
@@ -395,9 +462,7 @@ def fkIkTwistGenRig(
 		revNode = core.ReverseNam(f"{base}Switch{side}_rev")
 		stick_ctrl.attr('FK_IK') >> revNode.attr('inputX')
 		
-		revNode.attr('outputX') >> mc.listRelatives(wt_node, p=True)[0] + '.wtMatrix[0].weightIn' # Check parent of wtNode if needed, core.WtAddMatrix usually wraps it.
-		# Wait, parentMulMatrix returns the NAME of wtAddMatrix.
-		
+		# parentMulMatrix returns the NAME of wtAddMatrix directly.
 		mc.connectAttr(revNode.name + '.outputX', wt_node + '.wtMatrix[0].weightIn', f=True)
 		mc.connectAttr(stick_ctrl.name + '.FK_IK', wt_node + '.wtMatrix[1].weightIn', f=True)
 
@@ -415,6 +480,7 @@ def fkIkTwistGenRig(
 		stick_ctrl.attr('FK_IK') >> ikZro_grp.attr('visibility')
 		stick_ctrl.attr('FK_IK') >> ikRootZro.attr('visibility')
 
+
 	# --- 10. Mid Lock (Elbow/Knee) ---
 	# Using updated midLockModule
 	logger.info("Creating Knee/Elbow Lock...")
@@ -424,7 +490,7 @@ def fkIkTwistGenRig(
 	rawNameLWR, distanceLWRName, povLWR_Ctrl, lowerLWR_loc, upperLWR_loc = midLockModule.createDistance(
 		nameSpace, part='dn', startP=pov_ctrl.name, endP=ikGmbl_ctrl.name
 	)
-	
+
 	blendName, invertNodeName = midLockModule.createBlendColor(
 		nameSpace, uprDistance=distanceUPRName, lwrDistance=distanceLWRName, side=side, uprNam=rawNameUPR
 	)
@@ -463,7 +529,10 @@ def fkIkTwistGenRig(
 			ctrl_grp='ctrl_grp', alongAxis=alongAxis
 		)
 
-	# Twist Rig
+
+
+	#... Disable Twist Rig
+	'''
 	logger.info('Create Twist Rig function ...')
 	# Updated to accept ikRoot_ctrl.name (which we have) and use matrix constraints internally
 	follow_grp, upperTwist01 = tr.twistRigAuto(
@@ -473,38 +542,74 @@ def fkIkTwistGenRig(
 		charScale=charScale, showInfo=showInfo, alongAxis=alongAxis
 	)
 	mc.parent(follow_grp, noTouchGrp)
+	mtc.parentConMatrixGPT(follow_grp, upper_bJnt.name, mo=True, baseName = f'{upper_bJnt.name}Bind')
+	'''
+
+
 
 	# --- 13. Final Connections (Buffer -> Bind) ---
 	regionCap = region.capitalize()
-	
+
 	# Using Matrix Constraints for final drive
-	mtc.parentConMatrixGPT(follow_grp, upper_bJnt.name, mo=True)
+
 	# mtc.parentConMatrixGPT(follow_grp, upper_bJnt.name, mo=True, translate=False, rotate=False, scale=True) # Scale
 	# Manual scale constraint for twist if needed, usually parent matrix covers it unless specialized
 	# Original code used scaleConstraint. parentConMatrixGPT handles scale.
 
-	mtc.parentConMatrixGPT(middle_buffJnt.name, middle_bJnt.name, mo=True)
-	mtc.parentConMatrixGPT(lower_buffJnt.name, lower_bJnt.name, mo=True)
+	mtc.parentConMatrixGPT(upper_buffJnt.name, upper_bJnt.name, mo=True, baseName = f'{upper_bJnt.name}Bind')
+	mtc.parentConMatrixGPT(middle_buffJnt.name, middle_bJnt.name, mo=True, baseName = f'{middle_bJnt.name}Bind')
+	mtc.parentConMatrixGPT(lower_buffJnt.name, lower_bJnt.name, mo=True, baseName = f'{lower_bJnt.name}Bind')
 
 	# --- 14. Meta Data ---
 	# (Keeping original Meta logic, just ensuring variables match)
 	fkIkTwistRig_meta = core.MetaGeneric(f"{nameSpace}{region.lower()}FkIkTwistRig{side}_meta")
 	mc.connectAttr(f"{priorJnt}.message", f"{fkIkTwistRig_meta.name}.Rig_Prior")
-	
+
 	# Add Attributes
 	for attr in ['ikh_Name', 'ikh_Zro_Name', 'stick_ctrl_name', 'ikh_ctrl_name']:
-		fkIkTwistRig_meta.addAttribute(dataType='string', longName=attr)
+		try:
+			fkIkTwistRig_meta.addAttribute(attributeType='message', longName=attr)
+		except: pass
 
-	fkIkTwistRig_meta.setAttribute('Base_Name', __name__, type='string')
+	fkIkTwistRig_meta.setAttribute('Base_Name', upper_bJnt.name, type='string')
 	fkIkTwistRig_meta.setAttribute('Side', side, type='string')
-	fkIkTwistRig_meta.setAttribute('ikh_Name', ikhNam, type='string')
-	fkIkTwistRig_meta.setAttribute('ikh_Zro_Name', ikhZro_grp, type='string')
-	fkIkTwistRig_meta.setAttribute('stick_ctrl_name', stick_ctrl.name, type='string')
-	fkIkTwistRig_meta.setAttribute('ikh_ctrl_name', lowerIk_ctrl.name, type='string')
 
-	# Connect to Stick
+	# Replace string sets with Message connections
+	mc.connectAttr(f"{ikhNam}.message", f"{fkIkTwistRig_meta.name}.ikh_Name", f=True)
+	mc.connectAttr(f"{ikhZro_grp}.message", f"{fkIkTwistRig_meta.name}.ikh_Zro_Name", f=True)
+	stick_ctrl.attr('message') >> fkIkTwistRig_meta.attr('stick_ctrl_name')
+	lowerIk_ctrl.attr('message') >> fkIkTwistRig_meta.attr('ikh_ctrl_name')
+
+	# --- NEW: Message Dictionary Connections ---
+	message_Dict = mnd.MESSAGE_dict
+	for keys in message_Dict:
+		if keys != 'listString':
+			for each in message_Dict[keys]:
+				# Check if attribute already exists if this is re-run or similar, 
+				# but addAttribute wrapped in 'core' handles it sometimes, 
+				# or we just try-except. We will just add.
+				try:
+					stick_ctrl.addAttribute(attributeType='message', longName=each)
+				except: pass
+
+	# Connect to Stick (Moved here)
 	metaName = mnd.MESSAGE_dict['meta'][0]
 	fkIkTwistRig_meta.attr('message') >> stick_ctrl.attr(metaName)
+
+	# Perform the message connections
+	stick_ctrl.attr('message') >> stick_ctrl.attr('stick')
+	upper_bJnt.attr('message') >> stick_ctrl.attr('upJnt')
+	middle_bJnt.attr('message') >> stick_ctrl.attr('midJnt')
+	lower_bJnt.attr('message') >> stick_ctrl.attr('lowJnt')
+
+	upr_ctrl.attr('message') >> stick_ctrl.attr('upFkCtrl')
+	mid_ctrl.attr('message') >> stick_ctrl.attr('midFkCtrl')
+	lwr_ctrl.attr('message') >> stick_ctrl.attr('lowFkCtrl')
+
+	pov_ctrl.attr('message') >> stick_ctrl.attr('pov')
+	lowerIk_ctrl.attr('message') >> stick_ctrl.attr('ikCtrl')
+	ikRoot_ctrl.attr('message') >> stick_ctrl.attr('ikRootCtrl')
+
 	fkIkTwistRig_meta.lockAllAttr()
 
 	# Return data for SoftIK
@@ -513,7 +618,7 @@ def fkIkTwistGenRig(
 	# Original returned: Loc_grp.name, World_grp.name
 	# eh_orientLocalWorldMatrix returns: {"mult_local":..., "mult_world":...}
 	# SoftIK mainly needs ikhNam and ctrlName.
-	
+
 	ikhAll_name = (ikhNam, povZro_grp, "Local_Placeholder", "World_Placeholder", ikhZro_grp)
 	softIk_name = [lowerIk_ctrl.name]
 

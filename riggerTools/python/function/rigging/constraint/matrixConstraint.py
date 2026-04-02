@@ -865,23 +865,21 @@ def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True,
 			Constraint.info(f'Compensating Joint Orient for [ {obj_target.name} ]')
 			mc.connectAttr( obj_target.name + '.jointOrient', target_eulerToQuat.name + '.inputRotate' )
 
-		elif obj_target.type == 'transform' and obj_source.type == 'transform':
-			#... classic transform to transform case
-			Constraint.info('\nThis is between [ {1} ] and [ {0} ] (transform / transform)'.format(
+		elif obj_target.type == 'transform':
+			#... transform target (source can be transform or joint)
+			Constraint.info('\nThis is between [ {1} ] and [ {0} ] (target is transform)'.format(
 				obj_target.type, obj_source.type))
-			#... use current rotate of target as offset
-			# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
 			#... [FIX] Do NOT connect target.rotate here. 
 			#... The Offset is already handled by matrixIn[0].
 			#... Connecting it creates a Cycle (Rotate -> Calc -> Rotate).
-			# obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')	
 			Constraint.info("Transform Target: Using Matrix Offset. No Quat compensation needed.")
 			print('\n')
 
 		else:
 			#... fallback: treat as generic transform case
 			Constraint.info("\nThis is maybe something I don't know (fallback case).")
-			obj_target.attr('rotate') >> target_eulerToQuat.attr('inputRotate')
+			# Avoid cycle in fallback too, since matrixIn[0] handles offsets
+			pass
 
 		# -------------------------------------------------------------
 		# 05.2 Connect quaternion chain (same idea as legacy)

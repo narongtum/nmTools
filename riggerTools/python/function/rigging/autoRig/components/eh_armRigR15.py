@@ -9,14 +9,14 @@ reload(core)
 # Note: Assuming you save the new gen rig as 'eh_fkIkTwistGenRig.py'
 # or you can rename the function inside the original file. 
 # Here I will point to 'eh_fkIkTwistGenRig' for clarity.
-from function.rigging.autoRig.components.limbRig import eh_fkIkTwistGenRig as fitr
+from function.rigging.autoRig.components.limbRig import eh_fkIkTwistGenRig_R15 as fitr
 reload(fitr)
 
 from function.rigging.autoRig.components.limbRig import eh_createSoftIk as softIkfunc
 reload(softIkfunc)
 
 import logging
-logger = logging.getLogger('eh_armRig')
+logger = logging.getLogger('eh_armRigExtR15')
 logger.setLevel(logging.DEBUG)
 
 def eh_armRigExtR15(	
@@ -41,7 +41,7 @@ def eh_armRigExtR15(
 			linkRotOrder=False,
 			ctrlShape='fk_ctrlShape',
 			creTwistJnt=True,
-			softIk=True,
+			softIk=False,
 			softIkPrimaryAxis=2,
 			softIkUpAxis=2,
 			alongAxis='y',
@@ -50,6 +50,10 @@ def eh_armRigExtR15(
 			):
 
 	core.makeHeader(f'Start of {region}{side} Rig (EH Matrix Version)')
+
+	if not mc.objExists(upperArmR15):
+		logger.info("There are no upperArm for R15.")
+		return False
 
 	# ----------------------------------------------------------------------
 	# Call Gen Rig (Refactored)
@@ -110,7 +114,7 @@ def eh_armRigExtR15(
 		stick_ctrl = core.Dag(stickNam)
 		offset_null.attr('message') >> stick_ctrl.attr('offset')
 		
-		stick_ctrl.lockHideAttrLst('location')
+		# stick_ctrl.lockHideAttrLst('location')  # Attribute does not exist
 
 		# ------------------------------------------------------------------
 		# Soft IK

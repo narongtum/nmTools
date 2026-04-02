@@ -394,10 +394,10 @@ nmCon.normalParentConstr(lower_IkJnt.name, lower_IkBufferJnt.name, mo=False)
 
 
 
-#.... back to normal
+#... Back to normal coding
 
 
-# IKH Hierarchy with SoftIK Prep
+#... IKH Hierarchy with SoftIK Prep
 
 
 

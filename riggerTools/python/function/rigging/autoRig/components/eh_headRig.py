@@ -211,9 +211,13 @@ def createHeadRig(
 
 	#... Grouping
 	headZro_grp.parent(headRig_grp)
-	#... Use Hierarchy Parent Instead
-	headRig_grp.parent(priorCtrl)
-
+	
+	if priorCtrl:
+		#... Use Hierarchy Parent Instead
+		headRig_grp.parent(priorCtrl)
+	else:
+		# Fallback: Parent to parentTo (like ctrl_grp)
+		headRig_grp.parent(parentTo)
 
 
 	# Using Matrix Orient Switch instead of Group Constraint
@@ -352,14 +356,14 @@ def createHeadRig(
 						eyeCenCtrl=eyeCen_ctrl.name, 
 						eyeTarget=eyeTargetRGT)
 
-		# --- 7. Final Organization ---
-		# if mc.objExists(priorJnt):
-		# 	mtc.parentConMatrixGPT(
-		# 		source=priorJnt,
-		# 		target=headRig_grp.name,
-		# 		mo=True,
-		# 		translate=True, rotate=True, scale=True
-		# 	)
+	# --- 7. Final Organization ---
+	if not priorCtrl and priorJnt and mc.objExists(priorJnt):
+		mtc.parentConMatrixGPT(
+			source=priorJnt,
+			target=headRig_grp.name,
+			mo=True,
+			translate=True, rotate=True, scale=True
+		)
 
 	mc.select(deselect=True)
 	HeadRigLogger.info(f'#### End of {partName} Rig ####')

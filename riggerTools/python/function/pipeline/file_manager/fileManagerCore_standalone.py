@@ -10,8 +10,6 @@ from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtCore import QDir, QSortFilterProxyModel
 
-import maya.OpenMaya as om
-import maya.OpenMayaUI as OpenMayaUI
 
 import subprocess
 import sys
@@ -23,47 +21,37 @@ from function.pipeline import logger
 reload(logger)
 
 import re
-import pymel.core as pm
-
-from function.pipeline import fileTools
-reload(fileTools)
-
-from function.rigging.readWriteCtrlSizeData import run as runWrite
-reload(runWrite)
-
-# from function.rigging.skin.nsSkinClusterIO import nsSkinClusterIO_reFunc as skinIO
-# reload(skinIO)
-
-from function.rigging.skeleton import jointTools as jtt
-reload(jtt)
-
-from function.rigging.controllerBox import adjustController as adjust
-reload(adjust)
-
-from function.pipeline.file_manager import run_ui
-reload(run_ui)
 
 try:
 	from shiboken2 import wrapInstance
 except:
 	from sid import wrapInstance as wrapInstance
 
-from function.rigging.skin import roundSkinWeight as rsw
-reload(rsw)
+# reload(rsw)
 
 import fnmatch
 
 class FileManagerLog(logger.MayaLogger):
-	LOGGER_NAME = "FileManagerLog"
+	LOGGER_NAME = "FileManagerLog StandAlone"
 
+'''
+import sys
+import os
 
+# 1. เพิ่ม path ของ riggerTools เข้า sys.path เพื่อให้ Python หา library เจอ
+tools_path = r'd:\sysTools\nmTools_github\riggerTools\python'
+if tools_path not in sys.path:
+    sys.path.append(tools_path)
 
+# 2. Import และรัน UI ผ่าน run_ui_standalone
+from function.pipeline.file_manager import run_ui_standalone
+run_ui_standalone.run_file_manager()
+'''
 
 
 FileManagerLog.set_level(logging.DEBUG)
 	
-import maya.cmds as mc
-MAYA_VERSION = int(mc.about(v=True))
+MAYA_VERSION = 2022
 
 
 
@@ -82,7 +70,7 @@ fileName = 'fileManager_config.py'
 file_path = os.path.join(directory, fileName)
 
 
-CORE_VERSION = '0.9.6'
+CORE_VERSION = '0.9.7'
 
 #... Static variable
 THUMBNAIL_NAME		= 	'thumb.png'
@@ -95,7 +83,6 @@ PADDING 			= 	4
 #... Check if the file exists
 if os.path.exists(file_path):
 	FileManagerLog.debug("Config File exists.")
-	#... Maya add in path automatically so it can import if not maya will not find it
 	sys.path.insert(0, directory)
 	import fileManager_config as config
 	reload(config)
@@ -179,24 +166,31 @@ else:
 
 
 
-# import maya.OpenMayaUI as OpenMayaUI
 
 #... get this window alway on top
 #... chad vernon said about parent window on top at 1:16 (crateing the remapping dialog)
 def getMayaMainWindow():
-	main_window_ptr = OpenMayaUI.MQtUtil.mainWindow() #... find maya pointer
-	if MAYA_VERSION >= 2022:
-		pointer = wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
-	else:
-		pointer = wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
-	return pointer
+	return None
 
 
-#... try for enable filter widget
-# class FilterProxyModel(QtCore.QSortFilterProxyModel):
-# 	def __init__(self, parent=None):
-# 		super(FilterProxyModel, self).__init__(parent)
-# 		self._pattern = ""
+class AssetFilterProxyModel(QtCore.QSortFilterProxyModel):
+	"""Proxy model for Asset tree search.
+
+	English:
+	- Uses a simple case-insensitive substring match.
+	- Recursive: keeps parent folders visible if any descendant matches.
+	- NEVER filters out the project root index (so QTreeView won't jump to drive root).
+	"""
+
+	def __init__(self, parent=None):
+		super(AssetFilterProxyModel, self).__init__(parent)
+		self._pattern = ""
+		self._root_src_index = QtCore.QModelIndex()
+
+	def set_root_source_index(self, src_index: QtCore.QModelIndex):
+		self._root_src_index = src_index
+		# Re-filter so root acceptance takes effect immediately
+		self.invalidateFilter()
 
 	@property
 	def pattern(self):
@@ -204,21 +198,28 @@ def getMayaMainWindow():
 
 	@pattern.setter
 	def pattern(self, value):
-		self._pattern = value
+		self._pattern = value or ""
 		self.invalidateFilter()
 
 	def filterAcceptsRow(self, sourceRow, sourceParent):
-		if not self.pattern:
+		pattern = (self._pattern or "").strip()
+		if not pattern:
 			return True
 
 		sourceModel = self.sourceModel()
 		index = sourceModel.index(sourceRow, 0, sourceParent)
-		filePath = sourceModel.filePath(index)
-		fileName = sourceModel.fileName(index)
+		if not index.isValid():
+			return False
 
-		if self.pattern.lower() in fileName.lower():
+		# Always accept root project folder (prevents rootIndex becoming invalid)
+		if self._root_src_index.isValid() and index == self._root_src_index:
 			return True
 
+		fileName = sourceModel.fileName(index)
+		if pattern.lower() in (fileName or "").lower():
+			return True
+
+		# Keep parents visible if any child matches
 		if sourceModel.isDir(index):
 			childCount = sourceModel.rowCount(index)
 			for i in range(childCount):
@@ -239,18 +240,33 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		super(FileManager, self).__init__(parent=parent)
 		self.setupUi(self)
 		self.path = None
+		# --- Asset tree view state ---
+		# English: keep last selection by filesystem path (more stable than QModelIndex across proxy refilters)
+		self._asset_last_selected_path = None
+		self._asset_root_src_index = QtCore.QModelIndex()
+		self._asset_root_proxy_index = QtCore.QModelIndex()
+		self._is_restoring_asset_selection = False
 		FileManagerLog.debug('# --- Asset file system model + proxy for filtering ---')
 
 		# --- Asset file system model + proxy for filtering ---
 		self.asset_fs_model = QtWidgets.QFileSystemModel(self)   # source model for Asset tree
-		self.asset_proxy    = QtCore.QSortFilterProxyModel(self) # single, persistent proxy
+		self.asset_proxy    = AssetFilterProxyModel(self) # persistent proxy with recursive filtering
 		# show only column 0 (name) filtering; case-insensitive
-		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
-		self.asset_proxy.setFilterKeyColumn(0)
+		if hasattr(self.asset_proxy, "setFilterCaseSensitivity"):
+			self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
+		if hasattr(self.asset_proxy, "setFilterKeyColumn"):
+			self.asset_proxy.setFilterKeyColumn(0)
 
 		# If your PySide2/Qt >= 5.10, this enables filtering into children
 		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
 			self.asset_proxy.setRecursiveFilteringEnabled(True)
+
+		# --- Search UI (connect ONCE) ---
+		self.asset_filter_lineEdit.setPlaceholderText('Search...')
+		# English: QLineEdit built-in clear (X) button
+		if hasattr(self.asset_filter_lineEdit, "setClearButtonEnabled"):
+			self.asset_filter_lineEdit.setClearButtonEnabled(True)
+		self.asset_filter_lineEdit.textChanged.connect(self.on_asset_search_text_changed)
 
 
 
@@ -296,7 +312,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... set combo box to that
 
 		if self.is_scene_open():
-			current_scene_path = pm.system.sceneName()
+
 			current_scene_path = os.path.normpath(current_scene_path)
 			path_elements = current_scene_path.split(os.path.sep)
 			if path_elements[2] in PROJECT_NAME:
@@ -305,7 +321,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 				#... make set current drive that scene open
-				# current_drive = path_elements[0] + '\\'
 				current_drive = os.path.splitdrive(current_scene_path)[0] + os.sep
 				if current_drive in DRIVES:
 					FileManagerLog.debug(f'# line: 275 # # Set Drive to: {current_drive}')
@@ -327,15 +342,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... Connect entity 
 		self.asset_global_listWidget.itemClicked.connect(self.on_glogal_commit_clicked)
-
-
-		# # Connect the on_version_clicked method to the left clicked signal
-		# # No need to use anymore disable for now
-		# self.asset_version_view_listWidget.itemClicked.connect(self.on_version_clicked)
-
-		# # Create jobs at department level
-		# self.asset_department_listWidget = QListWidget()
-		# self.setCentralWidget(self.asset_department_listWidget)
 
 		# Show context for department widget
 		self.asset_department_listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -373,14 +379,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		self.check_exists_maya()
 
 	def is_scene_open(self):
-		current_scene = mc.file(query=True, sceneName=True)
-		return bool(current_scene)
-
-	# def closeEvent(self, event):
-	# 	# Remove the window instance from the list of open windows
-	# 	self.open_windows.remove(self)
-	# 	# Call the base class closeEvent to ensure proper cleanup
-	# 	super(FileManager, self).closeEvent(event)
+		return False
 		
 	def setupMenuBar(self):
 		file_menu = self.menuFile
@@ -394,10 +393,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		replaceRef_action = FileManagerActions.createReplaceRefAction(self, self.replaceSelectedReference)
 		file_menu.addAction(replaceRef_action)
 
-		#... inside 'Tools' menubar
-		#... Create 'Print B' action and add it to the 'File' menu
-		# print_b_action = FileManagerActions.createPrintBAction(self, self.printB)
-		# toos_menu.addAction(print_b_action)
+		passFile_action = QtWidgets.QAction("Pass File", self)
+		passFile_action.triggered.connect(self.import_external_file)
+		file_menu.addAction(passFile_action)
 
 		assetExport_action = FileManagerActions.createAssetExportAction(self, self.printC)
 		toos_menu.addAction(assetExport_action)
@@ -427,88 +425,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		print("Print B")
 
 	def replaceSelectedReference(self):
-		"""
-		Replace the currently selected reference(s) in the scene with the file
-		chosen in the Global Commit list widget, under the asset selected in the tree.
-		Steps (original intention preserved):
-		  1) User selects a Global Commit in the UI
-		  2) User selects one or more controls (any DAG nodes) in the scene
-		  3) Run this method to switch the referenced file
-		"""
-		# --- 1) Read selected commit item from the global widget
-		item = self.asset_global_listWidget.currentItem()
-		if not item:
-			QMessageBox.warning(self, "No Selection",
-								"Please select a global commit file from the UI.")
-			return False
-		asset_name = item.text()  # file name with extension
-
-		# --- 2) Resolve the asset root from the treeview (proxy -> source -> path)
-		proxy_index = self.asset_dir_TREEVIEW.currentIndex()
-		if not proxy_index.isValid():
-			QMessageBox.warning(self, "No Asset Selected",
-								"Please select an asset in the tree view.")
-			return False
-
-		src_index = self._asset_proxy_to_source(proxy_index)  # map proxy -> source
-		asset_root = self.asset_fs_model.filePath(src_index)  # source model filePath
-		asset_root = os.path.normpath(asset_root)
-
-		# Build absolute path to the picked commit file
-		# STATIC_FOLDER[2] should be the 'Commit' folder name from your config
-		commit_dir_name = STATIC_FOLDER[2]
-		new_asset_path = os.path.normpath(os.path.join(asset_root, commit_dir_name, asset_name))
-
-		if not os.path.exists(new_asset_path):
-			QMessageBox.warning(self, "File Missing",
-								f"Cannot find commit file:\n{new_asset_path}")
-			return False
-
-		# --- 3) Find top reference nodes from current selection
-		sel_list = mc.ls(sl=True, long=True) or []
-		if not sel_list:
-			QMessageBox.warning(self, "No Scene Selection",
-								"Please select at least one object that belongs to a reference.")
-			return False
-
-		top_ref_nodes = []
-		for node in sel_list:
-			if mc.referenceQuery(node, isNodeReferenced=True):
-				top_ref = mc.referenceQuery(node, referenceNode=True, topReference=True)
-				if top_ref and top_ref not in top_ref_nodes:
-					top_ref_nodes.append(top_ref)
-
-		if not top_ref_nodes:
-			QMessageBox.warning(self, "No References Found",
-								"Selected objects are not part of any reference.")
-			return False
-
-		# --- 4) Confirm replacement
-		reply = QMessageBox.question(
-			self, "Confirm",
-			f"Selected reference object(s) will be replaced with:\n  {asset_name}\n\nProceed?",
-			QMessageBox.Yes | QMessageBox.No
-		)
-		if reply != QMessageBox.Yes:
-			return False
-
-		# --- 5) Pick maya file type based on extension
-		_, ext = os.path.splitext(new_asset_path)
-		maya_type = "mayaAscii" if ext.lower() == ".ma" else "mayaBinary"
-
-		# --- 6) Do the actual replacement
-		for ref_node in top_ref_nodes:
-			try:
-				mc.file(new_asset_path, loadReference=ref_node, type=maya_type, options="v=0")
-			except Exception as e:
-				FileManagerLog.error("Failed to replace reference '%s' with '%s': %s",
-									 ref_node, new_asset_path, e)
-				QMessageBox.critical(self, "Replace Failed",
-									 f"Failed to replace reference:\n{ref_node}\n\n{e}")
-				return False
-
-		FileManagerLog.debug("Replaced references with: %s", new_asset_path)
-		return True
+		pass
 
 
 
@@ -520,30 +437,106 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		run_ui.run_file_exporter()
 
 
-	'''
-	def filter_model(self, text):
-		#... Apply the filter to the proxy model
-		search_pattern = f"*{text}*"  # Wildcards allow partial matches
-		self.proxyModel = QtCore.QSortFilterProxyModel()
-		self.proxyModel.setFilterWildcard(search_pattern)
-		'''
-
 	def filter_model(self, text):
 		# Reuse the single persistent proxy already wired to the view.
 		# Do NOT create a new proxy each keystroke, or the view loses its model state.
 		pattern = text.strip()
-		self.asset_proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
-		self.asset_proxy.setFilterKeyColumn(0)  # filter by "Name" column
-
-		# Prefer FixedString for simple contains; use wildcard if you really need it.
-		# With QSortFilterProxyModel default, setFilterFixedString matches substrings.
-		self.asset_proxy.setFilterFixedString(pattern)
-
-		# English: If Qt >= 5.10, ensure recursive filtering is on so parent folders with
-		# matching descendants remain visible.
-		if hasattr(self.asset_proxy, "setRecursiveFilteringEnabled"):
-			self.asset_proxy.setRecursiveFilteringEnabled(True)
+		# NOTE: This project now uses AssetFilterProxyModel + on_asset_search_text_changed().
+		# Keep this method for backward-compat (if other code calls it).
+		self.asset_proxy.pattern = pattern
 		FileManagerLog.debug("Filter applied: '%s'", pattern)
+
+	# --- Asset search / selection helpers ---
+	def _remember_asset_selection(self):
+		"""Remember current selection path (source path) for later restore.
+
+		English: store by path rather than QModelIndex so it survives proxy refilters.
+		"""
+		if self._is_restoring_asset_selection:
+			return
+		try:
+			proxy_index = self.asset_dir_TREEVIEW.currentIndex()
+			path = self._path_from_treeview_index(proxy_index) if proxy_index.isValid() else None
+			if path:
+				self._asset_last_selected_path = os.path.normpath(path)
+		except Exception:
+			# Never let selection remembering break UI
+			return
+
+	def _restore_asset_selection(self, path: str) -> bool:
+		"""Restore selection by path. Returns True if selection was restored."""
+		if not path:
+			return False
+		path = os.path.normpath(path)
+		if not os.path.exists(path):
+			return False
+		src_index = self.asset_fs_model.index(path)
+		if not src_index.isValid():
+			return False
+		proxy_index = self.asset_proxy.mapFromSource(src_index)
+		if not proxy_index.isValid():
+			return False
+
+		self._is_restoring_asset_selection = True
+		try:
+			self.asset_dir_TREEVIEW.setCurrentIndex(proxy_index)
+			self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
+				proxy_index,
+				QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current,
+			)
+			self.asset_dir_TREEVIEW.scrollTo(
+				proxy_index, QtWidgets.QAbstractItemView.PositionAtCenter
+			)
+		finally:
+			self._is_restoring_asset_selection = False
+		return True
+
+	def on_asset_search_text_changed(self, text: str):
+		"""Filter asset tree. When cleared, restore last selected folder.
+
+		Fix:
+		- Prevent treeview from reverting to drive/root when filter becomes empty.
+		- Keep user context by restoring last selected folder.
+		"""
+		# Remember selection before refiltering
+		self._remember_asset_selection()
+
+		pattern = (text or "").strip()
+
+		# Apply filter via proxy subclass (recursive, substring match)
+		self.asset_proxy.pattern = pattern
+
+		# When clearing (including clear-button X), do UI restore on next event loop tick
+		# to avoid crashes while the model is resetting.
+		if not pattern:
+			QtCore.QTimer.singleShot(0, self._after_asset_search_cleared)
+
+	def _after_asset_search_cleared(self):
+		"""Restore rootIndex + selection after search cleared.
+
+		English: Called via QTimer.singleShot(0, ...) to avoid touching selection during
+		proxy/model reset (prevents random UI close/crash on clear button).
+		"""
+		try:
+			# Always restore project root index first.
+			root_proxy = (
+				self.asset_proxy.mapFromSource(self._asset_root_src_index)
+				if self._asset_root_src_index.isValid()
+				else QtCore.QModelIndex()
+			)
+			if root_proxy.isValid():
+				self.asset_dir_TREEVIEW.setRootIndex(root_proxy)
+
+			# Restore selection (best-effort)
+			if self._asset_last_selected_path and self._restore_asset_selection(self._asset_last_selected_path):
+				return
+
+			# Fallback: scroll to project root
+			if root_proxy.isValid():
+				self.asset_dir_TREEVIEW.scrollTo(root_proxy)
+		except Exception:
+			# Never crash UI from restore
+			return
 
 	def _path_from_treeview_index(self, proxy_index):
 		"""English: Map a QTreeView proxy index to absolute filesystem path."""
@@ -574,7 +567,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	#....
 
 	def create_thumbnail(self, fileType='png', width=256, height=256, fileName = 'thumb'):
-		maya_file_path = mc.file( query=True , sn=True )
+# 		maya_file_path = mc.file( query=True , sn=True )
 
 		if maya_file_path:
 
@@ -631,32 +624,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... normalize path before execute
 		save_path = os.path.join(save_path, '')
 
-		# save_path = os.path.normpath(save_path)
-
-		# mc.error(save_path)
-
-
-		# fileTools.createThumbnail_ext(fileName, fileType)
-		fileTools.createThumbnail_ext(currentPath=save_path, fileName=fileName)
-
-
-		'''
-		import maya.OpenMaya as om
-		import maya.OpenMayaUI as omui
-		mimage = om.MImage()
-		view = omui.M3dView.active3dView()
-		view.readColorBuffer(mimage, True)
-
-		# Resize the image to the specified width and height
-		mimage.resize(width, height)
-
-		mimage.writeToFile(save_path, fileType)
-		print('Thumbnail has been created at: {0}'.format(save_path))
-		'''
 
 
 		save_full_path = os.path.normpath(save_full_path)
-
 
 		#... Asking SVN
 		reply = QMessageBox(self)
@@ -682,18 +652,17 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	#... Save and Load controller shape data
 	def save_ctrl_shape(self):
-		# print("Print B")
-		runWrite.savingData()
+		pass
 
 	def load_ctrl_shape(self):
-		runWrite.loadingData(self)
+		pass
 
 	#... Save and Load skin data
 	def save_skin_data(self):
-		skinIO.saveSkin()
+		pass
 
 	def load_skin_data(self):
-		skinIO.loadSkin()
+		pass
 
 
 
@@ -733,9 +702,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def handle_reference_global_widget(self):
-		file_path = self.get_deep_path_global_commit()
-		FileManagerLog.debug("Return file_path name: {0}".format(file_path) )
-		self.maya_reference_noAsk(file_path)
+		pass
 
 
 	def get_deep_path_global_commit(self):
@@ -753,9 +720,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	#... right click and reference
 	def handle_reference_version_widget(self):
-		file_path = self.get_deep_path()
-		FileManagerLog.debug("Return file path name: {0}".format(file_path))
-		self.maya_reference_noAsk(file_path)
+		pass
 
 
 	def show_local_widget_explorer(self):
@@ -803,8 +768,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def handle_reference_local_widget(self):
-		file_path = self.get_deep_path_local_commit()
-		self.maya_reference(file_path)
+		pass
 
 	def handle_double_click_global_widget(self):
 		#... Double click is mean open
@@ -1004,7 +968,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 					FileManagerLog.debug('\nGot replace_name: {0}'.format(replace_name[0]))
 					FileManagerLog.debug('Got element: {0}\n'.format(element))
-					version = int(re.search(r'\.(\d+)\.ma$|\.mb$', element).group(1))
+					
+					match = re.search(r'\.(\d+)\.[a-zA-Z0-9]+$', element)
+					if match:
+						version = int(match.group(1))
+					else:
+						FileManagerLog.error(f'Could not find version in element: {element}')
+						continue
+						
 					if name not in result or version > int(result[name][1]):
 						result[name] = [element, version]
 
@@ -1054,252 +1025,168 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def push_btn_global_publish(self):
-		#... Publish global file that Maya currenly open
+		import shutil
+		
+		# Get selected item from version widget
+		selected_item = self.asset_version_view_listWidget.currentItem()
+		if not selected_item:
+			QMessageBox.warning(self, "Warning", "Please select a version file to publish globally.")
+			return
+		
+		selected_version_file = selected_item.text()
+		asset_path = self._get_full_path()
+		department_text = self.asset_department_listWidget.currentItem().text()
+		
+		# Source file path
+		source_file_path = os.path.normpath(os.path.join(asset_path, department_text, STATIC_FOLDER[1], selected_version_file))
+		if not os.path.exists(source_file_path):
+			QMessageBox.warning(self, "Warning", f"Source file does not exist:\n{source_file_path}")
+			return
 
-		try:
-			original_scene_path = mc.file(q=True, sn=True)
-			asset_path = self._get_full_path()
-			department_text = self.asset_department_listWidget.currentItem().text()
+		# Global path
+		global_path = os.path.join(asset_path, STATIC_FOLDER[2])
+		global_path = os.path.normpath(global_path)
+		
+		# Create the Commit directory if it doesn't exist
+		if not os.path.exists(global_path):
+			os.makedirs(global_path, exist_ok=True)
+		
+		global_path_list = global_path.split(os.path.sep)
+		selected_project = self.project_comboBox.currentText()
 
-			global_path = os.path.join(asset_path, STATIC_FOLDER[2])
-			global_path = os.path.normpath(global_path)
+		if selected_project in USE_VARIATION:
+			global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+		else:
+			global_commit_name = global_path_list[-2] + '_' + department_text
 
-			
-			global_path_list = global_path.split(os.path.sep)
-			FileManagerLog.debug('This is global_path_list ( {0} )'.format(global_path_list))
+		_, extension = os.path.splitext(selected_version_file)
+		if extension.startswith('.'):
+			extension = extension[1:]
 
-			selected_project = self.project_comboBox.currentText()
+		save_file_name = f"{global_commit_name}.{extension}"
+		save_full_path = os.path.normpath(os.path.join(global_path, save_file_name))
 
-			if selected_project in USE_VARIATION:
+		reply = QMessageBox(self)
+		reply.setWindowTitle('Commit Changes')
+		reply.setText(f'Do you want to commit file to SVN ?\n\t{save_file_name}')
 
-				global_commit_name = global_path_list[-3] + '_' + global_path_list[-2] + '_' + department_text
+		commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+		save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+		reply.addButton(QMessageBox.Cancel)	
 
-			else:
-				global_commit_name = global_path_list[-2] + '_' + department_text
+		result = reply.exec_()	
+		
+		if reply.clickedButton() == commit_button or reply.clickedButton() == save_button:
+			try:
+				shutil.copy2(source_file_path, save_full_path)
+				FileManagerLog.info(f"Successfully copied to global commit: {save_full_path}")
+			except Exception as e:
+				FileManagerLog.error(f"Failed to copy file: {e}")
+				QMessageBox.critical(self, "Error", f"Failed to publish file:\n{e}")
+				return
 
-
-			FileManagerLog.debug('\nThis is global_path ( {0} )'.format(global_path))
-			FileManagerLog.debug('This is global_commit_name ( {0} )'.format(global_commit_name))
-
-			save_full_path = os.path.join(global_path, global_commit_name)
-
-			line_number = sys._getframe().f_lineno
-			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
-
-
-			reply = QMessageBox(self)
-			reply.setWindowTitle('Commit Changes')
-			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(global_commit_name))
-
-
-			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
-			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
-			reply.addButton(QMessageBox.Cancel)	
-
-			result = reply.exec_()	
-			# Do global_commit_name	
 			if reply.clickedButton() == commit_button:
+				self.svn_maya.execute_cmd('add', file_path=save_full_path, close_on_end=0, logmsg='Global Publish')
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path, close_on_end=0, logmsg='Global Publish')
 
-				# 1.Procress manage scene
-				do_global_commit()			
+			self.load_global_commit(global_path)
+			FileManagerLog.info(f"Global Publish complete: {save_file_name}")
 
-				# 2.Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				#... update return logmsg for SVN
-				save_full_path, logmsg = self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
-
-				# --- back to original scene BEFORE saving ---
-				mc.file(original_scene_path, o=True, f=True)
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				# 3.Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 4.Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 5.Update localWidget viewport
-				self.load_global_commit(global_path)
-
-			elif reply.clickedButton() == save_button:
-				# 1.Procress manage scene
-				do_global_commit()
-
-				# 2.Maya Save
-				FileManagerLog.debug('save_full_path: {0}, MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(global_path, global_commit_name, MAYA_EXT, 'global')
-
-				# --- back to original scene BEFORE saving ---
-				mc.file(original_scene_path, o=True, f=True)
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				# 3.Update localWidget viewport
-				self.load_global_commit(global_path)
-
-			elif result == QMessageBox.Rejected:
-					print('Cancel button clicked')
-					pass
-
-
-
-
-		except Exception as e:
-			print("Error:", e)
-			FileManagerLog.error('Path file not valid name please check: {0}'.format(global_path))
+		elif result == QMessageBox.Rejected:
+			pass
 
 
 
 
 	def push_btn_local_publish(self):
+		import shutil
 
-		# TODO: Create check what is type of this file
-
-		# Get full path that current open in maya
-		original_scene_path  = mc.file( query=True , sn=True )
-
-
+		selected_item = self.asset_version_view_listWidget.currentItem()
+		if not selected_item:
+			QMessageBox.warning(self, "Warning", "Please select a version file to publish locally.")
+			return
+		
+		selected_version_file = selected_item.text()
 		full_path = self._get_full_path()
 		department_text = self.asset_department_listWidget.currentItem().text()
-		full_path = os.path.join(full_path, department_text, STATIC_FOLDER[2])
-
-
-		if original_scene_path :
-			# try:
-			file_ext = os.path.basename(original_scene_path )
-			FileManagerLog.debug('This is file_ext_302_: {0}'.format(file_ext))
-
-			# Splits a pathname into a pair (root, ext)
-			file_name = os.path.splitext(file_ext)[0]
-
-			# Check if righ naming version (****.0001.ma) of this pipeline 
-			check_digit = (os.path.splitext(file_ext)[0]).split('.')[-1]
-
-			if check_digit.isdigit():
-
-				# Check if valid name 
-				digits = [count for count in check_digit if count.isdigit()]
-				padding_count = len(digits)
-
-				if padding_count == PADDING:
-
-				# if file_name.split('.')[-1].isdigit():# Check if valid name 
-					
-					local_commit_name = file_name.split('.')[0]
-
-					FileManagerLog.debug('This is local_commit_name: {0}'.format(local_commit_name))
-					# do the naming and publish
-					# cut '.000x' and replace with step job
-					# Ex. 		 003_Lucille    01       Rig  skel.ma
-					# 	 		[assetname]_[variation]_[job]_[step]
-					# 		Do something when publish
-
-			else:
-				FileManagerLog.debug('This not valid name: using original ( {0} )'.format(file_name))
-				local_commit_name = file_name
-				pass
-
-			# Saving file to local commit location
-
-			FileManagerLog.debug('save file at: ({0}) and file name is ({1})'.format(full_path, local_commit_name))
-			save_full_path = os.path.join(full_path, local_commit_name)
-
-
-			line_number = sys._getframe().f_lineno
-			FileManagerLog.debug('({0})Do something before maya file commit.....'.format(line_number))
-
-
-
-
-
-
-			reply = QMessageBox(self)
-			reply.setWindowTitle('Commit Changes')
-			reply.setText('Do you want to commit file to SVN ?\n\t{0}'.format(local_commit_name))
-
-
-			commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
-			save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
-			reply.addButton(QMessageBox.Cancel)	
-
-			result = reply.exec_()	
-
-			# Local commit action
-			if reply.clickedButton() == commit_button:
-				# 1. Procress manage scene
-				do_local_commit()
-
-				# 2. Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path, (MAYA_EXT)))
-				FileManagerLog.debug('full_path: {0}\n local_commit_name: {1}\n MAYA_EXT: {2}'.format(full_path, local_commit_name, MAYA_EXT))
-				save_path, logmsg = self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
-				FileManagerLog.debug('this is logmsg: {0}'.format(logmsg))
-
-				# --- back to original scene BEFORE saving ---
-				mc.file(original_scene_path, o=True, f=True)
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-				#... update return logmsg for SVN
-				# 3. Add SVN
-				self.svn_maya.execute_cmd('add', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 4. Commit SVN
-				self.svn_maya.execute_cmd('commit', file_path=save_full_path+'.'+MAYA_EXT, close_on_end=0, logmsg=logmsg)
-
-				# 5. Update localWidget viewport
-				self.load_local_commit(full_path)
-
-			elif reply.clickedButton() == save_button:
-				# 1. Procress manage scene
-				line_number = sys._getframe().f_lineno
-				FileManagerLog.debug('({0})Do local commit'.format(line_number))
-				do_local_commit()
-
-
-				# 2. Maya Save
-				FileManagerLog.debug('save_full_path: {0}  ,  MAYA_EXT: {1}'.format(save_full_path,(MAYA_EXT)))
-				self.maya_save(full_path, local_commit_name, MAYA_EXT, 'local')
-
-				# 3. Update localWidget viewport
-				self.load_local_commit(full_path)
-
-				# --- back to original scene BEFORE saving ---
-				mc.file(original_scene_path, o=True, f=True)
-				FileManagerLog.debug(f'Reopen original file scene: {original_scene_path}')
-
-			elif result == QMessageBox.Rejected:
-					print('Cancel button clicked')
-					pass
-
-
-
-	
 		
+		# Source file path
+		source_file_path = os.path.normpath(os.path.join(full_path, department_text, STATIC_FOLDER[1], selected_version_file))
+		if not os.path.exists(source_file_path):
+			QMessageBox.warning(self, "Warning", f"Source file does not exist:\n{source_file_path}")
+			return
 
-			'''except Exception as e:
-													FileManagerLog.debug('File not valid name please check: {0}'.format(maya_file_path))
-													print("Error:", e)'''
-				
+		# Local commit dir
+		local_commit_dir = os.path.normpath(os.path.join(full_path, department_text, STATIC_FOLDER[2]))
+		
+		# Create the Commit directory if it doesn't exist
+		if not os.path.exists(local_commit_dir):
+			os.makedirs(local_commit_dir, exist_ok=True)
 
+		# Parsing file name
+		file_name_no_ext, extension = os.path.splitext(selected_version_file)
+		if extension.startswith('.'):
+			extension = extension[1:]
+			
+		check_digit = file_name_no_ext.split('.')[-1]
+
+		if check_digit.isdigit():
+			digits = [count for count in check_digit if count.isdigit()]
+			if len(digits) == PADDING:
+				# remove the .000x part
+				local_commit_name = file_name_no_ext.rsplit('.', 1)[0]
+			else:
+				local_commit_name = file_name_no_ext
 		else:
-			FileManagerLog.debug('The current file not maya saving file do it later.')
-			return False
+			local_commit_name = file_name_no_ext
+
+		save_file_name = f"{local_commit_name}.{extension}"
+		save_full_path = os.path.normpath(os.path.join(local_commit_dir, save_file_name))
+
+		reply = QMessageBox(self)
+		reply.setWindowTitle('Commit Changes')
+		reply.setText(f'Do you want to commit file to SVN ?\n\t{save_file_name}')
+
+		commit_button = reply.addButton('Commit', QMessageBox.AcceptRole)
+		save_button = reply.addButton('Just Save', QMessageBox.AcceptRole)
+		reply.addButton(QMessageBox.Cancel)	
+
+		result = reply.exec_()	
+
+		if reply.clickedButton() == commit_button or reply.clickedButton() == save_button:
+			try:
+				shutil.copy2(source_file_path, save_full_path)
+				FileManagerLog.info(f"Successfully copied to local commit: {save_full_path}")
+			except Exception as e:
+				FileManagerLog.error(f"Failed to copy file: {e}")
+				QMessageBox.critical(self, "Error", f"Failed to publish file:\n{e}")
+				return
+
+			if reply.clickedButton() == commit_button:
+				self.svn_maya.execute_cmd('add', file_path=save_full_path, close_on_end=0, logmsg='Local Publish')
+				self.svn_maya.execute_cmd('commit', file_path=save_full_path, close_on_end=0, logmsg='Local Publish')
+
+			self.load_local_commit(local_commit_dir)
+			FileManagerLog.info(f"Local Publish complete: {save_file_name}")
+
+		elif result == QMessageBox.Rejected:
+			pass
 
 	def update_project_name(self):
 		FileManagerLog.debug(f'\tUI has change project name to >>> {self.project_comboBox.currentText()}')
 
 
-		current_scene_path = pm.system.sceneName()
 		
-		# Check where is the scene is saved
+		#... Check where is the scene is saved
 		if current_scene_path:
-			# Normalize the path
+			#... Normalize the path
 			current_scene_path = os.path.normpath(current_scene_path)
 
-			# Split the path to extract relevant information
+			#... Split the path to extract relevant information
 			path_elements = current_scene_path.split(os.path.sep)
 			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements))
 			
-			# Extract the asset and department names
+			#... Extract the asset and department names
 			asset_name = path_elements[-4]
 			department_name = path_elements[-3]
 
@@ -1311,7 +1198,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			if project_name != self.project_comboBox.currentText(): #... in case for make can change project with already open scene other project
 				FileManagerLog.debug('	[{0}] <<< is not equal set project to  >>> [{1}]'.format(project_name, self.project_comboBox.currentText()))
 				#... change project
-				# self.project_comboBox.setCurrentText(self.project_comboBox.currentText()) 
 			else:
 				FileManagerLog.debug('{0} is same as {1}'.format(project_name, self.project_comboBox.currentText()))
 				pass
@@ -1319,113 +1205,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def check_exists_maya(self):
-		"""
-		Check the currently opened Maya scene and sync the UI to the proper node in the file manager.
-		Keeps the original flow:
-		  - If the scene is under .../<ASSET>/<DEPT>/Version/...  -> update browser & populate versions
-		  - If the scene is under .../<ASSET>/<DEPT>/Commit/...   -> detect Global vs Local commit
-		Returns:
-		  True  -> UI updated successfully for a managed path
-		  False -> Scene not under a managed path or something is invalid
-		"""
-
-		# 1) Get current scene path
-		maya_file_path = mc.file(query=True, sn=True)
-		if not maya_file_path:
-			FileManagerLog.debug("No scene loaded (or never saved).")
-			return False
-
-		maya_file_path = os.path.normpath(maya_file_path)
-
-		# 2) Inspect parent folder name
-		folder_path   = os.path.dirname(maya_file_path)
-		parent_folder = os.path.basename(folder_path)
-
-		# --- CASE A: opened from 'Version' folder --------------------------------
-		#   .../<ASSET>/<DEPT>/Version/<step>/<file.ma>
-		if parent_folder == STATIC_FOLDER[1]:  # 'Version'
-			FileManagerLog.debug("The folder containing named 'Version'.")  # :contentReference[oaicite:1]{index=1}
-
-			# climb up:
-			#   folder_path      -> .../<ASSET>/<DEPT>/Version
-			#   asset_path       -> .../<ASSET>
-			version_parent = os.path.dirname(folder_path)
-			asset_path     = os.path.dirname(version_parent)
-
-			# sanity
-			if os.path.exists(os.path.join(asset_path, 'data.json')):
-				FileManagerLog.debug('This file is valid. Go on.')
-				# keep your original behavior
-				self.update_to_browser(asset_path)                        # :contentReference[oaicite:2]{index=2}
-				self.populate_version_from_open_scene(asset_path)         # :contentReference[oaicite:3]{index=3}
-				return True
-			else:
-				FileManagerLog.warning("Invalid asset structure (missing data.json): %s", asset_path)
-				return False
-
-		# --- CASE B: opened from 'Commit' folder ---------------------------------
-		#   .../<ASSET>/<DEPT>/Commit/<something>/<file.ma>
-		elif parent_folder == STATIC_FOLDER[2]:  # 'Commit'
-			FileManagerLog.debug("There is a Commit file.")  # :contentReference[oaicite:4]{index=4}
-
-			back_folder_path = os.path.normpath(os.path.dirname(folder_path))  # one level up from 'Commit/...'
-			FileManagerLog.debug("back_folder_path >>> %s", back_folder_path)  # :contentReference[oaicite:5]{index=5}
-
-			# B1) Global Commit: .../<ASSET> has data.json
-			if os.path.exists(os.path.join(back_folder_path, 'data.json')):    # :contentReference[oaicite:6]{index=6}
-				FileManagerLog.debug("This file is Global Commit >>> %s", back_folder_path)
-
-				# Select the asset folder in the tree (source -> proxy mapping!)
-				src_index = self.asset_fs_model.index(back_folder_path)
-				if src_index.isValid():
-					proxy_index = self.asset_proxy.mapFromSource(src_index)
-					sel = self.asset_dir_TREEVIEW.selectionModel()
-					sel.setCurrentIndex(
-						proxy_index,
-						QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current
-					)
-					self.asset_dir_TREEVIEW.scrollTo(
-						proxy_index, QtWidgets.QAbstractItemView.PositionAtTop
-					)
-				else:
-					FileManagerLog.warning("Invalid index for back_folder_path: %s", back_folder_path)
-
-				# Populate the global-commit widget with files under the *Commit* folder we opened from
-				self.load_global_commit(folder_path)                         # :contentReference[oaicite:7]{index=7}
-				return True
-
-			# B2) Local Commit: .../<ASSET>/<DEPT>/Commit/<local> (no data.json at back_folder_path)
-			else:
-				FileManagerLog.debug("This file is Local Commit.")
-				assetName_path = os.path.normpath(os.path.dirname(back_folder_path))  # climb to <ASSET>
-
-				if os.path.exists(os.path.join(assetName_path, 'data.json')):
-					# highlight the <ASSET> in the tree
-					src_index = self.asset_fs_model.index(assetName_path)
-					if src_index.isValid():
-						proxy_index = self.asset_proxy.mapFromSource(src_index)
-						sel = self.asset_dir_TREEVIEW.selectionModel()
-						sel.setCurrentIndex(
-							proxy_index,
-							QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Current
-						)
-						self.asset_dir_TREEVIEW.scrollTo(
-							proxy_index, QtWidgets.QAbstractItemView.PositionAtTop
-						)
-					else:
-						FileManagerLog.warning("Invalid index for assetName_path: %s", assetName_path)
-
-					# then load the local-commit list from the folder we opened
-					self.load_local_commit(back_folder_path)
-					return True
-				else:
-					FileManagerLog.warning("Invalid local commit structure (missing data.json): %s", assetName_path)
-					return False
-
-		# --- CASE C: not under Version/Commit managed folders ---------------------
-		else:
-			FileManagerLog.debug("The current file is not under managed Version/Commit paths.")
-			return False
+		pass
 
 
 	#... If user already open scene 
@@ -1454,118 +1234,8 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		else:
 			FileManagerLog.warning("update_to_browser: invalid index for %s", file_path)
 
-
-
-
-			
-		
-
-
-
-
 	def populate_version_from_open_scene(self, file_path):
-		FileManagerLog.debug('# # # # # # # # # # # # # # # #')
-		#... Mimic the behavior like a user manually clicking on an item in the UI
-		
-		FileManagerLog.debug('	This is file_path >>> {0}'.format(file_path))
-		# Get the current Maya scene file path
-		current_scene_path = pm.system.sceneName()
-		
-		# Check where is the scene is saved
-		if current_scene_path:
-			# Normalize the path
-			current_scene_path = os.path.normpath(current_scene_path)
-
-			# Split the path to extract relevant information
-			path_elements = current_scene_path.split(os.path.sep)
-			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements))
-			
-			# Extract the asset and department names
-			asset_name = path_elements[-4]
-			department_name = path_elements[-3]
-
-			# Convert the desired directory path to a model index
-			FileManagerLog.debug('	922 - This is file_path >>> {0}'.format(file_path))
-
-			# asset_index  = self.model.index(file_path)
-
-			asset_index = self.asset_fs_model.index(file_path)
-			if asset_index.isValid():
-				proxy_index = self.asset_proxy.mapFromSource(asset_index)
-				self.asset_dir_TREEVIEW.setCurrentIndex(proxy_index)
-				self.asset_dir_TREEVIEW.selectionModel().setCurrentIndex(
-					proxy_index, QtCore.QItemSelectionModel.ClearAndSelect
-				)
-				self.asset_dir_TREEVIEW.scrollTo(proxy_index, QtWidgets.QAbstractItemView.PositionAtTop)
-
-
-
-			# Create a QItemSelection for the asset item
-			selection = QtCore.QItemSelection(asset_index, asset_index)
-
-			# Emit the clicked signal on the asset item
-			self.asset_dir_TREEVIEW.clicked.emit(asset_index)
-			FileManagerLog.debug('Click signal emitted')
-
-			# Set the current selection in asset_dir_TREEVIEW
-			self.asset_dir_TREEVIEW.selectionModel().select(selection, QtCore.QItemSelectionModel.ClearAndSelect)
-
-
-			#... Add department here
-			self.asset_department_listWidget.addItem(department_name)
-			department_item = self.asset_department_listWidget.findItems(department_name, QtCore.Qt.MatchExactly)
-			FileManagerLog.debug('	Make selected department item.')
-			self.asset_department_listWidget.setCurrentItem(department_item[0])
-
-
-			#... Populate version widget
-			version_folder = os.path.join(file_path, department_name, STATIC_FOLDER[1])
-			
-			version_folder = os.path.normpath(version_folder)
-			FileManagerLog.debug('	This is version_folder >>> {0}'.format(version_folder))
-			self.show_version_entite(version_folder)
-
-
-			#... Populate currenly selected file in asset_version_view_listWidget
-			
-			FileManagerLog.debug('	This is path_elements >>> {0}'.format(path_elements[-1]))
-			asset_name = path_elements[-1]
-			version_item = self.asset_version_view_listWidget.findItems(asset_name, QtCore.Qt.MatchExactly)
-			FileManagerLog.debug('	This is version_item >>> {0}'.format(version_item))
-			if version_item:
-				self.asset_version_view_listWidget.setCurrentItem(version_item[0])
-
-
-			#... Populate asset Info
-			data_file = os.path.join(file_path, 'data.json')
-			with open(data_file, "r") as file:
-				json_data = json.load(file)
-			self.assetInfo_list_listWidget.addItem(json_data['comment'])
-
-			#... Populate thumbnail
-			thumbnail_path = os.path.join(file_path, THUMBNAIL_NAME)
-			self.display_images(thumbnail_path)
-
-			#... Populate global
-			#... Query to show asset at global widget
-			global_commit_folder = os.path.join(file_path, STATIC_FOLDER[2], )
-			#... If folder 'Commit' exist then continue
-			if os.path.exists(global_commit_folder):
-				self.load_global_commit(global_commit_folder)
-			else:
-				pass
-
-			#... Populate local
-			local_commit_folder = os.path.join(file_path, department_name, STATIC_FOLDER[2])
-
-			# If folder 'Commit' exist then continue
-			if os.path.exists(local_commit_folder):
-				self.load_local_commit(local_commit_folder)
-			else:
-				pass
-
-
-
+		pass
 
 
 
@@ -1590,24 +1260,20 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		path_list = asset_path.split('\\')
 
-		
-
-
 
 		selected_project = self.project_comboBox.currentText()
 
-		# I don't know how to manage this 
-		# if selected_project == 'P_Regulus':
+		#... I don't know how to manage this 
 		if selected_project in USE_VARIATION:
 
 			path_check = path_list[-2] + '_' + path_list[-1]
-			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
+			pattern_esc = r'{0}.*\.[a-zA-Z0-9]+'.format(re.escape(path_check))
 		else:
 			path_check = path_list[-1]
-			pattern_esc = r'{0}.*\.(ma|mb)'.format(re.escape(path_check))
+			pattern_esc = r'{0}.*\.[a-zA-Z0-9]+'.format(re.escape(path_check))
 
 			
-		# Making list to find jobs step
+		#... Making list to find jobs step
 		step_filter_list = []
 		for each in job_step_list:
 			# Filter for *.ma or *.mb and proper naming only
@@ -1627,8 +1293,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def create_job_step(self):
 
-		# shift to above
-		# Open Dialog
 		step_name, okPressed = QInputDialog.getText(self, "Create Step", "Enter Step name:")
 
 		if okPressed and step_name:
@@ -1660,9 +1324,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		selected_project = self.project_comboBox.currentText()
 
 		split_path_list = new_folder_path.split('\\')
-		# Project Regulus is use wired naming 
-		# We can't use '01' or '02' variation name as a Asset name 
-		# So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
+		#... Project Regulus is use wired naming 
+		#... We can't use '01' or '02' variation name as a Asset name 
+		#... So add [Asset_name]_[Variation]_[Job] instead [Asset_name]_[Job]
 
 		FileManagerLog.debug('I want this: {0}'.format(split_path_list))
 
@@ -1745,141 +1409,35 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 
 	def maya_open(self, file_path):
-		file_name = file_path.split('\\')[-1]
-
-		#... find current maya file
-		maya = General()
-		current_scene_name = maya.get_scene_name()
-
-		if mc.file(query = True, anyModified=True):
-			reply = QMessageBox.question(			# Use self as the parent
-													self ,
-													'Save Chganges' ,
-													'Current file has unsaved changes. Do you want to save? {0}'.format(current_scene_name) ,
-													QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No
-												)
-
-			if reply == QMessageBox.Save:
-				mc.file(save=True, type='mayaAscii')
-
-			elif reply == QMessageBox.Cancel:
-				return
-		#... open maya file
-		mc.file(file_path, o=True, f=True)
-
-		#... Detect the correct Maya file type for recent menu
-		_, ext = os.path.splitext(file_path)
-		ext = ext.lower()
-		maya_ext = 'ma' if ext == '.ma' else 'mb' if ext == '.mb' else 'ma'
-
-		#... Add to Maya "Recent Files" and rebuild the File menu UI
-		self.maya_add_recen_file(file_path, maya_ext)
-		import maya.mel as mel
-		mel.eval('buildRecentFileMenu;')  # force refresh Recent Files menu
-	
-		self.check_exists_maya()
+		import os
+		try:
+			os.startfile(file_path)
+		except Exception as e:
+			print("Could not open file:", e)
 		#... add recent file when open
 		# self.addRecenfile( file_path )
 
 
 	def maya_add_recen_file(self, filepath, MAYA_EXT):
-
-		if MAYA_EXT == 'ma':
-			maya_type = 'mayaAscii'
-		elif MAYA_EXT == 'mb':
-			maya_type = 'mayaBinary'
-
-
-		import maya.mel as mel
-		filepath = filepath.replace('\\','/')
-		mel.eval('addRecentFile("{0}","{1}");'.format(filepath, maya_type))
+		pass
 
 	#... this method is for publish saving only
 	#... change to return path for make it more dynamic
 	def maya_save(self, save_path, save_name, MAYA_EXT, mode):
-		logmsg = ''
-
-		if MAYA_EXT == 'ma':
-			maya_type = 'mayaAscii'
-		elif MAYA_EXT == 'mb':
-			maya_type = 'mayaBinary'
-
-		if mode == 'global':
-			FileManagerLog.debug('This is global file.')
-			#... get Specific name when publish
-			if mc.objExists("rig_grp.enable") == True:
-				if mc.getAttr("rig_grp.asset_name") != '':
-					FileManagerLog.debug('\nAsset_name no data skipped')
-
-					if mc.getAttr("rig_grp.enable") == True:
-						if mc.getAttr("rig_grp.asset_name") != None:
-							save_name = mc.getAttr("rig_grp.asset_name")
-							FileManagerLog.debug('\nSpecific naming found >>> {}'.format(save_name))
-				else:
-					pass
-			else:
-				FileManagerLog.debug('Not found naming specific. skipped')
-			pass
-
-		#... if having logmsg pass it to SVN
-		if mc.objExists("rig_grp.logmsg") == True:
-			if mc.getAttr("rig_grp.logmsg") != '':
-				logmsg = mc.getAttr("rig_grp.logmsg")
-				FileManagerLog.info('\nGet message.')
-				#... clear message after publish
-				mc.setAttr('rig_grp.logmsg', '', type='string')
-
-
-
-		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path, save_name))
-		save_full_path = os.path.join(save_path, save_name)
-		mc.file(rename=save_full_path)
-		mc.file(save=True, force=True, type=maya_type)
-		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
-		self.maya_add_recen_file(save_full_path, MAYA_EXT)
-		return save_full_path, logmsg
+		pass
 
 
 	#... this method is for saving for version only
 	def maya_save_version(self, save_path, save_name, MAYA_EXT):
-
-		if MAYA_EXT == 'ma':
-			maya_type = 'mayaAscii'
-		elif MAYA_EXT == 'mb':
-			maya_type = 'mayaBinary'
-
-		FileManagerLog.debug('save_path: {}\nsave_name: {}'.format(save_path,save_name))
-		save_full_path = os.path.join(save_path, save_name)
-		mc.file(rename=save_full_path)
-		mc.file(save=True, force=True, type=maya_type)
-		FileManagerLog.debug('FILE SAVE AT: {0}'.format(save_full_path)) 
-		self.maya_add_recen_file(save_full_path, MAYA_EXT)
-		return True
+		pass
 
 	def maya_reference_noAsk(self, file_path):
-		folder, file_name = os.path.split(file_path)
-		file_name, file_ext = os.path.splitext(file_name)
-		mc.file(file_path, reference=True, namespace=file_name)
-
-
+		pass
 
 	def maya_reference(self, file_path):
-		folder, file_name = os.path.split(file_path)
-		file_name, file_ext = os.path.splitext(file_name)
-		reply = QMessageBox.question(
-														self ,
-														'Confirm' ,
-														'Do you want to reference {0} ?'.format(file_name)   ,
-														QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-													)
-		if reply == QMessageBox.Yes:
-			mc.file(file_path, reference=True, namespace=file_name)
+		pass
 
 
-
-
-
-	# Context menu for asset_department_listWidget
 	def show_job_context_menu(self, position):
 		# Create Jobs
 		contextMenu = QtWidgets.QMenu(self)
@@ -1902,7 +1460,94 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		#... Reconnect the signal-slot connection for the customContextMenuRequested signal
 		# self.asset_department_listWidget.customContextMenuRequested.connect(self.show_job_context_menu)
 
+	def import_external_file(self):
+		import shutil
 
+		# 1. Check if department is selected
+		current_item = self.asset_department_listWidget.currentItem()
+		if not current_item:
+			QMessageBox.warning(self, "Warning", "Please select a department first!")
+			FileManagerLog.warning("No department selected. Terminating import.")
+			return
+
+		# 2. Browse external file
+		file_dialog = QtWidgets.QFileDialog(self)
+		file_dialog.setWindowTitle("Select External File to Import")
+		file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFile)
+		if file_dialog.exec_() == QtWidgets.QFileDialog.Accepted:
+			selected_files = file_dialog.selectedFiles()
+			if not selected_files:
+				return
+			external_file_path = selected_files[0]
+		else:
+			return
+
+		# 3. Prompt for stepName
+		step_name, okPressed = QInputDialog.getText(self, "Input Step Name", "Enter Step Name:")
+		if not (okPressed and step_name):
+			return
+
+		# 4. Generate new name and version
+		asset_path_text = self._get_full_path()
+		department_text = current_item.text()
+		new_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text))
+
+		step_filter_list = self.filter_proper_version_list()
+		result_job_element = self.find_step_and_version(step_filter_list)
+
+		selected_project = self.project_comboBox.currentText()
+		split_path_list = new_folder_path.replace('\\', '/').split('/')
+
+		if selected_project in USE_VARIATION:
+			asset_name = split_path_list[-3]
+			variation_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			final_file_name = f"{asset_name}_{variation_name}_{job_name}"
+		else:
+			asset_name = split_path_list[-2]
+			job_name = split_path_list[-1]
+			final_file_name = f"{asset_name}_{job_name}"
+
+		# Check existing version
+		if result_job_element != False:
+			step_list = result_job_element['step']
+			if step_name in step_list:
+				index = step_list.index(step_name)
+				max_version = result_job_element['max_version'][index]
+				max_version += 1
+				max_version = str(max_version).zfill(PADDING)
+			else:
+				max_version = str(1).zfill(PADDING)
+		else:
+			max_version = str(1).zfill(PADDING)
+
+		# Get external file extension
+		_, ext = os.path.splitext(external_file_path)
+		if ext.startswith('.'):
+			ext = ext[1:]
+
+		new_file_name = '{0}_{1}.{2}.{3}'.format(final_file_name, step_name, max_version, ext)
+		save_full_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1], new_file_name))
+
+		# 5. Copy file
+		try:
+			shutil.copy2(external_file_path, save_full_path)
+			FileManagerLog.info(f"Successfully copied external file to {save_full_path}")
+			
+			# 6. Update UI
+			version_folder_path = os.path.normpath(os.path.join(asset_path_text, department_text, STATIC_FOLDER[1]))
+			self.asset_version_view_listWidget.clear()
+			self.show_version_entite(version_folder_path)
+			
+			# Optionally select it in the UI
+			# Attempt to find the newly added item and select it
+			items = self.asset_version_view_listWidget.findItems(new_file_name, Qt.MatchExactly)
+			if items:
+				self.asset_version_view_listWidget.setCurrentItem(items[0])
+				
+		except Exception as e:
+			FileManagerLog.error(f"Failed to copy external file: {e}")
+			QMessageBox.critical(self, "Error", f"Failed to import file:\n{e}")
 
 	def show_job_explorer(self):# Change policy to open folder directly instead open 'Version' folder
 
@@ -2081,6 +1726,14 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 	
 	#... Try to make return directory when clicked in treeview
 	def on_treeview_clicked(self, index):
+		# remember selection for search restore
+		try:
+			path = self.asset_fs_model.filePath(self._asset_proxy_to_source(index))
+			if path:
+				self._asset_last_selected_path = os.path.normpath(path)
+		except Exception:
+			pass
+
 		#... refresh everytime that click at treeview
 		self.asset_local_view_listWidget.clear()
 		self.asset_global_listWidget.clear()
@@ -2110,7 +1763,16 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			self.display_images(None)
 
 			# Check if having 'data.json' mean is asset folder for sure
-			if os.path.exists(data_file):
+			is_asset_by_meta = os.path.exists(data_file)
+			
+			# Fallback: Check if there's any pipeline structural folder
+			is_asset_by_structure = False
+			if not is_asset_by_meta:
+				is_asset_by_structure = any(
+					os.path.isdir(os.path.join(file_path, dept)) for dept in JOB_TEMPLATE
+				)
+
+			if is_asset_by_meta or is_asset_by_structure:
 				# safe-blocks that truly need data.json (comment, thumb, global list)
 				# Global commits
 				FileManagerLog.debug('That is "ASSET" we looking for.')
@@ -2125,7 +1787,10 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Show thumbnail
 				thumbnail_path = os.path.join(file_path, THUMBNAIL_NAME)
-				self.display_images(thumbnail_path)
+				if os.path.exists(thumbnail_path):
+					self.display_images(thumbnail_path)
+				else:
+					self.display_images(None)
 
 				# Do not expand the asset folder if already expanded(Still... not work)
 				if self.asset_dir_TREEVIEW.isExpanded(index):
@@ -2133,33 +1798,19 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					FileManagerLog.debug('Please do not expanded.')
 
 				#... show data json file to widget
-				with open(data_file, "r") as file:
-					json_data = json.load(file)
-
-				self.assetInfo_list_listWidget.addItem(json_data['comment'])
-
-
-			#... Fail for now
-			# #... Make filter Start
-			# filter_text = self.asset_filter_lineEdit.text()
-
-			# proxy_model = QSortFilterProxyModel()
-			# proxy_model.setSourceModel(self.model)
-
-			# proxy_model.setFilterRegExp(filter_text)
-			# proxy_model.setFilterKeyColumn(0)
-
-			# #... Set the proxy model on the asset_dir_TREEVIEW
-			# self.asset_dir_TREEVIEW.setModel(proxy_model)
+				if is_asset_by_meta:
+					try:
+						with open(data_file, "r") as file:
+							json_data = json.load(file)
+						self.assetInfo_list_listWidget.addItem(json_data.get('comment', 'No Comment'))
+					except Exception as e:
+						FileManagerLog.error(f"Error reading {data_file}: {e}")
+				else:
+					self.assetInfo_list_listWidget.addItem("⚠️ Pipeline Warning: Missing 'data.json'")
+					FileManagerLog.warning(f"Asset '{file_path}' has a valid structure but is missing 'data.json'.")
 
 
-			# #... Set the root index to show the filtered results
-			# root_index = self.asset_dir_TREEVIEW.model().index(QDir.currentPath())
-			# self.asset_dir_TREEVIEW.setRootIndex(root_index)
-
-			# #... Make filter End
-
-				
+			
 
 
 	def on_treeview_SCENE_clicked(self, index):
@@ -2311,10 +1962,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		return full_path
 
 	def _get_full_path_pm(self):
-		#... Construct the full path no care treeview is selected
-		current_scene_path = pm.system.sceneName()
-		full_path = os.path.normpath(current_scene_path)
-		return full_path
+		pass
 
 	def get_deep_path(self):
 		# Return full path to work file and extension		
@@ -2382,9 +2030,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 			if os.path.isdir(full):
 				items.append(name)
 
-		# If you still want to prefer reading from data.json when present,
-		# you can optionally override items here by reading department_name from JSON.
-		# But at minimum, show the folder list.
+		#... If you still want to prefer reading from data.json when present,
+		#... you can optionally override items here by reading department_name from JSON.
+		#... But at minimum, show the folder list.
 		if items:
 			self.asset_department_listWidget.addItems(sorted(items))
 
@@ -2419,14 +2067,25 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 		src_root = self.asset_fs_model.index(self.path)
 		proxy_root = self.asset_proxy.mapFromSource(src_root)
 		self.asset_dir_TREEVIEW.setRootIndex(proxy_root)
+		self._asset_root_src_index = src_root
+		self._asset_root_proxy_index = proxy_root
+		# Tell proxy which folder is "root" so it will never be filtered out
+		if hasattr(self.asset_proxy, "set_root_source_index"):
+			self.asset_proxy.set_root_source_index(src_root)
 
-		# 4) Filters (unchanged)
-		self.asset_filter_lineEdit.setPlaceholderText('Search.')
-		self.asset_filter_lineEdit.textChanged.connect(
-			lambda text: self.asset_proxy.setFilterWildcard(f"*{text}*")
-		)
+		# English: on project change we don't want stale filter text; clear it silently.
+		try:
+			if self.asset_filter_lineEdit.text():
+				blocker = QtCore.QSignalBlocker(self.asset_filter_lineEdit)
+				self.asset_filter_lineEdit.setText("")
+				del blocker
+				# reset filter pattern
+				if hasattr(self.asset_proxy, "pattern"):
+					self.asset_proxy.pattern = ""
+		except Exception:
+			pass
 
-		# 5) Hide patterns etc.
+		# 4) Hide patterns etc.
 		self.asset_fs_model.setNameFilters(HIDE_FORMAT)
 
 		# Show only folders (no files) in the asset tree
@@ -2442,9 +2101,9 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 		#... Optional: make the Name column fill the width nicely
 		if hasattr(header, "setSectionResizeMode"):
-		    header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+			header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 		else:
-		    header.setResizeMode(0, QtWidgets.QHeaderView.Stretch)
+			header.setResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
 	
 	def _asset_proxy_to_source(self, index: QtCore.QModelIndex) -> QtCore.QModelIndex:
@@ -2602,37 +2261,43 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 	def get_full_entity_name(self, base_path):
 
-		# base_path = os.path.normpath(base_path)
-
+		base_path = os.path.normpath(base_path).replace('\\', '/')
 		directories = base_path.split("/")
 
 		# find suffix
-		content_index = directories.index(ASSET_TOP_FOLDER)
+		if ASSET_TOP_FOLDER in directories:
+			content_index = directories.index(ASSET_TOP_FOLDER)
+			directories = directories[content_index+1:]
+		else:
+			current_project = self.project_comboBox.currentText()
+			if current_project in directories:
+				proj_index = directories.index(current_project)
+				directories = directories[proj_index+1:]
+			else:
+				directories = directories[1:] if len(directories) > 1 else directories
 
-		for i in range (0,content_index+1):
-			del directories[0]
-		 
-		directories.pop()
+		if directories:
+			directories.pop()
 
 		# Join the directories back together to form a path.
-		edited_path = "/".join(directories)
+		if not directories:
+			edited_path = "/"
+		else:
+			edited_path = "/" + "/".join(directories)
 
-		edited_path = os.path.join("/", edited_path)
 		print(edited_path)
 		return edited_path
 
 	def get_department_name(self, new_asset_path):
 
 		folders_list = os.listdir(new_asset_path)
+		valid_folders = []
 
 		for folder in folders_list:
+			if os.path.isdir(os.path.join(new_asset_path, folder)):
+				valid_folders.append(folder)
 
-			if folder == 'data.json':
-
-				folder.remove(folders_list)
-
-		return folders_list
-
+		return valid_folders
 
 
 
@@ -2709,8 +2374,7 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 
 				# Get department name
 				department_name = self.get_department_name(new_asset_path)
-				FileManagerLog.info('This is department_name:\t\t{0}')
-
+				FileManagerLog.info('This is department_name:\t\t{0}'.format(department_name))
 
 
 				# Write Add path for SVN
@@ -2765,13 +2429,6 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 					pass
 
 
-
-
-				
-
-
-
-
 			else:
 				print("\tThere are already folder skipped.")
 				pass
@@ -2780,13 +2437,11 @@ class FileManager(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow):
 				self.asset_dir_TREEVIEW.update()
 
 
-
 class General():
 	def __init__(self):
 		pass
 
 	def get_scene_name(self):
-		scene_path = pm.system.sceneName()
 		if scene_path:
 			# Get the file name with extension
 			self.Scene_Name = os.path.basename(scene_path)
@@ -2796,13 +2451,7 @@ class General():
 		return self.Scene_Name  # Return the scene name
 
 	def get_workspace(self):
-		self.WorkSpace_RootDir = pm.workspace(q=1,rd=1)
 		FileManagerLog.debug('self.WorkSpace_RootDir:\t%s',self.WorkSpace_RootDir)
-		# self.RuleEntry_SourceImages = pm.workspace('sourceImages',fileRuleEntry=1,q=1 )
-		# FileManagerLog.debug('self.RuleEntry_SourceImages:\t%s',self.RuleEntry_SourceImages)
-		# self.RuleEntry_3dPaintTextures = pm.workspace('3dPaintTextures',fileRuleEntry=1,q=1 )
-		# self.RuleEntry_Scenes = pm.workspace('scene',fileRuleEntry=1,q=1 )
-		# FileManagerLog.debug('self.RuleEntry_Scenes:\t%s',self.RuleEntry_Scenes)
 
 	def log_list(self,inputList):
 		if inputList :
@@ -2833,7 +2482,6 @@ class General():
 
 	def get_reference_file(self):
 		# check scene name is not set or not
-		if pm.system.sceneName():
 			# Get reference file
 			self.Reference_File = set( cmds.file(q=True,l=True) )
 			self.log_list( self.Reference_File )        
@@ -2871,11 +2519,6 @@ class SvnMaya:
 		subprocess.run(command_line, shell=True)
 
 
-
-
-
-
-
 def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 	
 	#... Create Thumbnail at current maya file
@@ -2883,8 +2526,8 @@ def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 
 	pngImageFile = '{0}{1}.{2}'.format(currentPath, fileName, 'png')
 	
-	mimage = om.MImage()
-	view = omui.M3dView.active3dView()
+	#...mimage = om.MImage()
+	#... view = omui.M3dView.active3dView()
 	view.readColorBuffer(mimage, True)
 
 	#... Resize the image to the specified width and height
@@ -2898,131 +2541,19 @@ def createThumbnail(width=256, height=256, currentPath='', fileName = 'thumb'):
 	print('Thumbnail has been created at: {0}'.format(imageFile))
 
 
-
-
 def do_pipeline_round_skinWeight(group_names = ['Export_grp', 'Model_grp']):
 	FileManagerLog.debug('\ndo_pipeline_round_skinWeight...')
-	if mc.objExists("rig_grp.round_skinweight") == True and mc.getAttr("rig_grp.round_skinweight") == True:
-		mesh = fileTools.find_mesh_in_grp(group_names=group_names)
-		for each in mesh:
-			rsw.roundSkinWeight(digit=3, selection=each)
-			FileManagerLog.info('Pipeline do roundSkinWeight Done...\n')
-	else:
-		pass
-
-
-
-
-
-
+	pass
 
 
 
 def do_local_commit():
 	FileManagerLog.info('Doing local commit...\n')
-	ngSkin = mc.ls('ngSkinToolsData_*')
-	if ngSkin:
-		import ngSkinTools2
-		# remove all ngSkinTools custom nodes in a scene
-		try:
-			ngSkinTools2.operations.removeLayerData.remove_custom_nodes()
-			FileManagerLog.info('Delete ngSkinTools2...\n')
-		except ExceptionType as error:
-			# FileManagerLog.error("There are ngSkinTools in scene, Please open ngSkin and close and run again.")
-			mc.error(f"There are ngSkinTools in scene, Please open ngSkin and close and run again.\n{error}")
-	else:
-		FileManagerLog.info('There are no ngSkinTools skipped...\n')
-
-	#... Remove unused ref
-	fileTools.remUnRef() 
-
-	#... Import ref
-	fileTools.impRem()
-
-	#... Delete layer
-	fileTools.deleteDisplayLayer()
-
-	#... Add new method for re-organize group struture when publish
-	fileTools.doMoveGrp()
-
-	#... Make endJnt gray
-	jtt.change_endJnt_gray()
-
-	#... Make some controller bigger
-	adjust.ctrlWidth(Width = 3)
-
-	# #... Move node to target
-	FileManagerLog.debug('Do Delete delete_grp.')
-	fileTools.doDeleteGrp()	
-
-	# #... Add delete suffix and prefix 
-	# fileTools.doDeleteSuffixExt(suffix ='_X')
-	# fileTools.doDeletePrefixExt(prefix = 'X_')
-
-	# Hide Root
-	# fileTools.doHideGrp( 'Root',0 )
-	# fileTools.doHideGrp( 'root',0 )
-
-	#... count joint
-	fileTools.countJnt()
-
-	#... Hold for now cause invalid
-	# fileTools.delete_unused_skin_suffix()
-
-	# fileTools.delete_unused_material() 
-
-	# fileTools.doDeleteMisc(name = 'BaseAnimation')
-	#... clear anim layer
-	fileTools.delete_anim_layer()
-
-	mc.select(deselect = True)
-
+	pass
 
 def do_global_commit():
 	FileManagerLog.debug('do_global_commit START')
-
-	#... Assign previous name to rig_grp
-	fileTools.assign_pre_job_step()
-
-	#... Remove unused ref
-	fileTools.remUnRef()
-
-	#... Import ref
-	fileTools.impRem()
-
-	#... Hide Root
-	fileTools.doHideGrp( 'Root',0 )
-	fileTools.doHideGrp( 'root',0 )
-	fileTools.doHideGrp( 'root_weapon',0 )
-	fileTools.doHideGrp( 'Root_JNT',0 )
-
-	#... Hide proxy joint
-	fileTools.do_hide_objects(suffix = '_pxyJnt')
-	# fileTools.do_hide_objects(suffix = '_loc')
-	fileTools.do_hide_objects(suffix = '_ikJnt')
-	fileTools.do_hide_objects(suffix = '_fkJnt')
-
-	#... Delete delete grp
-	FileManagerLog.debug('Do Delete delete_grp.')
-	fileTools.doDeleteGrp()	
-
-	#... Add delete suffix and prefix 
-	fileTools.doDeleteSuffixExt(suffix ='_X')
-	fileTools.doDeletePrefixExt(prefix = 'X_')
-	FileManagerLog.info('doDeleteSuffixExt...')
-
-	FileManagerLog.info('deleteDisplayLayer...')
-	fileTools.deleteDisplayLayer()
-
-	#... Round skinweight
-	do_pipeline_round_skinWeight()
-	FileManagerLog.info('do_pipeline_round_skinWeight...')
-
-
-	#... Count joint
-	fileTools.countJnt()
-	mc.select(deselect = True)	
-
+	pass
 
 
 class FileManagerActions:
@@ -3032,75 +2563,26 @@ class FileManagerActions:
 		create_thumbnail_open.triggered.connect(callback)
 		return create_thumbnail_open
 
-	# @staticmethod
-	# def createPrintBAction(parent, callback):
-	# 	print_b_action = QtWidgets.QAction("Print B in menu", parent)
-	# 	print_b_action.triggered.connect(callback)
-	# 	return print_b_action
-
 	@staticmethod
 	def createAssetExportAction(parent, callback):
-		assetExport_action = QtWidgets.QAction("Asset Exporter", parent)
-		assetExport_action.triggered.connect(callback)
-		return assetExport_action
-
-
-
+		pass
 
 	@staticmethod
 	def saveCtrlShapeAction(parent, callback):
-		write_ctrl_action = QtWidgets.QAction("Write Controller", parent)
-		write_ctrl_action.triggered.connect(callback)
-		return write_ctrl_action
+		pass
 
 	@staticmethod
 	def loadCtrlShapeAction(parent, callback):
-		load_ctrl_action = QtWidgets.QAction("Load Controller", parent)
-		load_ctrl_action.triggered.connect(callback)
-		return load_ctrl_action
+		pass
 
 	@staticmethod
 	def saveSkinWeightAction(parent, callback):
-		save_skinWeight_action = QtWidgets.QAction("Save Skinweight", parent)
-		save_skinWeight_action.triggered.connect(callback)
-		return save_skinWeight_action
+		pass
 
 	@staticmethod
 	def loadSkinWeightAction(parent, callback):
-		load_skinWeight_action = QtWidgets.QAction("Load Skinweight", parent)
-		load_skinWeight_action.triggered.connect(callback)
-		return load_skinWeight_action
+		pass
 
 	@staticmethod
 	def createReplaceRefAction(parent, callback):
-		createReplaceRef_action = QtWidgets.QAction("Replace Selected Reference", parent)
-		createReplaceRef_action.triggered.connect(callback)
-		return createReplaceRef_action
-
-
-'''
-
-#...
-#... this is example for using python and SVN by GPT
-#...
-
-def run_tortoise_svn_command(svn_bin_path, cmd_type, file_path, logmsg='', close_on_end=0):
-	command = [
-		os.path.join(svn_bin_path, 'TortoiseProc.exe'),
-		f'/command:{cmd_type}',
-		f'/path:{file_path}',
-		f'/logmsg:{logmsg}',
-		f'/closeonend:{close_on_end}'
-	]
-	
-	try:
-		result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-		print(result.stdout)
-	except subprocess.CalledProcessError as e:
-		print(f"Error running command: {e.cmd}")
-		print(f"Return code: {e.returncode}")
-		print(f"Output: {e.output}")
-		print(f"Error output: {e.stderr}")
-
-run_tortoise_svn_command(SVN_BIN_PATH, cmd_type, file_path, logmsg, close_on_end)
-'''
+		pass

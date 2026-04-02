@@ -62,10 +62,11 @@ THUMBNAIL_NAME = 'thumb.png'
 PADDING = 4
 
 if os.path.exists(file_path):
-    if config_directory not in sys.path:
-        sys.path.append(config_directory)
+    sys.path.insert(0, config_directory)
     try:
         import fileManager_config as config
+        import importlib
+        importlib.reload(config)
         DRIVES = config.DRIVES
         PROJECT_NAME = config.PROJECT_NAME
         DICTIONARY_TEMPLATE = config.DICTIONARY_TEMPLATE
@@ -81,6 +82,7 @@ if os.path.exists(file_path):
         USE_VARIATION = config.USE_VARIATION
         SVN_BIN_PATH = config.SVN_BIN_PATH
         HIDE_FORMAT = config.HIDE_FORMAT
+        FIXED_PROJECT_PATHS = getattr(config, 'FIXED_PROJECT_PATHS', {})
     except Exception as e:
         logger.error(f"Error loading config: {e}")
         # Default Fallbacks
@@ -91,6 +93,7 @@ if os.path.exists(file_path):
         SCENE_TOP_FOLDER = "Sequence"
         DEFAULT_PROJECT = 'P_Regulus'
         SVN_BIN_PATH = r"C:\Program Files\TortoiseSVN\bin"
+        FIXED_PROJECT_PATHS = {}
 else:
     # Default Fallbacks
     DRIVES = ["D:\\", "E:\\"]
@@ -108,6 +111,7 @@ else:
     USE_VARIATION = ('P_Regulus')
     SVN_BIN_PATH = r"C:\Program Files\TortoiseSVN\bin"
     HIDE_FORMAT = ['*.pyc', '*.o']
+    FIXED_PROJECT_PATHS = {}
 
 BLENDER_EXT = 'blend'
 
@@ -300,7 +304,11 @@ class FileManagerBlender(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow)
         self.path = os.path.join(selected_drive, BASE_FOLDER, selected_project, ASSET_TOP_FOLDER)
 
     def populate_ASSET_treeView(self):
-        self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), ASSET_TOP_FOLDER)
+        project = self.project_comboBox.currentText()
+        if project in FIXED_PROJECT_PATHS:
+            self.path = FIXED_PROJECT_PATHS[project]
+        else:
+            self.path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, project, ASSET_TOP_FOLDER)
         if not os.path.exists(self.path): return
         self.asset_fs_model.setRootPath(self.path)
         self.asset_proxy.setSourceModel(self.asset_fs_model)
@@ -309,7 +317,11 @@ class FileManagerBlender(fileManagerMainUI.Ui_MainWindow, QtWidgets.QMainWindow)
         for i in range(1, 4): self.asset_dir_TREEVIEW.setColumnHidden(i, True)
 
     def populate_SCENE_treeView(self):
-        path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, self.project_comboBox.currentText(), SCENE_TOP_FOLDER)
+        project = self.project_comboBox.currentText()
+        if project in FIXED_PROJECT_PATHS:
+            path = FIXED_PROJECT_PATHS[project]
+        else:
+            path = os.path.join(self.drive_comboBox.currentText(), BASE_FOLDER, project, SCENE_TOP_FOLDER)
         if not os.path.exists(path): return
         self.scene_fs_model = QtWidgets.QFileSystemModel(self)
         self.scene_fs_model.setRootPath(path)

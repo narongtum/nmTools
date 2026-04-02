@@ -1,0 +1,1448 @@
+{
+  "metadata": {
+    "left": "LFT",
+    "right": "RGT",
+    "mirrorPlane": [
+      -1,
+      1,
+      1
+    ],
+    "description": "",
+    "user": "Noman",
+    "ctime": "1774847429",
+    "version": "1.0.0",
+    "references": [
+      {
+        "filename": "D:/svn_true/P_RP/Content/Characters/CH004_Shaman/Commit/CH004_Shaman_Rig.ma",
+        "unresolved": "D:/svn_true/P_RP/Content/Characters/CH004_Shaman/Commit/CH004_Shaman_Rig.ma",
+        "namespace": ":CH004_Shaman_Rig",
+        "node": "CH004_Shaman_RigRN"
+      }
+    ],
+    "mayaVersion": "2023",
+    "mayaSceneFile": "D:/svn_true/P_RP/Content/Characters/CH004_Shaman/Anim/Commit/CH004_Shaman_Atk03_RoundSlash_mirror.0003.ma"
+  },
+  "objects": {
+    "CH004_Shaman_Rig:CS01DnGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS01Dn_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS01Mid_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS01UpGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS01Up_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS02DnGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS02Dn_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS02Mid_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS02UpGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS02Up_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS03DnGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS03Dn_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS03Mid_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS03UpGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:CS03Up_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:ChainSawBladeGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:ChainSawBlade_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:Pivot_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:armLFTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:armLFTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:armLFTPov_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:armLFTSwitch_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:armRGTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:armRGTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:armRGTPov_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:armRGTSwitch_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ballLFTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ballLFT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ballRGTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ballRGT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:blade_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl02Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl03Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl04Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:chainCtrl04_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:clvLFTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:clvLFT_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:clvRGTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:clvRGT_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:cogGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:cog_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:earingLFTGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:earingLFT_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:earingRGTGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:earingRGT_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeAimLFT_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeAimRGT_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeAim_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLFTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLFT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLidLFTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLidLFT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLidRGTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeLidRGT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeRGTGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:eyeRGT_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:footLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footLFTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footLFTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footLFTIKPivot_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footLFTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footRGTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footRGTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footRGTIKPivot_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:footRGTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:frameGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:frame_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:grabAGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:grabA_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:grabBGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:grabB_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:handLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:handLFTFK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:handRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:handRGTFK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:headGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:head_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:hipGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:hip_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:indexLFT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:indexLFT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:indexLFT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:indexLFT03FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:indexRGT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:indexRGT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:indexRGT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:indexRGT03FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:jawGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:jaw_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:legLFTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:legLFTPov_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:legLFTSwitch_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:legRGTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:legRGTPov_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:legRGTSwitch_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerArmLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerArmLFTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerArmRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerArmRGTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerLegLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerLegLFTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerLegRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:lowerLegRGTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:master_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:middleLFT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:middleLFT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:middleLFT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:middleLFT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:middleRGT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:middleRGT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:middleRGT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:middleRGT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:neckGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:neck_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyLFT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyLFT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyLFT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyLFT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyRGT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyRGT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyRGT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:pinkyRGT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:placement_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:ringLFT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:ringLFT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ringLFT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ringLFT03FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ringRGT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:ringRGT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ringRGT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:ringRGT03FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:rootFK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:spine01FKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:spine01FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:spine02FKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:spine02FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:spine03FKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:spine03FK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:spineCurl_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB04_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB05_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripB06_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBLFT01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBLFT01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBLFT02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBLFT03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBRGT01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBRGT01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBRGT02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripBRGT03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF04_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF05_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripF06_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFLFT01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFLFT01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFLFT02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFLFT03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFRGT01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFRGT01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFRGT02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:stripFRGT03_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbLFT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbLFT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbLFT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbLFT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbRGT01FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbRGT01Local_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbRGT02FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:thumbRGT03FK_ctrl": {
+      "mirrorAxis": [
+        1,
+        1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:tongue01Gmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:tongue01_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:tongue02_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmLFTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmLFTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmLFTIK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmRGTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmRGTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperArmRGTIK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        -1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegLFTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegLFTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegLFTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegLFTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegRGTFKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegRGTFK_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegRGTIKGmbl_ctrl": {
+      "mirrorAxis": [
+        1,
+        -1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:upperLegRGTIK_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:weaponGmbl_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    },
+    "CH004_Shaman_Rig:weapon_ctrl": {
+      "mirrorAxis": [
+        -1,
+        1,
+        1
+      ]
+    }
+  }
+}

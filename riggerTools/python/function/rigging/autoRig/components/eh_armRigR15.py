@@ -9,17 +9,17 @@ reload(core)
 # Note: Assuming you save the new gen rig as 'eh_fkIkTwistGenRig.py'
 # or you can rename the function inside the original file. 
 # Here I will point to 'eh_fkIkTwistGenRig' for clarity.
-from function.rigging.autoRig.bodyRig import eh_fkIkTwistGenRig as fitr
+from function.rigging.autoRig.components.limbRig import eh_fkIkTwistGenRig as fitr
 reload(fitr)
 
-from function.rigging.autoRig.bodyRig import eh_createSoftIk as softIkfunc
+from function.rigging.autoRig.components.limbRig import eh_createSoftIk as softIkfunc
 reload(softIkfunc)
 
 import logging
 logger = logging.getLogger('eh_armRig')
 logger.setLevel(logging.DEBUG)
 
-def eh_armRigExt(	
+def eh_armRigExtR15(	
 			nameSpace='',
 			charScale=1.0,
 			parentTo='ctrl_grp',
@@ -45,6 +45,7 @@ def eh_armRigExt(
 			softIkPrimaryAxis=2,
 			softIkUpAxis=2,
 			alongAxis='y',
+			upperArmR15 = 'upperArmLFT_IKtmpJnt',
 			stickShape='stick_ctrlShape'
 			):
 
@@ -54,7 +55,7 @@ def eh_armRigExt(
 	# Call Gen Rig (Refactored)
 	# ----------------------------------------------------------------------
 	if creTwistJnt:
-		result = fitr.fkIkTwistGenRig(
+		result = fitr.eh_fkIkTwistGenRig_R15(
 					nameSpace=nameSpace,
 					charScale=charScale,
 					parentTo=parentTo,
@@ -76,7 +77,9 @@ def eh_armRigExt(
 					ctrlShape=ctrlShape,
 					creTwistJnt=creTwistJnt,
 					alongAxis=alongAxis,
+					upperArmR15 = upperArmR15,
 					stickShape=stickShape
+
 		)
 		
 		# Unpack return values

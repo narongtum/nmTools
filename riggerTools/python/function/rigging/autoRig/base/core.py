@@ -712,8 +712,6 @@ def check_name_style(name = 'L_eyebrow_ahaha_nrb'):
 
 	import re
 
-
-	
 	if len(name_split) == 1:
 		mc.error(f'Naming is not have underscore {name_split}. terminate')
 

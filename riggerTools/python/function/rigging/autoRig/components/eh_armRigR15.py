@@ -29,13 +29,12 @@ def eh_armRigExtR15(
 			priorJnt='clavLFT_bJnt',
 			ikhGrp='ikh_grp',
 			noTouchGrp='noTouch_grp',
-			nullGrp='snapNull_grp',
+			nullGrp = 'snapNull_grp',	
 			jnt_grp='jnt_grp',
 			showInfo=False,
 			ribbon=False,
 			ribbonRes='high',
 			ribbonName=('upLeg', 'lwrLeg'),
-			propCtrl=False,
 			keepFkIkBoth=True,
 			povShape='pyramid',
 			linkRotOrder=False,
@@ -69,7 +68,7 @@ def eh_armRigExtR15(
 					priorJnt=priorJnt,
 					ikhGrp=ikhGrp,
 					noTouchGrp=noTouchGrp,
-					nullGrp=nullGrp,
+					nullGrp = nullGrp,
 					jnt_grp=jnt_grp,
 					povShape=povShape,
 					keepFkIkBoth=keepFkIkBoth,
@@ -102,14 +101,13 @@ def eh_armRigExtR15(
 		logger.info('Creating Null Snap group for matcher...')
 		part = nameSpace + region
 		offset_null = core.Null(f"{part}Offset{side}_null")
+		offset_null.parent(nullGrp)
 		
 		# Use Matrix Constraint for Snap Null
 		# Note: Using standard parentConMatrixGPT for full transform following
 		from function.rigging.constraint import matrixConstraint as mtc
 		reload(mtc)
 		mtc.parentConMatrixGPT(hand_bJnt, offset_null.name, mo=False, translate=True, rotate=True, scale=True)
-		
-		offset_null.parent(nullGrp)
 
 		stick_ctrl = core.Dag(stickNam)
 		offset_null.attr('message') >> stick_ctrl.attr('offset')

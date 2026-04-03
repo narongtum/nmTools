@@ -54,25 +54,21 @@ def eh_fkIkTwistGenRig_R15(
 				tmpJnt=('upperArmLFT_tmpJnt', 'lowerArmLFT_tmpJnt', 'handLFT_tmpJnt', 'armPovLFT_tmpJnt'),
 				priorJnt='clavLFT_bJnt',	
 				ikhGrp='ikh_grp',			
-				noTouchGrp='noTouch_grp',			
-				nullGrp='snapNull_grp',			
+				noTouchGrp='noTouch_grp',
+				nullGrp = 'snapNull_grp',				
 				jnt_grp='jnt_grp',
 				showInfo=False,
 				ribbon=True,	
 				ribbonRes='low',
 				ribbonName=('upLeg', 'lwrLeg'),
-				propCtrl=False,
 				keepFkIkBoth=False,	
 				povShape='sphereAxis',
 				ikPosi=None,
 				linkRotOrder=False,
 				ctrlShape='fk_ctrlShape',
-				creTwistJnt=True,
-				upperArmR15LFT = '',
-				upperArmR15RGT = '',
+				creTwistJnt=False,
 				stickShape='stickCircle_Y_long_ctrlShape',
 				alongAxis='y',
-				pinMethod='matrix',
 				povPosi='front',
 				upperArmR15 = ''
 				):
@@ -92,6 +88,10 @@ def eh_fkIkTwistGenRig_R15(
 		colorSide = color_part_dict['right']
 	else:
 		colorSide = color_part_dict['primary']
+
+
+	logger.info(f'color is: {colorSide}')
+	
 
 	rotOrder = 'xzy' # Standard for this rig
 
@@ -123,11 +123,14 @@ def eh_fkIkTwistGenRig_R15(
 	# --- 2. Main Groups ---
 	part = nameSpace + rawName[2] # e.g. hand or ankle
 	fkIkRig_grp = core.Null(f"{part}Rig{side}_grp")
+	fkIkRig_grp.parent( parentTo )
 
 	# Group Constraint (Matrix)
 	mtc.parentConMatrixGPT(priorJnt, fkIkRig_grp.name, mo=True)
 
 	fkIkJnt_grp = core.Null(f"{part}Jnt{side}_grp")
+	fkIkJnt_grp.parent( jnt_grp )
+	fkIkJnt_grp.attr('visibility').value = 0
 
 	# --- 3. Stick Controller (The Switch) ---
 	stickName = rawName[2] + 'Stick'
@@ -144,6 +147,7 @@ def eh_fkIkTwistGenRig_R15(
 	# Positioning
 	stickZro_grp.matchPosition(lower_bJnt)
 	stickZro_grp.matchRotation(lower_bJnt)
+	stickZro_grp.parent( parentTo )
 
 	# Orientation Fixes (Legacy Logic)
 	if region in ['leg', 'frontLeg', 'backLeg']:
@@ -161,6 +165,10 @@ def eh_fkIkTwistGenRig_R15(
 	attScaleName = f"{stickScalNam}Scale"
 	stick_ctrl.addAttribute(longName=attScaleName, defaultValue=1, keyable=True)
 	stick_ctrl.lockHideAttrLst('tx','ty','tz','rx','ry','rz','sx','sy','sz','v')
+
+	#... Add region
+	stick_ctrl.addAttribute( dataType = 'string' , longName = 'region')
+	stick_ctrl.attr('region').value = region
 
 	# --- 4. FK System ---
 	fkCtrl_grp = core.Null(f"{part}FkCtrl{side}_grp")
@@ -192,6 +200,7 @@ def eh_fkIkTwistGenRig_R15(
 		constraint=True # Matrix Constraint included
 	)
 	if side == 'RGT': upr_ctrl.flipCtrlShape(axis='Y')
+	mc.error(f'This is color: {colorSide}')
 
 	# Middle
 	mid_zro, mid_ctrl, mid_gmbl = eh_adjust.create(
@@ -399,9 +408,9 @@ def eh_fkIkTwistGenRig_R15(
 
 
 
-	mtc.parentConMatrixGPT(middle_IkJnt.name, middle_IkBufferJnt.name, mo=False, baseName = f'middleIkBuffer{side}')
+	mtc.parentConMatrixGPT(middle_IkJnt.name, middle_IkBufferJnt.name, mo=True, translate=False, rotate=True, scale=True, baseName = f'middleIkBuffer{side}')
 	# nmCon.normalParentConstr(lower_IkJnt.name, lower_IkBufferJnt.name, mo=False)
-	mtc.parentConMatrixGPT(lower_IkJnt.name, lower_IkBufferJnt.name, mo=False, baseName = f'lowerIkBuffer{side}')
+	mtc.parentConMatrixGPT(lower_IkJnt.name, lower_IkBufferJnt.name, mo=True, translate=False, rotate=True, scale=True, baseName = f'lowerIkBuffer{side}')
 
 
 
@@ -618,6 +627,8 @@ def eh_fkIkTwistGenRig_R15(
 	# Original returned: Loc_grp.name, World_grp.name
 	# eh_orientLocalWorldMatrix returns: {"mult_local":..., "mult_world":...}
 	# SoftIK mainly needs ikhNam and ctrlName.
+
+	ikZro_grp.parent( ikhGrp )
 
 	ikhAll_name = (ikhNam, povZro_grp, "Local_Placeholder", "World_Placeholder", ikhZro_grp)
 	softIk_name = [lowerIk_ctrl.name]

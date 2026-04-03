@@ -791,6 +791,16 @@ def aimConstraintMatrix(
 	
 #... Mostly polish with AI but not sure there will having issue
 def parentConMatrixGPT(source, target,nameSpace = None, mo=True, translate=True, rotate=True, scale=True, baseName=None):
+	"""
+	Creates a matrix-based Parent Constraint using MultMatrix and DecomposeMatrix.
+
+	[IMPORTANT WARNING: DAG PARENTING ORDER]
+	You MUST parent your `target` group/object to its intended hierarchy BEFORE 
+	calling this function. If the `target` is in World space when this function 
+	is called, the script will not connect the parent's `worldInverseMatrix`. 
+	If you then parent the target to a moving group later, it will suffer from 
+	Double Transformation since the parent's offset isn't being properly subtracted.
+	"""
 	if not source:
 		print('Source is not selected.')
 		return False

@@ -74,10 +74,6 @@ topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , 
 					charScale = charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_ctrl',
 					side = '' ,ctrlShape = 'circle_ctrlShape'  , localWorld = True , 
 					color = 'yellow' , curlCtrl = True ,suffix = '_bJnt'	)[2][-1]
-#... return
-
-
-
 
 
 
@@ -88,6 +84,9 @@ topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , 
 # 							tmpJnt = (		'neck_tmpJnt' ,'head01_tmpJnt' 	) ,  
 # 							priorJnt = topSpine_bJnt ,
 # 							charScale = charScale	)
+
+
+
 
 # = = = = = 05 HeadRig = = = = = #
 from function.rigging.autoRig.components import eh_headRig as headRig
@@ -109,12 +108,40 @@ headRig.createHeadRig(
 
 
 
-
-
 # = = = = = 06 arm LFT Side
 from function.rigging.autoRig.components import eh_armRigR15 as armRig
 reload(armRig)
 
+#... right arm side
+stickNamRGT, handRGT_bJnt= armRig.eh_armRigExtR15(
+
+				nameSpace = '' 	,				
+				charScale = charScale	,			
+				parentTo = 'ctrl_grp' 	,			
+				side = 'RGT'	,
+				region = 'arm'		,							
+				tmpJnt = (	'upperArmRGT_tmpJnt' ,	
+						'lowerArmRGT_tmpJnt', 	 
+						'handRGT_tmpJnt' ,	
+						'elbowPovRGT_tmpJnt' ),
+				priorJnt = topSpine_bJnt.name	,	
+				ikhGrp = 'ikh_grp'		,			
+				noTouchGrp = 'noTouch_grp' ,						
+				jnt_grp =  'jnt_grp'	,			
+				povShape = 'pyramid',
+				keepFkIkBoth = keepFkIkBoth,
+				ribbon = ribbon,
+				ribbonRes = 'low', 
+				ribbonName = ('upArm', 'lwrArm'),
+				showInfo = showInfo ,
+				linkRotOrder = linkRotOrder	,
+				stickShape = stickShape 	,
+				creTwistJnt = creTwistJnt	,	
+				upperArmR15	= 'upperArmRGT_IKtmpJnt' )
+				
+				
+				
+				
 stickNamLFT, handLFT_bJnt= armRig.eh_armRigExtR15(
 
 				nameSpace = '' 	,				
@@ -128,8 +155,7 @@ stickNamLFT, handLFT_bJnt= armRig.eh_armRigExtR15(
 						'elbowPovLFT_tmpJnt' ),
 				priorJnt = topSpine_bJnt.name	,	
 				ikhGrp = 'ikh_grp'		,			
-				noTouchGrp = 'noTouch_grp' ,			
-				nullGrp = 'snapNull_grp',			
+				noTouchGrp = 'noTouch_grp' ,					
 				jnt_grp =  'jnt_grp'	,			
 				povShape = 'pyramid',
 				keepFkIkBoth = keepFkIkBoth,
@@ -139,6 +165,84 @@ stickNamLFT, handLFT_bJnt= armRig.eh_armRigExtR15(
 				showInfo = showInfo ,
 				linkRotOrder = linkRotOrder	,
 				stickShape = stickShape 	,
-				creTwistJnt = creTwistJnt		
-				 )
+				creTwistJnt = creTwistJnt	,
+				upperArmR15	= 'upperArmLFT_IKtmpJnt')
 
+
+
+
+
+#... add space switch
+rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamLFT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', 'head01_bJnt', topSpine_bJnt, hip_bJnt ] )
+rigTools.addSpace(  nameSpace = '',	giveStick =  stickNamRGT  , spaces = ['world','neck','chest','cog'] , piors = [ 'placement_ctrl', 'head01_bJnt', topSpine_bJnt, hip_bJnt ] )
+
+#... Leg LFT
+from function.rigging.autoRig.bodyRig import bipedLegRig as bipedLegRig
+reload(bipedLegRig)
+
+bipedLegRig.bipedLegRigExt(
+					nameSpace = '' 	,	
+					parentTo = 'ctrl_grp' ,			
+					side = 'LFT'	,				
+					region = 'leg',
+					tmpJnt = (	'upperLegLFT_tmpJnt'  , 'lowerLegLFT_tmpJnt' ,  'ankleLFT_tmpJnt' , 
+								'kneePovLFT_tmpJnt' ,'ballLFT_tmpJnt' ,'toesTipLFT_tmpJnt' ,
+								'heelRollLFT_tmpJnt' , 'footOutLFT_tmpJnt' , 'footInLFT_tmpJnt'),
+					priorJnt = 'hip_bJnt'	,			
+					ikhGrp = 'ikh_grp' 	,				
+					noTouchGrp = 'noTouch_grp' 	,		
+					nullGrp = 'snapNull_grp'	,		
+					showInfo = showInfo  ,					
+					ribbon = ribbon	,				
+					ribbonRes = 'low'	,				
+					ribbonName = ('upLeg', 'lwrLeg'),	
+					charScale = charScale	,					
+					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle'
+					keepFkIkBoth = keepFkIkBoth	,# keep fk/ik ctrl visibility both or not
+					povShape = povShape ,# choice pyramid or sphereAxis
+					jnt_grp = 'jnt_grp' ,
+					linkRotOrder = linkRotOrder	,
+					footAttr = True,
+					stickShape = stickShape 	,
+					creTwistJnt = creTwistJnt		
+					 )
+
+
+#... Leg RGT
+bipedLegRig.bipedLegRigExt(
+					nameSpace = '' 	,	
+					parentTo = 'ctrl_grp' ,		
+					side = 'RGT'	,				
+					region = 'leg',
+					tmpJnt = ( 	'upperLegRGT_tmpJnt'  , 'lowerLegRGT_tmpJnt' ,  'ankleRGT_tmpJnt' , 
+								'kneePovRGT_tmpJnt' ,'ballRGT_tmpJnt' ,'toesTipRGT_tmpJnt' ,
+								'heelRollRGT_tmpJnt' , 'footOutRGT_tmpJnt' , 'footInRGT_tmpJnt'),
+					priorJnt = 'hip_bJnt'	,		
+					ikhGrp = 'ikh_grp' 	,						
+					noTouchGrp = 'noTouch_grp' 	,					
+					nullGrp = 'snapNull_grp'	,						
+					showInfo = showInfo  ,											
+					ribbon = ribbon	,										
+					ribbonRes = 'low'	,									
+					ribbonName = ('upLeg', 'lwrLeg'),	
+					charScale = charScale	,									
+					ikPosi = 'foot', # get only 2 variable 'foot' or 'ankle'
+					keepFkIkBoth = keepFkIkBoth	,# keep fk/ik ctrl visibility both or not
+					povShape = povShape ,# choice pyramid or sphereAxis
+					jnt_grp = 'jnt_grp' ,
+					linkRotOrder = linkRotOrder	,
+					footAttr = True,
+					stickShape = stickShape 	,
+					creTwistJnt = creTwistJnt					 
+					 )
+
+
+
+
+
+
+
+from function.rigging.autoRig import util 
+reload(util)
+#... Lock attr
+util.cleanup()

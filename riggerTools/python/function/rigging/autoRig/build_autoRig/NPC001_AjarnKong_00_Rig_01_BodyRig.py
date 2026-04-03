@@ -253,7 +253,7 @@ reload(createFkRig)
 
 createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
 					jntLst = ('L_tail01_bJnt','L_tail02_bJnt'),
-					charScale = charScale, priorJnt = 'hip_bJnt',side = 'LFT',
+					charScale = charScale, priorJnt = 'hip_bJnt',side = 'L',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
 					parentToPriorJnt = True, parentMatrix = True,
@@ -264,7 +264,7 @@ createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
 
 createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'hip_gmbCtrl',
 					jntLst = ('R_tail01_bJnt','R_tail02_bJnt'),
-					charScale = charScale, priorJnt = 'hip_bJnt',side = 'RGT',
+					charScale = charScale, priorJnt = 'hip_bJnt',side = 'R',
 					ctrlShape = 'circle_ctrlShape', localWorld = False ,
 					color = 'yellow', curlCtrl = True, curlPosiAtFirst = False, rotateOrder = 'zxy',
 					parentToPriorJnt = True, parentMatrix = True,

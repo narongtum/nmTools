@@ -2912,7 +2912,7 @@ class Dag( Node ) :
 			mc.move( move[0] , move[1] , move[2] , cvs , relative = True , objectSpace = True)
 
 
-	def flipCtrlShape( self , axis = 'Y' ):
+	def flipCtrlShape( self , axis = 'Y', color=None ):
 		''' flip control shape '''
 		if axis == 'Y':
 			mul =  (-1, -1, 1)
@@ -2931,6 +2931,9 @@ class Dag( Node ) :
 			shapes["points"][i] = [each[0] * mul[0], each[1] * mul[1], each[2] * mul[2]]
 		newShapes.append( shapes )
 		Dag.setShape( self , newShapes )
+
+		if color:
+			self.color = color
 
 
 

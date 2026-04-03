@@ -199,8 +199,9 @@ def eh_fkIkTwistGenRig_R15(
 		parentTo=fkCtrl_grp.name, charScale=charScale*0.9, color=colorSide, 
 		constraint=True # Matrix Constraint included
 	)
-	if side == 'RGT': upr_ctrl.flipCtrlShape(axis='Y')
-	mc.error(f'This is color: {colorSide}')
+	# mc.error(f'This is color: {colorSide}')
+	if side == 'RGT': upr_ctrl.flipCtrlShape(axis='Y', color=colorSide)
+	
 
 	# Middle
 	mid_zro, mid_ctrl, mid_gmbl = eh_adjust.create(
@@ -208,7 +209,7 @@ def eh_fkIkTwistGenRig_R15(
 		parentTo=upr_gmbl.name, charScale=charScale*0.8, color=colorSide,
 		constraint=True
 	)
-	if side == 'RGT': mid_ctrl.flipCtrlShape(axis='Y')
+	if side == 'RGT': mid_ctrl.flipCtrlShape(axis='Y', color=colorSide)
 
 	# Lower
 	lwr_zro, lwr_ctrl, lwr_gmbl = eh_adjust.create(
@@ -216,7 +217,7 @@ def eh_fkIkTwistGenRig_R15(
 		parentTo=mid_gmbl.name, charScale=charScale*0.7, color=colorSide,
 		constraint=True
 	)
-	if side == 'RGT': lwr_ctrl.flipCtrlShape(axis='Y')
+	if side == 'RGT': lwr_ctrl.flipCtrlShape(axis='Y', color=colorSide)
 
 	# Space Switching for Upper Arm (FK)
 	# [0] controller itself, [1] local group space, [2] world group space, [3] zero group of controller

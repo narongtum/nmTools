@@ -176,5 +176,5 @@ def create(
 
 
 
-
+	controller_ctrl.color = color
 	return controllerZro_grp, controller_ctrl, controllerGmbl_ctrl

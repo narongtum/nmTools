@@ -15,6 +15,9 @@ reload(fitr)
 from function.rigging.autoRig.components.limbRig import eh_createSoftIk as softIkfunc
 reload(softIkfunc)
 
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
+
 import logging
 logger = logging.getLogger('eh_armRigExtR15')
 logger.setLevel(logging.DEBUG)
@@ -51,8 +54,9 @@ def eh_armRigExtR15(
 	core.makeHeader(f'Start of {region}{side} Rig (EH Matrix Version)')
 
 	if not mc.objExists(upperArmR15):
-		logger.info("There are no upperArm for R15.")
-		return False
+		logger.error("There are no upperArm for R15.")
+		mc.error("There are no upperArm for R15.")
+
 
 	# ----------------------------------------------------------------------
 	# Call Gen Rig (Refactored)
@@ -105,8 +109,7 @@ def eh_armRigExtR15(
 		
 		# Use Matrix Constraint for Snap Null
 		# Note: Using standard parentConMatrixGPT for full transform following
-		from function.rigging.constraint import matrixConstraint as mtc
-		reload(mtc)
+
 		mtc.parentConMatrixGPT(hand_bJnt, offset_null.name, mo=False, translate=True, rotate=True, scale=True)
 
 		stick_ctrl = core.Dag(stickNam)

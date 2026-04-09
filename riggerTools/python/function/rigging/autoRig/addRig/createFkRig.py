@@ -98,7 +98,8 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 					color = 'red', curlCtrl = False, curlPosiAtFirst = True, rotateOrder = 'zxy',
 					parentToPriorJnt = False,
 					parentCtrlToPriorJnt = False, parentMatrix = False,
-					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True):
+					curlCtrlShape = 'stick_ctrlShape', constraintCurl = True,
+					isTmpJnt = False, suffix = '_bJnt'):
 
 	#... find base name
 	# name = misc.check_name_style(name = jntLst[0])[0]
@@ -141,7 +142,13 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		ctrl.editCtrlShape( axis = charScale * 6.4 )
 
 		gimbal = core.createGimbal( ctrl )
-		bJnt = core.Dag( jntLst[num] )
+		
+		if isTmpJnt:
+			tmp = core.Dag(jntLst[num])
+			bJnt = rigTools.jointAt(tmp.name)
+			bJnt.name = f"{base_name}{suffix}"
+		else:
+			bJnt = core.Dag( jntLst[num] )
 
 		zroGrp,offsetGrp = rigTools.zroNewGrpWithOffset( ctrl )
 		zroGrp.snap( bJnt )
@@ -165,6 +172,8 @@ def fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'head_gmblCtrl',
 		if not num == 0:
 			print('\nNo need to useHierarchy.\n')
 			zroGrp.parent( gmbls[ num -1] )
+			if isTmpJnt:
+				bJnt.parent( bJnts[num -1] )
 		else:
 			print('\nUse Hierarchy.\n')
 			rigGrp.maSnap(bJnts[0])

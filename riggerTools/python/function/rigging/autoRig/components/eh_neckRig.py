@@ -72,8 +72,10 @@ def createNeckRig(
 	# [FIXED] ย้ายการ Parent มาไว้ตรงนี้ (ก่อนสร้าง Constraint)
 	# เพื่อให้ Matrix Constraint รู้จัก Parent ที่แท้จริงและต่อ Inverse Matrix ได้ถูกต้อง
 
-	neckRig_grp.parent(priorCtrl)
-
+	if priorCtrl:
+		neckRig_grp.parent(priorCtrl)
+	else:
+		neckRig_grp.parent(parentTo)
 
 
 	# [UPDATE] Use Matrix Constraint for Prior Joint

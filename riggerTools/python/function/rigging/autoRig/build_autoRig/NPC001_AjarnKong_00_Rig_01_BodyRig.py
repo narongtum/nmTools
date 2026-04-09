@@ -69,11 +69,37 @@ hip_bJnt = hipRig.createHipRig(	nameSpace = nameSpace ,
 # = = = = = 03 Create spine FK Rig  = = = = = #
 from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)
+'''
 topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , parentTo = 'ctrl_grp'  ,
 					tmpJnt = 	( 	'spine01_tmpJnt',)	,
-					charScale = charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_ctrl',
+					charScale = charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_gmbCtrl',
 					side = '' ,ctrlShape = 'circle_ctrlShape'  , localWorld = True , 
 					color = 'yellow' , curlCtrl = False ,suffix = '_bJnt'	)[2][-1]
+
+'''
+
+
+
+
+#... create bJnt 
+spine01_bJnt = rigTools.jointObjAt('spine01_tmpJnt')
+spine01_bJnt.name = 'spine01_bJnt'
+
+topSpine_bJnt = createFkRig.fkRig_omni_matrix(	nameSpace = '', parentCtrlTo = 'cog_gmbCtrl',
+					jntLst = (spine01_bJnt.name,),
+					charScale = charScale, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True,
+					color = 'yellow', curlCtrl = False, rotateOrder = 'zxy',
+					parentToPriorJnt = False, parentMatrix = True,
+					curlCtrlShape = 'stick_ctrlShape')[2][0]
+
+
+
+
+
+
+
+
 
 
 

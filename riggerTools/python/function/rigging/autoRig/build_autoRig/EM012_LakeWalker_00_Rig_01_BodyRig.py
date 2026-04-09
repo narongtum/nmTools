@@ -15,70 +15,12 @@
 # foot roll behavior
 
 
-
-
 import maya.cmds as mc
 
 from function.framework.reloadWrapper import reloadWrapper as reload
 
 from function.rigging.autoRig.base import rigTools
-reload( rigTools )
-
-from function.rigging.autoRig.bodyRig import rootRig
-reload( rootRig )
-
-from function.rigging.autoRig.bodyRig import hipRig
-reload( hipRig )
-
-from function.rigging.autoRig.bodyRig import spineFkRig
-reload( spineFkRig )
-
-# # Option of spine Rig
-from function.rigging.autoRig.bodyRig import spineRig
-reload( spineRig )
-
-from function.rigging.autoRig.bodyRig import neckRig
-reload( neckRig )
-
-from function.rigging.autoRig.bodyRig import headRig
-reload( headRig )
-
-from function.rigging.autoRig.bodyRig import clavicleRig
-reload( clavicleRig )
-
-from function.rigging.autoRig.bodyRig import armRig
-reload( armRig )
-
-from function.rigging.autoRig.bodyRig import fingerRig
-reload( fingerRig )
-
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_mainCurlExec as fingerCurl
-reload( fingerCurl )
-# change module name please update
-from function.rigging.autoRig.bodyRig import finger_localCurlExec as finloCurl
-reload( finloCurl )
-
-from function.rigging.autoRig.bodyRig import bipedLegRig
-reload( bipedLegRig )
-
-from function.rigging.autoRig.bodyRig import ribbonRig
-reload( ribbonRig )
-
-from function.rigging.autoRig.bodyRig import propRig
-reload( propRig )
-
-from function.rigging.feature import baseFingerSpread as baseFinger
-reload(baseFinger)
-
-from function.rigging.autoRig.bodyRig import torsoRig
-reload(torsoRig)
-
-from function.rigging.tools import proc as pc 
-reload(pc)
-
-from function.rigging.autoRig import util 
-reload(util)
+reload(rigTools)
 
 import time
 
@@ -100,14 +42,16 @@ charScale = rigTools.findCharScale( topJnt = 'head02_tmpJnt' )
 #charScale = 1
 
 # = = = = = 01 Create main Controller = = = = = #
-rootRig.createMasterGrp(	charScale = charScale 	)
+rootRig.createMasterGrp(charScale = charScale)
 
 
 
 # = = = = = 02 Create hipRig = = = = = #
-hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace , 
+from function.rigging.autoRig.components import eh_hipRig as hipRig
+reload(hipRig)
+hip_bJnt = hipRig.createHipRig(	nameSpace = nameSpace , 
 				ctrl_grp = 'ctrl_grp'  , tmpJnt = ( 'cog_tmpJnt','hip_tmpJnt' ) , 
-				charScale = charScale, cogPivot = True   )
+				charScale = charScale, cogPivot = True)
 
 
 
@@ -115,34 +59,47 @@ hip_bJnt = hipRig.hipRig(	nameSpace = nameSpace ,
 
 
 # = = = = = 03 Create spine FK Rig  = = = = = #
-
-
 from function.rigging.autoRig.addRig import createFkRig
 reload(createFkRig)
-topSpine_bJnt = createFkRig.newCreateFkRig(	nameSpace = ''  ,  name = 'spine' , parentTo = 'ctrl_grp'  ,
-					tmpJnt = 	( 	'spine01_tmpJnt','spine02_tmpJnt', 'spine03_tmpJnt'   )	,
-					charScale = charScale	, priorJnt = 'hip_bJnt',priorCtrl = 'cog_ctrl',
-					side = '' ,ctrlShape = 'circle_ctrlShape'  , localWorld = True , 
-					color = 'yellow' , curlCtrl = True ,suffix = '_bJnt'	)[2][-1]
 
-topSpine_bJnt = topSpine_bJnt.name
+
+
+
+topSpine_bJnt = createFkRig.fkRig_omni_newCurl( nameSpace = '', parentCtrlTo = 'cog_gmbCtrl',
+					jntLst = ( 'spine01_tmpJnt','spine02_tmpJnt', 'spine03_tmpJnt'),
+					charScale = charScale, priorJnt = 'hip_bJnt',side = '',
+					ctrlShape = 'circle_ctrlShape', localWorld = True ,
+					color = 'yellow', curlCtrl = True, rotateOrder = 'zxy',
+					parentToPriorJnt = False,
+					parentCtrlToPriorJnt = True, parentMatrix = True,
+					curlCtrlShape = 'circle_ctrlShape', constraintCurl = True,
+					isTmpJnt = True, suffix = '_bJnt')[2][0]
 
 
 
 
 
 # = = = = = 04 Neck Rig = = = = = #
-neck_bJnt = neckRig.neckRig(	
-							nameSpace = nameSpace 					, 
-							parentTo = 'ctrl_grp'  , 
-							tmpJnt = (		'neck_tmpJnt' ,'head01_tmpJnt' 	) ,  
-							priorJnt = topSpine_bJnt ,
-							charScale = charScale	)
+from function.rigging.autoRig.components import eh_neckRig as neckRig
+reload(neckRig)
+
+neck_bJnt = neckRig.createNeckRig(
+		nameSpace='',
+		parentTo='ctrl_grp',
+		priorCtrl = 'spine03_gmbCtrl',
+		priorJnt='spine03_bJnt', # Should be the top spine joint or chest
+		tmpJnt='neck_tmpJnt',    # Single joint input
+		ctrl_shape = 'circle_ctrlShape',
+		charScale=charScale,
+		linkRotOrder=linkRotOrder)
 
 
-'''
+
+
 # = = = = = 05 HeadRig = = = = = #
-headRig.headRig(	
+from function.rigging.autoRig.components import eh_headRig as headRig
+reload(headRig)
+headRig.createHeadRig(	
 					nameSpace = nameSpace 					, 
 					parentTo = 'ctrl_grp'  , 
 					tmpJnt = ( 		'head01_tmpJnt' , 'eyeLFT_tmpJnt' , 'eyeRGT_tmpJnt' ,		# head
@@ -150,16 +107,40 @@ headRig.headRig(
 					'jaw01Upr_tmpJnt' , 'jaw02Upr_tmpJnt','eye_tmpJnt' , 
 					'eyeTargetLFT_tmpJnt' , 'eyeTargetRGT_tmpJnt'		 				),		# eye			
 					faceCtrl = True	,
-					priorJnt = neck_bJnt	,
+					priorJnt = neck_bJnt[1][0]	,
 					charScale = charScale	,
-					ctrlShape = 'plainSphereB_ctrlShape',
+					ctrlShape = 'circle_ctrlShape',
+					priorCtrl ='neck_gmbCtrl',
 					linkRotOrder = linkRotOrder			)
 
 
-'''
+
+
+# = = = = = 05 HeadRig = = = = = #
+from function.rigging.autoRig.components import eh_clavicleRig as clavicleRig
+reload(clavicleRig)
+
+clavLFT_bJnt = clavicleRig.createClavicleRig(
+		nameSpace='',
+		side='LFT',
+		parentTo = 'ctrl_grp',
+		priorCtrl='ctrl_grp',
+		priorJnt='spine03_bJnt', # Should be the top spine joint
+		tmpJnt='clavLFT_tmpJnt',
+		charScale=charScale
+	)
 
 
 
+clavRGT_bJnt = clavicleRig.createClavicleRig(
+		nameSpace='',
+		side='RGT',
+		parentTo = 'ctrl_grp',
+		priorCtrl='ctrl_grp',
+		priorJnt='spine03_bJnt', # Should be the top spine joint
+		tmpJnt='clavRGT_tmpJnt',
+		charScale=charScale
+	)
 
 
 

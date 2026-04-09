@@ -279,7 +279,7 @@ def createHeadRig(
 		jUpr_zro, jUpr_ctrl, jUpr_gmbl = eh_adjust.create(
 			nameSpace=None, name=jaw1Upr_bJnt.name, ctrlShape='squareExpand_ctrlShape',
 			rotateOrder=headRotOrder, charScale=charScale * 3.5, color=ctrl_color,
-			parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=False
+			parentTo=headGmbl_ctrl.name, rotation=(0,0,0), matrixConstraint=True
 		)
 		#jUpr_zro.snap(jaw1Upr_bJnt)
 		#mtc.parentConMatrixGPT(jUpr_gmbl.name, jaw1Upr_bJnt.name, mo=True)

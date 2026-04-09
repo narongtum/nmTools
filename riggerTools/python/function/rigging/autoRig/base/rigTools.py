@@ -590,6 +590,34 @@ def jointAt( obj ,orient = True):
 	return jnt
 
 
+# create joint at name and return obj joint
+def jointObjAt( obj ,orient = True):
+	''' call Dag , Joint , snap '''
+	target = core.Dag( obj )
+	jnt = core.Joint()
+
+	if orient:
+		jnt.maSnap( target )
+	else:# in case that want just to snap position
+		jnt.maSnap( target ,pos = True , rot = False , scl = True)
+
+	jnt.freeze( r = True , s = True )
+	jnt.rotateOrder = target.rotateOrder
+
+	jnt.attr('segmentScaleCompensate').value = 0
+
+	
+	'''if target.attr( 'radius' ).exists:
+					# adjust the same radius of new joint
+					#  'v' is visibility
+			
+					jnt.attr( 'radius' ).v = target.attr('radius').v'''
+	mc.select( cl = True )
+	jnt_obj = core.Dag(jnt)
+
+	return jnt_obj
+
+
 
 
 def nodeNaming( obj , charName = '' , elem = '' , side = '' ) :

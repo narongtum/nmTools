@@ -86,21 +86,10 @@ def softIK(		nameSpace,priorMeta, region, side, ctrlName,
 		mc.select( endJoint[0], toggle = True ) #... only maya 2022 is not select end joint
 
 	#lists the joints
-	joints = []
 	joints = mc.ls( sl = True )
 
-
-
-	n = len(joints)
 	#------------------ Filter something not joint -------------------------------------------------------------------#
-	for each in range(n):
-	    print(each)
-	    
-	    if mc.nodeType(joints[each]) != 'joint':
-	        del_lana = each
-
-	#... remove unwanted         
-	joints.pop(del_lana)        
+	joints = [jnt for jnt in joints if mc.nodeType(jnt) == 'joint']
 	n = len(joints)        
 
 

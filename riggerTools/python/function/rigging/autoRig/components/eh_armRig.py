@@ -9,11 +9,14 @@ reload(core)
 # Note: Assuming you save the new gen rig as 'eh_fkIkTwistGenRig.py'
 # or you can rename the function inside the original file. 
 # Here I will point to 'eh_fkIkTwistGenRig' for clarity.
-from function.rigging.autoRig.bodyRig import eh_fkIkTwistGenRig as fitr
+from function.rigging.autoRig.components.limbRig import eh_fkIkTwistGenRig as fitr
 reload(fitr)
 
-from function.rigging.autoRig.bodyRig import eh_createSoftIk as softIkfunc
+from function.rigging.autoRig.components.limbRig import eh_createSoftIk as softIkfunc
 reload(softIkfunc)
+
+from function.rigging.constraint import matrixConstraint as mtc
+reload(mtc)
 
 import logging
 logger = logging.getLogger('eh_armRig')
@@ -96,15 +99,23 @@ def eh_armRigExt(
 		part = nameSpace + region
 		offset_null = core.Null(f"{part}Offset{side}_null")
 		
-		# Use Matrix Constraint for Snap Null
-		# Note: Using standard parentConMatrixGPT for full transform following
-		from function.rigging.constraint import matrixConstraint as mtc
-		reload(mtc)
-		mtc.parentConMatrixGPT(hand_bJnt, offset_null.name, mo=False, translate=True, rotate=True, scale=True)
-		
+		# Parent first before binding constraint
 		offset_null.parent(nullGrp)
 
+		# Use Matrix Constraint for Snap Null
+		# Note: Using standard parentConMatrixGPT for full transform following
+		mtc.parentConMatrixGPT(hand_bJnt, offset_null.name, mo=False, translate=True, rotate=True, scale=True)
+
 		stick_ctrl = core.Dag(stickNam)
+		stick_ctrl.addAttribute(attributeType='message', longName='offset')
+		stick_ctrl.addAttribute(dataType='string', longName='location')
+		stick_ctrl.setAttribute('location', region, type='string')
+		
+		# Add region attr mapping from old fkIkTwistGenRig
+		if not mc.objExists(stick_ctrl.name + '.region'):
+			stick_ctrl.addAttribute(dataType='string', longName='region')
+			stick_ctrl.setAttribute('region', region, type='string')
+			stick_ctrl.lockHideAttrLst('region')
 		offset_null.attr('message') >> stick_ctrl.attr('offset')
 		
 		stick_ctrl.lockHideAttrLst('location')

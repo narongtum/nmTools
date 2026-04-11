@@ -18,16 +18,14 @@ reload(eh_adjust)
 from function.rigging.constraint import matrixConstraint as mtc
 reload(mtc)
 
-# Assuming you have refactored these as well, or using originals if compatible
-# I will provide refactored versions for twistRig, midLock, createIKStretch below
-from function.rigging.autoRig.bodyRig import eh_twistRig as tr
-reload(tr)
-
-from function.rigging.autoRig.bodyRig import eh_midLockModule as midLockModule
+from function.rigging.autoRig.components.limbRig import eh_midLockModule as midLockModule
 reload(midLockModule)
 
-from function.rigging.autoRig.bodyRig import eh_createIKStretch as create
-reload(create)
+from function.rigging.autoRig.components.limbRig import eh_twistRig as tr
+reload(tr)
+
+from function.rigging.autoRig.components.limbRig import eh_createIKStretch as createIK
+reload(createIK)
 
 # Ribbon (Keep original if not refactored yet, assuming compatibility)
 from function.rigging.autoRig.bodyRig import ribbonRigExt as ribbonRig
@@ -114,11 +112,16 @@ def fkIkTwistGenRig(
 	# --- 2. Main Groups ---
 	part = nameSpace + rawName[2] # e.g. hand or ankle
 	fkIkRig_grp = core.Null(f"{part}Rig{side}_grp")
+	fkIkJnt_grp = core.Null(f"{part}Jnt{side}_grp")
 	
+	# IMPORTANT: Parent groups to hierarchy BEFORE binding matrix constraints.
+	# If parented afterwards, offsetParentMatrix misses the inverse parent context, causing double transformation!
+	fkIkRig_grp.parent(parentTo)
+	fkIkJnt_grp.parent(jnt_grp)
+	fkIkJnt_grp.attr('visibility').value = 0
+
 	# Group Constraint (Matrix)
 	mtc.parentConMatrixGPT(priorJnt, fkIkRig_grp.name, mo=True)
-
-	fkIkJnt_grp = core.Null(f"{part}Jnt{side}_grp")
 
 	# --- 3. Stick Controller (The Switch) ---
 	stickName = rawName[2] + 'Stick'
@@ -135,6 +138,9 @@ def fkIkTwistGenRig(
 	# Positioning
 	stickZro_grp.matchPosition(lower_bJnt)
 	stickZro_grp.matchRotation(lower_bJnt)
+	
+	# IMPORTANT: Parent BEFORE matrix constraint to avoid double transformations
+	stickZro_grp.parent(parentTo)
 
 	# Orientation Fixes (Legacy Logic)
 	if region in ['leg', 'frontLeg', 'backLeg']:
@@ -178,40 +184,40 @@ def fkIkTwistGenRig(
 	# FK Controllers using eh_adjust
 	# Upper
 	upr_zro, upr_ctrl, upr_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[0]}{side}", ctrlShape, rotOrder, 
+		nameSpace, f"{rawName[0]}Fk{side}_ctrl", ctrlShape, rotOrder, 
 		parentTo=fkCtrl_grp.name, charScale=charScale*0.9, color=colorSide, 
-		constraint=True # Matrix Constraint included
+		constraint=False # Matrix Constraint handled manually below
 	)
 	if side == 'RGT': upr_ctrl.flipCtrlShape(axis='Y')
 	upr_zro.matchPosition(upper_fkJnt)
 	upr_zro.matchRotation(upper_fkJnt)
 	# Re-apply constraint to ensure correct target (since we matched after creation)
-	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
+	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True, baseName=f"{nameSpace}{rawName[0]}{side}_trFK")
+	mtc.parentConMatrixGPT(upr_gmbl.name, upper_fkJnt.name, mo=True, translate=False, rotate=False, scale=True, baseName=f"{nameSpace}{rawName[0]}{side}_scaleFK")
 
 	# Middle
 	mid_zro, mid_ctrl, mid_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[1]}{side}", ctrlShape, rotOrder, 
+		nameSpace, f"{rawName[1]}Fk{side}_ctrl", ctrlShape, rotOrder, 
 		parentTo=upr_gmbl.name, charScale=charScale*0.8, color=colorSide,
-		constraint=True
+		constraint=False
 	)
 	if side == 'RGT': mid_ctrl.flipCtrlShape(axis='Y')
 	mid_zro.matchPosition(middle_fkJnt)
 	mid_zro.matchRotation(middle_fkJnt)
-	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
+	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True, baseName=f"{nameSpace}{rawName[1]}{side}_trFK")
+	mtc.parentConMatrixGPT(mid_gmbl.name, middle_fkJnt.name, mo=True, translate=False, rotate=False, scale=True, baseName=f"{nameSpace}{rawName[1]}{side}_scaleFK")
 
 	# Lower
 	lwr_zro, lwr_ctrl, lwr_gmbl = eh_adjust.create(
-		nameSpace, f"{rawName[2]}{side}", ctrlShape, rotOrder, 
+		nameSpace, f"{rawName[2]}Fk{side}_ctrl", ctrlShape, rotOrder, 
 		parentTo=mid_gmbl.name, charScale=charScale*0.7, color=colorSide,
-		constraint=True
+		constraint=False
 	)
 	if side == 'RGT': lwr_ctrl.flipCtrlShape(axis='Y')
 	lwr_zro.matchPosition(lower_fkJnt)
 	lwr_zro.matchRotation(lower_fkJnt)
-	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True)
-	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True, translate=False, rotate=False, scale=True)
+	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True, baseName=f"{nameSpace}{rawName[2]}{side}_trFK")
+	mtc.parentConMatrixGPT(lwr_gmbl.name, lower_fkJnt.name, mo=True, translate=False, rotate=False, scale=True, baseName=f"{nameSpace}{rawName[2]}{side}_scaleFK")
 
 	# Space Switching for Upper Arm (FK)
 	# [0] controller itself, [1] local group space, [2] world group space, [3] zero group of controller
@@ -261,12 +267,12 @@ def fkIkTwistGenRig(
 	# Using eh_adjust.create
 	ikZro_grp, lowerIk_ctrl, ikGmbl_ctrl = eh_adjust.create(
 		nameSpace=None,
-		name=f"{nameSpace}{rawName[2]}Ik{side}", 
+		name=f"{nameSpace}{rawName[2]}Ik{side}_ctrl", 
 		ctrlShape=ikShape,
 		rotateOrder=rotOrder,
 		charScale=charScale*8,
 		color=colorSide,
-		parentTo=ikCtrl_grp.name, # Temp parent
+		parentTo=ikCtrl_grp.name, # Correctly parent back to ikCtrl_grp within the fkIkRig hierarchy
 		constraint=False, # We handle constraints manually
 		matrixConstraint=False
 	)
@@ -282,7 +288,7 @@ def fkIkTwistGenRig(
 		misc.snapPointConst(lower_IkJnt.name, ikZro_grp.name)
 
 	# Constraint Joint to Controller (Matrix Orient)
-	mtc.orientConstraintMatrix(ikGmbl_ctrl.name, lower_IkJnt.name, mo=True)
+	mtc.orientConstraintMatrix(ikGmbl_ctrl.name, lower_IkJnt.name, mo=True, baseName=f"{nameSpace}{rawName[2]}{side}_rotIK")
 
 	# IKH Hierarchy with SoftIK Prep
 	ikhZro_grp = mc.group(em=True, n=f"{part}Ikh{side}Zro_grp")
@@ -328,7 +334,7 @@ def fkIkTwistGenRig(
 	)
 
 	# IK Root Controller
-	ikRootName = f"{nameSpace}{rawName[0]}IkRoot{side}"
+	ikRootName = f"{nameSpace}{rawName[0]}IkRoot{side}_ctrl"
 	ikRootZro, ikRoot_ctrl, ikRootGmbl = eh_adjust.create(
 		nameSpace=None, name=ikRootName, ctrlShape='cube_ctrlShape',
 		rotateOrder=rotOrder, charScale=charScale*5.5, color='yellow',
@@ -337,11 +343,11 @@ def fkIkTwistGenRig(
 	ikRootZro.snap(upper_bJnt)
 	
 	# Matrix Parent Constraint IK Root -> IK Joint
-	mtc.parentConMatrixGPT(ikRootGmbl.name, upper_IkJnt.name, mo=True)
+	mtc.parentConMatrixGPT(ikRootGmbl.name, upper_IkJnt.name, mo=True, baseName=f"{nameSpace}{rawName[0]}{side}_rotIK")
 
 	# --- 6. IK Stretch (Refactored Module) ---
 	# Passing updated arguments to createIKStretch
-	pmaNode, psStreEndName = create.iKStretch(
+	pmaNode, psStreEndName = createIK.iKStretch(
 		ikJnt=(upper_IkJnt.name, middle_IkJnt.name, lower_IkJnt.name),
 		ikCtrl=(ikRoot_ctrl.name, lowerIk_ctrl.name),
 		side=side, scaleCtrl='placement_ctrl',
@@ -392,8 +398,7 @@ def fkIkTwistGenRig(
 		revNode = core.ReverseNam(f"{base}Switch{side}_rev")
 		stick_ctrl.attr('FK_IK') >> revNode.attr('inputX')
 		
-		revNode.attr('outputX') >> mc.listRelatives(wt_node, p=True)[0] + '.wtMatrix[0].weightIn' # Check parent of wtNode if needed, core.WtAddMatrix usually wraps it.
-		# Wait, parentMulMatrix returns the NAME of wtAddMatrix.
+		# parentMulMatrix returns the NAME of wtAddMatrix.
 		
 		mc.connectAttr(revNode.name + '.outputX', wt_node + '.wtMatrix[0].weightIn', f=True)
 		mc.connectAttr(stick_ctrl.name + '.FK_IK', wt_node + '.wtMatrix[1].weightIn', f=True)
@@ -501,6 +506,8 @@ def fkIkTwistGenRig(
 
 	# Connect to Stick
 	metaName = mnd.MESSAGE_dict['meta'][0]
+	if not mc.objExists(f"{stick_ctrl.name}.{metaName}"):
+		stick_ctrl.addAttribute(attributeType='message', longName=metaName)
 	fkIkTwistRig_meta.attr('message') >> stick_ctrl.attr(metaName)
 	fkIkTwistRig_meta.lockAllAttr()
 

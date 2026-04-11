@@ -110,11 +110,11 @@ def iKStretch(		ikJnt = ('startJnt','middleJnt','endJnt' 			) ,
 	mc.parent( loc1.name, loc2.name, locator_grp.name)
 	mc.parent( locator_grp.name ,  noTouchGrp )
 
-	# SnapLocator to start and end point using matrix constraint
-	mtc.parentConMatrixGPT(strCtrl, loc1.name, mo=False, baseName=part + 'StartDist' + side + '_parConsMtx')
+	# SnapLocator to start and end point using standard parentConstraint (prevents DG evaluation bugs)
+	mc.parentConstraint( strCtrl , loc1.name , mo=False, name=part + 'StartDist' + side + '_parCons' )
 	mc.matchTransform( loc2.name, endJnt , pos = 1 )
 	psConEndNam = part + 'EndDist' + side + '_parCons'
-	mtc.parentConMatrixGPT(endCtrl, loc2.name, mo=True, baseName=psConEndNam + 'Mtx')
+	mc.parentConstraint( endCtrl , loc2.name , mo=True, name=psConEndNam )
 
 	# Measurement distance
 	mc.createNode('distanceBetween', n = disNode)
